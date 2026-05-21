@@ -1,0 +1,310 @@
+/* ============================================================
+   FitPlan Pro — Multi-Theme System v2
+   每套主题差异化：颜色 / 字体 / 圆角 / 间距 / 阴影 / 背景纹理
+   使用 [data-theme="id"] 选择器，优先级高于 :root
+   ============================================================ */
+
+/* -----------------------------------------------------------------
+   Theme 1: 深邃运动 (Deep Sport) — 默认
+   目标人群：25-40岁男性健身爱好者
+   风格：暗黑 + 珊瑚橙强调 + 科技数字感
+   ----------------------------------------------------------------- */
+[data-theme="deep-sport"] {
+  --bg-primary: #080c14;
+  --bg-secondary: #0f1623;
+  --bg-card: #151d2e;
+  --bg-elevated: #1d2840;
+  --bg-overlay: rgba(8, 12, 20, 0.97);
+  --accent-primary: #ff5722;
+  --accent-secondary: #ff7043;
+  --accent-gradient: linear-gradient(135deg, #ff5722 0%, #ff7043 50%, #ff8a65 100%);
+  --accent-glow: rgba(255, 87, 34, 0.25);
+  --accent-glow-strong: rgba(255, 87, 34, 0.45);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-active: rgba(255, 87, 34, 0.5);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --warning: #f59e0b;
+  --info: #3b82f6;
+  --info-bg: rgba(59, 130, 246, 0.12);
+  --purple: #8b5cf6;
+  --purple-bg: rgba(139, 92, 246, 0.12);
+  /* UI 差异化 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --card-spacing: 20px;
+  --section-gap: 24px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 30px var(--accent-glow);
+  --font-display: 'Orbitron', sans-serif;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nav-height: 72px;
+  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(255, 87, 34, 0.06) 0%, transparent 70%);
+  --logo-font-size: 22px;
+  --bg-pattern: none;
+}
+
+/* -----------------------------------------------------------------
+   Theme 2: 冰霜白 (Arctic Frost)
+   目标人群：25-35岁职场白领女性
+   风格：明亮极简 + 青蓝点缀 + 柔和圆角
+   ----------------------------------------------------------------- */
+[data-theme="arctic-frost"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-overlay: rgba(255, 255, 255, 0.96);
+  --accent-primary: #0891b2;
+  --accent-secondary: #06b6d4;
+  --accent-gradient: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%);
+  --accent-glow: rgba(8, 145, 178, 0.18);
+  --accent-glow-strong: rgba(8, 145, 178, 0.3);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: rgba(15, 23, 42, 0.06);
+  --border-active: rgba(8, 145, 178, 0.4);
+  --success: #059669;
+  --success-bg: rgba(5, 150, 105, 0.08);
+  --warning: #d97706;
+  --info: #2563eb;
+  --info-bg: rgba(37, 99, 235, 0.08);
+  --purple: #7c3aed;
+  --purple-bg: rgba(124, 58, 237, 0.08);
+  /* UI 差异化：大圆角 + 宽松间距 + 柔和阴影 */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --card-spacing: 24px;
+  --section-gap: 28px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nav-height: 76px;
+  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(8, 145, 178, 0.03) 0%, transparent 70%);
+  --logo-font-size: 24px;
+  --bg-pattern: none;
+}
+
+/* -----------------------------------------------------------------
+   Theme 3: 森林活力 (Forest Vital)
+   目标人群：20-35岁自然爱好者 / 户外运动人群
+   风格：暗绿底色 + 青柠强调 + 有机圆角
+   ----------------------------------------------------------------- */
+[data-theme="forest-vital"] {
+  --bg-primary: #0a1f14;
+  --bg-secondary: #0d2819;
+  --bg-card: #113322;
+  --bg-elevated: #18402c;
+  --bg-overlay: rgba(10, 31, 20, 0.97);
+  --accent-primary: #84cc16;
+  --accent-secondary: #a3e635;
+  --accent-gradient: linear-gradient(135deg, #65a30d 0%, #84cc16 50%, #a3e635 100%);
+  --accent-glow: rgba(132, 204, 22, 0.25);
+  --accent-glow-strong: rgba(132, 204, 22, 0.4);
+  --text-primary: #ecfdf5;
+  --text-secondary: #86a68b;
+  --text-muted: #55705a;
+  --border-color: rgba(132, 204, 22, 0.08);
+  --border-active: rgba(132, 204, 22, 0.45);
+  --success: #22c55e;
+  --success-bg: rgba(34, 197, 94, 0.12);
+  --warning: #eab308;
+  --info: #38bdf8;
+  --info-bg: rgba(56, 189, 248, 0.12);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167, 139, 250, 0.12);
+  /* UI 差异化：中等圆角 + 宽松间距 + 软阴影 */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --card-spacing: 22px;
+  --section-gap: 26px;
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 28px var(--accent-glow);
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nav-height: 72px;
+  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(132, 204, 22, 0.05) 0%, transparent 70%);
+  --logo-font-size: 24px;
+  --bg-pattern: none;
+}
+
+/* -----------------------------------------------------------------
+   Theme 4: 赛博霓虹 (Neon Cyber)
+   目标人群：18-28岁Z世代 / 游戏玩家 / 潮流青年
+   风格：深紫底 + 霓虹粉 + 锐利直角 + 发光边框
+   ----------------------------------------------------------------- */
+[data-theme="neon-cyber"] {
+  --bg-primary: #0a0015;
+  --bg-secondary: #0f0022;
+  --bg-card: #15002e;
+  --bg-elevated: #1f0044;
+  --bg-overlay: rgba(10, 0, 21, 0.98);
+  --accent-primary: #d946ef;
+  --accent-secondary: #e879f9;
+  --accent-gradient: linear-gradient(135deg, #c026d3 0%, #d946ef 50%, #e879f9 100%);
+  --accent-glow: rgba(217, 70, 239, 0.35);
+  --accent-glow-strong: rgba(217, 70, 239, 0.55);
+  --text-primary: #f5f3ff;
+  --text-secondary: #a78bfa;
+  --text-muted: #6b5e9e;
+  --border-color: rgba(217, 70, 239, 0.12);
+  --border-active: rgba(217, 70, 239, 0.6);
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.15);
+  --warning: #fbbf24;
+  --info: #22d3ee;
+  --info-bg: rgba(34, 211, 238, 0.15);
+  --purple: #c084fc;
+  --purple-bg: rgba(192, 132, 252, 0.15);
+  /* UI 差异化：小圆角 + 紧凑间距 + 强烈发光 */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --card-spacing: 16px;
+  --section-gap: 18px;
+  --shadow-sm: 0 0 8px rgba(217, 70, 239, 0.15);
+  --shadow-md: 0 0 20px rgba(217, 70, 239, 0.2);
+  --shadow-lg: 0 0 40px rgba(217, 70, 239, 0.3);
+  --shadow-glow: 0 0 36px var(--accent-glow);
+  --font-display: 'Share Tech Mono', monospace;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nav-height: 68px;
+  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(217, 70, 239, 0.08) 0%, transparent 70%);
+  --logo-font-size: 20px;
+  --bg-pattern: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(217, 70, 239, 0.03) 2px, rgba(217, 70, 239, 0.03) 4px);
+}
+
+/* -----------------------------------------------------------------
+   Theme 5: 黑金奢华 (Gold Elite)
+   目标人群：30-50岁企业高管 / 商务人士 / 追求品质感
+   风格：暖黑底 + 黄金渐变 + 精致圆角 + 细腻阴影
+   ----------------------------------------------------------------- */
+[data-theme="gold-elite"] {
+  --bg-primary: #0c0a09;
+  --bg-secondary: #12100e;
+  --bg-card: #1a1612;
+  --bg-elevated: #241e18;
+  --bg-overlay: rgba(12, 10, 9, 0.98);
+  --accent-primary: #f59e0b;
+  --accent-secondary: #fbbf24;
+  --accent-gradient: linear-gradient(135deg, #b45309 0%, #d97706 25%, #f59e0b 50%, #fbbf24 75%, #fcd34d 100%);
+  --accent-glow: rgba(245, 158, 11, 0.2);
+  --accent-glow-strong: rgba(245, 158, 11, 0.4);
+  --text-primary: #fef3c7;
+  --text-secondary: #a89f84;
+  --text-muted: #6b5a4e;
+  --border-color: rgba(245, 158, 11, 0.08);
+  --border-active: rgba(245, 158, 11, 0.45);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warning: #f59e0b;
+  --info: #93c5fd;
+  --info-bg: rgba(147, 197, 253, 0.1);
+  --purple: #c084fc;
+  --purple-bg: rgba(192, 132, 252, 0.1);
+  /* UI 差异化：大圆角 + 宽松间距 + 精致阴影 */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --card-spacing: 24px;
+  --section-gap: 28px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(245,158,11,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(245,158,11,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(245,158,11,0.08);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nav-height: 80px;
+  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(245, 158, 11, 0.04) 0%, transparent 70%);
+  --logo-font-size: 26px;
+  --bg-pattern: none;
+}
+
+/* -----------------------------------------------------------------
+   Theme 6: 午夜蓝调 (Midnight Blue)
+   目标人群：25-40岁IT/互联网从业者 / 极客 / 程序员
+   风格：深蓝底 + 天蓝强调 + 扁平直角 + 数据面板感
+   ----------------------------------------------------------------- */
+[data-theme="midnight-blue"] {
+  --bg-primary: #0a1020;
+  --bg-secondary: #0e172e;
+  --bg-card: #13203d;
+  --bg-elevated: #1a2d53;
+  --bg-overlay: rgba(10, 16, 32, 0.98);
+  --accent-primary: #38bdf8;
+  --accent-secondary: #60a5fa;
+  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #7dd3fc 100%);
+  --accent-glow: rgba(56, 189, 248, 0.22);
+  --accent-glow-strong: rgba(56, 189, 248, 0.4);
+  --text-primary: #f0f9ff;
+  --text-secondary: #93c5fd;
+  --text-muted: #4b5d8a;
+  --border-color: rgba(56, 189, 248, 0.06);
+  --border-active: rgba(56, 189, 248, 0.45);
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.1);
+  --warning: #fbbf24;
+  --info: #818cf8;
+  --info-bg: rgba(129, 140, 248, 0.1);
+  --purple: #c084fc;
+  --purple-bg: rgba(192, 132, 252, 0.1);
+  /* UI 差异化：小圆角 + 紧凑间距 + 面板硬阴影 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --card-spacing: 18px;
+  --section-gap: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+  --shadow-glow: 0 0 22px var(--accent-glow);
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nav-height: 68px;
+  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(56, 189, 248, 0.05) 0%, transparent 70%);
+  --logo-font-size: 20px;
+  --bg-pattern: linear-gradient(rgba(56, 189, 248, 0.02) 1px, transparent 1px);
+  background-size: 100% 4px;
+}
+
+/* ============================================================
+   主题级 body 背景图案覆盖
+   ============================================================ */
+[data-theme="neon-cyber"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--bg-pattern);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+[data-theme="midnight-blue"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--bg-pattern);
+  pointer-events: none;
+  z-index: 0;
+}
