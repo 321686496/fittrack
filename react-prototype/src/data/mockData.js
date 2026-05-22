@@ -32,10 +32,47 @@ const MockData = {
     calories: '1,850',
   },
 
+  weeklyCalendar: [
+    { day: '一', label: '胸+三头', done: true },
+    { day: '二', label: '背+二头', done: true },
+    { day: '三', label: '休息日', done: true, rest: true },
+    { day: '四', label: '肩+核心', done: true },
+    { day: '五', label: '腿部', done: false, today: true },
+    { day: '六', label: '胸+背', done: false },
+    { day: '日', label: '休息日', done: false, rest: true },
+  ],
+
+  streak: {
+    current: 12,
+    longest: 21,
+    thisMonth: 14,
+    monthTotal: 20,
+  },
+
+  achievements: [
+    { id: 'a1', name: '初出茅庐', desc: '完成第一次训练', icon: '🎯', unlocked: true },
+    { id: 'a2', name: '铁人意志', desc: '连续打卡7天', icon: '🔥', unlocked: true },
+    { id: 'a3', name: '百吨俱乐部', desc: '累计举起100吨', icon: '💪', unlocked: true },
+    { id: 'a4', name: '马拉松选手', desc: '累计训练100小时', icon: '⏱️', unlocked: false },
+    { id: 'a5', name: '千次达人', desc: '累计完成1000次动作', icon: '🏆', unlocked: false },
+    { id: 'a6', name: '不倒翁', desc: '连续打卡30天', icon: '🛡️', unlocked: false },
+  ],
+
+  bodyData: {
+    height: 175,
+    weight: 72.5,
+    bmi: 23.7,
+    bodyFat: 18.5,
+    chest: 98,
+    waist: 80,
+    hip: 96,
+    lastUpdate: '3天前',
+  },
+
   plans: [
-    { id: 'plan1', name: '三分化增肌计划', status: 'active', frequency: '6天/周', difficulty: '进阶', week: 4, totalWeeks: 8, progress: 75, badge: '进行中', badgeClass: 'act-b' },
-    { id: 'plan2', name: '新手入门计划', status: 'done', frequency: '3天/周', difficulty: '入门', week: 4, totalWeeks: 4, progress: 100, badge: '已完成', badgeClass: 'done-b' },
-    { id: 'plan3', name: '推拉腿训练计划', status: 'pending', frequency: '6天/周', difficulty: '高级', week: 0, totalWeeks: 8, progress: 0, badge: '待开始', badgeClass: 'pend-b' },
+    { id: 'plan1', name: '三分化增肌计划', status: 'active', frequency: '6天/周', difficulty: '进阶', week: 4, totalWeeks: 8, progress: 75, badge: '进行中' },
+    { id: 'plan2', name: '新手入门计划', status: 'done', frequency: '3天/周', difficulty: '入门', week: 4, totalWeeks: 4, progress: 100, badge: '已完成' },
+    { id: 'plan3', name: '推拉腿训练计划', status: 'pending', frequency: '6天/周', difficulty: '高级', week: 0, totalWeeks: 8, progress: 0, badge: '待开始' },
   ],
 
   chartData: {
@@ -56,10 +93,21 @@ const MockData = {
     { name: '腿部', pct: 22, color: 'var(--success)' },
   ],
 
+  recentTrainings: [
+    { id: 'rt1', name: '胸部 + 三头肌', date: '昨天', duration: '55min', calories: 420, exercises: 5, completed: true },
+    { id: 'rt2', name: '背部 + 二头肌', date: '2天前', duration: '65min', calories: 480, exercises: 6, completed: true },
+    { id: 'rt3', name: '肩部 + 核心', date: '3天前', duration: '45min', calories: 350, exercises: 5, completed: true },
+  ],
+
+  dailyTip: {
+    text: '训练后30分钟内补充蛋白质，能最大化肌肉修复与生长效果。',
+    category: '营养建议',
+  },
+
   personalRecords: [
-    { name: '卧推', weight: '80kg', date: '2025-05-15', clazz: 'ac' },
-    { name: '深蹲', weight: '100kg', date: '2025-05-12', clazz: 'bl' },
-    { name: '硬拉', weight: '120kg', date: '2025-05-10', clazz: 'gr' },
+    { name: '卧推', weight: '80kg', date: '2025-05-15' },
+    { name: '深蹲', weight: '100kg', date: '2025-05-12' },
+    { name: '硬拉', weight: '120kg', date: '2025-05-10' },
   ],
 
   categories: ['全部', '胸部', '背部', '腿部', '肩部', '手臂', '核心'],

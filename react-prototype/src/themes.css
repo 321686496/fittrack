@@ -1,154 +1,282 @@
 /* ============================================================
-   FitPlan Pro — Multi-Theme System v2
-   每套主题差异化：颜色 / 字体 / 圆角 / 间距 / 阴影 / 背景纹理
-   使用 [data-theme="id"] 选择器，优先级高于 :root
+   FitPlan Pro — Multi-Theme System v3
+   6套差异化主题：颜色 / 字体 / 圆角 / 间距 / 阴影 / 边框 / 布局
+   每套主题不仅仅是换色，而是从设计语言层面完全不同
    ============================================================ */
 
 /* -----------------------------------------------------------------
-   Theme 1: 深邃运动 (Deep Sport) — 默认
-   目标人群：25-40岁男性健身爱好者
-   风格：暗黑 + 珊瑚橙强调 + 科技数字感
+   Theme 1: 硬核铁馆 (Iron Forge)
+   目标人群：25-40岁男性健身爱好者 / 力量训练硬核玩家
+   设计语言：Brutalist — 粗犷、原始、力量感
+   特征：零圆角 + 粗边框 + 偏移硬阴影 + 条纹进度条 + 大写粗体
    ----------------------------------------------------------------- */
-[data-theme="deep-sport"] {
-  --bg-primary: #080c14;
-  --bg-secondary: #0f1623;
-  --bg-card: #151d2e;
-  --bg-elevated: #1d2840;
-  --bg-overlay: rgba(8, 12, 20, 0.97);
-  --accent-primary: #ff5722;
-  --accent-secondary: #ff7043;
-  --accent-gradient: linear-gradient(135deg, #ff5722 0%, #ff7043 50%, #ff8a65 100%);
-  --accent-glow: rgba(255, 87, 34, 0.25);
-  --accent-glow-strong: rgba(255, 87, 34, 0.45);
+[data-theme="iron-forge"] {
+  --bg-primary: #0a0e14;
+  --bg-secondary: #0f1520;
+  --bg-card: #141c28;
+  --bg-elevated: #1a2436;
+  --bg-overlay: rgba(10, 14, 20, 0.97);
+  --accent-primary: #ef4444;
+  --accent-secondary: #f97316;
+  --accent-gradient: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f97316 100%);
+  --accent-glow: rgba(239, 68, 68, 0.25);
+  --accent-glow-strong: rgba(239, 68, 68, 0.45);
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #475569;
-  --border-color: rgba(255, 255, 255, 0.06);
-  --border-active: rgba(255, 87, 34, 0.5);
-  --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.12);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-active: rgba(239, 68, 68, 0.5);
+  --success: #22c55e;
+  --success-bg: rgba(34, 197, 94, 0.12);
   --warning: #f59e0b;
   --info: #3b82f6;
   --info-bg: rgba(59, 130, 246, 0.12);
-  --purple: #8b5cf6;
-  --purple-bg: rgba(139, 92, 246, 0.12);
-  /* UI 差异化 */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --card-spacing: 20px;
-  --section-gap: 24px;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
-  --shadow-glow: 0 0 30px var(--accent-glow);
-  --font-display: 'Orbitron', sans-serif;
+  --purple: #a855f7;
+  --purple-bg: rgba(168, 85, 247, 0.12);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-btn: 0px;
+  --radius-input: 0px;
+  --radius-avatar: 4px;
+  --radius-badge: 0px;
+  --radius-progress: 0px;
+  --card-spacing: 16px;
+  --section-gap: 20px;
+  --card-padding: 18px;
+  --btn-padding: 16px;
+  --border-width: 3px;
+  --border-style: solid;
+  --shadow-sm: 3px 3px 0px rgba(0,0,0,0.4);
+  --shadow-md: 5px 5px 0px rgba(0,0,0,0.45);
+  --shadow-lg: 7px 7px 0px rgba(0,0,0,0.5);
+  --shadow-glow: 3px 3px 0px var(--accent-glow-strong);
+  --shadow-hover: 5px 5px 0px var(--accent-glow-strong);
+  --font-display: 'Tektur', 'Aldrich', sans-serif;
+  --font-data: 'Geist Mono', 'Fira Code', monospace;
   --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --nav-height: 72px;
-  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(255, 87, 34, 0.06) 0%, transparent 70%);
-  --logo-font-size: 22px;
-  --bg-pattern: none;
+  --font-size-scale: 1;
+  --font-weight-display: 800;
+  --text-transform: uppercase;
+  --letter-spacing-display: 2px;
+  --letter-spacing-data: 1px;
+  --nav-height: 68px;
+  --nav-style: brutal;
+  --logo-font-size: 16px;
+  --body-radial: none;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  --progress-style: striped;
+  --hover-effect: brutal;
+  --accent-text-color: #000;
 }
 
 /* -----------------------------------------------------------------
-   Theme 2: 冰霜白 (Arctic Frost)
-   目标人群：25-35岁职场白领女性
-   风格：明亮极简 + 青蓝点缀 + 柔和圆角
+   Theme 2: 柔美花语 (Blossom)
+   目标人群：25-40岁女性 / 追求优雅柔美的健身用户
+   设计语言：Soft & Flowing — 柔和、圆润、优雅
+   特征：大圆角 + 细边框 + 柔和阴影 + 渐变进度条 + 衬线标题
    ----------------------------------------------------------------- */
-[data-theme="arctic-frost"] {
+[data-theme="blossom"] {
+  --bg-primary: #fdf2f8;
+  --bg-secondary: #fce7f3;
+  --bg-card: #ffffff;
+  --bg-elevated: #fdf2f8;
+  --bg-overlay: rgba(253, 242, 248, 0.97);
+  --accent-primary: #ec4899;
+  --accent-secondary: #f472b6;
+  --accent-gradient: linear-gradient(135deg, #db2777 0%, #ec4899 40%, #f9a8d4 100%);
+  --accent-glow: rgba(236, 72, 153, 0.18);
+  --accent-glow-strong: rgba(236, 72, 153, 0.3);
+  --text-primary: #1e1b2e;
+  --text-secondary: #6b5f7b;
+  --text-muted: #a89bb8;
+  --border-color: rgba(236, 72, 153, 0.1);
+  --border-active: rgba(236, 72, 153, 0.4);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.08);
+  --warning: #f59e0b;
+  --info: #8b5cf6;
+  --info-bg: rgba(139, 92, 246, 0.08);
+  --purple: #a855f7;
+  --purple-bg: rgba(168, 85, 247, 0.08);
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-btn: 50px;
+  --radius-input: 14px;
+  --radius-avatar: 50%;
+  --radius-badge: 50px;
+  --radius-progress: 50px;
+  --card-spacing: 20px;
+  --section-gap: 28px;
+  --card-padding: 22px;
+  --btn-padding: 16px;
+  --border-width: 1px;
+  --border-style: solid;
+  --shadow-sm: 0 2px 8px rgba(236, 72, 153, 0.06);
+  --shadow-md: 0 4px 16px rgba(236, 72, 153, 0.08);
+  --shadow-lg: 0 8px 32px rgba(236, 72, 153, 0.12);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --shadow-hover: 0 6px 24px rgba(236, 72, 153, 0.15);
+  --font-display: 'Playfair Display', 'Noto Serif SC', serif;
+  --font-data: 'Outfit', sans-serif;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-scale: 1;
+  --font-weight-display: 600;
+  --text-transform: none;
+  --letter-spacing-display: 0.5px;
+  --letter-spacing-data: 0.5px;
+  --nav-height: 76px;
+  --nav-style: soft;
+  --logo-font-size: 22px;
+  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(236, 72, 153, 0.04) 0%, transparent 70%);
+  --bg-pattern: none;
+  --progress-style: gradient;
+  --hover-effect: gentle;
+  --accent-text-color: #fff;
+}
+
+/* -----------------------------------------------------------------
+   Theme 3: 长者关怀 (Silver Care)
+   目标人群：55岁以上老年用户 / 视力不佳用户
+   设计语言：Accessible & Clear — 大字、高对比、简单清晰
+   特征：超大字体 + 高对比度 + 宽松间距 + 粗边框 + 清晰图标
+   ----------------------------------------------------------------- */
+[data-theme="silver-care"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f0fdf4;
+  --bg-card: #ffffff;
+  --bg-elevated: #f0fdf4;
+  --bg-overlay: rgba(255, 255, 255, 0.98);
+  --accent-primary: #059669;
+  --accent-secondary: #10b981;
+  --accent-gradient: linear-gradient(135deg, #047857 0%, #059669 50%, #34d399 100%);
+  --accent-glow: rgba(5, 150, 105, 0.15);
+  --accent-glow-strong: rgba(5, 150, 105, 0.3);
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --border-color: rgba(5, 150, 105, 0.15);
+  --border-active: rgba(5, 150, 105, 0.5);
+  --success: #059669;
+  --success-bg: rgba(5, 150, 105, 0.1);
+  --warning: #d97706;
+  --info: #2563eb;
+  --info-bg: rgba(37, 99, 235, 0.1);
+  --purple: #7c3aed;
+  --purple-bg: rgba(124, 58, 237, 0.1);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-btn: 14px;
+  --radius-input: 12px;
+  --radius-avatar: 50%;
+  --radius-badge: 8px;
+  --radius-progress: 8px;
+  --card-spacing: 20px;
+  --section-gap: 28px;
+  --card-padding: 24px;
+  --btn-padding: 20px;
+  --border-width: 2px;
+  --border-style: solid;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-glow: 0 0 16px var(--accent-glow);
+  --shadow-hover: 0 4px 16px rgba(5, 150, 105, 0.15);
+  --font-display: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-data: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-scale: 1.2;
+  --font-weight-display: 700;
+  --text-transform: none;
+  --letter-spacing-display: 0.5px;
+  --letter-spacing-data: 0.5px;
+  --nav-height: 84px;
+  --nav-style: accessible;
+  --logo-font-size: 24px;
+  --body-radial: none;
+  --bg-pattern: none;
+  --progress-style: solid;
+  --hover-effect: clear;
+  --accent-text-color: #fff;
+}
+
+/* -----------------------------------------------------------------
+   Theme 4: 清新极简 (Fresh Minimal)
+   目标人群：20-35岁追求简洁清新风格的用户 / 设计师 / 极简主义者
+   设计语言：Minimal & Clean — 大量留白、极细线条、克制用色
+   特征：细边框 + 微阴影 + 大留白 + 无装饰 + 线性图标
+   ----------------------------------------------------------------- */
+[data-theme="fresh-minimal"] {
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
   --bg-card: #ffffff;
-  --bg-elevated: #f1f5f9;
-  --bg-overlay: rgba(255, 255, 255, 0.96);
-  --accent-primary: #0891b2;
-  --accent-secondary: #06b6d4;
-  --accent-gradient: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%);
-  --accent-glow: rgba(8, 145, 178, 0.18);
-  --accent-glow-strong: rgba(8, 145, 178, 0.3);
+  --bg-elevated: #f8fafc;
+  --bg-overlay: rgba(248, 250, 252, 0.97);
+  --accent-primary: #0ea5e9;
+  --accent-secondary: #38bdf8;
+  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #7dd3fc 100%);
+  --accent-glow: rgba(14, 165, 233, 0.12);
+  --accent-glow-strong: rgba(14, 165, 233, 0.25);
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --border-color: rgba(15, 23, 42, 0.06);
-  --border-active: rgba(8, 145, 178, 0.4);
-  --success: #059669;
-  --success-bg: rgba(5, 150, 105, 0.08);
-  --warning: #d97706;
-  --info: #2563eb;
-  --info-bg: rgba(37, 99, 235, 0.08);
-  --purple: #7c3aed;
-  --purple-bg: rgba(124, 58, 237, 0.08);
-  /* UI 差异化：大圆角 + 宽松间距 + 柔和阴影 */
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
+  --border-active: rgba(14, 165, 233, 0.35);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.06);
+  --warning: #f59e0b;
+  --info: #6366f1;
+  --info-bg: rgba(99, 102, 241, 0.06);
+  --purple: #8b5cf6;
+  --purple-bg: rgba(139, 92, 246, 0.06);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-btn: 10px;
+  --radius-input: 8px;
+  --radius-avatar: 50%;
+  --radius-badge: 6px;
+  --radius-progress: 50px;
   --card-spacing: 24px;
-  --section-gap: 28px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
-  --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-  --font-display: 'Outfit', sans-serif;
+  --section-gap: 32px;
+  --card-padding: 20px;
+  --btn-padding: 14px;
+  --border-width: 1px;
+  --border-style: solid;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-glow: none;
+  --shadow-hover: 0 4px 12px rgba(14, 165, 233, 0.08);
+  --font-display: 'Inter', 'Noto Sans SC', sans-serif;
+  --font-data: 'Inter', 'Noto Sans SC', sans-serif;
   --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --nav-height: 76px;
-  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(8, 145, 178, 0.03) 0%, transparent 70%);
-  --logo-font-size: 24px;
-  --bg-pattern: none;
-}
-
-/* -----------------------------------------------------------------
-   Theme 3: 森林活力 (Forest Vital)
-   目标人群：20-35岁自然爱好者 / 户外运动人群
-   风格：暗绿底色 + 青柠强调 + 有机圆角
-   ----------------------------------------------------------------- */
-[data-theme="forest-vital"] {
-  --bg-primary: #0a1f14;
-  --bg-secondary: #0d2819;
-  --bg-card: #113322;
-  --bg-elevated: #18402c;
-  --bg-overlay: rgba(10, 31, 20, 0.97);
-  --accent-primary: #84cc16;
-  --accent-secondary: #a3e635;
-  --accent-gradient: linear-gradient(135deg, #65a30d 0%, #84cc16 50%, #a3e635 100%);
-  --accent-glow: rgba(132, 204, 22, 0.25);
-  --accent-glow-strong: rgba(132, 204, 22, 0.4);
-  --text-primary: #ecfdf5;
-  --text-secondary: #86a68b;
-  --text-muted: #55705a;
-  --border-color: rgba(132, 204, 22, 0.08);
-  --border-active: rgba(132, 204, 22, 0.45);
-  --success: #22c55e;
-  --success-bg: rgba(34, 197, 94, 0.12);
-  --warning: #eab308;
-  --info: #38bdf8;
-  --info-bg: rgba(56, 189, 248, 0.12);
-  --purple: #a78bfa;
-  --purple-bg: rgba(167, 139, 250, 0.12);
-  /* UI 差异化：中等圆角 + 宽松间距 + 软阴影 */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-  --card-spacing: 22px;
-  --section-gap: 26px;
-  --shadow-sm: 0 2px 6px rgba(0,0,0,0.2);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
-  --shadow-glow: 0 0 28px var(--accent-glow);
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-scale: 1;
+  --font-weight-display: 600;
+  --text-transform: none;
+  --letter-spacing-display: -0.5px;
+  --letter-spacing-data: 0;
   --nav-height: 72px;
-  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(132, 204, 22, 0.05) 0%, transparent 70%);
-  --logo-font-size: 24px;
+  --nav-style: minimal;
+  --logo-font-size: 18px;
+  --body-radial: none;
   --bg-pattern: none;
+  --progress-style: thin;
+  --hover-effect: subtle;
+  --accent-text-color: #fff;
 }
 
 /* -----------------------------------------------------------------
-   Theme 4: 赛博霓虹 (Neon Cyber)
+   Theme 5: 赛博霓虹 (Neon Cyber)
    目标人群：18-28岁Z世代 / 游戏玩家 / 潮流青年
-   风格：深紫底 + 霓虹粉 + 锐利直角 + 发光边框
+   设计语言：Cyberpunk — 霓虹发光、锐利几何、数字未来感
+   特征：发光边框 + 扫描线纹理 + 霓虹色 + 极小圆角 + 故障效果
    ----------------------------------------------------------------- */
 [data-theme="neon-cyber"] {
   --bg-primary: #0a0015;
@@ -158,13 +286,13 @@
   --bg-overlay: rgba(10, 0, 21, 0.98);
   --accent-primary: #d946ef;
   --accent-secondary: #e879f9;
-  --accent-gradient: linear-gradient(135deg, #c026d3 0%, #d946ef 50%, #e879f9 100%);
+  --accent-gradient: linear-gradient(135deg, #a855f7 0%, #d946ef 40%, #22d3ee 100%);
   --accent-glow: rgba(217, 70, 239, 0.35);
   --accent-glow-strong: rgba(217, 70, 239, 0.55);
   --text-primary: #f5f3ff;
   --text-secondary: #a78bfa;
   --text-muted: #6b5e9e;
-  --border-color: rgba(217, 70, 239, 0.12);
+  --border-color: rgba(217, 70, 239, 0.15);
   --border-active: rgba(217, 70, 239, 0.6);
   --success: #34d399;
   --success-bg: rgba(52, 211, 153, 0.15);
@@ -173,31 +301,51 @@
   --info-bg: rgba(34, 211, 238, 0.15);
   --purple: #c084fc;
   --purple-bg: rgba(192, 132, 252, 0.15);
-  /* UI 差异化：小圆角 + 紧凑间距 + 强烈发光 */
   --radius-sm: 2px;
   --radius-md: 4px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --card-spacing: 16px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-btn: 4px;
+  --radius-input: 4px;
+  --radius-avatar: 4px;
+  --radius-badge: 2px;
+  --radius-progress: 2px;
+  --card-spacing: 14px;
   --section-gap: 18px;
+  --card-padding: 16px;
+  --btn-padding: 14px;
+  --border-width: 1px;
+  --border-style: solid;
   --shadow-sm: 0 0 8px rgba(217, 70, 239, 0.15);
   --shadow-md: 0 0 20px rgba(217, 70, 239, 0.2);
   --shadow-lg: 0 0 40px rgba(217, 70, 239, 0.3);
-  --shadow-glow: 0 0 36px var(--accent-glow);
+  --shadow-glow: 0 0 30px var(--accent-glow);
+  --shadow-hover: 0 0 40px var(--accent-glow-strong);
   --font-display: 'Share Tech Mono', monospace;
+  --font-data: 'Share Tech Mono', monospace;
   --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-scale: 1;
+  --font-weight-display: 400;
+  --text-transform: uppercase;
+  --letter-spacing-display: 3px;
+  --letter-spacing-data: 2px;
   --nav-height: 68px;
+  --nav-style: cyber;
+  --logo-font-size: 18px;
   --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(217, 70, 239, 0.08) 0%, transparent 70%);
-  --logo-font-size: 20px;
   --bg-pattern: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(217, 70, 239, 0.03) 2px, rgba(217, 70, 239, 0.03) 4px);
+  --progress-style: neon;
+  --hover-effect: glow;
+  --accent-text-color: #0a0015;
 }
 
 /* -----------------------------------------------------------------
-   Theme 5: 黑金奢华 (Gold Elite)
-   目标人群：30-50岁企业高管 / 商务人士 / 追求品质感
-   风格：暖黑底 + 黄金渐变 + 精致圆角 + 细腻阴影
+   Theme 6: 黑金尊享 (Black Gold)
+   目标人群：30-50岁企业高管 / 商务精英 / 追求品质感
+   设计语言：Luxury — 奢华、精致、沉稳、尊贵
+   特征：金色渐变 + 衬线字体 + 精致阴影 + 细腻纹理 + 高级质感
    ----------------------------------------------------------------- */
-[data-theme="gold-elite"] {
+[data-theme="black-gold"] {
   --bg-primary: #0c0a09;
   --bg-secondary: #12100e;
   --bg-card: #1a1612;
@@ -205,13 +353,13 @@
   --bg-overlay: rgba(12, 10, 9, 0.98);
   --accent-primary: #f59e0b;
   --accent-secondary: #fbbf24;
-  --accent-gradient: linear-gradient(135deg, #b45309 0%, #d97706 25%, #f59e0b 50%, #fbbf24 75%, #fcd34d 100%);
+  --accent-gradient: linear-gradient(135deg, #92400e 0%, #b45309 20%, #d97706 40%, #f59e0b 60%, #fbbf24 80%, #fcd34d 100%);
   --accent-glow: rgba(245, 158, 11, 0.2);
   --accent-glow-strong: rgba(245, 158, 11, 0.4);
   --text-primary: #fef3c7;
   --text-secondary: #a89f84;
   --text-muted: #6b5a4e;
-  --border-color: rgba(245, 158, 11, 0.08);
+  --border-color: rgba(245, 158, 11, 0.1);
   --border-active: rgba(245, 158, 11, 0.45);
   --success: #10b981;
   --success-bg: rgba(16, 185, 129, 0.1);
@@ -220,91 +368,332 @@
   --info-bg: rgba(147, 197, 253, 0.1);
   --purple: #c084fc;
   --purple-bg: rgba(192, 132, 252, 0.1);
-  /* UI 差异化：大圆角 + 宽松间距 + 精致阴影 */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --card-spacing: 24px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-btn: 10px;
+  --radius-input: 8px;
+  --radius-avatar: 50%;
+  --radius-badge: 6px;
+  --radius-progress: 4px;
+  --card-spacing: 22px;
   --section-gap: 28px;
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(245,158,11,0.05);
+  --card-padding: 22px;
+  --btn-padding: 16px;
+  --border-width: 1px;
+  --border-style: solid;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(245,158,11,0.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(245,158,11,0.06);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(245,158,11,0.08);
-  --shadow-glow: 0 0 24px var(--accent-glow);
-  --font-display: 'Cormorant Garamond', serif;
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --shadow-hover: 0 4px 16px rgba(245, 158, 11, 0.15);
+  --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+  --font-data: 'Outfit', sans-serif;
   --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-scale: 1;
+  --font-weight-display: 600;
+  --text-transform: uppercase;
+  --letter-spacing-display: 3px;
+  --letter-spacing-data: 1px;
   --nav-height: 80px;
+  --nav-style: luxury;
+  --logo-font-size: 22px;
   --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(245, 158, 11, 0.04) 0%, transparent 70%);
-  --logo-font-size: 26px;
   --bg-pattern: none;
-}
-
-/* -----------------------------------------------------------------
-   Theme 6: 午夜蓝调 (Midnight Blue)
-   目标人群：25-40岁IT/互联网从业者 / 极客 / 程序员
-   风格：深蓝底 + 天蓝强调 + 扁平直角 + 数据面板感
-   ----------------------------------------------------------------- */
-[data-theme="midnight-blue"] {
-  --bg-primary: #0a1020;
-  --bg-secondary: #0e172e;
-  --bg-card: #13203d;
-  --bg-elevated: #1a2d53;
-  --bg-overlay: rgba(10, 16, 32, 0.98);
-  --accent-primary: #38bdf8;
-  --accent-secondary: #60a5fa;
-  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #7dd3fc 100%);
-  --accent-glow: rgba(56, 189, 248, 0.22);
-  --accent-glow-strong: rgba(56, 189, 248, 0.4);
-  --text-primary: #f0f9ff;
-  --text-secondary: #93c5fd;
-  --text-muted: #4b5d8a;
-  --border-color: rgba(56, 189, 248, 0.06);
-  --border-active: rgba(56, 189, 248, 0.45);
-  --success: #34d399;
-  --success-bg: rgba(52, 211, 153, 0.1);
-  --warning: #fbbf24;
-  --info: #818cf8;
-  --info-bg: rgba(129, 140, 248, 0.1);
-  --purple: #c084fc;
-  --purple-bg: rgba(192, 132, 252, 0.1);
-  /* UI 差异化：小圆角 + 紧凑间距 + 面板硬阴影 */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --card-spacing: 18px;
-  --section-gap: 20px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
-  --shadow-glow: 0 0 22px var(--accent-glow);
-  --font-display: 'Rajdhani', sans-serif;
-  --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --nav-height: 68px;
-  --body-radial: radial-gradient(ellipse 60% 50% at 50% -20%, rgba(56, 189, 248, 0.05) 0%, transparent 70%);
-  --logo-font-size: 20px;
-  --bg-pattern: linear-gradient(rgba(56, 189, 248, 0.02) 1px, transparent 1px);
-  background-size: 100% 4px;
+  --progress-style: gold;
+  --hover-effect: refined;
+  --accent-text-color: #0c0a09;
 }
 
 /* ============================================================
    主题级 body 背景图案覆盖
    ============================================================ */
+[data-theme="iron-forge"] body::before,
 [data-theme="neon-cyber"] body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: var(--bg-pattern);
   pointer-events: none;
   z-index: 0;
+}
+
+[data-theme="iron-forge"] body::before {
+  background-image: var(--bg-pattern);
+  background-repeat: repeat;
+  opacity: 0.4;
+}
+
+[data-theme="neon-cyber"] body::after {
+  background: var(--bg-pattern);
   opacity: 0.5;
 }
 
-[data-theme="midnight-blue"] body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--bg-pattern);
-  pointer-events: none;
-  z-index: 0;
+/* ============================================================
+   主题级差异化样式覆盖
+   ============================================================ */
+
+/* --- 硬核铁馆：偏移阴影hover + 条纹进度 --- */
+[data-theme="iron-forge"] .stat-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0px rgba(0,0,0,0.4);
+}
+[data-theme="iron-forge"] .plan-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0px rgba(0,0,0,0.35);
+}
+[data-theme="iron-forge"] .ex-tile:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+}
+[data-theme="iron-forge"] .btn-primary:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0px rgba(0,0,0,0.5);
+}
+[data-theme="iron-forge"] .btn-primary:active {
+  transform: translate(0, 0);
+  box-shadow: none;
+}
+[data-theme="iron-forge"] .btn-complete:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0px rgba(0,0,0,0.5);
+}
+[data-theme="iron-forge"] .btn-complete:active {
+  transform: translate(0, 0);
+  box-shadow: none;
+}
+[data-theme="iron-forge"] .fab:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0px rgba(0,0,0,0.5);
+}
+[data-theme="iron-forge"] .quick-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px rgba(239,68,68,0.15);
+}
+
+/* --- 柔美花语：柔和缩放hover + 渐变进度 --- */
+[data-theme="blossom"] .stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="blossom"] .plan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="blossom"] .ex-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="blossom"] .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.25);
+}
+[data-theme="blossom"] .btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+[data-theme="blossom"] .btn-complete:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.25);
+}
+[data-theme="blossom"] .btn-complete:active {
+  transform: translateY(0);
+}
+[data-theme="blossom"] .fab:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.3);
+}
+[data-theme="blossom"] .quick-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="blossom"] .today-block {
+  border-left: none;
+  border-top: 3px solid var(--accent-primary);
+}
+[data-theme="blossom"] .av-border {
+  border-width: 3px;
+}
+
+/* --- 长者关怀：清晰高对比 + 大触摸区 --- */
+[data-theme="silver-care"] .stat-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="silver-care"] .plan-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="silver-care"] .btn-primary:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="silver-care"] .btn-primary:active {
+  opacity: 1;
+}
+[data-theme="silver-care"] .btn-complete:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="silver-care"] .fab:hover {
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="silver-care"] .bnav-it {
+  padding: 10px 14px;
+}
+[data-theme="silver-care"] .bnav-lbl {
+  font-size: 11px;
+}
+[data-theme="silver-care"] .bnav-ic svg {
+  width: 26px;
+  height: 26px;
+}
+[data-theme="silver-care"] .icon-btn {
+  width: 44px;
+  height: 44px;
+}
+[data-theme="silver-care"] .quick-item {
+  padding: 20px 8px;
+}
+[data-theme="silver-care"] .quick-icon {
+  width: 46px;
+  height: 46px;
+}
+[data-theme="silver-care"] .menu-it {
+  padding: 18px 14px;
+}
+[data-theme="silver-care"] .today-block {
+  border-left: 5px solid var(--accent-primary);
+}
+
+/* --- 清新极简：微妙hover + 细线进度 --- */
+[data-theme="fresh-minimal"] .stat-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="fresh-minimal"] .plan-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="fresh-minimal"] .ex-tile:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="fresh-minimal"] .btn-primary:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="fresh-minimal"] .btn-primary:active {
+  opacity: 1;
+}
+[data-theme="fresh-minimal"] .btn-complete:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="fresh-minimal"] .btn-complete:active {
+  opacity: 1;
+}
+[data-theme="fresh-minimal"] .fab:hover {
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="fresh-minimal"] .quick-item:hover {
+  border-color: var(--accent-primary);
+}
+[data-theme="fresh-minimal"] .today-block {
+  border-left: 3px solid var(--accent-primary);
+}
+[data-theme="fresh-minimal"] .sec-hd {
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* --- 赛博霓虹：发光hover + 霓虹进度 --- */
+[data-theme="neon-cyber"] .stat-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+  transform: scale(1.02);
+}
+[data-theme="neon-cyber"] .plan-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="neon-cyber"] .ex-tile:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+[data-theme="neon-cyber"] .btn-primary:hover {
+  box-shadow: 0 0 30px var(--accent-glow-strong);
+  transform: scale(1.02);
+}
+[data-theme="neon-cyber"] .btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+[data-theme="neon-cyber"] .btn-complete:hover {
+  box-shadow: 0 0 30px var(--accent-glow-strong);
+  transform: scale(1.02);
+}
+[data-theme="neon-cyber"] .btn-complete:active {
+  transform: scale(0.98);
+}
+[data-theme="neon-cyber"] .fab:hover {
+  box-shadow: 0 0 30px var(--accent-glow-strong);
+  transform: scale(1.05);
+}
+[data-theme="neon-cyber"] .quick-item:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+[data-theme="neon-cyber"] .today-block {
+  border-left: 3px solid var(--accent-primary);
+  box-shadow: inset 0 0 30px rgba(217, 70, 239, 0.05);
+}
+[data-theme="neon-cyber"] .bnav {
+  border-top: 1px solid var(--border-active);
+  box-shadow: 0 -5px 20px rgba(217, 70, 239, 0.08);
+}
+
+/* --- 黑金尊享：精致hover + 金色进度 --- */
+[data-theme="black-gold"] .stat-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="black-gold"] .plan-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="black-gold"] .ex-tile:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="black-gold"] .btn-primary:hover {
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+  transform: translateY(-1px);
+}
+[data-theme="black-gold"] .btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+[data-theme="black-gold"] .btn-complete:hover {
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+  transform: translateY(-1px);
+}
+[data-theme="black-gold"] .btn-complete:active {
+  transform: translateY(0);
+}
+[data-theme="black-gold"] .fab:hover {
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+  transform: translateY(-2px);
+}
+[data-theme="black-gold"] .quick-item:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+}
+[data-theme="black-gold"] .today-block {
+  border-left: 3px solid var(--accent-primary);
+}
+[data-theme="black-gold"] .av-border {
+  border-width: 3px;
+}
+[data-theme="black-gold"] .bnav {
+  border-top: 1px solid rgba(245, 158, 11, 0.15);
 }

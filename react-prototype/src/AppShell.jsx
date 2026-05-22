@@ -6,6 +6,7 @@ import TrainingPage from './components/TrainingPage';
 import StatsPage from './components/StatsPage';
 import ExercisePage from './components/ExercisePage';
 import ProfilePage from './components/ProfilePage';
+import SettingsPage from './components/SettingsPage';
 
 export default function AppShell() {
   const [page, setPage] = useState('home');
@@ -15,15 +16,18 @@ export default function AppShell() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const showNav = !['training', 'settings'].includes(page);
+
   return (
-    <div className="app">
+    <div className="app-shell" style={{ paddingBottom: showNav ? 'var(--nav-height)' : 0 }}>
       {page === 'home' && <HomePage onNavigate={handleNavigate} />}
       {page === 'plan' && <PlanPage onNavigate={handleNavigate} />}
       {page === 'training' && <TrainingPage onNavigate={handleNavigate} />}
       {page === 'stats' && <StatsPage />}
       {page === 'exercise' && <ExercisePage />}
-      {page === 'profile' && <ProfilePage />}
-      <BottomNav current={page} onNavigate={handleNavigate} />
+      {page === 'profile' && <ProfilePage onNavigate={handleNavigate} />}
+      {page === 'settings' && <SettingsPage onNavigate={handleNavigate} />}
+      {showNav && <BottomNav current={page} onNavigate={handleNavigate} />}
     </div>
   );
 }

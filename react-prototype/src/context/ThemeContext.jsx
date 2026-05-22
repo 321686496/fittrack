@@ -2,45 +2,57 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 export const themes = [
   {
-    id: 'deep-sport',
-    name: '深邃运动',
-    desc: '健身硬核玩家',
-    colors: ['#080c14', '#ff5722', '#10b981'],
+    id: 'iron-forge',
+    name: '硬核铁馆',
+    desc: '男性健身玩家',
+    icon: '🏋️',
+    colors: ['#0a0e14', '#ef4444', '#f97316'],
+    preview: { radius: 0, border: 3, shadow: 'hard' },
   },
   {
-    id: 'arctic-frost',
-    name: '冰霜白',
-    desc: '职场白领女性',
-    colors: ['#f8fafc', '#0891b2', '#e2e8f0'],
+    id: 'blossom',
+    name: '柔美花语',
+    desc: '女性优雅健身',
+    icon: '🌸',
+    colors: ['#fdf2f8', '#ec4899', '#f9a8d4'],
+    preview: { radius: 20, border: 1, shadow: 'soft' },
   },
   {
-    id: 'forest-vital',
-    name: '森林活力',
-    desc: '户外自然爱好者',
-    colors: ['#0a1f14', '#84cc16', '#22c55e'],
+    id: 'silver-care',
+    name: '长者关怀',
+    desc: '大字清晰易读',
+    icon: '🛡️',
+    colors: ['#ffffff', '#059669', '#34d399'],
+    preview: { radius: 12, border: 2, shadow: 'medium' },
+  },
+  {
+    id: 'fresh-minimal',
+    name: '清新极简',
+    desc: '简洁留白美学',
+    icon: '🍃',
+    colors: ['#f8fafc', '#0ea5e9', '#e0f2fe'],
+    preview: { radius: 8, border: 1, shadow: 'subtle' },
   },
   {
     id: 'neon-cyber',
     name: '赛博霓虹',
     desc: 'Z世代潮流玩家',
+    icon: '⚡',
     colors: ['#0a0015', '#d946ef', '#22d3ee'],
+    preview: { radius: 2, border: 1, shadow: 'glow' },
   },
   {
-    id: 'gold-elite',
-    name: '黑金奢华',
-    desc: '精英商务人士',
+    id: 'black-gold',
+    name: '黑金尊享',
+    desc: '商务精英品质',
+    icon: '👑',
     colors: ['#0c0a09', '#f59e0b', '#fbbf24'],
-  },
-  {
-    id: 'midnight-blue',
-    name: '午夜蓝调',
-    desc: 'IT极客程序员',
-    colors: ['#0a1020', '#38bdf8', '#818cf8'],
+    preview: { radius: 10, border: 1, shadow: 'gold' },
   },
 ];
 
 const STORAGE_KEY = 'fitplan-theme';
-const DEFAULT_THEME = 'deep-sport';
+const DEFAULT_THEME = 'iron-forge';
 
 const ThemeContext = createContext(null);
 
