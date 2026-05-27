@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "FitPlan Pro 健身训练应用"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "FitPlan Pro 主入口"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "FitPlan Pro"
+    }
+  ]
+}
