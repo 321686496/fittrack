@@ -1,10 +1,19 @@
-import React from 'react';
-import { User, Settings, Bell, Shield, HelpCircle, ChevronRight, LogOut, Smartphone, Trophy, Target } from './Icons';
+import React, { useState, useEffect } from 'react';
+import { User, Settings, Bell, Shield, HelpCircle, ChevronRight, LogOut, Smartphone, Trophy, Target, Clipboard, Exercises } from './Icons';
+import Storage from '../data/storage.js';
 import MockData from '../data/mockData';
 
 export default function ProfilePage({ onNavigate }) {
   const { achievements, bodyData } = MockData;
   const unlocked = achievements.filter(a => a.unlocked).length;
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    setStats(Storage.getStats());
+  }, []);
+
+  const totalTrainings = stats ? stats.totalTrainings : 0;
+  const totalDuration = stats ? stats.totalDuration : 0;
 
   return (
     <div className="page-body">
@@ -77,6 +86,20 @@ export default function ProfilePage({ onNavigate }) {
       <div className="divider" />
 
       <div className="menu-list">
+        <button className="menu-it" onClick={() => onNavigate('records')}>
+          <div className="menu-it-left">
+            <div className="menu-it-icon"><Clipboard /></div>
+            <span>训练记录</span>
+          </div>
+          <div className="menu-it-arrow"><ChevronRight /></div>
+        </button>
+        <button className="menu-it" onClick={() => onNavigate('exercise')}>
+          <div className="menu-it-left">
+            <div className="menu-it-icon"><Exercises /></div>
+            <span>动作库</span>
+          </div>
+          <div className="menu-it-arrow"><ChevronRight /></div>
+        </button>
         <button className="menu-it" onClick={() => onNavigate('settings')}>
           <div className="menu-it-left">
             <div className="menu-it-icon"><Settings /></div>
