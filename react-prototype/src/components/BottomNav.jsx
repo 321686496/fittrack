@@ -1,11 +1,11 @@
 import React from 'react';
-import { Home, Plan, Stats, Exercises, Profile } from './Icons';
+import { Home, Plan, Stats, Exercises, Profile, Clipboard } from './Icons';
 
 const navItems = [
   { key: 'home', icon: Home, label: '首页' },
   { key: 'plan', icon: Plan, label: '计划' },
+  { key: 'records', icon: Clipboard, label: '记录' },
   { key: 'stats', icon: Stats, label: '统计' },
-  { key: 'exercise', icon: Exercises, label: '动作' },
   { key: 'profile', icon: Profile, label: '我的' },
 ];
 
