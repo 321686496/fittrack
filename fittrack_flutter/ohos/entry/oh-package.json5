@@ -1,0 +1,14 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "permission_handler_ohos": "file:../har/permission_handler_ohos.har",
+    "shared_preferences_ohos": "file:../har/shared_preferences_ohos.har",
+    "sqflite": "file:../har/sqflite.har",
+    "flutter_local_notifications": "file:../har/flutter_local_notifications.har"
+  }
+}

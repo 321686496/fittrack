@@ -1,0 +1,132 @@
+FitTrack 健身训练应用 — 后台代理提醒权限申请说明
+
+
+一、应用基本信息
+
+应用名称：FitTrack
+应用类型：健康健身类应用
+目标平台：HarmonyOS
+申请权限：ohos.permission.PUBLISH_AGENT_REMINDER（后台代理提醒）
+
+
+二、使用场景与申请理由
+
+1. 核心使用场景
+
+本应用是一款健身训练辅助工具，核心功能为：用户在训练过程中，按照预设的组间休息时间进行倒计时休息，休息结束时需要及时提醒用户开始下一组训练。
+
+典型用户操作流程：
+  用户选择训练计划 → 开始训练 → 完成一组动作 → 进入组间休息倒计时 → 休息结束，收到提醒 → 开始下一组训练
+
+2. 代理提醒的必要性
+
+（1）用户在组间休息期间，经常会将应用切换到后台，进行如下操作：
+    - 查看微信消息/回复信息
+    - 浏览社交媒体
+    - 接听电话
+    - 使用其他应用
+
+    此时应用处于后台状态，Dart 虚拟机的 Timer 机制会被系统挂起，无法主动触发通知。若不使用后台代理提醒，用户将无法在休息结束时收到任何提醒，导致：
+    - 休息时间过长，影响训练节奏和效果
+    - 用户忘记回到应用继续训练
+    - 严重影响用户体验
+
+（2）本应用使用 reminderAgentManager 的 ReminderRequestTimer 类型，属于一次性定时提醒，不会频繁调用系统资源。每次提醒仅在用户完成一组训练动作后触发一次，提醒间隔通常为 60-180 秒（用户可自定义的组间休息时间）。
+
+（3）替代方案不可行性分析：
+    - 前台服务（Foreground Service）：健身休息提醒场景不适合常驻通知栏，会干扰用户
+    - WorkManager/定时任务：精度不够，无法精确到秒级触发
+    - 推送服务：需要服务器支持，本应用为纯本地应用，无服务端
+
+3. 使用场景截图说明
+
+截图1：训练进行中页面
+  展示用户正在训练的状态，包含当前动作、组数、进度等信息
+
+截图2：组间休息倒计时页面
+  展示休息倒计时界面，用户可看到剩余休息秒数和进度条
+
+截图3：应用切换到后台时的状态
+  展示用户在休息期间将应用切到后台，此时倒计时仍在进行但无法发出通知
+
+截图4：休息结束时收到后台代理提醒通知
+  展示用户在其他应用中收到"休息结束"通知，点击可回到训练页面继续训练
+
+
+三、通知内容说明
+
+1. 通知标题
+   休息结束
+
+2. 通知文本
+   [动作名称] 的休息时间已结束，开始下一组训练吧！
+   示例：卧推 的休息时间已结束，开始下一组训练吧！
+
+3. 通知场景
+   健身训练组间休息倒计时结束时，提醒用户休息已结束，应返回应用继续下一组训练。
+   具体场景：
+   - 用户完成一组训练动作后，应用自动进入休息倒计时
+   - 休息倒计时基于用户预设的组间休息时间（默认90秒，可自定义60-300秒）
+   - 倒计时归零时，若应用在后台，通过后台代理提醒发送通知
+   - 用户点击通知后可回到训练页面继续训练
+
+4. 通知频率
+   - 每次组间休息结束时触发一次，属于一次性定时提醒（ReminderRequestTimer）
+   - 非周期性提醒，不使用重复提醒
+   - 典型训练场景：一次训练约 6-10 组动作，即每次训练最多触发 6-10 次提醒
+   - 每次提醒间隔不少于 60 秒（最短休息时间）
+   - 用户可随时跳过休息取消待触发的提醒
+
+
+四、技术实现说明
+
+1. 使用 API
+   @kit.BackgroundTasksKit 中的 reminderAgentManager.publishReminder()
+   提醒类型：ReminderRequestTimer（定时器类型）
+   triggerTimeInSeconds：基于用户设置的组间休息时间计算
+
+2. 实现代码片段（ETS）
+
+   import { reminderAgentManager } from '@kit.BackgroundTasksKit';
+
+   let timer: reminderAgentManager.ReminderRequestTimer = {
+     reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
+     wantAgent: {
+       pkgName: bundleManager.getBundleInfoForSelfSync(
+         bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION
+       ).name,
+       abilityName: 'EntryAbility',
+       parameters: {
+         notificationId: notificationId,
+         action: 'SELECT_NOTIFICATION',
+       }
+     },
+     title: '休息结束',
+     content: '卧推 的休息时间已结束，开始下一组训练吧！',
+     triggerTimeInSeconds: 90,  // 用户设置的休息秒数
+     notificationId: 1001,
+     slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
+   };
+
+   reminderAgentManager.publishReminder(timer);
+
+3. 生命周期管理
+   - 发起提醒：用户开始休息倒计时时创建
+   - 取消提醒：用户跳过休息或训练结束时主动取消
+   - 清理提醒：应用退出时取消所有待触发的提醒
+   - 使用 cancelReminder() 和 cancelAllReminders() 确保不残留
+
+
+五、权限使用承诺
+
+1. 本应用仅在使用者主动进行训练且进入休息倒计时时才使用后台代理提醒
+2. 不会在用户未主动操作的情况下自动发起提醒
+3. 不会使用代理提醒进行任何形式的营销推送或广告
+4. 每次提醒均为一次性定时提醒，不使用周期性重复提醒
+5. 用户可通过应用内设置关闭休息提醒功能
+6. 应用退出或训练结束时，主动取消所有待触发的提醒
+
+
+六、总结
+
+本应用申请后台代理提醒权限的唯一用途是：在健身训练的组间休息倒计时结束时，当应用处于后台时向用户发送一次性提醒通知，确保用户不会错过训练节奏。该功能是健身训练类应用的核心体验，缺少此功能将严重影响用户在后台使用手机时的训练体验。
