@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2;
 
   Database? _database;
 
@@ -71,10 +71,49 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_plans_status ON plans(status)');
     await db.execute('CREATE INDEX idx_records_date ON records(date)');
     await db.execute('CREATE INDEX idx_records_createTime ON records(createTime)');
+
+    // 健身卡表
+    await db.execute('''
+      CREATE TABLE gym_cards (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        gymName TEXT NOT NULL DEFAULT '',
+        cardType TEXT NOT NULL DEFAULT '',
+        price REAL NOT NULL DEFAULT 0,
+        startDate INTEGER NOT NULL DEFAULT 0,
+        endDate INTEGER NOT NULL DEFAULT 0,
+        remainingCount INTEGER NOT NULL DEFAULT -1,
+        totalCount INTEGER NOT NULL DEFAULT -1,
+        phone TEXT NOT NULL DEFAULT '',
+        remark TEXT NOT NULL DEFAULT '',
+        createTime INTEGER NOT NULL,
+        updateTime INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_gym_cards_endDate ON gym_cards(endDate)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 后续版本升级在此处理
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE gym_cards (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          gymName TEXT NOT NULL DEFAULT '',
+          cardType TEXT NOT NULL DEFAULT '',
+          price REAL NOT NULL DEFAULT 0,
+          startDate INTEGER NOT NULL DEFAULT 0,
+          endDate INTEGER NOT NULL DEFAULT 0,
+          remainingCount INTEGER NOT NULL DEFAULT -1,
+          totalCount INTEGER NOT NULL DEFAULT -1,
+          phone TEXT NOT NULL DEFAULT '',
+          remark TEXT NOT NULL DEFAULT '',
+          createTime INTEGER NOT NULL,
+          updateTime INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('CREATE INDEX idx_gym_cards_endDate ON gym_cards(endDate)');
+    }
   }
 
   // ── Plans CRUD ──────────────────────────────────────────────
@@ -232,5 +271,55 @@ class DatabaseHelper {
       row['restLog'] = jsonEncode(row['restLog']);
     }
     return row;
+  }
+
+  // ── GymCards CRUD ───────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getAllGymCards() async {
+    final db = await database;
+    final rows = await db.query('gym_cards', orderBy: 'endDate ASC');
+    return rows.map(_gymCardRowToMap).toList();
+  }
+
+  Future<Map<String, dynamic>?> getGymCardById(String id) async {
+    final db = await database;
+    final rows = await db.query('gym_cards', where: 'id = ?', whereArgs: [id]);
+    if (rows.isEmpty) return null;
+    return _gymCardRowToMap(rows.first);
+  }
+
+  Future<Map<String, dynamic>> insertGymCard(Map<String, dynamic> card) async {
+    final db = await database;
+    final row = _gymCardMapToRow(card);
+    await db.insert('gym_cards', row, conflictAlgorithm: ConflictAlgorithm.replace);
+    return card;
+  }
+
+  Future<Map<String, dynamic>?> updateGymCard(String cardId, Map<String, dynamic> updates) async {
+    final db = await database;
+    final existing = await getGymCardById(cardId);
+    if (existing == null) return null;
+    final merged = {...existing, ...updates, 'updateTime': DateTime.now().millisecondsSinceEpoch};
+    final row = _gymCardMapToRow(merged);
+    await db.update('gym_cards', row, where: 'id = ?', whereArgs: [cardId]);
+    return merged;
+  }
+
+  Future<int> deleteGymCard(String cardId) async {
+    final db = await database;
+    return db.delete('gym_cards', where: 'id = ?', whereArgs: [cardId]);
+  }
+
+  Future<int> deleteAllGymCards() async {
+    final db = await database;
+    return db.delete('gym_cards');
+  }
+
+  Map<String, dynamic> _gymCardRowToMap(Map<String, Object?> row) {
+    return Map<String, dynamic>.from(row);
+  }
+
+  Map<String, Object?> _gymCardMapToRow(Map<String, dynamic> map) {
+    return Map<String, Object?>.from(map);
   }
 }

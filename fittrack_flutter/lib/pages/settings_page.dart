@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
-import '../services/permission_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
@@ -53,16 +54,6 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
-  void _showToast(String message, {Color? color}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color ?? Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
   void _onThemeTap(String themeId) {
     if (themeId == _currentTheme) return;
     setState(() => _currentTheme = themeId);
@@ -88,19 +79,54 @@ class _SettingsPageState extends State<SettingsPage> {
     if (weight != null && weight > 0) settings['defaultWeight'] = weight;
 
     Storage.saveSettings(settings);
-    _showToast('训练默认值已保存');
+    FitToast.success(context, '训练默认值已保存');
   }
 
-  void _exportData() {
-    final json = Storage.exportAllDataJson();
-    // In a real app, this would save to file or share
-    debugPrint('Exported data: ${json.substring(0, json.length.clamp(0, 100))}...');
-    _showToast('数据导出成功');
+  Future<void> _exportData() async {
+    try {
+      final json = Storage.exportAllDataJson();
+      await Clipboard.setData(ClipboardData(text: json));
+      if (mounted) {
+        FitToast.success(context, '数据已复制到剪贴板');
+      }
+    } catch (e) {
+      if (mounted) {
+        FitToast.error(context, '导出失败');
+      }
+    }
   }
 
-  void _importData() {
-    // In a real app, this would pick a file
-    _showToast('数据导入成功');
+  Future<void> _importData() async {
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: '导入数据',
+      content: '请确保已将数据 JSON 复制到剪贴板。导入将覆盖当前所有数据，是否继续？',
+      confirmText: '导入',
+      confirmColor: Colors.blue,
+      icon: Icons.download_outlined,
+    );
+    if (confirmed != true) return;
+
+    try {
+      final clipData = await Clipboard.getData(Clipboard.kTextPlain);
+      if (clipData?.text == null || clipData!.text!.isEmpty) {
+        if (mounted) FitToast.error(context, '剪贴板为空');
+        return;
+      }
+      final data = jsonDecode(clipData.text!) as Map<String, dynamic>;
+      final success = await Storage.importDataAsync(data);
+      if (mounted) {
+        if (success) {
+          FitToast.success(context, '数据导入成功');
+        } else {
+          FitToast.error(context, '数据格式不正确');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        FitToast.error(context, '导入失败：数据格式错误');
+      }
+    }
   }
 
   Future<void> _clearData() async {
@@ -118,6 +144,68 @@ class _SettingsPageState extends State<SettingsPage> {
         FitToast.success(context, '数据已清除');
       }
     }
+  }
+
+  void _showAbout() {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.bgCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: colors.borderColor),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.fitness_center, color: colors.accentGlow, size: 28),
+            const SizedBox(width: 10),
+            Text('FitTrack', style: TextStyle(color: colors.textPrimary, fontSize: 20)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '版本 1.0.0',
+              style: TextStyle(color: colors.textSecondary, fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '一款简洁高效的健身训练助手，帮助你：\n\n'
+              '• 制定个性化训练计划\n'
+              '• 记录每次训练数据\n'
+              '• 追踪身体数据变化\n'
+              '• 统计训练成就\n\n'
+              '所有数据仅保存在本地设备，不会上传至任何服务器。',
+              style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('知道了', style: TextStyle(color: colors.accentGlow)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyInfo() {
+    InfoDialog.show(
+      context,
+      title: '隐私设置',
+      content:
+        'FitTrack 尊重您的隐私：\n\n'
+        '• 所有数据仅存储在本地设备\n'
+        '• 不会上传任何个人信息到服务器\n'
+        '• 通知权限仅用于训练提醒\n'
+        '• 振动权限仅用于休息结束提醒\n'
+        '• 您可以随时在此清除所有数据',
+      icon: Icons.privacy_tip_outlined,
+    );
   }
 
   @override
@@ -138,18 +226,21 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Theme picker section
                   SectionHeader(title: '风格主题'),
                   const SizedBox(height: 10),
                   _buildThemeGrid(colors),
                   const SizedBox(height: 20),
-                  // Training settings
                   SectionHeader(title: '训练设置'),
                   const SizedBox(height: 10),
                   _buildTrainingSettings(colors),
                   const SizedBox(height: 20),
-                  // Menu list
-                  _buildMenuList(colors),
+                  SectionHeader(title: '数据管理'),
+                  const SizedBox(height: 10),
+                  _buildDataMenu(colors),
+                  const SizedBox(height: 20),
+                  SectionHeader(title: '其他'),
+                  const SizedBox(height: 10),
+                  _buildOtherMenu(colors),
                   const SizedBox(height: 30),
                 ],
               ),
@@ -188,7 +279,6 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Color blocks preview
                 Row(
                   children: List.generate(3, (i) {
                     return Expanded(
@@ -204,7 +294,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   }),
                 ),
                 const SizedBox(height: 10),
-                // Theme name with icon
                 Row(
                   children: [
                     Text(
@@ -251,7 +340,6 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 默认休息时间
           _buildSettingRow(
             colors,
             icon: Icons.timer_outlined,
@@ -261,7 +349,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           DividerWidget(indent: 0),
           const SizedBox(height: 8),
-          // 默认组数
           _buildSettingRow(
             colors,
             icon: Icons.repeat,
@@ -271,7 +358,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           DividerWidget(indent: 0),
           const SizedBox(height: 8),
-          // 默认次数
           _buildSettingRow(
             colors,
             icon: Icons.format_list_numbered,
@@ -281,7 +367,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           DividerWidget(indent: 0),
           const SizedBox(height: 8),
-          // 默认重量
           _buildSettingRow(
             colors,
             icon: Icons.monitor_weight_outlined,
@@ -291,7 +376,6 @@ class _SettingsPageState extends State<SettingsPage> {
             isDecimal: true,
           ),
           const SizedBox(height: 12),
-          // 保存按钮
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -365,85 +449,72 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildMenuList(FitTrackColors colors) {
-    final menus = [
-      {'icon': Icons.alarm_outlined, 'label': '通知测试', 'action': 'notification'},
-      {'icon': Icons.dark_mode_outlined, 'label': '深色模式'},
-      {'icon': Icons.upload_file_outlined, 'label': '导出数据', 'action': 'export'},
-      {'icon': Icons.download_outlined, 'label': '导入数据', 'action': 'import'},
-      {'icon': Icons.delete_outline, 'label': '清除数据', 'action': 'clear'},
-      {'icon': Icons.privacy_tip_outlined, 'label': '隐私设置', 'action': 'privacy'},
-      {'icon': Icons.info_outline, 'label': '关于'},
-    ];
-
-    return Column(
-      children: menus.map((m) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: MenuButton(
-            icon: m['icon'] as IconData,
-            label: m['label'] as String,
-            onTap: () {
-              final action = m['action'];
-              if (action == 'notification') {
-                context.push('/notification-test');
-              } else if (action == 'export') {
-                _exportData();
-              } else if (action == 'import') {
-                _importData();
-              } else if (action == 'clear') {
-                _clearData();
-              } else if (action == 'privacy') {
-                _showPrivacyInfo();
-              }
-            },
-          ),
-        );
-      }).toList(),
+  Widget _buildDataMenu(FitTrackColors colors) {
+    return CardWidget(
+      child: Column(
+        children: [
+          _buildMenuTile(colors, Icons.upload_file_outlined, '导出数据', '复制所有数据到剪贴板', _exportData),
+          DividerWidget(indent: 44),
+          _buildMenuTile(colors, Icons.download_outlined, '导入数据', '从剪贴板粘贴数据', _importData),
+          DividerWidget(indent: 44),
+          _buildMenuTile(colors, Icons.delete_outline, '清除数据', '删除所有训练计划和记录', _clearData, color: Colors.redAccent),
+        ],
+      ),
     );
   }
 
-  Future<void> _requestNotificationPermission() async {
-    final granted = await PermissionService.requestNotification();
-    if (!mounted) return;
-    if (granted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('训练提醒已开启'), duration: Duration(seconds: 2)),
-      );
-    } else {
-      PermissionService.showPermissionDeniedDialog(
-        context,
-        permissionName: '通知',
-        reason: '需要通知权限才能在训练时发送提醒，请在设置中开启通知权限。',
-      );
-    }
+  Widget _buildOtherMenu(FitTrackColors colors) {
+    return CardWidget(
+      child: Column(
+        children: [
+          _buildMenuTile(colors, Icons.alarm_outlined, '训练提醒', '设置休息提醒与通知', () {
+            context.push('/reminder-settings');
+          }),
+          DividerWidget(indent: 44),
+          _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私设置', '查看隐私与权限说明', _showPrivacyInfo),
+          DividerWidget(indent: 44),
+          _buildMenuTile(colors, Icons.info_outline, '关于 FitTrack', '版本 1.0.0', _showAbout),
+        ],
+      ),
+    );
   }
 
-  void _showPrivacyInfo() {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.bgCard,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: colors.borderColor),
+  Widget _buildMenuTile(FitTrackColors colors, IconData icon, String title, String subtitle, VoidCallback onTap, {Color? color}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: color ?? colors.accentGlow),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: color ?? colors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 18, color: colors.textMuted),
+          ],
         ),
-        title: Text('隐私设置', style: TextStyle(color: colors.textPrimary)),
-        content: Text(
-          'FitTrack 尊重您的隐私：\n\n'
-          '• 所有数据仅存储在本地设备\n'
-          '• 不会上传任何个人信息到服务器\n'
-          '• 通知权限仅用于训练提醒\n'
-          '• 您可以随时在设置中清除所有数据',
-          style: TextStyle(color: colors.textSecondary, fontSize: 14, height: 1.6),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('知道了', style: TextStyle(color: colors.accentGlow)),
-          ),
-        ],
       ),
     );
   }

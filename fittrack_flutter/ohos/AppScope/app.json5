@@ -1,6 +1,6 @@
 {
   "app": {
-    "bundleName": "com.example.fittrack_flutter",
+    "bundleName": "com.ft.fittrack",
     "vendor": "example",
     "versionCode": 1,
     "versionName": "1.0.0",

@@ -16,6 +16,8 @@ import 'pages/profile_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/records_page.dart';
 import 'pages/notification_test_page.dart';
+import 'pages/reminder_settings_page.dart';
+import 'pages/gym_card_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -191,6 +193,16 @@ GoRouter createRouter() {
         path: '/notification-test',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationTestPage(),
+      ),
+      GoRoute(
+        path: '/reminder-settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ReminderSettingsPage(),
+      ),
+      GoRoute(
+        path: '/gym-card',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const GymCardPage(),
       ),
     ],
   );

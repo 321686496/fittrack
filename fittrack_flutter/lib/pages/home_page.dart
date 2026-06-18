@@ -24,6 +24,13 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadData();
+    Storage.dataChanged.addListener(_loadData);
+  }
+
+  @override
+  void dispose() {
+    Storage.dataChanged.removeListener(_loadData);
+    super.dispose();
   }
 
   void _loadData() {

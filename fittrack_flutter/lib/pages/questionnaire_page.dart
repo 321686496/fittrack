@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../services/user_profile_generator.dart';
 import '../widgets/common_widgets.dart';
 
 class QuestionnairePage extends StatefulWidget {
@@ -19,12 +20,13 @@ class QuestionnairePage extends StatefulWidget {
 
 class _QuestionnairePageState extends State<QuestionnairePage> {
   int _currentStep = 0;
-  final int _totalSteps = 5;
+  final int _totalSteps = 6;
 
   String? _gender;
   String? _fitnessGoal;
   String? _fitnessLevel;
   String? _trainingFrequency;
+  String _trainingTime = '';
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
 
@@ -67,6 +69,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         return _trainingFrequency != null;
       case 4:
         return _heightController.text.isNotEmpty && _weightController.text.isNotEmpty;
+      case 5:
+        return true; // 训练时间可选
       default:
         return false;
     }
@@ -110,14 +114,32 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   }
 
   void _complete() {
+    final gender = _gender ?? '';
+    final fitnessGoal = _fitnessGoal ?? '';
+    final fitnessLevel = _fitnessLevel ?? '';
+
+    // 根据问卷信息自动生成用户名和头像
+    final userName = UserProfileGenerator.generateUserName(
+      gender: gender,
+      fitnessGoal: fitnessGoal,
+      fitnessLevel: fitnessLevel,
+    );
+    final avatarConfig = UserProfileGenerator.generateAvatar(
+      gender: gender,
+      fitnessGoal: fitnessGoal,
+      fitnessLevel: fitnessLevel,
+    );
+
     final profileData = <String, dynamic>{
-      'gender': _gender ?? '',
-      'fitnessGoal': _fitnessGoal ?? '',
-      'fitnessLevel': _fitnessLevel ?? '',
+      'gender': gender,
+      'fitnessGoal': fitnessGoal,
+      'fitnessLevel': fitnessLevel,
       'trainingFrequency': _trainingFrequency ?? '',
       'height': double.tryParse(_heightController.text) ?? 0,
       'weight': double.tryParse(_weightController.text) ?? 0,
-      'userName': '健身达人',
+      'userName': userName,
+      'avatarEmoji': avatarConfig['emoji'],
+      'avatarBgColor': avatarConfig['bgColor'],
       'onboardingDone': true,
     };
 
@@ -130,7 +152,10 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     settings['height'] = profileData['height'];
     settings['weight'] = profileData['weight'];
     settings['userName'] = profileData['userName'];
+    settings['avatarEmoji'] = profileData['avatarEmoji'];
+    settings['avatarBgColor'] = profileData['avatarBgColor'];
     settings['onboardingDone'] = true;
+    settings['trainingTime'] = _trainingTime;
     Storage.saveSettings(settings);
 
     // Save body data if height/weight provided
@@ -293,6 +318,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         );
       case 4:
         return _buildBodyInfoStep(colors);
+      case 5:
+        return _buildTrainingTimeStep(colors);
       default:
         return const SizedBox.shrink();
     }
@@ -494,5 +521,104 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     if (bmi < 24) return '正常';
     if (bmi < 28) return '偏胖';
     return '肥胖';
+  }
+
+  Widget _buildTrainingTimeStep(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          '你想要什么时间训练？',
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '设置后我们会在这个时间提醒你开始训练',
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 24),
+        GestureDetector(
+          onTap: () async {
+            final now = TimeOfDay.now();
+            final initialTime = _trainingTime.isNotEmpty
+                ? _parseTimeOfDay(_trainingTime)
+                : const TimeOfDay(hour: 18, minute: 0);
+            final picked = await showTimePicker(
+              context: context,
+              initialTime: initialTime,
+              builder: (context, child) {
+                return Theme(
+                  data: ThemeData.dark().copyWith(
+                    timePickerTheme: TimePickerThemeData(
+                      backgroundColor: colors.bgCard,
+                      hourMinuteTextColor: colors.textPrimary,
+                      dialHandColor: colors.accentGlow,
+                      dialBackgroundColor: colors.bgSecondary,
+                      entryModeIconColor: colors.accentGlow,
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              setState(() {
+                _trainingTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+              });
+            }
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              color: colors.bgCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _trainingTime.isNotEmpty ? colors.accentGlow : colors.borderColor),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _trainingTime.isNotEmpty ? _trainingTime : '点击选择时间',
+                  style: TextStyle(
+                    color: _trainingTime.isNotEmpty ? colors.accentGlow : colors.textMuted,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Icon(Icons.access_time, color: _trainingTime.isNotEmpty ? colors.accentGlow : colors.textMuted),
+              ],
+            ),
+          ),
+        ),
+        if (_trainingTime.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: TextButton(
+              onPressed: () => _nextStep(),
+              child: Text(
+                '跳过（可在个人中心设置）',
+                style: TextStyle(color: colors.textMuted, fontSize: 13),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  TimeOfDay _parseTimeOfDay(String time) {
+    final parts = time.split(':');
+    return TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 18,
+      minute: int.tryParse(parts[1]) ?? 0,
+    );
   }
 }

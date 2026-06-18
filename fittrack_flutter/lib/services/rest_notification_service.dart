@@ -4,18 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'ohos_reminder_service.dart';
 
 /// 休息结束提醒服务
 ///
-/// 提供振动提醒 + 本地通知双重机制：
+/// 提供振动提醒 + 本地通知 + OHOS后台代理提醒 三重机制：
 /// - 前台：Dart Timer 倒计时 → 振动 + show() 通知
-/// - 后台恢复：由 training_page 的 wall-clock 机制检测并补发通知
-///
-/// OHOS 平台限制：
-/// - zonedSchedule 底层使用 reminderAgentManager，需要 system_core 权限，
-///   普通应用无法使用，因此 OHOS 上不使用 zonedSchedule
-/// - Dart Timer 在后台被系统挂起，无法触发
-/// - 后台场景依赖 training_page 恢复前台时的 wall-clock 检测
+/// - OHOS后台：reminderAgentManager 代理提醒（系统级定时，后台也能触发）
+/// - Android后台：zonedSchedule（系统级定时，后台也能触发）
+/// - 后台恢复兜底：由 training_page 的 wall-clock 机制检测并补发通知
 class RestNotificationService {
   RestNotificationService._();
 
@@ -83,6 +80,11 @@ class RestNotificationService {
 
       await _configureLocalTimeZone();
       await _requestNotificationPermission();
+
+      // 初始化 OHOS 后台代理提醒监听器
+      if (Platform.isOhos) {
+        OhosReminderService.instance.initListener();
+      }
 
       _initialized = true;
       debugPrint('RestNotificationService initialized successfully');
@@ -152,7 +154,7 @@ class RestNotificationService {
   /// 预约定时通知：在 [delaySeconds] 秒后发送休息结束通知
   ///
   /// - Android: 使用 zonedSchedule（系统级定时，后台也能触发）+ Dart Timer 保底
-  /// - OHOS: 仅使用 Dart Timer（前台有效），后台恢复由 training_page wall-clock 补发
+  /// - OHOS: 使用 reminderAgentManager 代理提醒（后台也能触发）+ Dart Timer 保底
   Future<void> scheduleRestEndNotification({
     required String exerciseName,
     required int delaySeconds,
@@ -164,11 +166,23 @@ class RestNotificationService {
     try {
       await cancelScheduledNotification();
 
+      final title = '休息结束';
+      final content = '$exerciseName 的休息时间已结束，开始下一组训练吧！';
+
       // 所有平台：Dart Timer 保底（前台有效）
       _scheduleWithDartTimer(exerciseName: exerciseName, delaySeconds: delaySeconds);
 
-      // Android：额外使用 zonedSchedule（后台也能触发）
-      if (!Platform.isOhos) {
+      if (Platform.isOhos) {
+        // OHOS：使用 reminderAgentManager 代理提醒（后台也能触发）
+        await OhosReminderService.instance.publishReminder(
+          title: title,
+          content: content,
+          triggerTimeInSeconds: delaySeconds,
+          notificationId: _notificationId,
+        );
+        debugPrint('OHOS reminderAgentManager scheduled');
+      } else {
+        // Android：使用 zonedSchedule（后台也能触发）
         final scheduledDate =
             tz.TZDateTime.now(tz.local).add(Duration(seconds: delaySeconds));
 
@@ -185,8 +199,8 @@ class RestNotificationService {
 
         await _plugin!.zonedSchedule(
           _notificationId,
-          '休息结束',
-          '$exerciseName 的休息时间已结束，开始下一组训练吧！',
+          title,
+          content,
           scheduledDate,
           details,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -257,6 +271,10 @@ class RestNotificationService {
     try {
       await _plugin?.cancel(_notificationId);
     } catch (_) {}
+    // 同时取消 OHOS 代理提醒
+    if (Platform.isOhos) {
+      await OhosReminderService.instance.cancelCurrentReminder();
+    }
   }
 
   /// 取消所有通知
@@ -266,5 +284,9 @@ class RestNotificationService {
     try {
       await _plugin?.cancelAll();
     } catch (_) {}
+    // 同时取消 OHOS 所有代理提醒
+    if (Platform.isOhos) {
+      await OhosReminderService.instance.cancelAllReminders();
+    }
   }
 }
