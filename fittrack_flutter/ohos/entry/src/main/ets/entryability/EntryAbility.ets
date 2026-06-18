@@ -7,7 +7,7 @@ import StandardMethodCodec from '@ohos/flutter_ohos/src/main/ets/plugin/common/S
 import { formProvider } from '@kit.FormKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
-import { Want } from '@kit.AbilityKit';
+import { Want, AbilityConstant } from '@kit.AbilityKit';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
 const KEY_FORM_DATA: string = 'form_data';
@@ -58,8 +58,8 @@ export default class EntryAbility extends FlutterAbility {
    * 卡片点击通过 router postCardAction 触发 onNewWant，
    * 从中提取 cardAction 参数并通过 MethodChannel 回调到 Flutter。
    */
-  onNewWant(want: Want): void {
-    super.onNewWant(want);
+  onNewWant(want: Want, launchParams: AbilityConstant.LaunchParam): void {
+    super.onNewWant(want, launchParams);
     try {
       let params: Record<string, Object> = want.parameters as Record<string, Object>;
       if (params !== null && params !== undefined) {
@@ -68,7 +68,6 @@ export default class EntryAbility extends FlutterAbility {
         console.info('[FitTrack] onNewWant: targetPage=' + targetPage + ', cardAction=' + cardAction);
 
         if (cardAction === 'skipRest' || cardAction === 'resume') {
-          // 卡片训练交互：通知 Flutter 处理
           this.invokeFlutterMethod('onCardClick', params);
         }
       }
