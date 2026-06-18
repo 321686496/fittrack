@@ -1,0 +1,28 @@
+{
+  "forms": [
+    {
+      "name": "FitTrack训练卡片",
+      "displayName": "训练概览",
+      "description": "显示今日训练摘要和连续训练天数",
+      "src": "./ets/pages/FitTrackWidget.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "10:30",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": [
+        "2*2",
+        "2*4"
+      ],
+      "formConfigAbility": "ability://com.example.fittrack_flutter.form"
+    }
+  ]
+}
+
+

@@ -1,4 +1,3 @@
-
 {
   "module": {
     "name": "entry",
@@ -29,6 +28,22 @@
             "actions": [
               "action.system.home"
             ]
+          }
+        ]
+      }
+    ],
+    "extensionAbilities": [
+      {
+        "name": "FitTrackFormExtension",
+        "srcEntry": "./ets/formability/FitTrackFormExtension.ets",
+        "type": "form",
+        "description": "$string:FormExtension_desc",
+        "label": "$string:FormExtension_label",
+        "exported": true,
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:form_config"
           }
         ]
       }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,8 @@ import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/rest_notification_service.dart';
+import '../services/ohos_reminder_service.dart';
+import '../services/form_kit_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
@@ -66,6 +69,11 @@ class _TrainingPageState extends State<TrainingPage>
     WidgetsBinding.instance.addObserver(this);
     _startTime = DateTime.now();
     _loadData();
+
+    // 监听 OHOS 通知点击
+    if (Platform.isOhos) {
+      OhosReminderService.instance.onNotificationClick = _onNotificationClicked;
+    }
   }
 
   @override
@@ -74,7 +82,26 @@ class _TrainingPageState extends State<TrainingPage>
     _restTimer?.cancel();
     _weightController.dispose();
     _repsController.dispose();
+    // 清理通知点击回调
+    if (Platform.isOhos) {
+      OhosReminderService.instance.onNotificationClick = null;
+    }
     super.dispose();
+  }
+
+  /// OHOS 通知点击回调：回到训练页并处理休息结束
+  void _onNotificationClicked(Map<String, dynamic> args) {
+    if (!mounted) return;
+    if (_isResting && _restEndTime != null) {
+      final now = DateTime.now();
+      if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
+        // 休息已结束，补发提醒并推进
+        _restSeconds = 0;
+        RestNotificationService.instance.cancelScheduledNotification();
+        _notifyRestEnd();
+        _advanceAfterRest();
+      }
+    }
   }
 
   @override
@@ -214,6 +241,22 @@ class _TrainingPageState extends State<TrainingPage>
       _isLastSetOfExercise = isLastSetOfExercise;
     });
 
+    // 推送休息状态到卡片
+    if (Platform.isOhos && _currentExIdx < _exercises.length) {
+      final currentEx = _exercises[_currentExIdx];
+      FormKitService.instance.startRest(
+        exerciseName: currentEx['name'] as String,
+        restSeconds: seconds,
+        totalRestSeconds: seconds,
+        currentSet: _currentSetIdx + 1,
+        totalSets: (currentEx['sets'] as int?) ?? 0,
+        exerciseIndex: _currentExIdx + 1,
+        totalExercises: _exercises.length,
+        completedSets: _completedSets + 1,
+        totalPlanSets: _totalSets,
+      );
+    }
+
     // 预约定时通知（后台时系统自动触发）
     final exerciseName = _currentExIdx < _exercises.length
         ? _exercises[_currentExIdx]['name'] as String
@@ -302,6 +345,24 @@ class _TrainingPageState extends State<TrainingPage>
       // 预填下一个动作/组的计划值
       _prefillWeightReps();
     });
+    // 推送训练状态到卡片
+    _pushTrainingToWidget();
+  }
+
+  /// 推送训练状态到桌面卡片
+  void _pushTrainingToWidget() {
+    if (!Platform.isOhos) return;
+    if (_currentExIdx >= _exercises.length) return;
+    final currentEx = _exercises[_currentExIdx];
+    FormKitService.instance.updateTrainingState(
+      exerciseName: currentEx['name'] as String,
+      currentSet: _currentSetIdx + 1,
+      totalSets: (currentEx['sets'] as int?) ?? 0,
+      exerciseIndex: _currentExIdx + 1,
+      totalExercises: _exercises.length,
+      completedSets: _completedSets,
+      totalPlanSets: _totalSets,
+    );
   }
 
   /// 根据计划数据预填重量和次数
@@ -353,6 +414,11 @@ class _TrainingPageState extends State<TrainingPage>
 
     // 检查是否达成新成就
     _checkAndShowNewAchievements();
+
+    // 更新桌面卡片数据
+    if (Platform.isOhos) {
+      FormKitService.instance.endTraining();
+    }
 
     // 返回上一页
     if (mounted) {

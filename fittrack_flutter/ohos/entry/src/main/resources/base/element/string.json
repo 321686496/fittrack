@@ -10,7 +10,15 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "fittrack_flutter"
+      "value": "FitTrack"
+    },
+    {
+      "name": "FormExtension_desc",
+      "value": "FitTrack训练桌面卡片"
+    },
+    {
+      "name": "FormExtension_label",
+      "value": "训练概览"
     }
   ]
 }

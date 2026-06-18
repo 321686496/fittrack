@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:\\Users\\huang\\.ohos\\config\\default_ohos_dSpuXoLnpZcZintJGNYW4xSoGvEUrdDi1FyK-dCnKyQ=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BD345AFF0300E438DB9791C8BF935299466F0557CC97B8C972A35518EFDEA634297A1D65B8A6F8F",
+          "keyPassword": "0000001B0E4F599138E19ABBF14BD143FCD85C484CA694E7A673BC43C0F9AC65C37C02F80BCA39168BF9D5",
           "profile": "C:\\Users\\huang\\.ohos\\config\\default_ohos_dSpuXoLnpZcZintJGNYW4xSoGvEUrdDi1FyK-dCnKyQ=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\huang\\.ohos\\config\\default_ohos_dSpuXoLnpZcZintJGNYW4xSoGvEUrdDi1FyK-dCnKyQ=.p12",
-          "storePassword": "0000001BF603611CB2E1E389FA549A2527CACD0B2FEDA8A14B05152EB915F0FA6C3ACE8276CD12BC642321"
+          "storePassword": "0000001B019B9955E1DF02DEAFD6FF595B12D35AEB54698B2CBBA4465DA6422AC8D79EFA6BE5A4832FF9DA"
         }
       }
     ],
@@ -29,6 +29,54 @@
     {
       "name": "entry",
       "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "shared_preferences_ohos",
+      "srcPath": "../../../../pubcache/git/flutter_packages-abe263023cbc77d95ee0a8a2511e8e02903b7a6c/packages/shared_preferences/shared_preferences_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "permission_handler_ohos",
+      "srcPath": "../../../../pubcache/git/flutter_permission_handler-729c5ae84a1ce255c4c73749e0c0076c129ea386/permission_handler_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sqflite",
+      "srcPath": "../../../../pubcache/git/flutter_sqflite-c1dd8bfc2c167bcc4a657e7b4d28048fc77d7035/sqflite/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flutter_local_notifications",
+      "srcPath": "../../../../pubcache/git/fluttertpc_flutter_local_notifications-5427351f2c1b6caae5bd3cf89f855e9b53bdcc57/flutter_local_notifications/ohos",
       "targets": [
         {
           "name": "default",

@@ -144,6 +144,13 @@ class Storage {
     } catch (_) {}
   }
 
+  /// 异步持久化（确保数据写入磁盘）
+  static Future<void> _persistKeyAsync(String key) async {
+    try {
+      await _prefs?.setString('$_keyPrefsPrefix$key', jsonEncode(_store[key]));
+    } catch (_) {}
+  }
+
   // ============================================================
   // Plans (SQLite)
   // ============================================================
@@ -257,6 +264,9 @@ class Storage {
   static List<Map<String, dynamic>> _recordsCache = [];
   static bool _recordsCacheDirty = true;
 
+  /// 数据变更通知器（用于跨页面刷新）
+  static final ValueNotifier<bool> dataChanged = ValueNotifier<bool>(false);
+
   static Future<List<Map<String, dynamic>>> getRecordsAsync() async {
     if (_recordsCacheDirty) {
       _recordsCache = await _db.getAllRecords();
@@ -294,6 +304,8 @@ class Storage {
       _recordsCache.removeRange(500, _recordsCache.length);
     }
     _recordsCacheDirty = true;
+    // 通知数据变更
+    dataChanged.value = !dataChanged.value;
     // 异步持久化 + 裁剪
     _db.insertRecord(newRecord);
     _db.trimRecords(500);
@@ -334,11 +346,15 @@ class Storage {
       'defaultReps': 10,
       'defaultWeight': 20.0,
       'theme': 'vitality-sport',
+      'trainingTime': '',
     };
   }
 
   static bool saveSettings(Map<String, dynamic> settings) {
-    return _safeSet(_keySettings, settings);
+    final result = _safeSet(_keySettings, settings);
+    // 异步确保数据写入磁盘
+    _persistKeyAsync(_keySettings);
+    return result;
   }
 
   // ============================================================
@@ -401,6 +417,7 @@ class Storage {
     }
 
     _safeSet(_keyStats, stats);
+    _persistKeyAsync(_keyStats);
     return stats;
   }
 
@@ -450,6 +467,7 @@ class Storage {
     stats['weeklyData'] = weeklyData;
     stats['muscleData'] = muscleData;
     _safeSet(_keyStats, stats);
+    _persistKeyAsync(_keyStats);
     return stats;
   }
 
@@ -466,7 +484,94 @@ class Storage {
   }
 
   static bool saveBodyData(Map<String, dynamic> bodyData) {
-    return _safeSet(_keyBodyData, bodyData);
+    final result = _safeSet(_keyBodyData, bodyData);
+    // 异步确保数据写入磁盘
+    _persistKeyAsync(_keyBodyData);
+    return result;
+  }
+
+  // ============================================================
+  // GymCards (SQLite)
+  // ============================================================
+
+  static List<Map<String, dynamic>> _gymCardsCache = [];
+  static bool _gymCardsCacheDirty = true;
+
+  static Future<List<Map<String, dynamic>>> getGymCardsAsync() async {
+    if (_gymCardsCacheDirty) {
+      _gymCardsCache = await _db.getAllGymCards();
+      _gymCardsCacheDirty = false;
+    }
+    return List<Map<String, dynamic>>.from(
+      _gymCardsCache.map((e) => Map<String, dynamic>.from(e)),
+    );
+  }
+
+  static List<Map<String, dynamic>> getGymCards() {
+    return List<Map<String, dynamic>>.from(
+      _gymCardsCache.map((e) => Map<String, dynamic>.from(e)),
+    );
+  }
+
+  static Future<Map<String, dynamic>> addGymCardAsync(Map<String, dynamic> card) async {
+    final newCard = <String, dynamic>{
+      ...card,
+      'id': card['id'] ?? generateId('gymcard'),
+      'createTime': DateTime.now().millisecondsSinceEpoch,
+      'updateTime': DateTime.now().millisecondsSinceEpoch,
+    };
+    await _db.insertGymCard(newCard);
+    _gymCardsCacheDirty = true;
+    return newCard;
+  }
+
+  static Map<String, dynamic> addGymCard(Map<String, dynamic> card) {
+    final newCard = <String, dynamic>{
+      ...card,
+      'id': card['id'] ?? generateId('gymcard'),
+      'createTime': DateTime.now().millisecondsSinceEpoch,
+      'updateTime': DateTime.now().millisecondsSinceEpoch,
+    };
+    _gymCardsCache.add(newCard);
+    _gymCardsCacheDirty = true;
+    _db.insertGymCard(newCard);
+    return newCard;
+  }
+
+  static Future<Map<String, dynamic>?> updateGymCardAsync(String cardId, Map<String, dynamic> updates) async {
+    final result = await _db.updateGymCard(cardId, updates);
+    _gymCardsCacheDirty = true;
+    return result;
+  }
+
+  static Map<String, dynamic>? updateGymCard(String cardId, Map<String, dynamic> updates) {
+    final idx = _gymCardsCache.indexWhere((c) => c['id'] == cardId);
+    if (idx == -1) return null;
+    _gymCardsCache[idx] = {..._gymCardsCache[idx], ...updates, 'updateTime': DateTime.now().millisecondsSinceEpoch};
+    _gymCardsCacheDirty = true;
+    _db.updateGymCard(cardId, updates);
+    return _gymCardsCache[idx];
+  }
+
+  static Future<bool> deleteGymCardAsync(String cardId) async {
+    await _db.deleteGymCard(cardId);
+    _gymCardsCacheDirty = true;
+    return true;
+  }
+
+  static bool deleteGymCard(String cardId) {
+    _gymCardsCache.removeWhere((c) => c['id'] == cardId);
+    _gymCardsCacheDirty = true;
+    _db.deleteGymCard(cardId);
+    return true;
+  }
+
+  static Map<String, dynamic>? getGymCardById(String cardId) {
+    try {
+      return _gymCardsCache.firstWhere((c) => c['id'] == cardId);
+    } catch (_) {
+      return null;
+    }
   }
 
   // ============================================================
@@ -568,10 +673,13 @@ class Storage {
   static Future<void> clearAll() async {
     await _db.deleteAllPlans();
     await _db.deleteAllRecords();
+    await _db.deleteAllGymCards();
     _plansCache = [];
     _recordsCache = [];
+    _gymCardsCache = [];
     _plansCacheDirty = true;
     _recordsCacheDirty = true;
+    _gymCardsCacheDirty = true;
     _store.remove(_keySettings);
     _store.remove(_keyStats);
     _store.remove(_keyBodyData);
