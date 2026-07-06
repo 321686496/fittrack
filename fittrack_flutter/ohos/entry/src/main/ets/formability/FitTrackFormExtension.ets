@@ -46,6 +46,8 @@ export default class FitTrackFormExtension extends FormExtensionAbility {
     console.info('[FitTrackForm] onUpdateForm, formId: ' + formId);
     let data: FormDataRecord = this.buildFormData();
     let binddata: formBindingData.FormBindingData = formBindingData.createFormBindingData(data);
+    // reloadForms 触发的 onUpdateForm，其返回值不会自动刷到卡片 UI，
+    // 必须显式调用 formProvider.updateForm 才能真正更新卡片的 @LocalStorageProp。
     formProvider.updateForm(formId, binddata).catch((e: ESObject) => {
       console.info('[FitTrack] update form error: ' + JSON.stringify(e));
     });
@@ -60,6 +62,11 @@ export default class FitTrackFormExtension extends FormExtensionAbility {
     let data: FormDataRecord = new FormDataRecord();
 
     try {
+      // 关键：preferences 不支持多进程共享。写入方（EntryAbility 主进程）flush 到磁盘后，
+      // 本 Form extension 进程若已缓存过 preferences 实例，getSync 只会读进程内旧缓存。
+      // 因此每次读取前先移除缓存，强制从磁盘重新加载主进程写入的最新数据。
+      preferences.removePreferencesFromCacheSync(this.context, { name: PREFERENCES_NAME });
+
       let prefs: preferences.Preferences = preferences.getPreferencesSync(this.context, { name: PREFERENCES_NAME });
       let saved: string = prefs.getSync(KEY_FORM_DATA, '').toString();
       if (saved !== '') {

@@ -98,6 +98,7 @@ export default class EntryAbility extends FlutterAbility {
 
   /**
    * 更新卡片数据
+   * 等待 reloadForms 完成后才返回，确保 Flutter 侧串行化队列正确工作
    */
   updateFormData(call: MethodCall, result: MethodResult): void {
     try {
@@ -109,24 +110,20 @@ export default class EntryAbility extends FlutterAbility {
 
       console.info(`[FitTrack] FormData saved to preferences: ${dataStr}`);
 
-      this.reloadAllForms();
-
-      result.success(true);
+      // 等待 reloadForms 完成后才返回 success，确保串行化
+      // 将 reloadNum 回传到 Flutter 日志，用于诊断卡片是否真的被重载
+      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
+        .then((reloadNum: number) => {
+          console.info(`[FitTrack] reloadForms success, reload number: ${reloadNum}`);
+          result.success(`reloadNum=${reloadNum}`);
+        })
+        .catch((err: BusinessError) => {
+          console.error(`[FitTrack] reloadForms failed: ${err.code} - ${err.message}`);
+          result.success(`reloadForms_error code=${err.code} msg=${err.message}`);
+        });
     } catch (e) {
       console.error(`[FitTrack] updateFormData exception: ${e}`);
       result.error('EXCEPTION', `${e}`, null);
-    }
-  }
-
-  private reloadAllForms(): void {
-    try {
-      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片').then((reloadNum: number) => {
-        console.info(`[FitTrack] reloadForms success, reload number: ${reloadNum}`);
-      }).catch((err: BusinessError) => {
-        console.error(`[FitTrack] reloadForms failed: ${err.code} - ${err.message}`);
-      });
-    } catch (e) {
-      console.error(`[FitTrack] reloadForms exception: ${e}`);
     }
   }
 }

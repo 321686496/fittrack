@@ -45,6 +45,8 @@ class _TrainingPageState extends State<TrainingPage>
   DateTime? _restEndTime;
   /// 是否已经触发过本次休息结束的提醒（防止重复触发）
   bool _restEndNotified = false;
+  /// 上次向桌面卡片推送休息倒计时的时间，用于节流
+  DateTime? _lastRestPushTime;
 
   // ── App lifecycle ────────────────────────────────────────────
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
@@ -73,6 +75,8 @@ class _TrainingPageState extends State<TrainingPage>
     // 监听 OHOS 通知点击
     if (Platform.isOhos) {
       OhosReminderService.instance.onNotificationClick = _onNotificationClicked;
+      // 注册训练卡片交互回调：卡片点击时原地处理，避免跳转首页销毁本页
+      OhosReminderService.instance.onTrainingCardAction = _onTrainingCardAction;
     }
   }
 
@@ -85,8 +89,35 @@ class _TrainingPageState extends State<TrainingPage>
     // 清理通知点击回调
     if (Platform.isOhos) {
       OhosReminderService.instance.onNotificationClick = null;
+      OhosReminderService.instance.onTrainingCardAction = null;
     }
     super.dispose();
+  }
+
+  /// 真正退出训练页时，将卡片恢复为空闲态。
+  /// 只在用户主动离开（返回按钮 / 系统返回 / 保存返回）时调用，
+  /// 不放在 dispose() 中，避免 go_router 页面重建时被误重置。
+  void _resetWidgetOnExit() {
+    if (Platform.isOhos) {
+      FormKitService.instance.endTraining();
+    }
+  }
+
+  /// 顶部返回按钮：先恢复卡片空闲态，再返回上一页。
+  void _onBackPressed() {
+    _resetWidgetOnExit();
+    context.pop();
+  }
+
+  /// OHOS 训练卡片点击回调：
+  /// - 休息中点击“结束休息”按钮(skipRest)：原地跳过休息，不跳转
+  /// - 训练中点击“回到应用”(resume)：无需额外处理，应用已被拉到前台
+  void _onTrainingCardAction(Map<String, dynamic> args) {
+    if (!mounted) return;
+    final cardAction = args['cardAction'] as String?;
+    if (cardAction == 'skipRest' && _isResting) {
+      _skipRest();
+    }
   }
 
   /// OHOS 通知点击回调：回到训练页并处理休息结束
@@ -169,6 +200,9 @@ class _TrainingPageState extends State<TrainingPage>
     _prefillWeightReps();
 
     setState(() {});
+
+    // 进入训练页后推送训练态到桌面卡片
+    _pushTrainingToWidget();
   }
 
   // ── Computed ─────────────────────────────────────────────────
@@ -233,6 +267,7 @@ class _TrainingPageState extends State<TrainingPage>
   void _startRest(int seconds, bool isLastSetOfExercise) {
     _restEndTime = DateTime.now().add(Duration(seconds: seconds));
     _restEndNotified = false;
+    _lastRestPushTime = null; // 重置节流，让 startRest 推送的初始值后重新计数
 
     setState(() {
       _isResting = true;
@@ -286,6 +321,17 @@ class _TrainingPageState extends State<TrainingPage>
         _restSeconds = remaining > 0 ? remaining : 0;
       });
 
+      // 节流同步倒计时到桌面卡片：每 3 秒推一次
+      // FormKitService 有串行化队列，不会并发推送
+      if (Platform.isOhos && remaining > 0) {
+        final nowTs = DateTime.now();
+        final last = _lastRestPushTime;
+        if (last == null || nowTs.difference(last).inSeconds >= 3) {
+          _lastRestPushTime = nowTs;
+          FormKitService.instance.updateRestSeconds(_restSeconds);
+        }
+      }
+
       if (remaining <= 0) {
         timer.cancel();
         // 不取消预约通知！让系统通知自然触发（后台时需要）
@@ -336,6 +382,7 @@ class _TrainingPageState extends State<TrainingPage>
       _isResting = false;
       _restEndTime = null;
       _restEndNotified = false;
+      _lastRestPushTime = null;
       if (_isLastSetOfExercise) {
         _currentExIdx++;
         _currentSetIdx = 0;
@@ -527,6 +574,18 @@ class _TrainingPageState extends State<TrainingPage>
 
   @override
   Widget build(BuildContext context) {
+    // 用 WillPopScope 兜底系统返回键：退出训练页时把卡片恢复为空闲态。
+    // 返回 true 放行默认的 pop 行为。
+    return WillPopScope(
+      onWillPop: () async {
+        _resetWidgetOnExit();
+        return true;
+      },
+      child: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
     if (_exercises.isEmpty) {
       return _buildEmptyState();
     }
@@ -548,7 +607,7 @@ class _TrainingPageState extends State<TrainingPage>
       body: Column(
         children: [
           PageHeader(
-            onBack: () => context.pop(),
+            onBack: _onBackPressed,
             title: '训练',
           ),
           const Expanded(
@@ -574,7 +633,7 @@ class _TrainingPageState extends State<TrainingPage>
       body: Column(
         children: [
           PageHeader(
-            onBack: () => context.pop(),
+            onBack: _onBackPressed,
             title: _dayConfig?['label'] ?? '训练',
             subtitle: '第${_currentExIdx + 1}/${_exercises.length}个动作',
           ),
@@ -980,7 +1039,7 @@ class _TrainingPageState extends State<TrainingPage>
       body: Column(
         children: [
           PageHeader(
-            onBack: () => context.pop(),
+            onBack: _onBackPressed,
             title: '训练完成',
           ),
           Expanded(

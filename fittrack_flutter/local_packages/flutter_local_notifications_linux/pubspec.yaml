@@ -1,0 +1,14 @@
+name: flutter_local_notifications_linux
+description: Stub for platforms that don't need Linux notifications.
+version: 4.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=2.19.0 <4.0.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_local_notifications_platform_interface: '>=7.0.0 <8.0.0'
+  timezone: '>=0.9.0 <1.0.0'

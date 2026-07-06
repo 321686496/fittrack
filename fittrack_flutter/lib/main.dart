@@ -47,10 +47,17 @@ void main() {
       // 监听卡片点击事件
       OhosReminderService.instance.onCardClick = (args) {
         final targetPage = args['targetPage'] as String?;
-        final cardAction = args['cardAction'] as String?;
         if (targetPage == 'training') {
-          // 卡片训练交互：跳转到训练页（如果已在训练页，由训练页处理 cardAction）
-          _globalRouter?.go('/home');
+          // 卡片训练交互：优先交给正在运行的训练页处理（跳过休息 / 回到训练），
+          // 避免跳转到首页导致训练页被销毁、数据丢失。
+          final handler = OhosReminderService.instance.onTrainingCardAction;
+          if (handler != null) {
+            // 训练页已挂载：由训练页原地处理 cardAction（skipRest / resume）。
+            handler(args);
+          } else {
+            // 训练页未挂载（例如已退出训练）：回到首页兜底。
+            _globalRouter?.go('/home');
+          }
         } else if (targetPage == 'home') {
           _globalRouter?.go('/home');
         }

@@ -196,22 +196,22 @@ class MockData {
   // Exercises (16 exercises)
   // ============================================================
   static const List<Map<String, dynamic>> exercises = [
-    {'id': 'e1', 'name': '杠铃卧推', 'category': '胸部', 'equip': '杠铃'},
-    {'id': 'e2', 'name': '哑铃飞鸟', 'category': '胸部', 'equip': '哑铃'},
-    {'id': 'e3', 'name': '上斜卧推', 'category': '胸部', 'equip': '杠铃'},
-    {'id': 'e4', 'name': '绳索夹胸', 'category': '胸部', 'equip': '器械'},
-    {'id': 'e5', 'name': '引体向上', 'category': '背部', 'equip': '自重'},
-    {'id': 'e6', 'name': '杠铃划船', 'category': '背部', 'equip': '杠铃'},
-    {'id': 'e7', 'name': '高位下拉', 'category': '背部', 'equip': '器械'},
-    {'id': 'e8', 'name': '坐姿划船', 'category': '背部', 'equip': '器械'},
-    {'id': 'e9', 'name': '杠铃深蹲', 'category': '腿部', 'equip': '杠铃'},
-    {'id': 'e10', 'name': '腿举', 'category': '腿部', 'equip': '器械'},
-    {'id': 'e11', 'name': '哑铃推举', 'category': '肩部', 'equip': '哑铃'},
-    {'id': 'e12', 'name': '侧平举', 'category': '肩部', 'equip': '哑铃'},
-    {'id': 'e13', 'name': '哑铃弯举', 'category': '手臂', 'equip': '哑铃'},
-    {'id': 'e14', 'name': '锤式弯举', 'category': '手臂', 'equip': '哑铃'},
-    {'id': 'e15', 'name': '平板支撑', 'category': '核心', 'equip': '自重'},
-    {'id': 'e16', 'name': '卷腹', 'category': '核心', 'equip': '自重'},
+    {'id': 'e1', 'name': '杠铃卧推', 'category': '胸部', 'equip': '杠铃', 'image': 'assets/images/exercises/e1_barbell_bench_press.png'},
+    {'id': 'e2', 'name': '哑铃飞鸟', 'category': '胸部', 'equip': '哑铃', 'image': 'assets/images/exercises/e2_dumbbell_fly.png'},
+    {'id': 'e3', 'name': '上斜卧推', 'category': '胸部', 'equip': '杠铃', 'image': 'assets/images/exercises/e3_incline_bench_press.png'},
+    {'id': 'e4', 'name': '绳索夹胸', 'category': '胸部', 'equip': '器械', 'image': 'assets/images/exercises/e4_cable_cross.png'},
+    {'id': 'e5', 'name': '引体向上', 'category': '背部', 'equip': '自重', 'image': 'assets/images/exercises/e5_pull_up.png'},
+    {'id': 'e6', 'name': '杠铃划船', 'category': '背部', 'equip': '杠铃', 'image': 'assets/images/exercises/e6_barbell_row.png'},
+    {'id': 'e7', 'name': '高位下拉', 'category': '背部', 'equip': '器械', 'image': 'assets/images/exercises/e7_lat_pulldown.png'},
+    {'id': 'e8', 'name': '坐姿划船', 'category': '背部', 'equip': '器械', 'image': 'assets/images/exercises/e8_seated_row.png'},
+    {'id': 'e9', 'name': '杠铃深蹰', 'category': '腿部', 'equip': '杠铃', 'image': 'assets/images/exercises/e9_barbell_squat.png'},
+    {'id': 'e10', 'name': '腿举', 'category': '腿部', 'equip': '器械', 'image': 'assets/images/exercises/e10_leg_press.png'},
+    {'id': 'e11', 'name': '哑铃推举', 'category': '肩膀', 'equip': '哑铃', 'image': 'assets/images/exercises/e11_dumbbell_shoulder_press.png'},
+    {'id': 'e12', 'name': '侧平举', 'category': '肩膀', 'equip': '哑铃', 'image': 'assets/images/exercises/e12_lateral_raise.png'},
+    {'id': 'e13', 'name': '哑铃弯举', 'category': '手臂', 'equip': '哑铃', 'image': 'assets/images/exercises/e13_dumbbell_curl.png'},
+    {'id': 'e14', 'name': '锤式弯举', 'category': '手臂', 'equip': '哑铃', 'image': 'assets/images/exercises/e14_hammer_curl.png'},
+    {'id': 'e15', 'name': '平板支撑', 'category': '核心', 'equip': '自重', 'image': 'assets/images/exercises/e15_plank.png'},
+    {'id': 'e16', 'name': '卷腹', 'category': '核心', 'equip': '自重', 'image': 'assets/images/exercises/e16_crunch.png'},
   ];
 
   // ============================================================
