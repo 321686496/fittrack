@@ -45,8 +45,6 @@ class _TrainingPageState extends State<TrainingPage>
   DateTime? _restEndTime;
   /// 是否已经触发过本次休息结束的提醒（防止重复触发）
   bool _restEndNotified = false;
-  /// 上次向桌面卡片推送休息倒计时的时间，用于节流
-  DateTime? _lastRestPushTime;
 
   // ── App lifecycle ────────────────────────────────────────────
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
@@ -267,7 +265,6 @@ class _TrainingPageState extends State<TrainingPage>
   void _startRest(int seconds, bool isLastSetOfExercise) {
     _restEndTime = DateTime.now().add(Duration(seconds: seconds));
     _restEndNotified = false;
-    _lastRestPushTime = null; // 重置节流，让 startRest 推送的初始值后重新计数
 
     setState(() {
       _isResting = true;
@@ -276,12 +273,13 @@ class _TrainingPageState extends State<TrainingPage>
       _isLastSetOfExercise = isLastSetOfExercise;
     });
 
-    // 推送休息状态到卡片
+    // 推送休息状态到卡片（含 restEndTime 绝对时间戳，卡片侧本地倒计时据此运行）
     if (Platform.isOhos && _currentExIdx < _exercises.length) {
       final currentEx = _exercises[_currentExIdx];
       FormKitService.instance.startRest(
         exerciseName: currentEx['name'] as String,
         restSeconds: seconds,
+        restEndTime: _restEndTime!.millisecondsSinceEpoch,
         totalRestSeconds: seconds,
         currentSet: _currentSetIdx + 1,
         totalSets: (currentEx['sets'] as int?) ?? 0,
@@ -320,17 +318,6 @@ class _TrainingPageState extends State<TrainingPage>
       setState(() {
         _restSeconds = remaining > 0 ? remaining : 0;
       });
-
-      // 节流同步倒计时到桌面卡片：每 3 秒推一次
-      // FormKitService 有串行化队列，不会并发推送
-      if (Platform.isOhos && remaining > 0) {
-        final nowTs = DateTime.now();
-        final last = _lastRestPushTime;
-        if (last == null || nowTs.difference(last).inSeconds >= 3) {
-          _lastRestPushTime = nowTs;
-          FormKitService.instance.updateRestSeconds(_restSeconds);
-        }
-      }
 
       if (remaining <= 0) {
         timer.cancel();
@@ -382,7 +369,6 @@ class _TrainingPageState extends State<TrainingPage>
       _isResting = false;
       _restEndTime = null;
       _restEndNotified = false;
-      _lastRestPushTime = null;
       if (_isLastSetOfExercise) {
         _currentExIdx++;
         _currentSetIdx = 0;

@@ -70,6 +70,7 @@ class FormKitService {
   void startRest({
     required String exerciseName,
     required int restSeconds,
+    required int restEndTime,
     required int totalRestSeconds,
     required int currentSet,
     required int totalSets,
@@ -82,6 +83,7 @@ class FormKitService {
       'mode': 'rest',
       'exerciseName': exerciseName,
       'restSeconds': restSeconds,
+      'restEndTime': restEndTime,
       'totalRestSeconds': totalRestSeconds,
       'currentSet': currentSet,
       'totalSets': totalSets,

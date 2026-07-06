@@ -34,6 +34,10 @@ export default class EntryAbility extends FlutterAbility {
   private formChannel: MethodChannel | null = null;
   private reminderChannel: MethodChannel | null = null;
 
+  // 倒计时定时器：主进程每 3 秒调用 reloadForms 触发卡片刷新生效
+  // 区别于 formProvider.updateForm（10 次/分钟限制），reloadForms 无此限制
+  private countdownTimerId: number = -1;
+
   configureFlutterEngine(flutterEngine: FlutterEngine): void {
     super.configureFlutterEngine(flutterEngine);
     GeneratedPluginRegistrant.registerWith(flutterEngine);
@@ -99,6 +103,7 @@ export default class EntryAbility extends FlutterAbility {
   /**
    * 更新卡片数据
    * 等待 reloadForms 完成后才返回，确保 Flutter 侧串行化队列正确工作
+   * 同时根据 mode 管理倒计时定时器的起停
    */
   updateFormData(call: MethodCall, result: MethodResult): void {
     try {
@@ -110,8 +115,9 @@ export default class EntryAbility extends FlutterAbility {
 
       console.info(`[FitTrack] FormData saved to preferences: ${dataStr}`);
 
-      // 等待 reloadForms 完成后才返回 success，确保串行化
-      // 将 reloadNum 回传到 Flutter 日志，用于诊断卡片是否真的被重载
+      // 根据 mode 管理倒计时定时器
+      this.manageCountdownTimer(dataStr);
+
       formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
         .then((reloadNum: number) => {
           console.info(`[FitTrack] reloadForms success, reload number: ${reloadNum}`);
@@ -124,6 +130,48 @@ export default class EntryAbility extends FlutterAbility {
     } catch (e) {
       console.error(`[FitTrack] updateFormData exception: ${e}`);
       result.error('EXCEPTION', `${e}`, null);
+    }
+  }
+
+  /**
+   * 从推送的 JSON 中解析 mode，决定是否启动倒计时定时器。
+   * rest 态时：每 3 秒调用一次 reloadForms，触发 FormExtension.onUpdateForm，
+   * 其返回值由系统自动刷到卡片 UI——不调用 formProvider.updateForm，
+   * 因此不触发 10 次/分钟的限制。
+   */
+  private manageCountdownTimer(dataStr: string): void {
+    try {
+      const parsed: Record<string, Object> = JSON.parse(dataStr) as Record<string, Object>;
+      const mode: string = (parsed['mode'] as string) ?? '';
+      if (mode === 'rest') {
+        this.startCountdownTimer();
+      } else {
+        this.stopCountdownTimer();
+      }
+    } catch (e) {
+      this.stopCountdownTimer();
+    }
+  }
+
+  private startCountdownTimer(): void {
+    if (this.countdownTimerId !== -1) return;
+    console.info('[FitTrack] startCountdownTimer');
+    this.countdownTimerId = setInterval(() => {
+      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
+        .then((reloadNum: number) => {
+          console.info(`[FitTrack] countdown reloadForms success, reloadNum=${reloadNum}`);
+        })
+        .catch((err: BusinessError) => {
+          console.error(`[FitTrack] countdown reloadForms failed: ${err.code} - ${err.message}`);
+        });
+    }, 1000);
+  }
+
+  private stopCountdownTimer(): void {
+    if (this.countdownTimerId !== -1) {
+      console.info('[FitTrack] stopCountdownTimer');
+      clearInterval(this.countdownTimerId);
+      this.countdownTimerId = -1;
     }
   }
 }
