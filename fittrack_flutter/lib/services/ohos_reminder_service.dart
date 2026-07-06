@@ -30,6 +30,10 @@ class OhosReminderService {
   /// 卡片点击回调
   Function(Map<String, dynamic>)? onCardClick;
 
+  /// 训练卡片交互回调（由训练页在挂载时注册，用于原地处理 skipRest / resume，
+  /// 避免卡片点击时跳转首页销毁训练页导致数据丢失）
+  Function(Map<String, dynamic>)? onTrainingCardAction;
+
   bool _listenerInitialized = false;
 
   /// 初始化监听器（应用启动时调用一次）

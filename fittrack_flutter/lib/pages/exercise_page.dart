@@ -306,16 +306,17 @@ class _ExercisePageState extends State<ExercisePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              height: 80,
+                              width: double.infinity,
                               decoration: BoxDecoration(
-                                color:
-                                    colors.accentGlow.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                _categoryIcon(ex['category'] as String),
-                                size: 24,
-                                color: colors.accentGlow,
+                                image: ex['image'] != null
+                                    ? DecorationImage(
+                                        image: AssetImage(
+                                            ex['image'] as String),
+                                        fit: BoxFit.contain,
+                                      )
+                                    : null,
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -385,6 +386,20 @@ class _ExercisePageState extends State<ExercisePage> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+                // Exercise hero image
+                if (ex['image'] != null)
+                  Container(
+                    width: double.infinity,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: AssetImage(ex['image'] as String),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 // Description
                 SectionHeader(title: '动作说明'),

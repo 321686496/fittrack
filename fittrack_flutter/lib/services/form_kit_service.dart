@@ -122,6 +122,16 @@ class FormKitService {
     pushFormData();
   }
 
+  /// 休息倒计时刷新：仅更新 restSeconds 并重新推送。
+  /// 调用方应做节流（如每 3 秒一次），避免过于频繁。
+  /// 仅在当前处于休息态时生效，避免误改其它状态。
+  void updateRestSeconds(int restSeconds) {
+    final state = _trainingState;
+    if (state == null || state['mode'] != 'rest') return;
+    state['restSeconds'] = restSeconds;
+    pushFormData();
+  }
+
   // ============================================================
   // 数据构建
   // ============================================================
@@ -224,16 +234,49 @@ class FormKitService {
     return settings['trainingTime'] as String? ?? '';
   }
 
+  // ── 推送串行化（合并队列）──────────────────────────────────
+  // 确保同一时间只有一个 MethodChannel 调用在执行，
+  // 避免并发推送导致原生 reloadForms 互相干扰。
+  // 如果推送期间有新数据到来，只保留最新的一个待推。
+  bool _isPushing = false;
+  String? _pendingData;
+
   /// 推送卡片数据到原生 preferences
   Future<void> pushFormData() async {
     if (!Platform.isOhos) return;
+
+    final data = _buildFormData();
+    final jsonStr = jsonEncode(data);
+
+    if (_isPushing) {
+      // 已有推送在进行中，只保留最新数据
+      _pendingData = jsonStr;
+      return;
+    }
+
+    await _doPush(jsonStr);
+  }
+
+  Future<void> _doPush(String jsonStr) async {
+    _isPushing = true;
     try {
-      final data = _buildFormData();
-      final jsonStr = jsonEncode(data);
-      await _channel.invokeMethod<void>('updateFormData', jsonStr);
-      debugPrint('[FormKit] pushFormData success, mode: ${data['mode']}');
+      final ret = await _channel.invokeMethod<String>('updateFormData', jsonStr);
+      // 解析推送的数据 mode，配合原生回传的 reloadNum 一起打印，用于诊断
+      String mode = '?';
+      try {
+        mode = (jsonDecode(jsonStr) as Map)['mode']?.toString() ?? '?';
+      } catch (_) {}
+      debugPrint('[FormKit] pushFormData success mode=$mode native=$ret');
     } catch (e) {
       debugPrint('[FormKit] pushFormData error: $e');
+    } finally {
+      _isPushing = false;
+      // 如果推送期间有新数据到来，立即推送最新的
+      if (_pendingData != null) {
+        final next = _pendingData!;
+        _pendingData = null;
+        await _doPush(next);
+      }
     }
   }
 
