@@ -20,7 +20,9 @@ struct FitTrackWidget {
   @LocalStorageProp('totalExercises') totalExercises: number = 0
   @LocalStorageProp('completedSets') completedSets: number = 0
   @LocalStorageProp('totalPlanSets') totalPlanSets: number = 0
+  //
   // 休息态字段
+  @LocalStorageProp('restEndTime') restEndTime: number = 0
   @LocalStorageProp('restSeconds') restSeconds: number = 0
   @LocalStorageProp('totalRestSeconds') totalRestSeconds: number = 0
   // 主题颜色
@@ -34,9 +36,9 @@ struct FitTrackWidget {
   // 进度百分比
   private restProgress(): number {
     if (this.totalRestSeconds <= 0) {
-      return 0;
+      return 0
     }
-    return this.restSeconds / this.totalRestSeconds;
+    return this.restSeconds / this.totalRestSeconds
   }
 
   // 训练总进度
@@ -280,7 +282,7 @@ struct FitTrackWidget {
         .width('100%')
         .padding({ left: 12, right: 12 })
 
-      // 倒计时数字
+      // 倒计时数字（FormExtension 每秒钟推送更新 restSeconds）
       Text(this.restSeconds.toString())
         .fontSize(40)
         .fontWeight(FontWeight.Bold)

@@ -299,7 +299,7 @@ class _ExercisePageState extends State<ExercisePage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    childAspectRatio: 1.1,
+                    childAspectRatio: 1.0,
                   ),
                   itemCount: filtered.length,
                   itemBuilder: (_, index) {

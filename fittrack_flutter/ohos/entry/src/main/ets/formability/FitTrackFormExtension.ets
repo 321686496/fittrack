@@ -25,6 +25,7 @@ class FormDataRecord {
   totalPlanSets: number = 0
   // 休息态字段
   restSeconds: number = 0
+  restEndTime: number = 0
   totalRestSeconds: number = 0
   // 主题颜色
   accentColor: string = '#FF6B35'
@@ -46,8 +47,8 @@ export default class FitTrackFormExtension extends FormExtensionAbility {
     console.info('[FitTrackForm] onUpdateForm, formId: ' + formId);
     let data: FormDataRecord = this.buildFormData();
     let binddata: formBindingData.FormBindingData = formBindingData.createFormBindingData(data);
-    // reloadForms 触发的 onUpdateForm，其返回值不会自动刷到卡片 UI，
-    // 必须显式调用 formProvider.updateForm 才能真正更新卡片的 @LocalStorageProp。
+    // 主动推送：onUpdateForm 的返回值由系统处理，但卡片 UI 的 @LocalStorageProp
+    // 只有通过 formProvider.updateForm 才能更新。两者一起使用确保卡片刷新。
     formProvider.updateForm(formId, binddata).catch((e: ESObject) => {
       console.info('[FitTrack] update form error: ' + JSON.stringify(e));
     });
@@ -85,8 +86,16 @@ export default class FitTrackFormExtension extends FormExtensionAbility {
         data.totalExercises = this.getNumberValue(parsed, 'totalExercises', 0);
         data.completedSets = this.getNumberValue(parsed, 'completedSets', 0);
         data.totalPlanSets = this.getNumberValue(parsed, 'totalPlanSets', 0);
-        data.restSeconds = this.getNumberValue(parsed, 'restSeconds', 0);
+
+        // 休息态倒计时字段：用 restEndTime（epoch ms）实时计算剩余秒数
+        data.restEndTime = this.getNumberValue(parsed, 'restEndTime', 0);
         data.totalRestSeconds = this.getNumberValue(parsed, 'totalRestSeconds', 0);
+        if (data.mode === 'rest' && data.restEndTime > 0) {
+          data.restSeconds = Math.max(0, Math.round((data.restEndTime - Date.now()) / 1000));
+        } else {
+          data.restSeconds = this.getNumberValue(parsed, 'restSeconds', 0);
+        }
+
         data.accentColor = this.getStringValue(parsed, 'accentColor', '#FF6B35');
         data.bgColor = this.getStringValue(parsed, 'bgColor', '#FFFFFF');
         data.textPrimaryColor = this.getStringValue(parsed, 'textPrimaryColor', '#222222');
