@@ -7,12 +7,18 @@ import StandardMethodCodec from '@ohos/flutter_ohos/src/main/ets/plugin/common/S
 import { formProvider } from '@kit.FormKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
-import { Want, AbilityConstant } from '@kit.AbilityKit';
+import { Want, AbilityConstant, bundleManager } from '@kit.AbilityKit';
+import { reminderAgentManager } from '@kit.BackgroundTasksKit';
+import { notificationManager } from '@kit.NotificationKit';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
 const KEY_FORM_DATA: string = 'form_data';
 const FORM_CHANNEL_NAME: string = 'com.example.fittrack_flutter/form';
 const REMINDER_CHANNEL_NAME: string = 'com.example.fittrack_flutter/reminder';
+// 休息倒计时进度条通知 ID
+const REST_COUNTDOWN_NOTIFICATION_ID: number = 20001;
+// 休息结束通知 ID
+const REST_END_NOTIFICATION_ID: number = 20002;
 
 class FormDataCallHandler implements MethodCallHandler {
   private ability: EntryAbility;
@@ -34,15 +40,21 @@ export default class EntryAbility extends FlutterAbility {
   private formChannel: MethodChannel | null = null;
   private reminderChannel: MethodChannel | null = null;
 
-  // 倒计时定时器：主进程每 3 秒调用 reloadForms 触发卡片刷新生效
-  // 区别于 formProvider.updateForm（10 次/分钟限制），reloadForms 无此限制
+  // 休息倒计时定时器：仅 APP 前台时运行
   private countdownTimerId: number = -1;
+  // 当前休息结束时间戳（epoch ms）
+  private restEndTime: number = 0;
+  // 当前休息总秒数
+  private totalRestSeconds: number = 0;
+  // 当前动作名
+  private currentExerciseName: string = '';
+  // 代理提醒 ID
+  private currentReminderId: number = -1;
 
   configureFlutterEngine(flutterEngine: FlutterEngine): void {
     super.configureFlutterEngine(flutterEngine);
     GeneratedPluginRegistrant.registerWith(flutterEngine);
 
-    // 注册卡片数据 MethodChannel
     this.formChannel = new MethodChannel(
       flutterEngine.getDartExecutor().getBinaryMessenger(),
       FORM_CHANNEL_NAME,
@@ -50,7 +62,6 @@ export default class EntryAbility extends FlutterAbility {
     );
     this.formChannel.setMethodCallHandler(new FormDataCallHandler(this));
 
-    // 注册提醒/卡片交互 MethodChannel（用于卡片点击回调到 Flutter）
     this.reminderChannel = new MethodChannel(
       flutterEngine.getDartExecutor().getBinaryMessenger(),
       REMINDER_CHANNEL_NAME,
@@ -58,10 +69,6 @@ export default class EntryAbility extends FlutterAbility {
     );
   }
 
-  /**
-   * 卡片点击通过 router postCardAction 触发 onNewWant，
-   * 从中提取 cardAction 参数并通过 MethodChannel 回调到 Flutter。
-   */
   onNewWant(want: Want, launchParams: AbilityConstant.LaunchParam): void {
     super.onNewWant(want, launchParams);
     try {
@@ -77,6 +84,28 @@ export default class EntryAbility extends FlutterAbility {
       }
     } catch (e) {
       console.error('[FitTrack] onNewWant error: ' + e);
+    }
+  }
+
+  /**
+   * APP 切到后台时：停止倒计时定时器（APP 进程将被挂起，定时器无法运行）
+   * reminderAgentManager 代理提醒已在进入休息态时发布，系统会代理发出休息结束通知
+   */
+  onBackground(): void {
+    super.onBackground();
+    console.info('[FitTrack] onBackground');
+    this.stopCountdownTimer();
+    this.cancelRestCountdownNotification();
+  }
+
+  /**
+   * APP 回到前台时：重新启动倒计时定时器
+   */
+  onForeground(): void {
+    super.onForeground();
+    console.info('[FitTrack] onForeground');
+    if (this.restEndTime > 0 && this.restEndTime > Date.now()) {
+      this.startCountdownTimer();
     }
   }
 
@@ -102,8 +131,7 @@ export default class EntryAbility extends FlutterAbility {
 
   /**
    * 更新卡片数据
-   * 等待 reloadForms 完成后才返回，确保 Flutter 侧串行化队列正确工作
-   * 同时根据 mode 管理倒计时定时器的起停
+   * 保存到 preferences → reloadForms 刷新卡片 → 根据模式管理倒计时通知/代理提醒
    */
   updateFormData(call: MethodCall, result: MethodResult): void {
     try {
@@ -113,14 +141,13 @@ export default class EntryAbility extends FlutterAbility {
       prefs.putSync(KEY_FORM_DATA, dataStr);
       prefs.flushSync();
 
-      console.info(`[FitTrack] FormData saved to preferences: ${dataStr}`);
+      console.info(`[FitTrack] FormData saved: ${dataStr}`);
 
-      // 根据 mode 管理倒计时定时器
-      this.manageCountdownTimer(dataStr);
+      this.manageTrainingState(dataStr);
 
       formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
         .then((reloadNum: number) => {
-          console.info(`[FitTrack] reloadForms success, reload number: ${reloadNum}`);
+          console.info(`[FitTrack] reloadForms success, reloadNum=${reloadNum}`);
           result.success(`reloadNum=${reloadNum}`);
         })
         .catch((err: BusinessError) => {
@@ -134,36 +161,62 @@ export default class EntryAbility extends FlutterAbility {
   }
 
   /**
-   * 从推送的 JSON 中解析 mode，决定是否启动倒计时定时器。
-   * rest 态时：每 3 秒调用一次 reloadForms，触发 FormExtension.onUpdateForm，
-   * 其返回值由系统自动刷到卡片 UI——不调用 formProvider.updateForm，
-   * 因此不触发 10 次/分钟的限制。
+   * 根据推送的 JSON 数据管理训练状态
+   * 注意：不依赖后台任务保活，因为 HarmonyOS 长时任务无法支撑每秒刷新的场景
    */
-  private manageCountdownTimer(dataStr: string): void {
+  private manageTrainingState(dataStr: string): void {
     try {
       const parsed: Record<string, Object> = JSON.parse(dataStr) as Record<string, Object>;
-      const mode: string = (parsed['mode'] as string) ?? '';
+      const mode: string = (parsed['mode'] as string) ?? 'idle';
+
       if (mode === 'rest') {
+        const restEndTime: number = Number(parsed['restEndTime'] ?? 0);
+        const totalRestSeconds: number = Number(parsed['totalRestSeconds'] ?? 0);
+        this.restEndTime = restEndTime;
+        this.totalRestSeconds = totalRestSeconds;
+        this.currentExerciseName = (parsed['exerciseName'] as string) ?? '';
+
+        // 启动倒计时定时器（仅 APP 前台时有效）
         this.startCountdownTimer();
+
+        // 发布代理提醒：系统在休息结束时自动发出通知，即使 APP 已被杀死
+        const restSeconds: number = Math.max(1, Math.round((restEndTime - Date.now()) / 1000));
+        this.scheduleRestReminder(restSeconds);
       } else {
+        // 非休息态：停止倒计时，取消所有通知和代理提醒
         this.stopCountdownTimer();
+        this.cancelRestCountdownNotification();
+        this.cancelRestEndNotification();
+        this.cancelRestReminder();
       }
     } catch (e) {
-      this.stopCountdownTimer();
+      console.error('[FitTrack] manageTrainingState exception: ' + e);
     }
   }
 
+  /**
+   * 启动倒计时定时器
+   * 仅 APP 前台时运行：每秒更新通知栏进度条通知显示倒计时
+   * APP 切到后台时定时器自动停止（onBackground），回到前台时重启（onForeground）
+   */
   private startCountdownTimer(): void {
     if (this.countdownTimerId !== -1) return;
     console.info('[FitTrack] startCountdownTimer');
     this.countdownTimerId = setInterval(() => {
-      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
-        .then((reloadNum: number) => {
-          console.info(`[FitTrack] countdown reloadForms success, reloadNum=${reloadNum}`);
-        })
-        .catch((err: BusinessError) => {
-          console.error(`[FitTrack] countdown reloadForms failed: ${err.code} - ${err.message}`);
-        });
+      if (this.restEndTime <= 0) return;
+
+      const remaining: number = Math.round((this.restEndTime - Date.now()) / 1000);
+      console.info(`[FitTrack] countdown tick, remaining=${remaining}s`);
+
+      if (remaining <= 0) {
+        // 倒计时结束，发送结束通知
+        this.publishRestEndNotification();
+        this.stopCountdownTimer();
+        this.cancelRestCountdownNotification();
+      } else {
+        // 更新进度条通知
+        this.publishRestCountdownNotification(remaining);
+      }
     }, 1000);
   }
 
@@ -172,6 +225,139 @@ export default class EntryAbility extends FlutterAbility {
       console.info('[FitTrack] stopCountdownTimer');
       clearInterval(this.countdownTimerId);
       this.countdownTimerId = -1;
+    }
+  }
+
+  /**
+   * 发布/更新休息倒计时进度条通知
+   */
+  private publishRestCountdownNotification(remainingSeconds: number): void {
+    try {
+      let progressValue: number = 0;
+      if (this.totalRestSeconds > 0) {
+        progressValue = Math.round((remainingSeconds / this.totalRestSeconds) * 100);
+      }
+
+      let notificationRequest: notificationManager.NotificationRequest = {
+        id: REST_COUNTDOWN_NOTIFICATION_ID,
+        content: {
+          notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+          normal: {
+            title: 'FitTrack - 休息中',
+            text: '剩余 ' + remainingSeconds + ' 秒',
+            additionalText: this.currentExerciseName,
+          }
+        },
+        notificationSlotType: notificationManager.SlotType.SERVICE_INFORMATION,
+        template: {
+          name: 'downloadTemplate',
+          data: {
+            title: '休息倒计时',
+            fileName: this.currentExerciseName,
+            progressValue: progressValue,
+          }
+        }
+      };
+
+      notificationManager.publish(notificationRequest)
+        .then(() => {
+        })
+        .catch((err: BusinessError) => {
+          console.error(`[FitTrack] publishRestCountdownNotification failed: ${err.code} - ${err.message}`);
+        });
+    } catch (e) {
+      console.error('[FitTrack] publishRestCountdownNotification exception: ' + e);
+    }
+  }
+
+  private cancelRestCountdownNotification(): void {
+    notificationManager.cancel(REST_COUNTDOWN_NOTIFICATION_ID)
+      .then(() => {
+      })
+      .catch((err: BusinessError) => {
+      });
+  }
+
+  /**
+   * 发布休息结束通知
+   */
+  private publishRestEndNotification(): void {
+    try {
+      let notificationRequest: notificationManager.NotificationRequest = {
+        id: REST_END_NOTIFICATION_ID,
+        content: {
+          notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+          normal: {
+            title: 'FitTrack',
+            text: '休息时间到！开始下一组？',
+            additionalText: '训练提醒',
+          }
+        },
+        notificationSlotType: notificationManager.SlotType.SERVICE_INFORMATION,
+      };
+
+      notificationManager.publish(notificationRequest)
+        .then(() => {
+          console.info('[FitTrack] publishRestEndNotification success');
+        })
+        .catch((err: BusinessError) => {
+          console.error(`[FitTrack] publishRestEndNotification failed: ${err.code} - ${err.message}`);
+        });
+    } catch (e) {
+      console.error('[FitTrack] publishRestEndNotification exception: ' + e);
+    }
+  }
+
+  private cancelRestEndNotification(): void {
+    notificationManager.cancel(REST_END_NOTIFICATION_ID)
+      .then(() => {
+      })
+      .catch((err: BusinessError) => {
+      });
+  }
+
+  /**
+   * 通过 reminderAgentManager 发布代理提醒
+   * 系统在倒计时结束时自动发出通知，即使 APP 已被杀死也能准时送达
+   */
+  private scheduleRestReminder(restSeconds: number): void {
+    this.cancelRestReminder();
+
+    try {
+      const bundleInfo: bundleManager.BundleInfo =
+        bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
+
+      let reminderRequest: reminderAgentManager.ReminderRequestTimer = {
+        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
+        triggerTimeInSeconds: restSeconds,
+        title: 'FitTrack',
+        content: '休息时间到！开始下一组？',
+        wantAgent: {
+          pkgName: bundleInfo.name,
+          abilityName: 'EntryAbility',
+        },
+      };
+
+      reminderAgentManager.publishReminder(reminderRequest).then((reminderId: number) => {
+        this.currentReminderId = reminderId;
+        console.info(`[FitTrack] scheduleRestReminder success, id=${reminderId}, seconds=${restSeconds}`);
+      }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] publishReminder failed: ${err.code} - ${err.message}`);
+      });
+    } catch (e) {
+      console.error(`[FitTrack] scheduleRestReminder exception: ${e}`);
+    }
+  }
+
+  private cancelRestReminder(): void {
+    if (this.currentReminderId === -1) return;
+    try {
+      let id: number = this.currentReminderId;
+      this.currentReminderId = -1;
+      reminderAgentManager.cancelReminder(id).then(() => {
+      }).catch((err: BusinessError) => {
+      });
+    } catch (e) {
     }
   }
 }

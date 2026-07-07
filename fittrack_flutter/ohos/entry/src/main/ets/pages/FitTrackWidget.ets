@@ -20,7 +20,6 @@ struct FitTrackWidget {
   @LocalStorageProp('totalExercises') totalExercises: number = 0
   @LocalStorageProp('completedSets') completedSets: number = 0
   @LocalStorageProp('totalPlanSets') totalPlanSets: number = 0
-  //
   // 休息态字段
   @LocalStorageProp('restEndTime') restEndTime: number = 0
   @LocalStorageProp('restSeconds') restSeconds: number = 0
@@ -32,14 +31,6 @@ struct FitTrackWidget {
   @LocalStorageProp('textSecondaryColor') textSecondaryColor: string = '#999999'
   // 训练提醒时间
   @LocalStorageProp('trainingTime') trainingTime: string = ''
-
-  // 进度百分比
-  private restProgress(): number {
-    if (this.totalRestSeconds <= 0) {
-      return 0
-    }
-    return this.restSeconds / this.totalRestSeconds
-  }
 
   // 训练总进度
   private trainingProgress(): number {
@@ -254,7 +245,7 @@ struct FitTrackWidget {
   }
 
   // ============================================================
-  // 休息态：倒计时 + 动作信息 + 交互按钮
+  // 休息态：静态状态显示（倒计时由通知栏进度条通知展示）
   // ============================================================
   @Builder
   RestView() {
@@ -282,38 +273,27 @@ struct FitTrackWidget {
         .width('100%')
         .padding({ left: 12, right: 12 })
 
-      // 倒计时数字（FormExtension 每秒钟推送更新 restSeconds）
-      Text(this.restSeconds.toString())
-        .fontSize(40)
+      // 提示：倒计时见通知栏
+      Text('休息倒计时')
+        .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.accentColor)
         .width('100%')
-        .padding({ left: 12, right: 12, top: 4 })
+        .padding({ left: 12, right: 12, top: 8 })
         .textAlign(TextAlign.Center)
 
-      Text('秒')
-        .fontSize(11)
+      Text('请查看通知栏')
+        .fontSize(10)
         .fontColor(this.textSecondaryColor)
         .width('100%')
         .textAlign(TextAlign.Center)
-
-      // 进度条
-      Row() {
-        Progress({ value: this.restProgress() * 100, total: 100, type: ProgressType.Linear })
-          .width('100%')
-          .height(4)
-          .color(this.accentColor)
-          .style({ strokeWidth: 4, strokeRadius: 2 })
-      }
-      .width('100%')
-      .padding({ left: 12, right: 12, top: 6, bottom: 6 })
 
       // 下一组信息
       Text('下一组: 第' + this.currentSet + '/' + this.totalSets + '组')
         .fontSize(10)
         .fontColor(this.textSecondaryColor)
         .width('100%')
-        .padding({ left: 12, right: 12, bottom: 4 })
+        .padding({ left: 12, right: 12, top: 8, bottom: 4 })
 
       // 操作按钮
       Row() {
