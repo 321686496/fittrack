@@ -20,7 +20,7 @@ class QuestionnairePage extends StatefulWidget {
 
 class _QuestionnairePageState extends State<QuestionnairePage> {
   int _currentStep = 0;
-  final int _totalSteps = 6;
+  final int _totalSteps = 7;
 
   String? _gender;
   String? _fitnessGoal;
@@ -29,6 +29,15 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   String _trainingTime = '';
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
+  // 身体数据详细字段（可选）
+  final TextEditingController _bodyFatController = TextEditingController();
+  final TextEditingController _chestController = TextEditingController();
+  final TextEditingController _waistController = TextEditingController();
+  final TextEditingController _hipController = TextEditingController();
+  final TextEditingController _armCircumferenceController = TextEditingController();
+  final TextEditingController _thighCircumferenceController = TextEditingController();
+  final TextEditingController _targetWeightController = TextEditingController();
+  final TextEditingController _restingHeartRateController = TextEditingController();
 
   final List<Map<String, dynamic>> _genderOptions = [
     {'value': '男', 'icon': Icons.male, 'label': '男'},
@@ -70,6 +79,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       case 4:
         return _heightController.text.isNotEmpty && _weightController.text.isNotEmpty;
       case 5:
+        return true; // 身体数据详细字段均为可选，可跳过
+      case 6:
         return true; // 训练时间可选
       default:
         return false;
@@ -130,6 +141,16 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       fitnessLevel: fitnessLevel,
     );
 
+    // 解析身体数据详细字段（均为可选）
+    final bodyFat = double.tryParse(_bodyFatController.text);
+    final chest = double.tryParse(_chestController.text);
+    final waist = double.tryParse(_waistController.text);
+    final hip = double.tryParse(_hipController.text);
+    final armCircumference = double.tryParse(_armCircumferenceController.text);
+    final thighCircumference = double.tryParse(_thighCircumferenceController.text);
+    final targetWeight = double.tryParse(_targetWeightController.text);
+    final restingHeartRate = double.tryParse(_restingHeartRateController.text);
+
     final profileData = <String, dynamic>{
       'gender': gender,
       'fitnessGoal': fitnessGoal,
@@ -141,6 +162,15 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       'avatarEmoji': avatarConfig['emoji'],
       'avatarBgColor': avatarConfig['bgColor'],
       'onboardingDone': true,
+      // 身体数据详细字段（仅在用户填写时存入，否则不写入 key）
+      if (bodyFat != null) 'bodyFat': bodyFat,
+      if (chest != null) 'chest': chest,
+      if (waist != null) 'waist': waist,
+      if (hip != null) 'hip': hip,
+      if (armCircumference != null) 'armCircumference': armCircumference,
+      if (thighCircumference != null) 'thighCircumference': thighCircumference,
+      if (targetWeight != null) 'targetWeight': targetWeight,
+      if (restingHeartRate != null) 'restingHeartRate': restingHeartRate,
     };
 
     // Save to settings
@@ -175,6 +205,16 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
           );
         }
       }
+      // 合并身体数据详细字段（仅当用户填写时才更新）
+      if (bodyFat != null) bodyData['bodyFat'] = bodyFat;
+      if (chest != null) bodyData['chest'] = chest;
+      if (waist != null) bodyData['waist'] = waist;
+      if (hip != null) bodyData['hip'] = hip;
+      if (armCircumference != null) bodyData['armCircumference'] = armCircumference;
+      if (thighCircumference != null) bodyData['thighCircumference'] = thighCircumference;
+      if (targetWeight != null) bodyData['targetWeight'] = targetWeight;
+      if (restingHeartRate != null) bodyData['restingHeartRate'] = restingHeartRate;
+      bodyData['lastUpdate'] = '刚刚';
       Storage.saveBodyData(bodyData);
     }
 
@@ -185,6 +225,14 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   void dispose() {
     _heightController.dispose();
     _weightController.dispose();
+    _bodyFatController.dispose();
+    _chestController.dispose();
+    _waistController.dispose();
+    _hipController.dispose();
+    _armCircumferenceController.dispose();
+    _thighCircumferenceController.dispose();
+    _targetWeightController.dispose();
+    _restingHeartRateController.dispose();
     super.dispose();
   }
 
@@ -319,6 +367,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       case 4:
         return _buildBodyInfoStep(colors);
       case 5:
+        return _buildBodyDetailsStep(colors);
+      case 6:
         return _buildTrainingTimeStep(colors);
       default:
         return const SizedBox.shrink();
@@ -511,6 +561,80 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     return bmi.toStringAsFixed(1);
   }
 
+  /// 身体数据详细步骤：体脂率、围度、目标体重、静息心率（均可选）
+  Widget _buildBodyDetailsStep(FitTrackColors colors) {
+    // 字段配置：[label, controller, hintText]
+    final fields = <List<dynamic>>[
+      ['体脂率 (%)', _bodyFatController, '5 - 50'],
+      ['胸围 (cm)', _chestController, '50 - 150'],
+      ['腰围 (cm)', _waistController, '40 - 130'],
+      ['臀围 (cm)', _hipController, '50 - 150'],
+      ['上臂围 (cm)', _armCircumferenceController, '15 - 60'],
+      ['大腿围 (cm)', _thighCircumferenceController, '30 - 80'],
+      ['目标体重 (kg)', _targetWeightController, '30 - 200'],
+      ['静息心率 (bpm)', _restingHeartRateController, '40 - 120'],
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          '更多身体数据',
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '可选填写，用于更精准的训练推荐',
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 24),
+        // 2 列网格布局
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 12,
+          // 单元格高度比例，保证标签 + 输入框能正常显示
+          childAspectRatio: 2.4,
+          children: fields.map((f) {
+            return FitTextField(
+              controller: f[1] as TextEditingController,
+              label: f[0] as String,
+              hint: f[2] as String,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        // 跳过提示
+        Row(
+          children: [
+            Icon(Icons.info_outline, size: 16, color: colors.textMuted),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                '以上字段均为可选，可直接点击"下一步"跳过',
+                style: TextStyle(
+                  color: colors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   String _getBMICategory() {
     final height = double.tryParse(_heightController.text);
     final weight = double.tryParse(_weightController.text);
@@ -524,6 +648,16 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   }
 
   Widget _buildTrainingTimeStep(FitTrackColors colors) {
+    // 自定义时间段选项
+    final timeSlots = [
+      {'label': '清晨', 'time': '06:00', 'icon': Icons.wb_sunny_outlined, 'desc': '06:00 - 08:00'},
+      {'label': '上午', 'time': '09:00', 'icon': Icons.wb_sunny, 'desc': '09:00 - 11:00'},
+      {'label': '中午', 'time': '12:00', 'icon': Icons.light_mode_outlined, 'desc': '12:00 - 14:00'},
+      {'label': '下午', 'time': '15:00', 'icon': Icons.wb_twilight, 'desc': '15:00 - 17:00'},
+      {'label': '傍晚', 'time': '18:00', 'icon': Icons.brightness_3_outlined, 'desc': '18:00 - 20:00'},
+      {'label': '夜间', 'time': '20:00', 'icon': Icons.nights_stay_outlined, 'desc': '20:00 - 22:00'},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -545,63 +679,87 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
           ),
         ),
         const SizedBox(height: 24),
-        GestureDetector(
-          onTap: () async {
-            final now = TimeOfDay.now();
-            final initialTime = _trainingTime.isNotEmpty
-                ? _parseTimeOfDay(_trainingTime)
-                : const TimeOfDay(hour: 18, minute: 0);
-            final picked = await showTimePicker(
-              context: context,
-              initialTime: initialTime,
-              builder: (context, child) {
-                return Theme(
-                  data: ThemeData.dark().copyWith(
-                    timePickerTheme: TimePickerThemeData(
-                      backgroundColor: colors.bgCard,
-                      hourMinuteTextColor: colors.textPrimary,
-                      dialHandColor: colors.accentGlow,
-                      dialBackgroundColor: colors.bgSecondary,
-                      entryModeIconColor: colors.accentGlow,
-                    ),
-                  ),
-                  child: child!,
-                );
+        // 时间段选择
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: timeSlots.map((slot) {
+            final isSelected = _trainingTime == slot['time'];
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _trainingTime = slot['time'] as String;
+                });
               },
-            );
-            if (picked != null) {
-              setState(() {
-                _trainingTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-              });
-            }
-          },
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              color: colors.bgCard,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _trainingTime.isNotEmpty ? colors.accentGlow : colors.borderColor),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _trainingTime.isNotEmpty ? _trainingTime : '点击选择时间',
-                  style: TextStyle(
-                    color: _trainingTime.isNotEmpty ? colors.accentGlow : colors.textMuted,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
+              child: Container(
+                width: (MediaQuery.of(context).size.width - 60) / 2,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? colors.accentGlow.withOpacity(0.12)
+                      : colors.bgCard,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected ? colors.accentGlow : colors.borderColor,
+                    width: isSelected ? 2 : 1,
                   ),
                 ),
-                Icon(Icons.access_time, color: _trainingTime.isNotEmpty ? colors.accentGlow : colors.textMuted),
+                child: Column(
+                  children: [
+                    Icon(
+                      slot['icon'] as IconData,
+                      size: 24,
+                      color: isSelected ? colors.accentGlow : colors.textSecondary,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      slot['label'] as String,
+                      style: TextStyle(
+                        color: isSelected ? colors.accentGlow : colors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      slot['desc'] as String,
+                      style: TextStyle(
+                        color: colors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        // 自定义时间输入
+        if (_trainingTime.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: colors.accentGlow.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.notifications_active, color: colors.accentGlow, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '将在每天 $_trainingTime 提醒你训练',
+                    style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                  ),
+                ),
               ],
             ),
           ),
-        ),
         if (_trainingTime.isEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.only(top: 4),
             child: TextButton(
               onPressed: () => _nextStep(),
               child: Text(
@@ -614,11 +772,4 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     );
   }
 
-  TimeOfDay _parseTimeOfDay(String time) {
-    final parts = time.split(':');
-    return TimeOfDay(
-      hour: int.tryParse(parts[0]) ?? 18,
-      minute: int.tryParse(parts[1]) ?? 0,
-    );
-  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
@@ -120,9 +121,63 @@ class _RecordsPageState extends State<RecordsPage> {
         ),
         Expanded(
           child: _records.isEmpty
-              ? EmptyState(
-                  icon: Icons.history,
-                  message: '暂无训练记录',
+              ? Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: CardWidget(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.history_outlined,
+                              size: 48, color: colors.accentGlow),
+                          const SizedBox(height: 16),
+                          Text(
+                            '暂无训练记录',
+                            style: TextStyle(
+                              color: colors.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '你的训练记录将显示在这里，包括每个动作的组数、重量和时长',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: colors.textSecondary,
+                              fontSize: 14,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // 功能亮点标签
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              BadgeWidget(text: '训练详情'),
+                              const SizedBox(width: 8),
+                              BadgeWidget(
+                                  text: '重量追踪',
+                                  variant: BadgeVariant.info),
+                              const SizedBox(width: 8),
+                              BadgeWidget(
+                                  text: '时长统计',
+                                  variant: BadgeVariant.success),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => context.push('/plan'),
+                              child: const Text('开始训练'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 )
               : SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

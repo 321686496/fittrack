@@ -14,37 +14,37 @@ const Map<String, List<Map<String, dynamic>>> _quickSetup = {
     {
       'day': 1, 'label': '胸部 + 三头肌', 'muscle': '胸',
       'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'restTime': 60},
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
+        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
       ],
     },
     {
       'day': 2, 'label': '背部 + 二头肌', 'muscle': '背',
       'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'restTime': 75},
-        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'restTime': 60},
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'restTime': 60},
-        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'restTime': 60},
+        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
+        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
+        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
       ],
     },
     {
       'day': 3, 'label': '腿部', 'muscle': '腿',
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
       ],
     },
     {
       'day': 4, 'label': '肩部 + 核心', 'muscle': '肩',
       'exercises': [
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'restTime': 60},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'restTime': 45},
-        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 45},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
+        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'weight': 0.0, 'restTime': 45},
+        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
       ],
     },
     {
@@ -60,32 +60,32 @@ const Map<String, List<Map<String, dynamic>>> _quickSetup = {
     {
       'day': 1, 'label': '胸部', 'muscle': '胸',
       'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
       ],
     },
     {
       'day': 2, 'label': '背部', 'muscle': '背',
       'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'restTime': 75},
+        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
       ],
     },
     {
       'day': 3, 'label': '腿部', 'muscle': '腿',
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
       ],
     },
     {
       'day': 4, 'label': '肩部 + 手臂', 'muscle': '肩/手臂',
       'exercises': [
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'restTime': 60},
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'restTime': 60},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
+        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
       ],
     },
   ],
@@ -93,40 +93,40 @@ const Map<String, List<Map<String, dynamic>>> _quickSetup = {
     {
       'day': 1, 'label': '胸部', 'muscle': '胸',
       'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'restTime': 60},
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
+        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
       ],
     },
     {
       'day': 2, 'label': '背部', 'muscle': '背',
       'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'restTime': 75},
-        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'restTime': 60},
+        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
       ],
     },
     {
       'day': 3, 'label': '腿部', 'muscle': '腿',
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
       ],
     },
     {
       'day': 4, 'label': '肩部', 'muscle': '肩',
       'exercises': [
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'restTime': 60},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
       ],
     },
     {
       'day': 5, 'label': '手臂', 'muscle': '手臂',
       'exercises': [
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'restTime': 60},
-        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'restTime': 60},
+        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
+        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
       ],
     },
   ],
@@ -134,25 +134,25 @@ const Map<String, List<Map<String, dynamic>>> _quickSetup = {
     {
       'day': 1, 'label': '全身训练A', 'muscle': '全身',
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-        {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'restTime': 90},
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'weight': 50.0, 'restTime': 90},
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'weight': 0.0, 'restTime': 90},
       ],
     },
     {
       'day': 2, 'label': '全身训练B', 'muscle': '全身',
       'exercises': [
-        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
+        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'weight': 15.0, 'restTime': 90},
       ],
     },
     {
       'day': 3, 'label': '全身训练C', 'muscle': '全身',
       'exercises': [
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'restTime': 30},
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'weight': 0.0, 'restTime': 30},
       ],
     },
   ],
@@ -606,6 +606,12 @@ class _PlanPageState extends State<PlanPage> {
   }
 
   void _adoptRecommendedPlan(Map<String, dynamic> plan) {
+    // 先将现有活跃计划设为暂停
+    for (final p in _plans) {
+      if (p['status'] == 'active') {
+        Storage.updatePlan(p['id'] as String, {...p, 'status': 'pending', 'badge': '待开始'});
+      }
+    }
     final planData = Map<String, dynamic>.from(plan);
     planData.remove('icon');
     planData.remove('desc');
@@ -797,7 +803,7 @@ class _PlanPageState extends State<PlanPage> {
               ),
             ],
           ),
-          const SizedBox(height: 80),
+          const SizedBox(height: 100),
         ],
       ),
     );
@@ -1067,6 +1073,48 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     }
   }
 
+  // 编辑指定训练日中的动作：弹出 _ExercisePickerSheet 并预填当前参数
+  void _editExercise(int dayIndex, int exIndex) {
+    final exercises = _days[dayIndex]['exercises'] as List? ?? [];
+    if (exIndex >= exercises.length) return;
+    final ex = Map<String, dynamic>.from(exercises[exIndex] as Map);
+
+    FitBottomSheet.show(
+      context: context,
+      maxHeightRatio: 0.65,
+      builder: (ctx) => _ExercisePickerSheet(
+        defaultSets: (ex['sets'] as num?)?.toInt() ?? 3,
+        defaultReps: int.tryParse(ex['reps']?.toString() ?? '10') ?? 10,
+        defaultWeight: (ex['weight'] as num?)?.toDouble() ?? 20.0,
+        defaultRestTime: (ex['restTime'] as num?)?.toInt() ?? 90,
+        initialExercise: MockData.exercises.firstWhere(
+          (e) => e['id'] == ex['id'],
+          orElse: () => {'id': ex['id'], 'name': ex['name'], 'category': '', 'equip': ''},
+        ),
+        onPick: (exercise, sets, reps, weight, restTime) {
+          final existing = _days[dayIndex]['exercises'];
+          final exList = (existing is List)
+              ? List<Map<String, dynamic>>.from(
+                  existing.map((e) => Map<String, dynamic>.from(e as Map)))
+              : <Map<String, dynamic>>[];
+          if (exIndex < exList.length) {
+            exList[exIndex] = {
+              'id': exercise['id'],
+              'name': exercise['name'],
+              'sets': sets,
+              'reps': '$reps',
+              'weight': weight,
+              'restTime': restTime,
+            };
+          }
+          _days[dayIndex]['exercises'] = exList;
+          setState(() {});
+          Navigator.of(ctx).pop();
+        },
+      ),
+    );
+  }
+
   void _save() {
     if (_nameController.text.trim().isEmpty) {
       FitToast.warning(context, '请输入计划名称');
@@ -1094,6 +1142,15 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
         frequency = '${_days.length}天/周';
     }
 
+    if (widget.existingPlan == null) {
+      // 新建计划时，暂停其他活跃计划
+      final existingPlans = Storage.getPlans();
+      for (final p in existingPlans) {
+        if (p['status'] == 'active') {
+          Storage.updatePlan(p['id'] as String, {...p, 'status': 'pending', 'badge': '待开始'});
+        }
+      }
+    }
     widget.onSave({
       'name': _nameController.text.trim(),
       'type': _selectedType,
@@ -1334,6 +1391,21 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     );
   }
 
+  // 训练动作的小标签：用于展示组数/次数/重量/休息时间
+  Widget _buildMiniTag(FitTrackColors colors, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.bgSecondary,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(color: colors.textSecondary, fontSize: 10),
+      ),
+    );
+  }
+
   Widget _buildDayEditor(FitTrackColors colors, int dayIndex, Map<String, dynamic> day) {
     final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final labelController = _labelControllers[dayIndex] ?? TextEditingController(text: '${day['label'] ?? ''}');
@@ -1390,23 +1462,44 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
           ...exercises.asMap().entries.map((exEntry) {
             final exIdx = exEntry.key;
             final ex = exEntry.value;
+            // 格式化重量：整数时不显示小数
+            final weightVal = ex['weight'];
+            final weightStr = (weightVal is num && weightVal == weightVal.toInt())
+                ? '${weightVal.toInt()}'
+                : '$weightVal';
             return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  Icon(Icons.fitness_center, size: 12, color: colors.textMuted),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      '${ex['name']}  ${ex['sets']}x${ex['reps']}',
-                      style: TextStyle(color: colors.textSecondary, fontSize: 12),
+              padding: const EdgeInsets.only(bottom: 6),
+              child: GestureDetector(
+                onTap: () => _editExercise(dayIndex, exIdx),
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 动作名称
+                    Text(
+                      '${ex['name']}',
+                      style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _removeExercise(dayIndex, exIdx),
-                    child: Icon(Icons.close, size: 14, color: colors.textMuted),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    // 4 个小标签 + 删除按钮
+                    Row(
+                      children: [
+                        _buildMiniTag(colors, '${ex['sets']}组'),
+                        const SizedBox(width: 6),
+                        _buildMiniTag(colors, '${ex['reps']}次'),
+                        const SizedBox(width: 6),
+                        _buildMiniTag(colors, '${weightStr}kg'),
+                        const SizedBox(width: 6),
+                        _buildMiniTag(colors, '${ex['restTime']}秒'),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => _removeExercise(dayIndex, exIdx),
+                          child: Icon(Icons.close, size: 14, color: colors.textMuted),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           }),
@@ -1447,6 +1540,7 @@ class _ExercisePickerSheet extends StatefulWidget {
   final int defaultReps;
   final double defaultWeight;
   final int defaultRestTime;
+  final Map<String, dynamic>? initialExercise; // 新增：编辑时传入的初始动作
   final void Function(Map<String, dynamic> exercise, int sets, int reps, double weight, int restTime) onPick;
 
   const _ExercisePickerSheet({
@@ -1455,6 +1549,7 @@ class _ExercisePickerSheet extends StatefulWidget {
     this.defaultReps = 10,
     this.defaultWeight = 20.0,
     this.defaultRestTime = 90,
+    this.initialExercise, // 新增
   });
 
   @override
@@ -1475,6 +1570,10 @@ class _ExercisePickerSheetState extends State<_ExercisePickerSheet> {
     _repsCtrl = TextEditingController(text: '${widget.defaultReps}');
     _weightCtrl = TextEditingController(text: '${widget.defaultWeight}');
     _restTimeCtrl = TextEditingController(text: '${widget.defaultRestTime}');
+    // 如果有初始动作，直接选中以显示配置视图
+    if (widget.initialExercise != null) {
+      _selectedExercise = widget.initialExercise;
+    }
   }
 
   @override

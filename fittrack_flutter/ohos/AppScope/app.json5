@@ -1,10 +1,10 @@
 {
   "app": {
-    "bundleName": "com.ft.fittrack",
+    "bundleName": "com.fp.fitplan",
     "vendor": "example",
     "versionCode": 1,
     "versionName": "1.0.0",
-    "icon": "$media:app_icon",
+    "icon": "$media:appicon",
     "label": "$string:app_name"
   }
 }

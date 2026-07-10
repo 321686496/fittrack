@@ -124,9 +124,11 @@ class _TrainingPageState extends State<TrainingPage>
     if (_isResting && _restEndTime != null) {
       final now = DateTime.now();
       if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
-        // 休息已结束，补发提醒并推进
         _restSeconds = 0;
-        RestNotificationService.instance.cancelScheduledNotification();
+        // OHOS 平台：代理提醒由 EntryAbility 自动管理，无需 Flutter 侧取消
+        if (!Platform.isOhos) {
+          RestNotificationService.instance.cancelScheduledNotification();
+        }
         _notifyRestEnd();
         _advanceAfterRest();
       }
@@ -154,7 +156,10 @@ class _TrainingPageState extends State<TrainingPage>
       // 休息时间已在后台结束
       _restSeconds = 0;
       // 取消预约通知（可能已发送，清理）
-      RestNotificationService.instance.cancelScheduledNotification();
+      // OHOS 平台：代理提醒由 EntryAbility 自动管理，无需 Flutter 侧取消
+      if (!Platform.isOhos) {
+        RestNotificationService.instance.cancelScheduledNotification();
+      }
       // 后台可能没有收到 zonedSchedule 通知，恢复前台时补发通知+振动
       _notifyRestEnd();
       // 推进到下一组
@@ -291,13 +296,17 @@ class _TrainingPageState extends State<TrainingPage>
     }
 
     // 预约定时通知（后台时系统自动触发）
-    final exerciseName = _currentExIdx < _exercises.length
-        ? _exercises[_currentExIdx]['name'] as String
-        : '';
-    RestNotificationService.instance.scheduleRestEndNotification(
-      exerciseName: exerciseName,
-      delaySeconds: seconds,
-    );
+    // OHOS 平台：EntryAbility 接收到 mode=rest 数据后自动发布 reminderAgentManager 代理提醒，
+    // 无需 Flutter 侧再通过 flutter_local_notifications 预约，避免 MissingPluginException
+    if (!Platform.isOhos) {
+      final exerciseName = _currentExIdx < _exercises.length
+          ? _exercises[_currentExIdx]['name'] as String
+          : '';
+      RestNotificationService.instance.scheduleRestEndNotification(
+        exerciseName: exerciseName,
+        delaySeconds: seconds,
+      );
+    }
 
     _restartRestTimer();
   }
@@ -332,15 +341,18 @@ class _TrainingPageState extends State<TrainingPage>
   void _skipRest() {
     _restTimer?.cancel();
     // 跳过休息时才取消预约通知
-    RestNotificationService.instance.cancelScheduledNotification();
+    // OHOS 平台：代理提醒由 EntryAbility 自动管理（收到 mode=training/idle 时取消），无需 Flutter 侧取消
+    if (!Platform.isOhos) {
+      RestNotificationService.instance.cancelScheduledNotification();
+    }
     _advanceAfterRest();
   }
 
   /// 休息结束时提醒
   /// - 前台：增强振动 + 显示通知
   /// - 后台恢复：wall-clock 检测到休息已结束，补发振动 + 通知
-  ///   （OHOS 上 zonedSchedule 不可用，后台期间无法主动发通知，
-  ///     只能在用户回到应用时立即提醒）
+  ///   （OHOS 上由 EntryAbility 的 reminderAgentManager 代理提醒处理，
+  ///     Flutter 侧仅做振动提醒）
   Future<void> _notifyRestEnd() async {
     if (_restEndNotified) return;
     _restEndNotified = true;
@@ -352,8 +364,11 @@ class _TrainingPageState extends State<TrainingPage>
     if (_appLifecycleState == AppLifecycleState.resumed) {
       // 前台或从后台恢复：振动 + 显示通知
       await RestNotificationService.vibrate();
-      await RestNotificationService.instance
-          .showRestEndNotification(exerciseName: exerciseName);
+      // OHOS 平台：通知由 EntryAbility 的 notificationManager 处理，Flutter 侧仅振动
+      if (!Platform.isOhos) {
+        await RestNotificationService.instance
+            .showRestEndNotification(exerciseName: exerciseName);
+      }
     }
     // 后台时无法主动触发通知（OHOS 限制），等待用户回到应用时补发
   }

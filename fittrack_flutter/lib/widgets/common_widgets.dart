@@ -67,7 +67,7 @@ class StatCard extends StatelessWidget {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: colors.bgCard,
         borderRadius: BorderRadius.circular(12),
@@ -77,13 +77,13 @@ class StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 22, color: color),
-          const SizedBox(height: 10),
+          Icon(icon, size: 18, color: color),
+          const SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
               color: colors.textPrimary,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -92,7 +92,7 @@ class StatCard extends StatelessWidget {
             label,
             style: TextStyle(
               color: colors.textMuted,
-              fontSize: 12,
+              fontSize: 11,
             ),
           ),
         ],

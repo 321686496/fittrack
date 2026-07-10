@@ -42,7 +42,7 @@ void main() {
     // 初始化桌面卡片服务（OHOS）
     if (Platform.isOhos) {
       FormKitService.instance.init();
-      // 初始化通知点击监听
+      // 初始化通知点击监听（RestNotificationService.init 内部也会调用，此处幂等）
       OhosReminderService.instance.initListener();
       // 监听卡片点击事件
       OhosReminderService.instance.onCardClick = (args) {
@@ -62,26 +62,12 @@ void main() {
           _globalRouter?.go('/home');
         }
       };
-      // 发布每日训练提醒（如果已设置训练时间）
-      _scheduleTrainingReminderIfNeeded();
     }
     runApp(const FitTrackApp());
   }, (error, stack) {
     debugPrint('Unhandled error: $error');
     debugPrint('Stack: $stack');
   });
-}
-
-Future<void> _scheduleTrainingReminderIfNeeded() async {
-  final settings = Storage.getSettings();
-  final trainingTime = settings['trainingTime'] as String? ?? '';
-  if (trainingTime.isNotEmpty) {
-    await OhosReminderService.instance.scheduleTrainingReminder(
-      title: '训练时间到',
-      content: '你设定的训练时间已到，开始今天的训练吧！',
-      timeStr: trainingTime,
-    );
-  }
 }
 
 class FitTrackApp extends StatefulWidget {
