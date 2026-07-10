@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../data/mock_data.dart';
@@ -30,6 +31,9 @@ class _StatsPageState extends State<StatsPage> {
   // ── Personal records ─────────────────────────────────────────
   List<Map<String, dynamic>> _personalRecords = [];
 
+  // ── Daily counts for heatmap ─────────────────────────────────
+  Map<String, int> _dailyCounts = {};
+
   // ── Muscle color map ─────────────────────────────────────────
   static const Map<String, Color> _muscleColors = {
     '胸': Color(0xFF3b82f6),
@@ -59,6 +63,20 @@ class _StatsPageState extends State<StatsPage> {
     _computeMonthChart();
     _computeMuscleDistribution();
     _computePersonalRecords();
+    _computeDailyCounts();
+  }
+
+  // ── Compute daily counts for heatmap ─────────────────────────
+
+  void _computeDailyCounts() {
+    _dailyCounts = {};
+    for (final r in _records) {
+      final ts = r['date'] as int? ?? r['createTime'] as int?;
+      if (ts == null) continue;
+      final d = DateTime.fromMillisecondsSinceEpoch(ts);
+      final key = '${d.year}-${d.month}-${d.day}';
+      _dailyCounts[key] = (_dailyCounts[key] ?? 0) + 1;
+    }
   }
 
   // ── Compute week chart ───────────────────────────────────────
@@ -216,12 +234,9 @@ class _StatsPageState extends State<StatsPage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final totalTrainings = (_stats['totalTrainings'] as num?) ?? 0;
-    final totalDuration = (_stats['totalDuration'] as num?) ?? 0;
-    final totalWeight = (_stats['totalWeight'] as num?) ?? 0;
-    final calories = (totalDuration.toInt() * 8); // ~8 cal/min estimate
 
-    if (totalTrainings.toInt() == 0) {
+    // 空状态：保留总览（值为0）+ 引导卡片
+    if (_records.isEmpty) {
       return Scaffold(
         body: Column(
           children: [
@@ -229,16 +244,101 @@ class _StatsPageState extends State<StatsPage> {
               title: '训练统计',
               isTabPage: true,
             ),
-            const Expanded(
-              child: EmptyState(
-                icon: Icons.bar_chart_outlined,
-                message: '暂无训练数据，完成训练后即可查看统计',
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    // ── 详细统计（值为0）───────────────────────
+                    const SectionHeader(title: '详细统计'),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(icon: Icons.fitness_center, value: '0', label: '总训练次数', color: colors.accentGlow)),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(icon: Icons.timer_outlined, value: '0分钟', label: '总训练时长', color: colors.infoColor)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: '0kg', label: '累计重量', color: colors.warningColor)),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(icon: Icons.local_fire_department, value: '0', label: '消耗卡路里', color: colors.successColor)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(icon: Icons.trending_up, value: '0分钟', label: '平均时长', color: colors.purpleColor)),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(icon: Icons.scale_outlined, value: '0kg', label: '平均重量', color: colors.accentSecondary)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(icon: Icons.repeat, value: '0', label: '总训练组数', color: colors.infoColor)),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(icon: Icons.calendar_today_outlined, value: '0', label: '本月训练', color: colors.successColor)),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // ── 热力图（空数据也显示）────────────────────
+                    _buildHeatmap(colors),
+                    const SizedBox(height: 24),
+                    // ── 引导卡片 ──────────────────────────────
+                    CardWidget(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.analytics_outlined,
+                              size: 48, color: colors.accentGlow),
+                          const SizedBox(height: 16),
+                          Text(
+                            '暂无训练数据',
+                            style: TextStyle(
+                              color: colors.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '完成你的第一次训练，开始记录健身历程',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: colors.textSecondary,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => context.push('/plan'),
+                              child: const Text('去训练'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 200),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       );
     }
+
+    final totalTrainings = (_stats['totalTrainings'] as num?) ?? 0;
+    final totalDuration = (_stats['totalDuration'] as num?) ?? 0;
+    final totalWeight = (_stats['totalWeight'] as num?) ?? 0;
+    final calories = (totalDuration.toInt() * 8); // ~8 cal/min estimate
 
     return Scaffold(
       body: Column(
@@ -254,43 +354,73 @@ class _StatsPageState extends State<StatsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                  // ── Overview stats ───────────────────────────
-                  const SectionHeader(title: '总览'),
-                  const SizedBox(height: 12),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.5,
+                  // ── 详细统计 ────────────────────────────────
+                  const SectionHeader(title: '详细统计'),
+                  const SizedBox(height: 8),
+                  // 第一行：基础统计
+                  Row(
                     children: [
-                      StatCard(
-                        icon: Icons.fitness_center,
-                        value: '$totalTrainings',
-                        label: '总训练',
-                        color: colors.accentGlow,
-                      ),
-                      StatCard(
-                        icon: Icons.timer_outlined,
-                        value: _formatDuration(totalDuration.toInt()),
-                        label: '总时长',
-                        color: colors.infoColor,
-                      ),
-                      StatCard(
-                        icon: Icons.monitor_weight_outlined,
-                        value: _formatWeight(totalWeight.toInt()),
-                        label: '总重量',
-                        color: colors.warningColor,
-                      ),
-                      StatCard(
-                        icon: Icons.local_fire_department,
-                        value: '$calories',
-                        label: '卡路里',
-                        color: colors.successColor,
-                      ),
+                      Expanded(child: StatCard(icon: Icons.fitness_center, value: '$totalTrainings', label: '总训练次数', color: colors.accentGlow)),
+                      const SizedBox(width: 12),
+                      Expanded(child: StatCard(icon: Icons.timer_outlined, value: _formatDuration(totalDuration.toInt()), label: '总训练时长', color: colors.infoColor)),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  // 第二行：重量与热量
+                  Row(
+                    children: [
+                      Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: _formatWeight(totalWeight.toInt()), label: '累计重量', color: colors.warningColor)),
+                      const SizedBox(width: 12),
+                      Expanded(child: StatCard(icon: Icons.local_fire_department, value: '$calories', label: '消耗卡路里', color: colors.successColor)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // 第三行：详细统计 - 平均时长与平均重量
+                  Row(
+                    children: [
+                      Expanded(child: StatCard(
+                        icon: Icons.trending_up,
+                        value: totalTrainings > 0 ? _formatDuration((totalDuration / totalTrainings).round()) : '0分钟',
+                        label: '平均时长',
+                        color: colors.purpleColor,
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: StatCard(
+                        icon: Icons.scale_outlined,
+                        value: totalTrainings > 0 ? _formatWeight((totalWeight / totalTrainings).round()) : '0kg',
+                        label: '平均重量',
+                        color: colors.accentSecondary,
+                      )),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // 第四行：总组数与完成率
+                  Row(
+                    children: [
+                      Expanded(child: StatCard(
+                        icon: Icons.repeat,
+                        value: '${_records.fold<int>(0, (sum, r) => sum + ((r['setRecords'] as Map?)?.length ?? 0))}',
+                        label: '总训练组数',
+                        color: colors.infoColor,
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: StatCard(
+                        icon: Icons.calendar_today_outlined,
+                        value: '${_records.where((r) {
+                          final date = r['date'] as int? ?? 0;
+                          final now = DateTime.now();
+                          final recordDate = DateTime.fromMillisecondsSinceEpoch(date);
+                          return recordDate.month == now.month && recordDate.year == now.year;
+                        }).length}',
+                        label: '本月训练',
+                        color: colors.successColor,
+                      )),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── 训练活跃度热力图 ──────────────────────────
+                  _buildHeatmap(colors),
                   const SizedBox(height: 24),
 
                   // ── Training frequency chart ─────────────────
@@ -317,6 +447,219 @@ class _StatsPageState extends State<StatsPage> {
                   const SizedBox(height: 200),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 训练活跃度热力图 ──────────────────────────────────────────
+
+  Widget _buildHeatmap(FitTrackColors colors) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekday = now.weekday; // 1=Mon..7=Sun
+    // 本周一
+    final currentWeekMonday = today.subtract(Duration(days: weekday - 1));
+    // 12周范围起始（11周前的周一）
+    final rangeStart =
+        currentWeekMonday.subtract(const Duration(days: 7 * 11));
+
+    const cellSize = 12.0;
+    const spacing = 3.0;
+    const borderRadius = 2.0;
+
+    // 根据训练次数返回对应颜色
+    Color colorForCount(int count) {
+      if (count == 0) return colors.bgSecondary;
+      if (count == 1) return colors.accentGlow.withOpacity(0.3);
+      if (count == 2) return colors.accentGlow.withOpacity(0.6);
+      return colors.accentGlow;
+    }
+
+    // 星期标签（仅显示一/三/五）
+    String weekdayLabel(int row) {
+      switch (row) {
+        case 0:
+          return '一';
+        case 2:
+          return '三';
+        case 4:
+          return '五';
+        default:
+          return '';
+      }
+    }
+
+    // 月份标签（月份变化时显示）
+    String monthLabel(int col) {
+      final colStart = rangeStart.add(Duration(days: col * 7));
+      if (col == 0) return '${colStart.month}月';
+      final prevColStart = rangeStart.add(Duration(days: (col - 1) * 7));
+      if (colStart.month != prevColStart.month) return '${colStart.month}月';
+      return '';
+    }
+
+    // 网格总宽度
+    final gridWidth = 12 * cellSize + 11 * spacing;
+
+    return CardWidget(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题行
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '训练活跃度',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '过去12周',
+                style: TextStyle(
+                  color: colors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // 热力图主体：星期标签 + 网格
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 星期标签列
+              Column(
+                children: [
+                  for (int r = 0; r < 7; r++) ...[
+                    if (r > 0) const SizedBox(height: spacing),
+                    SizedBox(
+                      width: 14,
+                      height: cellSize,
+                      child: Center(
+                        child: Text(
+                          weekdayLabel(r),
+                          style: TextStyle(
+                            color: colors.textMuted,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(width: 6),
+              // 网格 + 月份标签
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 网格
+                  Row(
+                    children: [
+                      for (int c = 0; c < 12; c++) ...[
+                        if (c > 0) const SizedBox(width: spacing),
+                        Column(
+                          children: [
+                            for (int r = 0; r < 7; r++) ...[
+                              if (r > 0) const SizedBox(height: spacing),
+                              Builder(builder: (_) {
+                                final date = rangeStart
+                                    .add(Duration(days: c * 7 + r));
+                                // 未来日期渲染浅灰色背景
+                                if (date.isAfter(today)) {
+                                  return Container(
+                                    width: cellSize,
+                                    height: cellSize,
+                                    decoration: BoxDecoration(
+                                      color: colors.borderColor.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(borderRadius),
+                                    ),
+                                  );
+                                }
+                                final key =
+                                    '${date.year}-${date.month}-${date.day}';
+                                final count = _dailyCounts[key] ?? 0;
+                                return Container(
+                                  width: cellSize,
+                                  height: cellSize,
+                                  decoration: BoxDecoration(
+                                    color: colorForCount(count),
+                                    borderRadius:
+                                        BorderRadius.circular(borderRadius),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  // 月份标签（Stack 精确定位）
+                  SizedBox(
+                    height: 14,
+                    width: gridWidth,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        for (int c = 0; c < 12; c++)
+                          if (monthLabel(c).isNotEmpty)
+                            Positioned(
+                              left: c * (cellSize + spacing),
+                              top: 0,
+                              child: Text(
+                                monthLabel(c),
+                                style: TextStyle(
+                                  color: colors.textMuted,
+                                  fontSize: 9,
+                                ),
+                              ),
+                            ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 图例：少 → 多
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '少',
+                  style: TextStyle(color: colors.textMuted, fontSize: 10),
+                ),
+                const SizedBox(width: 4),
+                for (int i = 0; i < 4; i++) ...[
+                  if (i > 0) const SizedBox(width: 3),
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: colorForCount(i),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 4),
+                Text(
+                  '多',
+                  style: TextStyle(color: colors.textMuted, fontSize: 10),
+                ),
+              ],
             ),
           ),
         ],

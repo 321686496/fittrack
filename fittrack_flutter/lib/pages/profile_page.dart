@@ -200,10 +200,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 20),
                 SectionHeader(title: '身体数据'),
                 const SizedBox(height: 10),
-                if (body.isEmpty)
-                  _buildNoBodyDataCard(colors)
+                if (_hasMeaningfulBodyData(body))
+                  _buildBodyData(colors, body)
                 else
-                  _buildBodyData(colors, body),
+                  _buildNoBodyDataCard(colors),
                 const SizedBox(height: 20),
                 _buildMenuList(colors, context),
                 const SizedBox(height: 200),
@@ -791,16 +791,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         // 更新卡片数据（训练时间变更）
                         if (Platform.isOhos) {
                           FormKitService.instance.pushFormData();
-                          // 重新发布训练提醒
-                          if (trainingTime.isNotEmpty) {
-                            OhosReminderService.instance.scheduleTrainingReminder(
-                              title: '训练时间到',
-                              content: '你设定的训练时间已到，开始今天的训练吧！',
-                              timeStr: trainingTime,
-                            );
-                          } else {
-                            OhosReminderService.instance.cancelTrainingReminder();
-                          }
                         }
                         FitToast.success(context, '个人信息已更新');
                       },
@@ -897,7 +887,65 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildBodyData(FitTrackColors colors, Map<String, dynamic> body) {
+    // 收集有值的字段（值为 0 或 null 的字段不显示）
+    final fieldConfigs = <Map<String, dynamic>>[
+      {'key': 'height', 'unit': 'cm', 'label': '身高'},
+      {'key': 'weight', 'unit': 'kg', 'label': '体重'},
+      {'key': 'bmi', 'unit': '', 'label': 'BMI'},
+      {'key': 'bodyFat', 'unit': '%', 'label': '体脂率'},
+      {'key': 'chest', 'unit': 'cm', 'label': '胸围'},
+      {'key': 'waist', 'unit': 'cm', 'label': '腰围'},
+      {'key': 'hip', 'unit': 'cm', 'label': '臀围'},
+      {'key': 'armCircumference', 'unit': 'cm', 'label': '上臂围'},
+      {'key': 'thighCircumference', 'unit': 'cm', 'label': '大腿围'},
+      {'key': 'targetWeight', 'unit': 'kg', 'label': '目标体重'},
+      {'key': 'restingHeartRate', 'unit': 'bpm', 'label': '静息心率'},
+    ];
+
+    final items = <Map<String, String>>[];
+    for (final config in fieldConfigs) {
+      final v = body[config['key']];
+      final numValue = v is num
+          ? v.toDouble()
+          : double.tryParse(v?.toString() ?? '') ?? 0;
+      if (numValue > 0) {
+        items.add({
+          'value': _formatBodyValue(numValue),
+          'unit': config['unit'] as String,
+          'label': config['label'] as String,
+        });
+      }
+    }
+
+    // 按 4 个一行分组展示
+    final rows = <Widget>[];
+    for (var i = 0; i < items.length; i += 4) {
+      final end = (i + 4 > items.length) ? items.length : i + 4;
+      final rowItems = items.sublist(i, end);
+      // 不足 4 个时补齐占位，保持等宽
+      while (rowItems.length < 4) {
+        rowItems.add({'value': '', 'unit': '', 'label': ''});
+      }
+      rows.add(Row(
+        children: rowItems.map((item) => _buildBodyItem(
+              colors,
+              item['value']!,
+              item['unit']!,
+              item['label']!,
+            )).toList(),
+      ));
+      if (i + 4 < items.length) {
+        rows.add(const SizedBox(height: 12));
+        rows.add(const DividerWidget(indent: 0));
+        rows.add(const SizedBox(height: 12));
+      }
+    }
+
     return CardWidget(
+      onTap: () async {
+        await context.push('/body-data');
+        if (mounted) setState(() {});
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -912,7 +960,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               Text(
-                '更新于 ${body['lastUpdate']}',
+                '更新于 ${body['lastUpdate'] ?? '刚刚'}',
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 11,
@@ -921,27 +969,33 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              _buildBodyItem(colors, '${body['height']}', 'cm', '身高'),
-              _buildBodyItem(colors, '${body['weight']}', 'kg', '体重'),
-              _buildBodyItem(colors, '${body['bmi']}', '', 'BMI'),
-              _buildBodyItem(colors, '${body['bodyFat']}', '%', '体脂率'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          DividerWidget(indent: 0),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _buildBodyItem(colors, '${body['chest']}', 'cm', '胸围'),
-              _buildBodyItem(colors, '${body['waist']}', 'cm', '腰围'),
-              _buildBodyItem(colors, '${body['hip']}', 'cm', '臀围'),
-            ],
-          ),
+          ...rows,
         ],
       ),
     );
+  }
+
+  /// 格式化身体数据数值：整数去掉 .0
+  String _formatBodyValue(double v) {
+    if (v == v.toInt()) return v.toInt().toString();
+    return v.toStringAsFixed(1);
+  }
+
+  /// 判断是否存在有意义的身体数据（任一字段非 0 且非 null）
+  bool _hasMeaningfulBodyData(Map<String, dynamic> body) {
+    if (body.isEmpty) return false;
+    const keys = [
+      'height', 'weight', 'bmi', 'bodyFat', 'chest', 'waist', 'hip',
+      'armCircumference', 'thighCircumference', 'targetWeight', 'restingHeartRate',
+    ];
+    for (final key in keys) {
+      final v = body[key];
+      final numValue = v is num
+          ? v.toDouble()
+          : double.tryParse(v?.toString() ?? '') ?? 0;
+      if (numValue > 0) return true;
+    }
+    return false;
   }
 
   Widget _buildBodyItem(FitTrackColors colors, String value, String unit, String label) {
@@ -987,123 +1041,44 @@ class _ProfilePageState extends State<ProfilePage> {
     return CardWidget(
       child: Column(
         children: [
-          Icon(Icons.accessibility_new_outlined, size: 40, color: colors.textMuted),
-          const SizedBox(height: 10),
-          Text('暂未录入身体数据', style: TextStyle(color: colors.textMuted, fontSize: 14)),
+          Icon(Icons.accessibility_new, size: 48, color: colors.accentGlow),
           const SizedBox(height: 12),
+          Text(
+            '完善身体数据',
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '记录你的身体数据，获取更精准的训练推荐',
+            style: TextStyle(
+              color: colors.textMuted,
+              fontSize: 13,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _showBodyDataEditor(context),
+              onPressed: () async {
+                await context.push('/body-data');
+                if (mounted) setState(() {});
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('录入数据', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              child: const Text('去填写', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  void _showBodyDataEditor(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final body = Storage.getBodyData();
-    final heightCtrl = TextEditingController(text: body['height']?.toString() ?? '');
-    final weightCtrl = TextEditingController(text: body['weight']?.toString() ?? '');
-    final bmiCtrl = TextEditingController(text: body['bmi']?.toString() ?? '');
-    final bodyFatCtrl = TextEditingController(text: body['bodyFat']?.toString() ?? '');
-    final chestCtrl = TextEditingController(text: body['chest']?.toString() ?? '');
-    final waistCtrl = TextEditingController(text: body['waist']?.toString() ?? '');
-    final hipCtrl = TextEditingController(text: body['hip']?.toString() ?? '');
-
-    FitBottomSheet.show(
-      context: context,
-      maxHeightRatio: 0.8,
-      builder: (ctx) {
-        return SingleChildScrollView(
-          padding: EdgeInsets.only(
-            left: 16, right: 16, top: 16,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('录入身体数据', style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              _buildBodyInputField(colors, '身高 (cm)', heightCtrl),
-              const SizedBox(height: 12),
-              _buildBodyInputField(colors, '体重 (kg)', weightCtrl),
-              const SizedBox(height: 12),
-              _buildBodyInputField(colors, 'BMI', bmiCtrl),
-              const SizedBox(height: 12),
-              _buildBodyInputField(colors, '体脂率 (%)', bodyFatCtrl),
-              const SizedBox(height: 12),
-              _buildBodyInputField(colors, '胸围 (cm)', chestCtrl),
-              const SizedBox(height: 12),
-              _buildBodyInputField(colors, '腰围 (cm)', waistCtrl),
-              const SizedBox(height: 12),
-              _buildBodyInputField(colors, '臀围 (cm)', hipCtrl),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final w = double.tryParse(weightCtrl.text) ?? 0;
-                    final h = double.tryParse(heightCtrl.text) ?? 0;
-                    final bmi = h > 0 ? (w / ((h / 100) * (h / 100))).toStringAsFixed(1) : '';
-                    Storage.saveBodyData({
-                      'height': double.tryParse(heightCtrl.text) ?? 0,
-                      'weight': w,
-                      'bmi': bmiCtrl.text.isNotEmpty ? double.tryParse(bmiCtrl.text) : (bmi.isNotEmpty ? double.tryParse(bmi) : 0),
-                      'bodyFat': double.tryParse(bodyFatCtrl.text) ?? 0,
-                      'chest': double.tryParse(chestCtrl.text) ?? 0,
-                      'waist': double.tryParse(waistCtrl.text) ?? 0,
-                      'hip': double.tryParse(hipCtrl.text) ?? 0,
-                      'lastUpdate': '刚刚',
-                    });
-                    Navigator.of(ctx).pop();
-                    setState(() {});
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: const Text('保存', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBodyInputField(FitTrackColors colors, String label, TextEditingController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: TextStyle(color: colors.textSecondary, fontSize: 13)),
-        const SizedBox(height: 4),
-        TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: TextStyle(color: colors.textPrimary, fontSize: 16),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: colors.bgCard,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: colors.borderColor)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: colors.borderColor)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: colors.accentGlow)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          ),
-        ),
-      ],
     );
   }
 

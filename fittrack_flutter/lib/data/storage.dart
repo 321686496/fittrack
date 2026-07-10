@@ -21,6 +21,7 @@ class Storage {
   static const String _keySettings = 'fitplan_settings';
   static const String _keyStats = 'fitplan_stats';
   static const String _keyBodyData = 'fitplan_bodyData';
+  static const String _keyBodyDataHistory = 'fitplan_bodyDataHistory';
   static const String _keyPrefsPrefix = 'fittrack_';
   static const String _keyMigrated = 'fittrack_sqlite_migrated';
 
@@ -32,7 +33,7 @@ class Storage {
     _prefs = await SharedPreferences.getInstance();
 
     // 加载 SharedPreferences 中的轻量数据
-    for (final key in [_keySettings, _keyStats, _keyBodyData]) {
+    for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory]) {
       final raw = _prefs!.getString('$_keyPrefsPrefix$key');
       if (raw != null) {
         try {
@@ -490,6 +491,31 @@ class Storage {
     return result;
   }
 
+  /// 获取身体数据历史记录
+  static List<Map<String, dynamic>> getBodyDataHistory() {
+    final result = _safeGet(_keyBodyDataHistory, <Map<String, dynamic>>[]);
+    if (result is List) {
+      return result.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
+    return [];
+  }
+
+  /// 保存身体数据历史（每次更新前调用）
+  static bool saveBodyDataHistory(Map<String, dynamic> oldData) {
+    if (oldData.isEmpty) return false;
+    final history = getBodyDataHistory();
+    final entry = Map<String, dynamic>.from(oldData);
+    entry['timestamp'] = DateTime.now().millisecondsSinceEpoch;
+    history.add(entry);
+    // 只保留最近 50 条
+    if (history.length > 50) {
+      history.removeRange(0, history.length - 50);
+    }
+    final result = _safeSet(_keyBodyDataHistory, history);
+    _persistKeyAsync(_keyBodyDataHistory);
+    return result;
+  }
+
   // ============================================================
   // GymCards (SQLite)
   // ============================================================
@@ -683,9 +709,11 @@ class Storage {
     _store.remove(_keySettings);
     _store.remove(_keyStats);
     _store.remove(_keyBodyData);
+    _store.remove(_keyBodyDataHistory);
     _prefs?.remove('${_keyPrefsPrefix}fitplan_settings');
     _prefs?.remove('${_keyPrefsPrefix}fitplan_stats');
     _prefs?.remove('${_keyPrefsPrefix}fitplan_bodyData');
+    _prefs?.remove('${_keyPrefsPrefix}fitplan_bodyDataHistory');
   }
 
   static bool hasData() {

@@ -164,6 +164,10 @@ class _HomePageState extends State<HomePage> {
         final dayIndex = weekday <= days.length ? weekday - 1 : 0;
         final dayData = days[dayIndex] as Map<String, dynamic>;
         final exercises = (dayData['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        // 当天没有训练动作或超出计划天数，返回 null 显示"今日休息"
+        if (exercises.isEmpty) {
+          return null;
+        }
         return {
           'name': dayData['label'] ?? '今日训练',
           'muscle': dayData['muscle'] ?? '',
@@ -230,11 +234,13 @@ class _HomePageState extends State<HomePage> {
       final isToday = i == weekday - 1;
       final isDone = trainedDays.contains(i);
       final planDay = planDays[i];
-      final isRest = planDay?['label']?.toString().contains('休息') ?? false;
+      final exercises = (planDay?['exercises'] as List?) ?? [];
+      // 没有计划或当天没有训练动作，标记为休息日
+      final isRest = exercises.isEmpty;
 
       return {
         'day': dayLabels[i],
-        'label': planDay?['label'] ?? '',
+        'label': isRest ? '休息' : (planDay?['label'] ?? '休息'),
         'done': isDone,
         'today': isToday,
         'rest': isRest,
@@ -279,25 +285,25 @@ class _HomePageState extends State<HomePage> {
                       _buildTodayPlanCard(colors, todayPlan)
                     else
                       _buildNoPlanCard(colors),
-                    const SizedBox(height: 20),
-                    _buildWeeklyStatsGrid(colors, weeklyStats),
-                    const SizedBox(height: 20),
-                    _buildWeeklyCalendar(colors),
-                    const SizedBox(height: 20),
-                    _buildStreakCard(colors, streakData),
-                    const SizedBox(height: 20),
-                    _buildRecentTrainings(colors),
-                    if (prData.isNotEmpty) ...[
-                      const SizedBox(height: 20),
-                      _buildPersonalRecords(colors, prData),
-                    ],
-                    const SizedBox(height: 20),
-                    _buildDailyTip(colors),
                     if (activePlan != null) ...[
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
                       _buildCurrentPlanCard(colors, activePlan),
                     ],
-                    const SizedBox(height: 200),
+                    const SizedBox(height: 14),
+                    _buildWeeklyStatsGrid(colors, weeklyStats),
+                    const SizedBox(height: 14),
+                    _buildWeeklyCalendar(colors),
+                    const SizedBox(height: 14),
+                    _buildStreakCard(colors, streakData),
+                    const SizedBox(height: 14),
+                    _buildRecentTrainings(colors),
+                    if (prData.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      _buildPersonalRecords(colors, prData),
+                    ],
+                    const SizedBox(height: 14),
+                    _buildDailyTip(colors),
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -309,6 +315,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildNoPlanCard(FitTrackColors colors) {
+    // 如果有活跃计划但今天没有训练动作，显示休息日提示
+    final hasActivePlan = _activePlan != null;
+    final title = hasActivePlan ? '今日休息' : '暂无训练计划';
+    final subtitle = hasActivePlan ? '今天没有安排训练，好好休息' : '前往计划页创建训练计划';
+    final buttonText = hasActivePlan ? '查看计划' : '创建计划';
+
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,17 +334,17 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
               ),
               const Spacer(),
-              BadgeWidget(text: '未安排', variant: BadgeVariant.info),
+              BadgeWidget(text: hasActivePlan ? '休息日' : '未安排', variant: BadgeVariant.info),
             ],
           ),
           const SizedBox(height: 14),
           Text(
-            '暂无训练计划',
+            title,
             style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
-            '前往计划页创建训练计划',
+            subtitle,
             style: TextStyle(color: colors.textMuted, fontSize: 13),
           ),
           const SizedBox(height: 14),
@@ -346,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('创建计划', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              child: Text(buttonText, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
             ),
           ),
         ],
@@ -432,43 +444,31 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildWeeklyStatsGrid(FitTrackColors colors, Map<String, dynamic> stats) {
+    final items = [
+      {'icon': Icons.fitness_center, 'value': '${stats['trainings'] ?? 0}', 'label': '训练次数', 'color': colors.accentGlow},
+      {'icon': Icons.timer_outlined, 'value': '${stats['duration'] ?? '0h'}', 'label': '训练时长', 'color': colors.infoColor},
+      {'icon': Icons.monitor_weight_outlined, 'value': '${stats['weight'] ?? '0t'}', 'label': '总重量', 'color': colors.warningColor},
+      {'icon': Icons.local_fire_department_outlined, 'value': '${stats['calories'] ?? '0'}', 'label': '消耗', 'color': colors.successColor},
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SectionHeader(title: '本周统计'),
-        const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.6,
+        const SizedBox(height: 8),
+        // 2x2 网格，用 Row+Column 避免 GridView 溢出
+        Row(
           children: [
-            StatCard(
-              icon: Icons.fitness_center,
-              value: '${stats['trainings'] ?? 0}',
-              label: '训练次数',
-              color: colors.accentGlow,
-            ),
-            StatCard(
-              icon: Icons.timer_outlined,
-              value: '${stats['duration'] ?? '0h'}',
-              label: '训练时长',
-              color: colors.infoColor,
-            ),
-            StatCard(
-              icon: Icons.monitor_weight_outlined,
-              value: '${stats['weight'] ?? '0t'}',
-              label: '总重量',
-              color: colors.warningColor,
-            ),
-            StatCard(
-              icon: Icons.local_fire_department_outlined,
-              value: '${stats['calories'] ?? '0'}',
-              label: '消耗',
-              color: colors.successColor,
-            ),
+            Expanded(child: StatCard(icon: items[0]['icon'] as IconData, value: items[0]['value'] as String, label: items[0]['label'] as String, color: items[0]['color'] as Color)),
+            const SizedBox(width: 10),
+            Expanded(child: StatCard(icon: items[1]['icon'] as IconData, value: items[1]['value'] as String, label: items[1]['label'] as String, color: items[1]['color'] as Color)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: StatCard(icon: items[2]['icon'] as IconData, value: items[2]['value'] as String, label: items[2]['label'] as String, color: items[2]['color'] as Color)),
+            const SizedBox(width: 10),
+            Expanded(child: StatCard(icon: items[3]['icon'] as IconData, value: items[3]['value'] as String, label: items[3]['label'] as String, color: items[3]['color'] as Color)),
           ],
         ),
       ],
@@ -484,65 +484,88 @@ class _HomePageState extends State<HomePage> {
         const SectionHeader(title: '本周日历'),
         const SizedBox(height: 12),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: calendarData.map((day) {
             final isDone = day['done'] == true;
             final isToday = day['today'] == true;
             final isRest = day['rest'] == true;
 
-            Color dotColor;
-            if (isDone && !isRest) {
-              dotColor = colors.successColor;
+            // 根据日期状态构建指示器
+            Widget indicator;
+            if (isRest) {
+              // 休息日：灰色小圆点
+              indicator = Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: colors.textMuted,
+                  shape: BoxShape.circle,
+                ),
+              );
+            } else if (isDone) {
+              // 训练日且已完成：绿色对勾
+              indicator = Icon(Icons.check, size: 14, color: colors.successColor);
             } else if (isToday) {
-              dotColor = colors.accentGlow;
-            } else if (isRest) {
-              dotColor = colors.textMuted;
+              // 训练日且今天：橙色小圆点
+              indicator = Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: colors.accentGlow,
+                  shape: BoxShape.circle,
+                ),
+              );
             } else {
-              dotColor = Colors.transparent;
+              // 训练日且未完成：空心圆环
+              indicator = Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.accentGlow, width: 1.5),
+                ),
+              );
             }
 
-            return Column(
-              children: [
-                Text(
-                  '周${day['day']}',
-                  style: TextStyle(
-                    color: isToday ? colors.accentGlow : colors.textMuted,
-                    fontSize: 12,
-                    fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isToday ? colors.accentGlow.withOpacity(0.15) : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                    border: isToday ? Border.all(color: colors.accentGlow, width: 1.5) : null,
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: dotColor,
-                        shape: BoxShape.circle,
-                      ),
+            return Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    '周${day['day']}',
+                    style: TextStyle(
+                      color: isToday ? colors.accentGlow : colors.textMuted,
+                      fontSize: 12,
+                      fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${day['label']}',
-                  style: TextStyle(
-                    color: isRest ? colors.textMuted : colors.textSecondary,
-                    fontSize: 10,
+                  const SizedBox(height: 6),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isToday ? colors.accentGlow.withOpacity(0.15) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: isToday ? Border.all(color: colors.accentGlow, width: 1.5) : null,
+                    ),
+                    child: Center(child: indicator),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 24,
+                    child: Text(
+                      '${day['label']}',
+                      style: TextStyle(
+                        color: isRest ? colors.textMuted : colors.textSecondary,
+                        fontSize: 9,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             );
           }).toList(),
         ),
@@ -898,6 +921,45 @@ class _HomePageState extends State<HomePage> {
             child: Center(child: Text('$day', style: TextStyle(color: isToday ? colors.accentGlow : isTrained ? colors.textPrimary : colors.textMuted, fontSize: 13, fontWeight: isToday || isTrained ? FontWeight.w600 : FontWeight.normal))),
           ));
         }
+        final weeks = <Widget>[];
+        List<Widget> currentWeek = [];
+        for (var i = 0; i < startWeekday; i++) {
+          currentWeek.add(const Expanded(child: SizedBox()));
+        }
+        for (var day = 1; day <= daysInMonth; day++) {
+          final isToday = day == now.day;
+          final isTrained = trainedDays.contains(day);
+          currentWeek.add(Expanded(
+            child: Container(
+              height: 36,
+              decoration: BoxDecoration(
+                color: isToday ? colors.accentGlow.withOpacity(0.3) : isTrained ? colors.accentGlow.withOpacity(0.1) : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '$day',
+                  style: TextStyle(
+                    color: isToday ? colors.accentGlow : isTrained ? colors.textPrimary : colors.textMuted,
+                    fontSize: 13,
+                    fontWeight: isToday || isTrained ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+          ));
+          if (currentWeek.length == 7) {
+            weeks.add(Row(children: currentWeek));
+            currentWeek = [];
+          }
+        }
+        if (currentWeek.isNotEmpty) {
+          while (currentWeek.length < 7) {
+            currentWeek.add(const Expanded(child: SizedBox()));
+          }
+          weeks.add(Row(children: currentWeek));
+        }
+
         return Material(
           color: Colors.transparent,
           child: Container(
@@ -913,7 +975,10 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 12),
               Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: ['一','二','三','四','五','六','日'].map((d) => Expanded(child: Center(child: Text(d, style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600))))).toList())),
               const SizedBox(height: 8),
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Wrap(spacing: 0, runSpacing: 2, children: cells.map((c) => SizedBox(width: (MediaQuery.of(context).size.width - 48) / 7, child: c)).toList())),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(children: weeks),
+              ),
               const SizedBox(height: 16),
               Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
                 Container(width: 10, height: 10, decoration: BoxDecoration(color: colors.accentGlow, shape: BoxShape.circle)),

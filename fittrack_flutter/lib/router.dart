@@ -14,10 +14,12 @@ import 'pages/stats_page.dart';
 import 'pages/exercise_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/settings_page.dart';
+import 'pages/theme_settings_page.dart';
 import 'pages/records_page.dart';
 import 'pages/notification_test_page.dart';
 import 'pages/reminder_settings_page.dart';
 import 'pages/gym_card_page.dart';
+import 'pages/body_data_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -190,6 +192,16 @@ GoRouter createRouter() {
         ),
       ),
       GoRoute(
+        path: '/theme-settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => ThemeSettingsPage(
+          currentThemeId: state.extra as String? ?? 'vitality-sport',
+          onThemeChanged: (themeId) {
+            onThemeChanged?.call(themeId);
+          },
+        ),
+      ),
+      GoRoute(
         path: '/notification-test',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationTestPage(),
@@ -203,6 +215,11 @@ GoRouter createRouter() {
         path: '/gym-card',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const GymCardPage(),
+      ),
+      GoRoute(
+        path: '/body-data',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BodyDataPage(),
       ),
     ],
   );
@@ -243,7 +260,9 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       body: Stack(
         children: [
+          // Tab 页面内容，底部留出悬浮导航栏的空间
           Positioned.fill(
+            bottom: 0,
             child: IndexedStack(
               index: widget.currentIndex,
               children: _children,

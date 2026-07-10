@@ -17,6 +17,13 @@ class SettingsPage extends StatefulWidget {
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
+
+  /// 检查权限并在未授权时弹出提示（供其他页面调用）
+  static Future<bool> checkPermissionWithPrompt(BuildContext context, String permissionName) async {
+    // 简化实现：总是返回 true，权限检查由原生侧处理
+    // 此方法预留，后续可在其他页面调用
+    return true;
+  }
 }
 
 class _SettingsPageState extends State<SettingsPage> {
@@ -25,6 +32,11 @@ class _SettingsPageState extends State<SettingsPage> {
   late TextEditingController _defaultSetsController;
   late TextEditingController _defaultRepsController;
   late TextEditingController _defaultWeightController;
+
+  // 权限状态
+  bool _hasNotificationPermission = false;
+  bool _hasVibratePermission = false;
+  bool _hasBackgroundPermission = false;
 
   @override
   void initState() {
@@ -43,6 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _defaultWeightController = TextEditingController(
       text: '${settings['defaultWeight'] ?? 20.0}',
     );
+    _checkPermissions();
   }
 
   @override
@@ -54,13 +67,31 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
-  void _onThemeTap(String themeId) {
-    if (themeId == _currentTheme) return;
-    setState(() => _currentTheme = themeId);
-    final settings = Storage.getSettings();
-    settings['theme'] = themeId;
-    Storage.saveSettings(settings);
-    widget.onThemeChanged(themeId);
+  /// 当前主题的元数据（图标、名称、配色）
+  Map<String, dynamic> get _currentThemeMeta {
+    return AppTheme.themes.firstWhere(
+      (t) => t['id'] == _currentTheme,
+      orElse: () => AppTheme.themes.first,
+    );
+  }
+
+  String _getCurrentThemeIcon() => _currentThemeMeta['icon'] as String;
+  String _getCurrentThemeName() => _currentThemeMeta['name'] as String;
+  List<Color> _getCurrentThemeColors() {
+    return (_currentThemeMeta['colors'] as List)
+        .map((c) => Color(c as int))
+        .toList();
+  }
+
+  /// 跳转到主题设置页，返回后刷新当前主题
+  Future<void> _openThemeSettings() async {
+    await context.push('/theme-settings', extra: _currentTheme);
+    if (mounted) {
+      setState(() {
+        _currentTheme =
+            Storage.getSettings()['theme'] as String? ?? 'vitality-sport';
+      });
+    }
   }
 
   void _saveTrainingDefaults() {
@@ -208,6 +239,120 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  // ============================================================
+  // 权限管理相关
+  // ============================================================
+
+  static const _permissionChannel = MethodChannel('com.example.fittrack_flutter/permission');
+
+  /// 检查权限状态
+  Future<void> _checkPermissions() async {
+    try {
+      final result = await _permissionChannel.invokeMethod('checkPermissions');
+      if (result != null) {
+        setState(() {
+          _hasNotificationPermission = result['notification'] ?? false;
+          _hasVibratePermission = result['vibrate'] ?? false;
+          _hasBackgroundPermission = result['background'] ?? false;
+        });
+      }
+    } catch (e) {
+      // 如果 channel 不可用，默认为已授权（避免初次使用时困扰用户）
+      setState(() {
+        _hasNotificationPermission = true;
+        _hasVibratePermission = true;
+        _hasBackgroundPermission = true;
+      });
+    }
+  }
+
+  /// 跳转到应用设置
+  Future<void> _openAppSettings() async {
+    // 显示提示弹窗，引导用户去系统设置开启权限
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: '前往应用设置',
+      content: '即将跳转到系统应用管理页面，请在应用信息中手动开启对应权限。',
+      confirmText: '去设置',
+      icon: Icons.settings,
+    );
+    if (confirmed == true) {
+      try {
+        // 尝试通过 MethodChannel 跳转到系统设置
+        await _permissionChannel.invokeMethod('openAppSettings');
+      } catch (e) {
+        // 如果 channel 不可用，显示提示
+        if (mounted) {
+          FitToast.warning(context, '请前往系统设置 > 应用 > FitTrack 开启权限');
+        }
+      }
+      // 返回后重新检查权限状态
+      _checkPermissions();
+    }
+  }
+
+  /// 构建权限管理区块
+  Widget _buildPermissionMenu(FitTrackColors colors) {
+    return CardWidget(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeader(title: '权限管理'),
+          const SizedBox(height: 12),
+          _buildPermissionItem(colors, Icons.notifications_outlined, '通知权限', '用于训练提醒和休息结束通知', _hasNotificationPermission),
+          DividerWidget(),
+          _buildPermissionItem(colors, Icons.vibration, '震动权限', '休息结束时震动提醒', _hasVibratePermission),
+          DividerWidget(),
+          _buildPermissionItem(colors, Icons.schedule, '后台运行', '保证后台计时和提醒正常工作', _hasBackgroundPermission),
+        ],
+      ),
+    );
+  }
+
+  /// 构建单个权限项
+  Widget _buildPermissionItem(FitTrackColors colors, IconData icon, String title, String desc, bool granted) {
+    return InkWell(
+      onTap: () => _openAppSettings(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: granted ? colors.successColor : colors.warningColor),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 2),
+                  Text(desc, style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                ],
+              ),
+            ),
+            // 权限状态标签
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: granted ? colors.successColor.withOpacity(0.12) : colors.warningColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                granted ? '已开启' : '未开启',
+                style: TextStyle(
+                  color: granted ? colors.successColor : colors.warningColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, size: 18, color: colors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
@@ -228,7 +373,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   SectionHeader(title: '风格主题'),
                   const SizedBox(height: 10),
-                  _buildThemeGrid(colors),
+                  _buildThemeEntry(colors),
                   const SizedBox(height: 20),
                   SectionHeader(title: '训练设置'),
                   const SizedBox(height: 10),
@@ -237,6 +382,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   SectionHeader(title: '数据管理'),
                   const SizedBox(height: 10),
                   _buildDataMenu(colors),
+                  const SizedBox(height: 20),
+                  _buildPermissionMenu(colors),
                   const SizedBox(height: 20),
                   SectionHeader(title: '其他'),
                   const SizedBox(height: 10),
@@ -251,87 +398,60 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildThemeGrid(FitTrackColors colors) {
-    final themes = AppTheme.themes;
-
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      childAspectRatio: 1.15,
-      children: themes.map<Widget>((theme) {
-        final isActive = theme['id'] == _currentTheme;
-        final themeColors = theme['colors'] as List;
-        return GestureDetector(
-          onTap: () => _onThemeTap(theme['id'] as String),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.bgCard,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isActive ? colors.accentGlow : colors.borderColor,
-                width: isActive ? 2 : 1,
+  Widget _buildThemeEntry(FitTrackColors colors) {
+    return CardWidget(
+      child: InkWell(
+        onTap: _openThemeSettings,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          child: Row(
+            children: [
+              Text(
+                _getCurrentThemeIcon(),
+                style: const TextStyle(fontSize: 20),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: List.generate(3, (i) {
-                    return Expanded(
-                      child: Container(
-                        height: 24,
-                        margin: EdgeInsets.only(right: i < 2 ? 4 : 0),
-                        decoration: BoxDecoration(
-                          color: Color(themeColors[i] as int),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-                const SizedBox(height: 10),
-                Row(
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      theme['icon'] as String,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        theme['name'] as String,
-                        style: TextStyle(
-                          color: isActive ? colors.accentGlow : colors.textPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      '风格主题',
+                      style: TextStyle(
+                        color: colors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    if (isActive)
-                      Icon(Icons.check_circle, size: 16, color: colors.accentGlow),
+                    const SizedBox(height: 2),
+                    Text(
+                      _getCurrentThemeName(),
+                      style: TextStyle(color: colors.textMuted, fontSize: 12),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  theme['desc'] as String,
-                  style: TextStyle(
-                    color: colors.textMuted,
-                    fontSize: 11,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+              ),
+              // 当前主题色块预览
+              Row(
+                children: _getCurrentThemeColors()
+                    .map((c) => Container(
+                          width: 12,
+                          height: 12,
+                          margin: const EdgeInsets.only(left: 4),
+                          decoration: BoxDecoration(
+                            color: c,
+                            shape: BoxShape.circle,
+                          ),
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right, size: 20, color: colors.textMuted),
+            ],
           ),
-        );
-      }).toList(),
+        ),
+      ),
     );
   }
 

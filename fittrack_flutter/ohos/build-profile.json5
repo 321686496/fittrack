@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B671C893FA6431E405BAB85A163B9D7DBBC443C9B15677B3708740717C5DC683ECD51BD1FD78D1F",
+          "keyPassword": "0000001B069DA4264087F62FCED542C55E2CD601880E1ED4B8C556E3C47403D360CB22FC3461C86AB85DDA",
           "profile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p12",
-          "storePassword": "0000001BB484CCDDCD8BEEA86843F31D96DFB6B638873E73BF1E402331CC6D78C0ED70934F72FA201E12B4"
+          "storePassword": "0000001B0FC5A3E208ECF527B72B436542FFC01154A42A0B7BFA9300563AD80CAAA908731A85950A7FB5A0"
         }
       }
     ],
@@ -22,6 +22,17 @@
         "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",
         "targetSdkVersion": "6.1.0(23)"
+      }
+    ],
+    "capabilities": [
+      {
+        "bundleName": "com.fp.fitplan",
+        "config": [
+          {
+            "name": "Push Kit",
+            "capability": "com.huawei.service.push.base_service"
+          }
+        ]
       }
     ]
   },

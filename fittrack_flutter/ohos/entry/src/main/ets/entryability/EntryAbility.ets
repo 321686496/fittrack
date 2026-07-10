@@ -7,18 +7,19 @@ import StandardMethodCodec from '@ohos/flutter_ohos/src/main/ets/plugin/common/S
 import { formProvider } from '@kit.FormKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
-import { Want, AbilityConstant, bundleManager } from '@kit.AbilityKit';
+import { Want, AbilityConstant, wantAgent, WantAgent, bundleManager } from '@kit.AbilityKit';
 import { reminderAgentManager } from '@kit.BackgroundTasksKit';
+import { liveViewManager } from '@kit.LiveViewKit';
 import { notificationManager } from '@kit.NotificationKit';
+import { vibrator } from '@kit.SensorServiceKit';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
 const KEY_FORM_DATA: string = 'form_data';
 const FORM_CHANNEL_NAME: string = 'com.example.fittrack_flutter/form';
 const REMINDER_CHANNEL_NAME: string = 'com.example.fittrack_flutter/reminder';
-// 休息倒计时进度条通知 ID
-const REST_COUNTDOWN_NOTIFICATION_ID: number = 20001;
-// 休息结束通知 ID
-const REST_END_NOTIFICATION_ID: number = 20002;
+const REST_LIVE_VIEW_ID: number = 30001;
+
+const CAPSULE_ICON: string = 'liveview_icon.png';
 
 class FormDataCallHandler implements MethodCallHandler {
   private ability: EntryAbility;
@@ -30,6 +31,10 @@ class FormDataCallHandler implements MethodCallHandler {
   onMethodCall(call: MethodCall, result: MethodResult): void {
     if (call.method === 'updateFormData') {
       this.ability.updateFormData(call, result);
+    } else if (call.method === 'getFormData') {
+      let prefs: preferences.Preferences = preferences.getPreferencesSync(this.ability.context, { name: PREFERENCES_NAME });
+      let data: string = prefs.getSync(KEY_FORM_DATA, '') as string;
+      result.success(data);
     } else {
       result.notImplemented();
     }
@@ -40,16 +45,13 @@ export default class EntryAbility extends FlutterAbility {
   private formChannel: MethodChannel | null = null;
   private reminderChannel: MethodChannel | null = null;
 
-  // 休息倒计时定时器：仅 APP 前台时运行
-  private countdownTimerId: number = -1;
-  // 当前休息结束时间戳（epoch ms）
   private restEndTime: number = 0;
-  // 当前休息总秒数
   private totalRestSeconds: number = 0;
-  // 当前动作名
   private currentExerciseName: string = '';
-  // 代理提醒 ID
+  private liveViewSequence: number = 0;
+  private liveViewWantAgent: WantAgent | null = null;
   private currentReminderId: number = -1;
+  private liveViewActive: boolean = false;
 
   configureFlutterEngine(flutterEngine: FlutterEngine): void {
     super.configureFlutterEngine(flutterEngine);
@@ -87,28 +89,6 @@ export default class EntryAbility extends FlutterAbility {
     }
   }
 
-  /**
-   * APP 切到后台时：停止倒计时定时器（APP 进程将被挂起，定时器无法运行）
-   * reminderAgentManager 代理提醒已在进入休息态时发布，系统会代理发出休息结束通知
-   */
-  onBackground(): void {
-    super.onBackground();
-    console.info('[FitTrack] onBackground');
-    this.stopCountdownTimer();
-    this.cancelRestCountdownNotification();
-  }
-
-  /**
-   * APP 回到前台时：重新启动倒计时定时器
-   */
-  onForeground(): void {
-    super.onForeground();
-    console.info('[FitTrack] onForeground');
-    if (this.restEndTime > 0 && this.restEndTime > Date.now()) {
-      this.startCountdownTimer();
-    }
-  }
-
   private invokeFlutterMethod(method: string, args: Record<string, Object>): void {
     if (this.reminderChannel !== null) {
       try {
@@ -129,10 +109,6 @@ export default class EntryAbility extends FlutterAbility {
     return '';
   }
 
-  /**
-   * 更新卡片数据
-   * 保存到 preferences → reloadForms 刷新卡片 → 根据模式管理倒计时通知/代理提醒
-   */
   updateFormData(call: MethodCall, result: MethodResult): void {
     try {
       const dataStr: string = call.args as string;
@@ -160,14 +136,12 @@ export default class EntryAbility extends FlutterAbility {
     }
   }
 
-  /**
-   * 根据推送的 JSON 数据管理训练状态
-   * 注意：不依赖后台任务保活，因为 HarmonyOS 长时任务无法支撑每秒刷新的场景
-   */
   private manageTrainingState(dataStr: string): void {
     try {
       const parsed: Record<string, Object> = JSON.parse(dataStr) as Record<string, Object>;
       const mode: string = (parsed['mode'] as string) ?? 'idle';
+
+      console.info(`[FitTrack] manageTrainingState: mode=${mode}`);
 
       if (mode === 'rest') {
         const restEndTime: number = Number(parsed['restEndTime'] ?? 0);
@@ -176,152 +150,198 @@ export default class EntryAbility extends FlutterAbility {
         this.totalRestSeconds = totalRestSeconds;
         this.currentExerciseName = (parsed['exerciseName'] as string) ?? '';
 
-        // 启动倒计时定时器（仅 APP 前台时有效）
-        this.startCountdownTimer();
+        // 休息开始：创建实况窗 + 发布代理提醒
+        this.startRestLiveView();
 
-        // 发布代理提醒：系统在休息结束时自动发出通知，即使 APP 已被杀死
         const restSeconds: number = Math.max(1, Math.round((restEndTime - Date.now()) / 1000));
         this.scheduleRestReminder(restSeconds);
       } else {
-        // 非休息态：停止倒计时，取消所有通知和代理提醒
-        this.stopCountdownTimer();
-        this.cancelRestCountdownNotification();
-        this.cancelRestEndNotification();
-        this.cancelRestReminder();
+        // 休息结束（或非休息状态）：停止实况窗 + 触发震动提醒
+        this.stopRestLiveView();
+        this.triggerRestEndVibration();
       }
     } catch (e) {
-      console.error('[FitTrack] manageTrainingState exception: ' + e);
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] manageTrainingState 异常: code=${err.code}, msg=${err.message}`);
     }
   }
 
-  /**
-   * 启动倒计时定时器
-   * 仅 APP 前台时运行：每秒更新通知栏进度条通知显示倒计时
-   * APP 切到后台时定时器自动停止（onBackground），回到前台时重启（onForeground）
-   */
-  private startCountdownTimer(): void {
-    if (this.countdownTimerId !== -1) return;
-    console.info('[FitTrack] startCountdownTimer');
-    this.countdownTimerId = setInterval(() => {
-      if (this.restEndTime <= 0) return;
-
-      const remaining: number = Math.round((this.restEndTime - Date.now()) / 1000);
-      console.info(`[FitTrack] countdown tick, remaining=${remaining}s`);
-
-      if (remaining <= 0) {
-        // 倒计时结束，发送结束通知
-        this.publishRestEndNotification();
-        this.stopCountdownTimer();
-        this.cancelRestCountdownNotification();
-      } else {
-        // 更新进度条通知
-        this.publishRestCountdownNotification(remaining);
-      }
-    }, 1000);
-  }
-
-  private stopCountdownTimer(): void {
-    if (this.countdownTimerId !== -1) {
-      console.info('[FitTrack] stopCountdownTimer');
-      clearInterval(this.countdownTimerId);
-      this.countdownTimerId = -1;
-    }
-  }
-
-  /**
-   * 发布/更新休息倒计时进度条通知
-   */
-  private publishRestCountdownNotification(remainingSeconds: number): void {
+  private async buildLiveViewWantAgent(): Promise<void> {
     try {
-      let progressValue: number = 0;
-      if (this.totalRestSeconds > 0) {
-        progressValue = Math.round((remainingSeconds / this.totalRestSeconds) * 100);
+      const bundleInfo: bundleManager.BundleInfo =
+        bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
+
+      let wantAgentInfo: wantAgent.WantAgentInfo = {
+        wants: [{
+          bundleName: bundleInfo.name,
+          abilityName: 'EntryAbility',
+          parameters: { targetPage: 'training', cardAction: 'resume' }
+        }],
+        actionType: wantAgent.OperationType.START_ABILITY,
+        requestCode: 0,
+        actionFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG],
+      };
+
+      this.liveViewWantAgent = await wantAgent.getWantAgent(wantAgentInfo);
+      console.info('[FitTrack] buildLiveViewWantAgent success');
+    } catch (err) {
+      console.error('[FitTrack] buildLiveViewWantAgent failed: ' + err);
+    }
+  }
+
+  private async startRestLiveView(): Promise<void> {
+    try {
+      // 校验实况窗开关是否打开
+      // 注意：模拟器上可能返回 false，也可能因实况窗权益未申请而无法创建
+      let enabled: boolean;
+      try {
+        enabled = await liveViewManager.isLiveViewEnabled();
+      } catch (checkErr) {
+        const checkError: BusinessError = checkErr as BusinessError;
+        console.error(`[FitTrack] isLiveViewEnabled 调用异常: code=${checkError.code}, msg=${checkError.message}`);
+        return;
+      }
+      if (!enabled) {
+        console.warn('[FitTrack] 实况窗开关未开启，无法创建实况窗。可能原因：1) 用户未在设置中开启实况窗开关；2) 模拟器环境限制；3) 实况窗权益未申请');
+        return;
       }
 
-      let notificationRequest: notificationManager.NotificationRequest = {
-        id: REST_COUNTDOWN_NOTIFICATION_ID,
-        content: {
-          notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
-          normal: {
-            title: 'FitTrack - 休息中',
-            text: '剩余 ' + remainingSeconds + ' 秒',
-            additionalText: this.currentExerciseName,
-          }
+      await this.buildLiveViewWantAgent();
+      // 如果 wantAgent 创建失败，则无法继续创建实况窗
+      if (this.liveViewWantAgent === null) {
+        console.error('[FitTrack] liveViewWantAgent 创建失败，无法创建实况窗');
+        return;
+      }
+
+      // 每次开始休息时重置 sequence 从 1 开始
+      this.liveViewSequence = 1;
+      const remainingMs: number = Math.max(0, this.restEndTime - Date.now());
+
+      let liveView: liveViewManager.LiveView = {
+        id: REST_LIVE_VIEW_ID,
+        event: 'TIMER',
+        sequence: this.liveViewSequence,
+        isMute: false,
+        timer: {
+          time: remainingMs,
+          isCountdown: true,
+          isPaused: false,
         },
-        notificationSlotType: notificationManager.SlotType.SERVICE_INFORMATION,
-        template: {
-          name: 'downloadTemplate',
-          data: {
-            title: '休息倒计时',
-            fileName: this.currentExerciseName,
-            progressValue: progressValue,
+        liveViewData: {
+          primary: {
+            title: 'FitTrack - 休息中',
+            content: [
+              { text: '剩余 ' },
+              { text: '${placeholder.timer}', textColor: '#FFFF6B35' },
+              { text: ' | ' },
+              { text: this.currentExerciseName, textColor: '#FFFF6B35' }
+            ],
+            keepTime: 1,
+            clickAction: this.liveViewWantAgent!,
+            layoutData: {
+              layoutType: liveViewManager.LayoutType.LAYOUT_TYPE_PICKUP,
+              title: '休息倒计时',
+              content: '${placeholder.timer}',
+              underlineColor: '#FFFF6B35',
+              descPic: "liveview_icon.png"
+            }
+          },
+          capsule: {
+            type: liveViewManager.CapsuleType.CAPSULE_TYPE_TIMER,
+            status: 1,
+            icon: CAPSULE_ICON,
+            title: '休息中',
+            content: '${placeholder.timer}',
+            backgroundColor: '#FFFF6B35',
           }
         }
       };
 
-      notificationManager.publish(notificationRequest)
-        .then(() => {
-        })
-        .catch((err: BusinessError) => {
-          console.error(`[FitTrack] publishRestCountdownNotification failed: ${err.code} - ${err.message}`);
-        });
+      console.info(`[FitTrack] 开始创建实况窗, id=${REST_LIVE_VIEW_ID}, sequence=${this.liveViewSequence}, remainingMs=${remainingMs}`);
+
+      let result: liveViewManager.LiveViewResult = await liveViewManager.startLiveView(liveView);
+      this.liveViewActive = true;
+      console.info(`[FitTrack] startRestLiveView 成功, result: ${JSON.stringify(result)}`);
     } catch (e) {
-      console.error('[FitTrack] publishRestCountdownNotification exception: ' + e);
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] startRestLiveView 失败: code=${err.code}, msg=${err.message}`);
+      // 常见错误码说明：
+      // 1003500004: 实况窗开关关闭
+      // 1003500005: 实况窗权益未申请
+      // 1003500006: 实况窗已存在（可能未正确停止上一次）
+      // 1003500007: 无法连接服务器（模拟器常见）
     }
   }
 
-  private cancelRestCountdownNotification(): void {
-    notificationManager.cancel(REST_COUNTDOWN_NOTIFICATION_ID)
-      .then(() => {
-      })
-      .catch((err: BusinessError) => {
-      });
-  }
+  private async stopRestLiveView(): Promise<void> {
+    // 如果实况窗未启动，则无需停止
+    if (!this.liveViewActive) {
+      console.info('[FitTrack] stopRestLiveView 跳过：实况窗未启动');
+      return;
+    }
 
-  /**
-   * 发布休息结束通知
-   */
-  private publishRestEndNotification(): void {
+    // 确保 wantAgent 已创建，否则无法构造停止请求
+    if (this.liveViewWantAgent === null) {
+      console.warn('[FitTrack] stopRestLiveView 跳过：liveViewWantAgent 为空');
+      this.liveViewActive = false;
+      return;
+    }
+
     try {
-      let notificationRequest: notificationManager.NotificationRequest = {
-        id: REST_END_NOTIFICATION_ID,
-        content: {
-          notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
-          normal: {
+      // 停止时需要递增 sequence，否则会报 1003500011（sequence 不正确）
+      this.liveViewSequence = this.liveViewSequence + 1;
+
+      let liveView: liveViewManager.LiveView = {
+        id: REST_LIVE_VIEW_ID,
+        event: 'TIMER',
+        sequence: this.liveViewSequence,
+        isMute: false,
+        liveViewData: {
+          primary: {
             title: 'FitTrack',
-            text: '休息时间到！开始下一组？',
-            additionalText: '训练提醒',
+            content: [{ text: '休息结束' }],
+            keepTime: 1,
+            clickAction: this.liveViewWantAgent!,
+            layoutData: {
+              layoutType: liveViewManager.LayoutType.LAYOUT_TYPE_PICKUP,
+              title: '休息完成',
+              content: '休息时间已结束',
+              underlineColor: '#FF4CAF50',
+            }
+          },
+          capsule: {
+            type: liveViewManager.CapsuleType.CAPSULE_TYPE_TIMER,
+            status: 0,
+            icon: CAPSULE_ICON,
+            title: '已结束',
+            content: '完成',
+            backgroundColor: '#FF999999',
           }
-        },
-        notificationSlotType: notificationManager.SlotType.SERVICE_INFORMATION,
+        }
       };
 
-      notificationManager.publish(notificationRequest)
-        .then(() => {
-          console.info('[FitTrack] publishRestEndNotification success');
-        })
-        .catch((err: BusinessError) => {
-          console.error(`[FitTrack] publishRestEndNotification failed: ${err.code} - ${err.message}`);
-        });
+      await liveViewManager.stopLiveView(liveView);
+      this.liveViewActive = false;
+      console.info(`[FitTrack] stopRestLiveView 成功, sequence=${this.liveViewSequence}`);
     } catch (e) {
-      console.error('[FitTrack] publishRestEndNotification exception: ' + e);
+      this.liveViewActive = false;
+      const err: BusinessError = e as BusinessError;
+      // 1003500009: 实况窗不存在（可能已被系统清理），属于正常情况
+      // 1003500010: 实况窗已结束，也属于正常情况
+      if (err.code === 1003500009 || err.code === 1003500010) {
+        console.info(`[FitTrack] stopRestLiveView 实况窗已不存在或已结束: code=${err.code}`);
+      } else {
+        console.error(`[FitTrack] stopRestLiveView 失败: code=${err.code}, msg=${err.message}`);
+      }
     }
   }
 
-  private cancelRestEndNotification(): void {
-    notificationManager.cancel(REST_END_NOTIFICATION_ID)
-      .then(() => {
-      })
-      .catch((err: BusinessError) => {
-      });
-  }
-
-  /**
-   * 通过 reminderAgentManager 发布代理提醒
-   * 系统在倒计时结束时自动发出通知，即使 APP 已被杀死也能准时送达
-   */
   private scheduleRestReminder(restSeconds: number): void {
     this.cancelRestReminder();
+
+    // 注意：代理提醒从 API version 20 开始支持模拟器开发
+    // 如果在低于 API 20 的模拟器上运行，代理提醒将无法触发
+    console.info(`[FitTrack] 准备发布代理提醒, restSeconds=${restSeconds}（注意：模拟器需 API 20+ 才支持代理提醒）`);
 
     try {
       const bundleInfo: bundleManager.BundleInfo =
@@ -332,6 +352,8 @@ export default class EntryAbility extends FlutterAbility {
         triggerTimeInSeconds: restSeconds,
         title: 'FitTrack',
         content: '休息时间到！开始下一组？',
+        notificationId: 100,
+        slotType: notificationManager.SlotType.CONTENT_INFORMATION,
         wantAgent: {
           pkgName: bundleInfo.name,
           abilityName: 'EntryAbility',
@@ -340,24 +362,57 @@ export default class EntryAbility extends FlutterAbility {
 
       reminderAgentManager.publishReminder(reminderRequest).then((reminderId: number) => {
         this.currentReminderId = reminderId;
-        console.info(`[FitTrack] scheduleRestReminder success, id=${reminderId}, seconds=${restSeconds}`);
+        console.info(`[FitTrack] 代理提醒发布成功, id=${reminderId}, seconds=${restSeconds}`);
       }).catch((err: BusinessError) => {
-        console.error(`[FitTrack] publishReminder failed: ${err.code} - ${err.message}`);
+        console.error(`[FitTrack] 代理提醒发布失败: code=${err.code}, msg=${err.message}`);
+        // 常见失败原因：
+        // 1) 模拟器 API 版本低于 20，不支持代理提醒
+        // 2) 应用未在 AppGallery Connect 申请代理提醒权益（管控限制）
+        // 3) 用户未授予通知权限
+        // 4) 触发时间过短（triggerTimeInSeconds 需大于 0）
       });
     } catch (e) {
-      console.error(`[FitTrack] scheduleRestReminder exception: ${e}`);
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] scheduleRestReminder 异常: code=${err.code}, msg=${err.message}`);
     }
   }
 
   private cancelRestReminder(): void {
-    if (this.currentReminderId === -1) return;
+    if (this.currentReminderId === -1) {
+      return;
+    }
     try {
       let id: number = this.currentReminderId;
       this.currentReminderId = -1;
       reminderAgentManager.cancelReminder(id).then(() => {
+        console.info(`[FitTrack] 代理提醒已取消, id=${id}`);
       }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] 取消代理提醒失败: code=${err.code}, msg=${err.message}`);
       });
     } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] cancelRestReminder 异常: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
+  // 休息结束时触发震动，提醒用户
+  private triggerRestEndVibration(): void {
+    try {
+      // 震动效果：中等强度，持续 500ms
+      vibrator.startVibration({
+        type: 'time',
+        duration: 500,
+      }, {
+        id: 0,
+        usage: 'notification',
+      }).then(() => {
+        console.info('[FitTrack] 休息结束震动触发成功');
+      }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] 休息结束震动触发失败: code=${err.code}, msg=${err.message}`);
+      });
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] triggerRestEndVibration 异常: code=${err.code}, msg=${err.message}`);
     }
   }
 }

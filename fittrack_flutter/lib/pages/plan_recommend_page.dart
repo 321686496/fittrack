@@ -34,7 +34,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
 
     final plans = <Map<String, dynamic>>[];
 
-    // Primary recommendation based on goal and frequency
+    // === 计划1: 基于目标+频率的主推荐计划 ===
     if (goal == '增肌' && freqNum >= 4) {
       plans.add(_buildPlan(
         name: '五分化增肌计划',
@@ -43,59 +43,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         difficulty: '进阶',
         totalWeeks: 8,
         desc: '针对有一定基础的训练者，每天专注一个肌群，最大化肌肉刺激与生长。',
-        days: [
-          {
-            'day': 1,
-            'label': '胸部',
-            'muscle': '胸',
-            'exercises': [
-              {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-              {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'restTime': 60},
-            ],
-          },
-          {
-            'day': 2,
-            'label': '背部',
-            'muscle': '背',
-            'exercises': [
-              {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'restTime': 75},
-              {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'restTime': 60},
-            ],
-          },
-          {
-            'day': 3,
-            'label': '腿部',
-            'muscle': '腿',
-            'exercises': [
-              {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
-              {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
-            ],
-          },
-          {
-            'day': 4,
-            'label': '肩部',
-            'muscle': '肩',
-            'exercises': [
-              {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'restTime': 60},
-            ],
-          },
-          {
-            'day': 5,
-            'label': '手臂 + 核心',
-            'muscle': '手臂/核心',
-            'exercises': [
-              {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'restTime': 60},
-              {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'restTime': 60},
-              {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'restTime': 45},
-              {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 45},
-            ],
-          },
-        ],
+        days: _fiveDaySplitDays(),
       ));
     } else if (goal == '增肌' && freqNum < 4) {
       plans.add(_buildPlan(
@@ -105,41 +53,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         difficulty: '中级',
         totalWeeks: 8,
         desc: '推拉腿三分化训练，每次训练覆盖多个肌群，适合时间有限的增肌者。',
-        days: [
-          {
-            'day': 1,
-            'label': '推（胸+肩+三头）',
-            'muscle': '胸/肩',
-            'exercises': [
-              {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e3', 'name': '上斜卧推', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '12-15', 'restTime': 60},
-            ],
-          },
-          {
-            'day': 2,
-            'label': '拉（背+二头）',
-            'muscle': '背',
-            'exercises': [
-              {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-              {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '10-12', 'restTime': 60},
-            ],
-          },
-          {
-            'day': 3,
-            'label': '腿（腿+核心）',
-            'muscle': '腿',
-            'exercises': [
-              {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
-              {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'restTime': 45},
-              {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 45},
-            ],
-          },
-        ],
+        days: _threeDaySplitDays(),
       ));
     } else if (goal == '减脂') {
       plans.add(_buildPlan(
@@ -149,41 +63,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         difficulty: '中级',
         totalWeeks: 6,
         desc: '高强度间歇训练结合力量动作，最大化燃脂效果，保留肌肉量。',
-        days: [
-          {
-            'day': 1,
-            'label': '上肢HIIT',
-            'muscle': '上肢',
-            'exercises': [
-              {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '12-15', 'restTime': 45},
-              {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '12-15', 'restTime': 45},
-              {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '12-15', 'restTime': 45},
-              {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '15', 'restTime': 30},
-            ],
-          },
-          {
-            'day': 2,
-            'label': '下肢HIIT',
-            'muscle': '腿',
-            'exercises': [
-              {'id': 'e9', 'name': '杠铃深蹲', 'sets': 4, 'reps': '10-12', 'restTime': 60},
-              {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '12-15', 'restTime': 45},
-              {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'restTime': 30},
-              {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 30},
-            ],
-          },
-          {
-            'day': 3,
-            'label': '全身HIIT',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '15', 'restTime': 30},
-              {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12-15', 'restTime': 45},
-              {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '15', 'restTime': 30},
-              {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '15', 'restTime': 30},
-            ],
-          },
-        ],
+        days: _hiitDays(),
       ));
     } else if (goal == '塑形') {
       plans.add(_buildPlan(
@@ -193,52 +73,9 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         difficulty: '中级',
         totalWeeks: 8,
         desc: '兼顾力量与有氧，重点塑造身体线条，打造匀称体态。',
-        days: [
-          {
-            'day': 1,
-            'label': '上肢塑形',
-            'muscle': '上肢',
-            'exercises': [
-              {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '12-15', 'restTime': 60},
-              {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '15', 'restTime': 45},
-              {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '12', 'restTime': 60},
-              {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '15', 'restTime': 45},
-            ],
-          },
-          {
-            'day': 2,
-            'label': '下肢塑形',
-            'muscle': '腿',
-            'exercises': [
-              {'id': 'e9', 'name': '杠铃深蹲', 'sets': 4, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '12-15', 'restTime': 60},
-              {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 45},
-            ],
-          },
-          {
-            'day': 3,
-            'label': '背部塑形',
-            'muscle': '背',
-            'exercises': [
-              {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-12', 'restTime': 90},
-              {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 60},
-              {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'restTime': 60},
-            ],
-          },
-          {
-            'day': 4,
-            'label': '核心 + 手臂',
-            'muscle': '核心/手臂',
-            'exercises': [
-              {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '12-15', 'restTime': 45},
-              {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'restTime': 45},
-              {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'restTime': 30},
-              {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 30},
-            ],
-          },
-        ],
+        days: _shapingDays(),
       ));
-    } else if (goal == '保持健康') {
+    } else {
       plans.add(_buildPlan(
         name: '全身健康计划',
         type: '全身训练',
@@ -246,43 +83,47 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         difficulty: '初级',
         totalWeeks: 6,
         desc: '全面均衡的全身训练，维持身体机能，提升整体健康水平。',
-        days: [
-          {
-            'day': 1,
-            'label': '全身训练A',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'restTime': 90},
-            ],
-          },
-          {
-            'day': 2,
-            'label': '全身训练B',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-            ],
-          },
-          {
-            'day': 3,
-            'label': '全身训练C',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-              {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-              {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'restTime': 30},
-            ],
-          },
-        ],
+        days: _fullBodyDays(),
       ));
     }
 
-    // Add beginner plan as second option if level is 新手/初级
-    if (level == '新手' || level == '初级') {
+    // === 计划2: 不同类型的备选计划 ===
+    if (goal != '减脂') {
+      plans.add(_buildPlan(
+        name: 'HIIT燃脂计划',
+        type: 'HIIT',
+        frequency: '3天/周',
+        difficulty: '中级',
+        totalWeeks: 6,
+        desc: '高强度间歇训练，快速燃烧脂肪，提升心肺能力。',
+        days: _hiitDays(),
+      ));
+    }
+    if (goal != '增肌' && freqNum >= 4) {
+      plans.add(_buildPlan(
+        name: '五分化增肌计划',
+        type: '五分化',
+        frequency: '5天/周',
+        difficulty: '进阶',
+        totalWeeks: 8,
+        desc: '胸/背/腿/肩/手臂 五天循环，最大化肌肉刺激。',
+        days: _fiveDaySplitDays(),
+      ));
+    }
+    if (goal != '塑形' && freqNum < 4) {
+      plans.add(_buildPlan(
+        name: '塑形美体计划',
+        type: '塑形',
+        frequency: '4天/周',
+        difficulty: '中级',
+        totalWeeks: 8,
+        desc: '兼顾力量与有氧，重点塑造身体线条。',
+        days: _shapingDays(),
+      ));
+    }
+
+    // === 计划3: 新手入门计划（适合所有用户） ===
+    if (level == '新手' || level == '初级' || level.isEmpty) {
       plans.add(_buildPlan(
         name: '新手入门计划',
         type: '全身训练',
@@ -290,43 +131,12 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         difficulty: '入门',
         totalWeeks: 4,
         desc: '从零开始的基础训练计划，动作简单安全，帮助建立运动习惯。',
-        days: [
-          {
-            'day': 1,
-            'label': '全身训练A',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'restTime': 90},
-            ],
-          },
-          {
-            'day': 2,
-            'label': '全身训练B',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-            ],
-          },
-          {
-            'day': 3,
-            'label': '全身训练C',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-              {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-              {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'restTime': 30},
-            ],
-          },
-        ],
+        days: _fullBodyDays(),
       ));
     }
 
-    // If no plans were generated (shouldn't happen), add a default
-    if (plans.isEmpty) {
+    // === 计划4: 全身健康计划（兜底选项） ===
+    if (plans.length < 3) {
       plans.add(_buildPlan(
         name: '全身健康计划',
         type: '全身训练',
@@ -334,45 +144,280 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         difficulty: '初级',
         totalWeeks: 6,
         desc: '全面均衡的全身训练，维持身体机能，提升整体健康水平。',
-        days: [
-          {
-            'day': 1,
-            'label': '全身训练A',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'restTime': 90},
-            ],
-          },
-          {
-            'day': 2,
-            'label': '全身训练B',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-              {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-            ],
-          },
-          {
-            'day': 3,
-            'label': '全身训练C',
-            'muscle': '全身',
-            'exercises': [
-              {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-              {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-              {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'restTime': 30},
-            ],
-          },
-        ],
+        days: _fullBodyDays(),
       ));
     }
+
+    // 去重（按名称）
+    final seen = <String>{};
+    plans.removeWhere((p) {
+      final name = p['name'] as String;
+      if (seen.contains(name)) return true;
+      seen.add(name);
+      return false;
+    });
+
+    // 根据身体数据调整推荐顺序
+    _reorderByBodyData(plans);
 
     setState(() {
       _recommendedPlans = plans;
     });
   }
+
+  /// 根据身体数据（体脂率、目标体重、静息心率、BMI）调整推荐顺序
+  void _reorderByBodyData(List<Map<String, dynamic>> plans) {
+    if (plans.isEmpty) return;
+
+    // 合并 profileData 和 Storage 中的身体数据
+    final bodyData = <String, dynamic>{
+      ...Storage.getBodyData(),
+      ...widget.profileData,
+    };
+    final gender = bodyData['gender'] as String? ??
+        Storage.getSettings()['gender'] as String? ??
+        '';
+
+    final bodyFat = (bodyData['bodyFat'] as num?)?.toDouble() ?? 0;
+    final targetWeight = (bodyData['targetWeight'] as num?)?.toDouble() ?? 0;
+    final currentWeight = (bodyData['weight'] as num?)?.toDouble() ?? 0;
+    final restingHeartRate = (bodyData['restingHeartRate'] as num?)?.toDouble() ?? 0;
+    final height = (bodyData['height'] as num?)?.toDouble() ?? 0;
+
+    // 计算 BMI
+    double bmi = 0;
+    if (height > 0 && currentWeight > 0) {
+      bmi = currentWeight / ((height / 100) * (height / 100));
+    }
+
+    // 判断条件
+    final isHighBodyFat = bodyFat > 0 && (
+        (gender == '女' && bodyFat > 30) ||
+        (gender != '女' && bodyFat > 25));
+    final isWeightLoss = targetWeight > 0 &&
+        currentWeight > 0 &&
+        targetWeight < currentWeight;
+    final isHighHeartRate = restingHeartRate > 80;
+    final isHighBMI = bmi > 28;
+
+    // 无任何身体数据可用时，保持原顺序
+    if (!isHighBodyFat && !isWeightLoss && !isHighHeartRate && !isHighBMI) {
+      return;
+    }
+
+    // 为每个计划计算优先级分数
+    int scoreOf(Map<String, dynamic> plan) {
+      final name = plan['name'] as String? ?? '';
+      final difficulty = plan['difficulty'] as String? ?? '';
+      var score = 0;
+
+      // 高体脂：优先 HIIT 燃脂
+      if (isHighBodyFat && name.contains('HIIT')) score += 10;
+
+      // 减重需求：优先 HIIT 或塑形
+      if (isWeightLoss) {
+        if (name.contains('HIIT')) score += 8;
+        if (name.contains('塑形')) score += 5;
+      }
+
+      // 高 BMI：优先全身训练 + HIIT
+      if (isHighBMI) {
+        if (name.contains('全身')) score += 5;
+        if (name.contains('HIIT')) score += 5;
+      }
+
+      // 高静息心率：优先入门级，避免高强度
+      if (isHighHeartRate) {
+        if (difficulty == '入门' || difficulty == '初级') score += 8;
+        if (difficulty == '进阶' || difficulty == '高级') score -= 5;
+      }
+
+      return score;
+    }
+
+    // 按分数排序（保留原顺序作为 tiebreaker）
+    final indexed = plans.asMap().entries.toList();
+    indexed.sort((a, b) {
+      final scoreA = scoreOf(a.value);
+      final scoreB = scoreOf(b.value);
+      if (scoreA != scoreB) return scoreB - scoreA; // 降序
+      return a.key - b.key; // 原顺序
+    });
+
+    plans
+      ..clear()
+      ..addAll(indexed.map((e) => e.value));
+  }
+
+  // === 内置计划模板 ===
+
+  List<Map<String, dynamic>> _fiveDaySplitDays() => [
+    {
+      'day': 1, 'label': '胸部', 'muscle': '胸',
+      'exercises': [
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
+        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
+      ],
+    },
+    {
+      'day': 2, 'label': '背部', 'muscle': '背',
+      'exercises': [
+        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
+      ],
+    },
+    {
+      'day': 3, 'label': '腿部', 'muscle': '腿',
+      'exercises': [
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+      ],
+    },
+    {
+      'day': 4, 'label': '肩部', 'muscle': '肩',
+      'exercises': [
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
+      ],
+    },
+    {
+      'day': 5, 'label': '手臂+核心', 'muscle': '手臂/核心',
+      'exercises': [
+        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
+        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'weight': 0.0, 'restTime': 45},
+        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
+      ],
+    },
+  ];
+
+  List<Map<String, dynamic>> _threeDaySplitDays() => [
+    {
+      'day': 1, 'label': '推（胸+肩+三头）', 'muscle': '胸/肩',
+      'exercises': [
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e3', 'name': '上斜卧推', 'sets': 3, 'reps': '10-12', 'weight': 35.0, 'restTime': 90},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
+      ],
+    },
+    {
+      'day': 2, 'label': '拉（背+二头）', 'muscle': '背',
+      'exercises': [
+        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
+      ],
+    },
+    {
+      'day': 3, 'label': '腿（腿+核心）', 'muscle': '腿',
+      'exercises': [
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'weight': 0.0, 'restTime': 45},
+        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
+      ],
+    },
+  ];
+
+  List<Map<String, dynamic>> _hiitDays() => [
+    {
+      'day': 1, 'label': '上肢HIIT', 'muscle': '上肢',
+      'exercises': [
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '12-15', 'weight': 40.0, 'restTime': 45},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '12-15', 'weight': 40.0, 'restTime': 45},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '12-15', 'weight': 15.0, 'restTime': 45},
+        {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '15', 'weight': 10.0, 'restTime': 30},
+      ],
+    },
+    {
+      'day': 2, 'label': '下肢HIIT', 'muscle': '腿',
+      'exercises': [
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 4, 'reps': '10-12', 'weight': 50.0, 'restTime': 60},
+        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '12-15', 'weight': 80.0, 'restTime': 45},
+        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'weight': 0.0, 'restTime': 30},
+        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 30},
+      ],
+    },
+    {
+      'day': 3, 'label': '全身HIIT', 'muscle': '全身',
+      'exercises': [
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '15', 'weight': 12.0, 'restTime': 30},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12-15', 'weight': 35.0, 'restTime': 45},
+        {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '15', 'weight': 8.0, 'restTime': 30},
+        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '15', 'weight': 12.0, 'restTime': 30},
+      ],
+    },
+  ];
+
+  List<Map<String, dynamic>> _shapingDays() => [
+    {
+      'day': 1, 'label': '上肢塑形', 'muscle': '上肢',
+      'exercises': [
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '12-15', 'weight': 40.0, 'restTime': 60},
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '15', 'weight': 12.0, 'restTime': 45},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '12', 'weight': 15.0, 'restTime': 60},
+        {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '15', 'weight': 8.0, 'restTime': 45},
+      ],
+    },
+    {
+      'day': 2, 'label': '下肢塑形', 'muscle': '腿',
+      'exercises': [
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 4, 'reps': '10-12', 'weight': 50.0, 'restTime': 90},
+        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '12-15', 'weight': 80.0, 'restTime': 60},
+        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
+      ],
+    },
+    {
+      'day': 3, 'label': '背部塑形', 'muscle': '背',
+      'exercises': [
+        {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 60},
+        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
+      ],
+    },
+    {
+      'day': 4, 'label': '核心+手臂', 'muscle': '核心/手臂',
+      'exercises': [
+        {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '12-15', 'weight': 10.0, 'restTime': 45},
+        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 45},
+        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'weight': 0.0, 'restTime': 30},
+        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 30},
+      ],
+    },
+  ];
+
+  List<Map<String, dynamic>> _fullBodyDays() => [
+    {
+      'day': 1, 'label': '全身训练A', 'muscle': '全身',
+      'exercises': [
+        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'weight': 50.0, 'restTime': 90},
+        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'weight': 0.0, 'restTime': 90},
+      ],
+    },
+    {
+      'day': 2, 'label': '全身训练B', 'muscle': '全身',
+      'exercises': [
+        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+        {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'weight': 15.0, 'restTime': 90},
+      ],
+    },
+    {
+      'day': 3, 'label': '全身训练C', 'muscle': '全身',
+      'exercises': [
+        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'weight': 0.0, 'restTime': 30},
+      ],
+    },
+  ];
 
   Map<String, dynamic> _buildPlan({
     required String name,
@@ -395,6 +440,13 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
   }
 
   void _selectPlan(Map<String, dynamic> plan) {
+    // 先将现有活跃计划设为暂停
+    final existingPlans = Storage.getPlans();
+    for (final p in existingPlans) {
+      if (p['status'] == 'active') {
+        Storage.updatePlan(p['id'] as String, {...p, 'status': 'pending', 'badge': '待开始'});
+      }
+    }
     Storage.addPlan({
       ...plan,
       'status': 'active',
@@ -571,7 +623,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
           // Select button
           SizedBox(
             width: double.infinity,
-            height: 44,
+            height: 48,
             child: ElevatedButton(
               onPressed: () => _selectPlan(plan),
               style: ElevatedButton.styleFrom(

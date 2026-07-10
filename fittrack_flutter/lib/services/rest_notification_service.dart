@@ -50,13 +50,12 @@ class RestNotificationService {
         requestSoundPermission: false,
       );
 
-      const ohosSettings = OhosInitializationSettings('app_icon');
-
+      // OHOS 平台：不初始化 flutter_local_notifications，避免插件自动创建带进度条的通知
+      // OHOS 的通知由 EntryAbility 原生侧的 LiveView 和 reminderAgentManager 处理
       final initSettings = InitializationSettings(
         android: androidSettings,
         iOS: darwinSettings,
         macOS: darwinSettings,
-        ohos: ohosSettings,
       );
 
       await _plugin!.initialize(
@@ -95,14 +94,11 @@ class RestNotificationService {
 
   Future<bool> _requestNotificationPermission() async {
     try {
+      // OHOS 平台：跳过 flutter_local_notifications 权限请求，避免触发系统通知
+      // OHOS 的通知权限由原生 EntryAbility 处理
       if (Platform.isOhos) {
-        final ohosPlugin = _plugin!.resolvePlatformSpecificImplementation<
-            OhosFlutterLocalNotificationsPlugin>();
-        if (ohosPlugin != null) {
-          final result = await ohosPlugin.requestNotificationsPermission();
-          debugPrint('OHOS notification permission: $result');
-          return result ?? false;
-        }
+        debugPrint('OHOS: skip flutter_local_notifications permission request');
+        return true;
       }
       final androidPlugin = _plugin!.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
@@ -173,14 +169,9 @@ class RestNotificationService {
       _scheduleWithDartTimer(exerciseName: exerciseName, delaySeconds: delaySeconds);
 
       if (Platform.isOhos) {
-        // OHOS：使用 reminderAgentManager 代理提醒（后台也能触发）
-        await OhosReminderService.instance.publishReminder(
-          title: title,
-          content: content,
-          triggerTimeInSeconds: delaySeconds,
-          notificationId: _notificationId,
-        );
-        debugPrint('OHOS reminderAgentManager scheduled');
+        // OHOS：由 EntryAbility 原生侧处理代理提醒（通过 MethodChannel 接收 rest 数据后自动发布）
+        // Flutter 侧不再调用 OhosReminderService.publishReminder()，避免重复创建带进度条的通知
+        debugPrint('OHOS reminder handled by native EntryAbility, skip Flutter side');
       } else {
         // Android：使用 zonedSchedule（后台也能触发）
         final scheduledDate =
