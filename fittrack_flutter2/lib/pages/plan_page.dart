@@ -537,25 +537,7 @@ class _PlanPageState extends State<PlanPage> {
             ),
             if (exercises.isNotEmpty) ...[
               const SizedBox(height: 12),
-              ...exercises.map((ex) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      children: [
-                        Icon(Icons.fitness_center, size: 14, color: colors.textMuted),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            '${ex['name']}',
-                            style: TextStyle(color: colors.textSecondary, fontSize: 13),
-                          ),
-                        ),
-                        Text(
-                          '${ex['sets']}x${ex['reps']}',
-                          style: TextStyle(color: colors.textMuted, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  )),
+              ...exercises.map((ex) => _buildExerciseDetailItem(colors, ex)),
             ] else ...[
               const SizedBox(height: 8),
               Text(
@@ -589,6 +571,151 @@ class _PlanPageState extends State<PlanPage> {
         ),
       ),
     );
+  }
+
+  // ── Exercise detail item (plan detail view) ──────────────────
+  Widget _buildExerciseDetailItem(FitTrackColors colors, Map<String, dynamic> ex) {
+    final setConfig = ex['setConfig'] as List?;
+    final hasPerSet = setConfig != null && setConfig.length > 1;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: colors.bgSecondary.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colors.borderColor.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.fitness_center, size: 14, color: colors.accentGlow),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '${ex['name']}',
+                  style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '共${ex['sets'] ?? 0}组',
+                  style: TextStyle(color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (hasPerSet)
+            _buildPerSetTable(colors, setConfig)
+          else
+            _buildUniformStats(colors, ex),
+        ],
+      ),
+    );
+  }
+
+  // ── Uniform stats display (all sets same) ────────────────────
+  Widget _buildUniformStats(FitTrackColors colors, Map<String, dynamic> ex) {
+    final reps = ex['reps'] ?? '-';
+    final weight = ex['weight'];
+    final restTime = ex['restTime'] ?? 90;
+    final weightStr = (weight == null) ? '-' : '${_formatWeight(weight)}kg';
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        _buildStatChip(colors, Icons.repeat, '次数', '$reps'),
+        _buildStatChip(colors, Icons.monitor_weight_outlined, '重量', weightStr),
+        _buildStatChip(colors, Icons.timer_outlined, '休息', '$restTime秒'),
+      ],
+    );
+  }
+
+  // ── Per-set table (each set has different params) ────────────
+  Widget _buildPerSetTable(FitTrackColors colors, List setConfig) {
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.bgCard.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: colors.borderColor.withOpacity(0.5)),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            decoration: BoxDecoration(
+              color: colors.borderColor.withOpacity(0.2),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+            ),
+            child: Row(
+              children: [
+                Expanded(flex: 2, child: Text('组', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
+                Expanded(flex: 3, child: Text('次数', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+                Expanded(flex: 3, child: Text('重量', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+                Expanded(flex: 3, child: Text('休息', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+              ],
+            ),
+          ),
+          ...setConfig.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final s = entry.value as Map;
+            final isLast = idx == setConfig.length - 1;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: isLast ? BorderSide.none : BorderSide(color: colors.borderColor.withOpacity(0.3)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(flex: 2, child: Text('第${idx + 1}组', style: TextStyle(color: colors.textSecondary, fontSize: 11))),
+                  Expanded(flex: 3, child: Text('${s['reps'] ?? '-'}', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.center)),
+                  Expanded(flex: 3, child: Text('${_formatWeight(s['weight'])}kg', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.center)),
+                  Expanded(flex: 3, child: Text('${s['restTime'] ?? 90}秒', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.right)),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatChip(FitTrackColors colors, IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: colors.bgCard.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: colors.borderColor.withOpacity(0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: colors.textMuted),
+          const SizedBox(width: 3),
+          Text('$label ', style: TextStyle(color: colors.textMuted, fontSize: 10)),
+          Text(value, style: TextStyle(color: colors.textPrimary, fontSize: 11, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  String _formatWeight(dynamic w) {
+    if (w == null) return '-';
+    final d = (w is num) ? w.toDouble() : double.tryParse('$w') ?? 0;
+    return d == d.toInt().toDouble() ? '${d.toInt()}' : '$d';
   }
 }
 
@@ -725,15 +852,19 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     final defaultSets = (settings['defaultSets'] as num?)?.toInt() ?? 3;
     final defaultReps = (settings['defaultReps'] as num?)?.toInt() ?? 10;
     final defaultWeight = (settings['defaultWeight'] as num?)?.toDouble() ?? 20.0;
+    final defaultRest = int.tryParse(_restTimeController.text) ??
+        (settings['defaultRestTime'] as num?)?.toInt() ?? 90;
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _ExercisePickerSheet(
         defaultSets: defaultSets,
         defaultReps: defaultReps,
         defaultWeight: defaultWeight,
-        onPick: (exercise, sets, reps, weight) {
+        defaultRestTime: defaultRest,
+        onPick: (exercise, config) {
           // 深拷贝 exercises 列表避免 unmodifiable list 问题
           final existing = _days[dayIndex]['exercises'];
           final exercises = (existing is List)
@@ -743,10 +874,11 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
           exercises.add({
             'id': exercise['id'],
             'name': exercise['name'],
-            'sets': sets,
-            'reps': '$reps',
-            'weight': weight,
-            'restTime': int.tryParse(_restTimeController.text) ?? 90,
+            'sets': config['sets'],
+            'reps': config['reps'],
+            'weight': config['weight'],
+            'restTime': config['restTime'],
+            if (config['setConfig'] != null) 'setConfig': config['setConfig'],
           });
           _days[dayIndex]['exercises'] = exercises;
           setState(() {});
@@ -1038,6 +1170,31 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     );
   }
 
+  Widget _buildEditorStatTag(FitTrackColors colors, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.bgCard.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: colors.borderColor.withOpacity(0.4)),
+      ),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(text: '$label ', style: TextStyle(color: colors.textMuted, fontSize: 9)),
+            TextSpan(text: value, style: TextStyle(color: colors.textPrimary, fontSize: 10, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatWeight(dynamic w) {
+    if (w == null) return '-';
+    final d = (w is num) ? w.toDouble() : double.tryParse('$w') ?? 0;
+    return d == d.toInt().toDouble() ? '${d.toInt()}' : '$d';
+  }
+
   Widget _buildDayEditor(FitTrackColors colors, int dayIndex, Map<String, dynamic> day) {
     final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final labelController = TextEditingController(text: '${day['label'] ?? ''}');
@@ -1094,22 +1251,63 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
           ...exercises.asMap().entries.map((exEntry) {
             final exIdx = exEntry.key;
             final ex = exEntry.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
+            final setConfig = ex['setConfig'] as List?;
+            final hasPerSet = setConfig != null && setConfig.length > 1;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.bgSecondary.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: colors.borderColor.withOpacity(0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.fitness_center, size: 12, color: colors.textMuted),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      '${ex['name']}  ${ex['sets']}x${ex['reps']}',
-                      style: TextStyle(color: colors.textSecondary, fontSize: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.fitness_center, size: 12, color: colors.accentGlow),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '${ex['name']}',
+                          style: TextStyle(color: colors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: colors.accentGlow.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text(
+                          '${ex['sets'] ?? 0}组',
+                          style: TextStyle(color: colors.accentGlow, fontSize: 10, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => _removeExercise(dayIndex, exIdx),
+                        child: Icon(Icons.close, size: 14, color: colors.textMuted),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  if (hasPerSet)
+                    Text(
+                      '逐组设置 · ${setConfig.length}组独立参数',
+                      style: TextStyle(color: colors.textMuted, fontSize: 10),
+                    )
+                  else
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 3,
+                      children: [
+                        _buildEditorStatTag(colors, '次数', '${ex['reps'] ?? '-'}'),
+                        _buildEditorStatTag(colors, '重量', ex['weight'] == null ? '-' : '${_formatWeight(ex['weight'])}kg'),
+                        _buildEditorStatTag(colors, '休息', '${ex['restTime'] ?? 90}秒'),
+                      ],
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _removeExercise(dayIndex, exIdx),
-                    child: Icon(Icons.close, size: 14, color: colors.textMuted),
-                  ),
                 ],
               ),
             );
@@ -1150,13 +1348,15 @@ class _ExercisePickerSheet extends StatefulWidget {
   final int defaultSets;
   final int defaultReps;
   final double defaultWeight;
-  final void Function(Map<String, dynamic> exercise, int sets, int reps, double weight) onPick;
+  final int defaultRestTime;
+  final void Function(Map<String, dynamic> exercise, Map<String, dynamic> config) onPick;
 
   const _ExercisePickerSheet({
     required this.onPick,
     this.defaultSets = 3,
     this.defaultReps = 10,
     this.defaultWeight = 20.0,
+    this.defaultRestTime = 90,
   });
 
   @override
@@ -1165,9 +1365,20 @@ class _ExercisePickerSheet extends StatefulWidget {
 
 class _ExercisePickerSheetState extends State<_ExercisePickerSheet> {
   Map<String, dynamic>? _selectedExercise;
+
+  // 统一参数模式控制器
   late TextEditingController _setsCtrl;
   late TextEditingController _repsCtrl;
   late TextEditingController _weightCtrl;
+  late TextEditingController _restCtrl;
+
+  // 模式：true = 逐组设置，false = 统一参数
+  bool _perSetMode = false;
+
+  // 逐组设置模式的控制器列表
+  final List<TextEditingController> _setRepsCtrls = [];
+  final List<TextEditingController> _setWeightCtrls = [];
+  final List<TextEditingController> _setRestCtrls = [];
 
   @override
   void initState() {
@@ -1175,6 +1386,32 @@ class _ExercisePickerSheetState extends State<_ExercisePickerSheet> {
     _setsCtrl = TextEditingController(text: '${widget.defaultSets}');
     _repsCtrl = TextEditingController(text: '${widget.defaultReps}');
     _weightCtrl = TextEditingController(text: '${widget.defaultWeight}');
+    _restCtrl = TextEditingController(text: '${widget.defaultRestTime}');
+    _syncSetControllers(widget.defaultSets);
+  }
+
+  void _syncSetControllers(int count) {
+    final current = _setRepsCtrls.length;
+    if (count > current) {
+      for (int i = current; i < count; i++) {
+        final src = i > 0 ? i - 1 : 0;
+        final reps = _setRepsCtrls.isNotEmpty ? _setRepsCtrls[src].text : '${widget.defaultReps}';
+        final weight = _setWeightCtrls.isNotEmpty ? _setWeightCtrls[src].text : '${widget.defaultWeight}';
+        final rest = _setRestCtrls.isNotEmpty ? _setRestCtrls[src].text : '${widget.defaultRestTime}';
+        _setRepsCtrls.add(TextEditingController(text: reps));
+        _setWeightCtrls.add(TextEditingController(text: weight));
+        _setRestCtrls.add(TextEditingController(text: rest));
+      }
+    } else if (count < current) {
+      for (int i = current - 1; i >= count; i--) {
+        _setRepsCtrls[i].dispose();
+        _setWeightCtrls[i].dispose();
+        _setRestCtrls[i].dispose();
+        _setRepsCtrls.removeAt(i);
+        _setWeightCtrls.removeAt(i);
+        _setRestCtrls.removeAt(i);
+      }
+    }
   }
 
   @override
@@ -1182,16 +1419,66 @@ class _ExercisePickerSheetState extends State<_ExercisePickerSheet> {
     _setsCtrl.dispose();
     _repsCtrl.dispose();
     _weightCtrl.dispose();
+    _restCtrl.dispose();
+    for (final c in _setRepsCtrls) {
+      c.dispose();
+    }
+    for (final c in _setWeightCtrls) {
+      c.dispose();
+    }
+    for (final c in _setRestCtrls) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  void _copyFromPrevious(int index) {
+    if (index <= 0 || index >= _setRepsCtrls.length) return;
+    _setRepsCtrls[index].text = _setRepsCtrls[index - 1].text;
+    _setWeightCtrls[index].text = _setWeightCtrls[index - 1].text;
+    _setRestCtrls[index].text = _setRestCtrls[index - 1].text;
+    setState(() {});
+  }
+
+  void _confirm() {
+    final ex = _selectedExercise!;
+    final sets = int.tryParse(_setsCtrl.text) ?? widget.defaultSets;
+
+    if (_perSetMode) {
+      final setConfig = <Map<String, dynamic>>[];
+      final n = sets < _setRepsCtrls.length ? sets : _setRepsCtrls.length;
+      for (int i = 0; i < n; i++) {
+        setConfig.add({
+          'reps': _setRepsCtrls[i].text.isNotEmpty ? _setRepsCtrls[i].text : '${widget.defaultReps}',
+          'weight': double.tryParse(_setWeightCtrls[i].text) ?? widget.defaultWeight,
+          'restTime': int.tryParse(_setRestCtrls[i].text) ?? widget.defaultRestTime,
+        });
+      }
+      widget.onPick(ex, {
+        'sets': sets,
+        'reps': setConfig.isNotEmpty ? setConfig.first['reps'] : '${widget.defaultReps}',
+        'weight': setConfig.isNotEmpty ? setConfig.first['weight'] : widget.defaultWeight,
+        'restTime': setConfig.isNotEmpty ? setConfig.first['restTime'] : widget.defaultRestTime,
+        'setConfig': setConfig,
+      });
+    } else {
+      widget.onPick(ex, {
+        'sets': sets,
+        'reps': _repsCtrl.text.isNotEmpty ? _repsCtrl.text : '${widget.defaultReps}',
+        'weight': double.tryParse(_weightCtrl.text) ?? widget.defaultWeight,
+        'restTime': int.tryParse(_restCtrl.text) ?? widget.defaultRestTime,
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.65,
+        maxHeight: MediaQuery.of(context).size.height * 0.82,
       ),
       decoration: BoxDecoration(
         color: colors.bgSecondary,
@@ -1228,7 +1515,12 @@ class _ExercisePickerSheetState extends State<_ExercisePickerSheet> {
           ),
           const SizedBox(height: 12),
           if (_selectedExercise != null)
-            Expanded(child: _buildConfigView(colors))
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomInset + 16),
+                child: _buildConfigView(colors),
+              ),
+            )
           else
             Expanded(child: _buildExerciseList(colors)),
         ],
@@ -1240,265 +1532,425 @@ class _ExercisePickerSheetState extends State<_ExercisePickerSheet> {
     final exercises = MockData.exercises;
     final categories = MockData.categories;
 
-    return Expanded(
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: categories.map((category) {
-          final filtered = category == '全部'
-              ? exercises
-              : exercises.where((e) => e['category'] == category).toList();
-          if (filtered.isEmpty) return const SizedBox.shrink();
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (category != '全部')
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8, top: 8),
-                  child: Text(
-                    category,
-                    style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: categories.map((category) {
+        final filtered = category == '全部'
+            ? exercises
+            : exercises.where((e) => e['category'] == category).toList();
+        if (filtered.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (category != '全部')
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8, top: 8),
+                child: Text(
+                  category,
+                  style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
                 ),
-              ...filtered.map((ex) => ListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                    leading: Icon(Icons.fitness_center, size: 18, color: colors.accentGlow),
-                    title: Text(
-                      '${ex['name']}',
-                      style: TextStyle(color: colors.textPrimary, fontSize: 14),
-                    ),
-                    subtitle: Text(
-                      '${ex['category']} · ${ex['equip']}',
-                      style: TextStyle(color: colors.textMuted, fontSize: 12),
-                    ),
-                    trailing: Icon(Icons.add, size: 20, color: colors.accentGlow),
-                    onTap: () {
-                      setState(() {
-                        _selectedExercise = ex;
-                      });
-                    },
-                  )),
-            ],
-          );
-        }).toList(),
-      ),
+              ),
+            ...filtered.map((ex) => ListTile(
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                  leading: Icon(Icons.fitness_center, size: 18, color: colors.accentGlow),
+                  title: Text(
+                    '${ex['name']}',
+                    style: TextStyle(color: colors.textPrimary, fontSize: 14),
+                  ),
+                  subtitle: Text(
+                    '${ex['category']} · ${ex['equip']}',
+                    style: TextStyle(color: colors.textMuted, fontSize: 12),
+                  ),
+                  trailing: Icon(Icons.add, size: 20, color: colors.accentGlow),
+                  onTap: () {
+                    setState(() {
+                      _selectedExercise = ex;
+                    });
+                  },
+                )),
+          ],
+        );
+      }).toList(),
     );
   }
 
   Widget _buildConfigView(FitTrackColors colors) {
     final ex = _selectedExercise!;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 选中动作信息
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: colors.bgCard,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.borderColor),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: colors.accentGlow.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.fitness_center, size: 24, color: colors.accentGlow),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ex['name'] as String,
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${ex['category']} · ${ex['equip']}',
-                        style: TextStyle(color: colors.textMuted, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 选中动作信息
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: colors.bgCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colors.borderColor),
           ),
-          const SizedBox(height: 20),
-          // 组数
-          Text('组数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
-          const SizedBox(height: 6),
-          Row(
+          child: Row(
             children: [
-              _buildNumberButton(colors, Icons.remove, () {
-                final v = int.tryParse(_setsCtrl.text) ?? 1;
-                if (v > 1) _setsCtrl.text = '${v - 1}';
-              }),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 60,
-                child: TextField(
-                  controller: _setsCtrl,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: colors.bgCard,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.borderColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.borderColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.accentGlow),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              _buildNumberButton(colors, Icons.add, () {
-                final v = int.tryParse(_setsCtrl.text) ?? 0;
-                _setsCtrl.text = '${v + 1}';
-              }),
-              const SizedBox(width: 8),
-              Text('组', style: TextStyle(color: colors.textMuted, fontSize: 14)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // 每组次数
-          Text('每组次数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              _buildNumberButton(colors, Icons.remove, () {
-                final v = int.tryParse(_repsCtrl.text) ?? 1;
-                if (v > 1) _repsCtrl.text = '${v - 1}';
-              }),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 60,
-                child: TextField(
-                  controller: _repsCtrl,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: colors.bgCard,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.borderColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.borderColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.accentGlow),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              _buildNumberButton(colors, Icons.add, () {
-                final v = int.tryParse(_repsCtrl.text) ?? 0;
-                _repsCtrl.text = '${v + 1}';
-              }),
-              const SizedBox(width: 8),
-              Text('次/组', style: TextStyle(color: colors.textMuted, fontSize: 14)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // 每组重量
-          Text('每组重量 (kg)', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              _buildNumberButton(colors, Icons.remove, () {
-                final v = double.tryParse(_weightCtrl.text) ?? 0;
-                if (v >= 2.5) _weightCtrl.text = '${v - 2.5}';
-              }),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 80,
-                child: TextField(
-                  controller: _weightCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: colors.bgCard,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.borderColor),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.borderColor),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colors.accentGlow),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              _buildNumberButton(colors, Icons.add, () {
-                final v = double.tryParse(_weightCtrl.text) ?? 0;
-                _weightCtrl.text = '${v + 2.5}';
-              }),
-              const SizedBox(width: 8),
-              Text('kg', style: TextStyle(color: colors.textMuted, fontSize: 14)),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // 确认按钮
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                final sets = int.tryParse(_setsCtrl.text) ?? widget.defaultSets;
-                final reps = int.tryParse(_repsCtrl.text) ?? widget.defaultReps;
-                final weight = double.tryParse(_weightCtrl.text) ?? widget.defaultWeight;
-                widget.onPick(ex, sets, reps, weight);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.accentGlow,
-                foregroundColor: colors.bgCard,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
+                child: Icon(Icons.fitness_center, size: 24, color: colors.accentGlow),
               ),
-              child: const Text('确认添加', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ex['name'] as String,
+                      style: TextStyle(
+                        color: colors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${ex['category']} · ${ex['equip']}',
+                      style: TextStyle(color: colors.textMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+        ),
+        const SizedBox(height: 16),
+
+        // 模式切换：统一参数 / 逐组设置
+        _buildModeToggle(colors),
+        const SizedBox(height: 16),
+
+        // 组数（共用）
+        _buildLabelRow(colors, '组数', '共 ${_setsCtrl.text} 组'),
+        const SizedBox(height: 6),
+        _buildStepperRow(
+          colors,
+          controller: _setsCtrl,
+          unit: '组',
+          step: 1,
+          min: 1,
+          isInt: true,
+          onChanged: () {
+            final v = int.tryParse(_setsCtrl.text) ?? 1;
+            if (v >= 1) _syncSetControllers(v);
+            setState(() {});
+          },
+        ),
+        const SizedBox(height: 16),
+
+        if (!_perSetMode) ...[
+          // 统一参数：次数 / 重量 / 休息
+          _buildLabelRow(colors, '每组次数', '所有组相同'),
+          const SizedBox(height: 6),
+          _buildStepperRow(
+            colors,
+            controller: _repsCtrl,
+            unit: '次/组',
+            step: 1,
+            min: 1,
+            isInt: true,
+          ),
+          const SizedBox(height: 16),
+          _buildLabelRow(colors, '每组重量', '所有组相同'),
+          const SizedBox(height: 6),
+          _buildStepperRow(
+            colors,
+            controller: _weightCtrl,
+            unit: 'kg',
+            step: 2.5,
+            min: 0,
+            isInt: false,
+          ),
+          const SizedBox(height: 16),
+          _buildLabelRow(colors, '组间休息', '所有组相同'),
+          const SizedBox(height: 6),
+          _buildStepperRow(
+            colors,
+            controller: _restCtrl,
+            unit: '秒',
+            step: 15,
+            min: 0,
+            isInt: true,
+          ),
+        ] else ...[
+          // 逐组设置：每组独立的次数 / 重量 / 休息
+          _buildPerSetEditor(colors),
+        ],
+
+        const SizedBox(height: 24),
+        // 确认按钮
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _confirm,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.accentGlow,
+              foregroundColor: colors.bgCard,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('确认添加', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  // ── 模式切换 ──────────────────────────────────────────────────
+  Widget _buildModeToggle(FitTrackColors colors) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: colors.borderColor),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildToggleItem(colors, '统一参数', Icons.layers, !_perSetMode, () {
+              setState(() => _perSetMode = false);
+            }),
+          ),
+          Expanded(
+            child: _buildToggleItem(colors, '逐组设置', Icons.view_list, _perSetMode, () {
+              setState(() => _perSetMode = true);
+            }),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildToggleItem(FitTrackColors colors, String label, IconData icon, bool active, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: active ? colors.accentGlow.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 15, color: active ? colors.accentGlow : colors.textMuted),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? colors.accentGlow : colors.textMuted,
+                fontSize: 12,
+                fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── 逐组编辑器 ────────────────────────────────────────────────
+  Widget _buildPerSetEditor(FitTrackColors colors) {
+    final sets = int.tryParse(_setsCtrl.text) ?? 1;
+    final count = sets < _setRepsCtrls.length ? sets : _setRepsCtrls.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('逐组参数设置', style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+            const Spacer(),
+            Text('每组可独立调整', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // 表头
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          decoration: BoxDecoration(
+            color: colors.borderColor.withOpacity(0.2),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+          ),
+          child: Row(
+            children: [
+              SizedBox(width: 38, child: Text('组', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
+              Expanded(child: Text('次数', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text('重量(kg)', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text('休息(秒)', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              const SizedBox(width: 28),
+            ],
+          ),
+        ),
+        // 每组输入行
+        ...List.generate(count, (i) => _buildPerSetRow(colors, i)),
+      ],
+    );
+  }
+
+  Widget _buildPerSetRow(FitTrackColors colors, int index) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: colors.bgCard.withOpacity(0.4),
+        border: Border(
+          bottom: BorderSide(color: colors.borderColor.withOpacity(0.3)),
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 38,
+            child: Text('第${index + 1}组', style: TextStyle(color: colors.textSecondary, fontSize: 11)),
+          ),
+          Expanded(
+            child: _buildMiniField(colors, _setRepsCtrls[index], TextInputType.number),
+          ),
+          Expanded(
+            child: _buildMiniField(colors, _setWeightCtrls[index], const TextInputType.numberWithOptions(decimal: true)),
+          ),
+          Expanded(
+            child: _buildMiniField(colors, _setRestCtrls[index], TextInputType.number),
+          ),
+          SizedBox(
+            width: 28,
+            child: index > 0
+                ? GestureDetector(
+                    onTap: () => _copyFromPrevious(index),
+                    child: Icon(Icons.copy, size: 14, color: colors.textMuted),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniField(FitTrackColors colors, TextEditingController controller, TextInputType kbType) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: TextField(
+        controller: controller,
+        keyboardType: kbType,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+        decoration: InputDecoration(
+          isDense: true,
+          filled: true,
+          fillColor: colors.bgCard,
+          contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: BorderSide(color: colors.borderColor),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: BorderSide(color: colors.borderColor),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: BorderSide(color: colors.accentGlow),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── 通用组件 ──────────────────────────────────────────────────
+  Widget _buildLabelRow(FitTrackColors colors, String label, String hint) {
+    return Row(
+      children: [
+        Text(label, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+        const Spacer(),
+        Text(hint, style: TextStyle(color: colors.textMuted, fontSize: 11)),
+      ],
+    );
+  }
+
+  Widget _buildStepperRow(
+    FitTrackColors colors, {
+    required TextEditingController controller,
+    required String unit,
+    required double step,
+    required double min,
+    required bool isInt,
+    VoidCallback? onChanged,
+  }) {
+    return Row(
+      children: [
+        _buildNumberButton(colors, Icons.remove, () {
+          if (isInt) {
+            final v = int.tryParse(controller.text) ?? 0;
+            final nv = (v - step.toInt()).clamp(min.toInt(), 9999);
+            controller.text = '$nv';
+          } else {
+            final v = double.tryParse(controller.text) ?? 0;
+            final nv = (v - step).clamp(min, 9999.0);
+            controller.text = _formatDouble(nv);
+          }
+          onChanged?.call();
+        }),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 70,
+          child: TextField(
+            controller: controller,
+            keyboardType: isInt ? TextInputType.number : const TextInputType.numberWithOptions(decimal: true),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: colors.bgCard,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: colors.borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: colors.borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: colors.accentGlow),
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+            ),
+            onChanged: (_) => onChanged?.call(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _buildNumberButton(colors, Icons.add, () {
+          if (isInt) {
+            final v = int.tryParse(controller.text) ?? 0;
+            controller.text = '${v + step.toInt()}';
+          } else {
+            final v = double.tryParse(controller.text) ?? 0;
+            controller.text = _formatDouble(v + step);
+          }
+          onChanged?.call();
+        }),
+        const SizedBox(width: 8),
+        Text(unit, style: TextStyle(color: colors.textMuted, fontSize: 14)),
+      ],
+    );
+  }
+
+  String _formatDouble(double v) {
+    return v == v.toInt().toDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
   }
 
   Widget _buildNumberButton(FitTrackColors colors, IconData icon, VoidCallback onTap) {

@@ -28,7 +28,7 @@ class BottomNav extends StatelessWidget {
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
           child: Material(
             color: Colors.transparent,
             child: Container(
@@ -51,7 +51,7 @@ class BottomNav extends StatelessWidget {
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   mainAxisSize: MainAxisSize.max,
@@ -110,8 +110,8 @@ class _NavItemWidget extends StatelessWidget {
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
           padding: EdgeInsets.symmetric(
-            horizontal: isActive ? 14 : 8,
-            vertical: isActive ? 8 : 6,
+            horizontal: isActive ? 12 : 6,
+            vertical: isActive ? 5 : 4,
           ),
           decoration: BoxDecoration(
             color: isActive
@@ -122,27 +122,17 @@ class _NavItemWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutCubic,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? colors.accentGlow.withOpacity(0.2)
-                      : Colors.transparent,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  isActive ? item.activeIcon : item.icon,
-                  size: isActive ? 24 : 22,
-                  color: isActive ? colors.accentGlow : colors.textMuted,
-                ),
+              Icon(
+                isActive ? item.activeIcon : item.icon,
+                size: isActive ? 20 : 18,
+                color: isActive ? colors.accentGlow : colors.textMuted,
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 250),
                 style: TextStyle(
-                  fontSize: isActive ? 11 : 10,
+                  fontSize: isActive ? 10 : 9,
+                  height: 1.0,
                   color: isActive ? colors.accentGlow : colors.textMuted,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
                 ),
