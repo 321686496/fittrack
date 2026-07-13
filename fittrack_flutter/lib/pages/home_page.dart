@@ -4,6 +4,7 @@ import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/heatmap_grid.dart';
 import '../widgets/page_header.dart';
 
 class HomePage extends StatefulWidget {
@@ -268,6 +269,14 @@ class _HomePageState extends State<HomePage> {
             onBellTap: () => _showNotifications(context),
             onCalendarTap: () => _showCalendar(context),
           ),
+          ValueListenableBuilder<bool>(
+            valueListenable: Storage.dataChanged,
+            builder: (context, _, __) {
+              final records = Storage.getRecords();
+              return HeatmapGrid(records: records);
+            },
+          ),
+          const SizedBox(height: 16),
           Expanded(
             child: RefreshIndicator(
               color: colors.accentGlow,
