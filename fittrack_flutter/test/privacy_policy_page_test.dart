@@ -9,7 +9,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('FitTrack 隐私政策'), findsOneWidget);
-    expect(find.text('一、我们收集的信息'), findsOneWidget);
-    expect(find.text('七、联系方式'), findsOneWidget);
+    const sections = [
+      '一、我们收集的信息',
+      '二、信息使用方式',
+      '三、信息存储位置',
+      '四、第三方 SDK 信息共享',
+      '五、未成年人保护',
+      '六、用户权利',
+      '七、联系方式',
+    ];
+    for (final section in sections) {
+      expect(find.text(section), findsOneWidget, reason: 'missing section: $section');
+    }
   });
 }
