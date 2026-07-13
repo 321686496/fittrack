@@ -87,7 +87,7 @@ class _DataPrivacyPageState extends State<DataPrivacyPage> {
       await Storage.clearAll();
       if (mounted) {
         app_router.onThemeChanged?.call(Storage.getSettings()['theme'] ?? 'vitality-sport');
-        context.go('/');
+        context.go('/splash');
       }
     }
   }
