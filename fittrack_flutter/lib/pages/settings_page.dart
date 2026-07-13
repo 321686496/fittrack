@@ -593,6 +593,10 @@ class _SettingsPageState extends State<SettingsPage> {
           DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私设置', '查看隐私与权限说明', _showPrivacyInfo),
           DividerWidget(indent: 44),
+          _buildMenuTile(colors, Icons.description_outlined, '隐私政策', '查看完整隐私政策文本', () {
+            context.push('/privacy-full');
+          }),
+          DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.info_outline, '关于 FitTrack', '版本 1.0.0', _showAbout),
         ],
       ),
