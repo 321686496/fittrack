@@ -25,6 +25,11 @@ class Storage {
   static const String _keyPrefsPrefix = 'fittrack_';
   static const String _keyMigrated = 'fittrack_sqlite_migrated';
 
+  // Phase 2 — 全局可观测状态
+  static final ValueNotifier<bool> isPremiumNotifier = ValueNotifier<bool>(false);
+  static final ValueNotifier<List<String>> unlockedAchievementsNotifier =
+      ValueNotifier<List<String>>([]);
+
   // ============================================================
   // Initialization
   // ============================================================
@@ -44,6 +49,15 @@ class Storage {
 
     // 首次启动时，将 SharedPreferences 中的旧 Plans/Records 迁移到 SQLite
     await _migrateFromPrefsIfNeeded();
+
+    // Phase 2 — 生成 deviceId 并初始化 isPremium 状态
+    final settings = _safeGet(_keySettings, <String, dynamic>{}) as Map<String, dynamic>;
+    if (settings['deviceId'] == null || (settings['deviceId'] as String).isEmpty) {
+      settings['deviceId'] = _generateUuidV4();
+      _store[_keySettings] = settings;
+      _persistKey(_keySettings);
+    }
+    isPremiumNotifier.value = settings['isPremium'] ?? false;
   }
 
   // ── 数据迁移：SharedPreferences → SQLite ──────────────────
@@ -103,6 +117,25 @@ class Storage {
   static String getTodayStr() {
     final d = DateTime.now();
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  // Phase 2 — UUID v4 生成（用于 deviceId）
+  static String _generateUuidV4() {
+    final rng = Random();
+    final bytes = List<int>.generate(16, (_) => rng.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0F) | 0x40; // version 4
+    bytes[8] = (bytes[8] & 0x3F) | 0x80; // variant
+    final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
+  }
+
+  // Phase 2 — 更新 Premium 状态
+  static Future<void> setPremium(bool value, {String source = ''}) async {
+    final s = getSettings();
+    s['isPremium'] = value;
+    s['premiumSource'] = source;
+    await saveSettings(s);
+    isPremiumNotifier.value = value;
   }
 
   static String getWeekKey(int timestamp) {
@@ -337,11 +370,7 @@ class Storage {
   // ============================================================
 
   static Map<String, dynamic> getSettings() {
-    final result = _safeGet(_keySettings, <String, dynamic>{});
-    if (result is Map && result.isNotEmpty) {
-      return Map<String, dynamic>.from(result);
-    }
-    return {
+    final defaults = <String, dynamic>{
       'unit': 'kg',
       'restTime': 90,
       'defaultRestTime': 90,
@@ -350,7 +379,25 @@ class Storage {
       'defaultWeight': 20.0,
       'theme': 'vitality-sport',
       'trainingTime': '',
+      // Phase 2 — 新增默认 settings
+      'isPremium': false,
+      'premiumSource': '',
+      'redeemedCodes': <String>[],
+      'channelSource': '',
+      'anonStatsOptIn': false,
+      'deviceId': '',
+      'ratingPromptLastShown': 0,
+      'ratingPromptNeverAsk': false,
+      'smartPushEnabled': true,
+      'lastPushDate': '',
+      'pushCountIn7Days': 0,
+      'onboardingV2Done': false,
     };
+    final result = _safeGet(_keySettings, <String, dynamic>{});
+    if (result is Map) {
+      return {...defaults, ...Map<String, dynamic>.from(result)};
+    }
+    return defaults;
   }
 
   static bool saveSettings(Map<String, dynamic> settings) {
