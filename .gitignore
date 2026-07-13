@@ -1,0 +1,5 @@
+# Worktrees (managed by superpowers:using-git-worktrees)
+.worktrees/
+
+# Superpowers SDD scratch (progress ledger, task briefs)
+.superpowers/
