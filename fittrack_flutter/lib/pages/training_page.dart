@@ -9,6 +9,7 @@ import '../data/storage.dart';
 import '../services/rest_notification_service.dart';
 import '../services/ohos_reminder_service.dart';
 import '../services/form_kit_service.dart';
+import '../services/share_card_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
@@ -471,6 +472,33 @@ class _TrainingPageState extends State<TrainingPage>
     // 返回上一页
     if (mounted) {
       context.go('/home');
+    }
+  }
+
+  Future<void> _shareTrainingCard(int totalWeight, int duration) async {
+    final record = <String, dynamic>{
+      'name': _dayConfig?['label'] ?? '训练',
+      'totalWeight': totalWeight,
+      'totalSets': _completedSets,
+      'duration': duration * 60, // minutes → seconds for ShareCardFrame
+      'date': DateTime.now().millisecondsSinceEpoch,
+    };
+    try {
+      final path = await ShareCardService.generateShareCard(record, context);
+      if (!mounted) return;
+      if (Platform.isOhos) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('训练卡片已生成，分享功能即将上线')),
+        );
+      } else {
+        await ShareCardService.shareImage(path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('生成分享卡片失败：$e')),
+        );
+      }
     }
   }
 
@@ -1160,6 +1188,16 @@ class _TrainingPageState extends State<TrainingPage>
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Share button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.share_outlined),
+                      label: const Text('分享训练成果'),
+                      onPressed: () => _shareTrainingCard(totalWeight, duration),
                     ),
                   ),
                   const SizedBox(height: 24),
