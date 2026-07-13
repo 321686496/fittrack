@@ -2495,23 +2495,24 @@ void main() {
     await Storage.init();
   });
 
-  test('rejects malformed format', () {
-    final result = RedeemService.instance.verifyAndRedeem('INVALID');
+  test('rejects malformed format', () async {
+    final result = await RedeemService.instance.verifyAndRedeem('INVALID');
     expect(result, RedeemResult.invalidFormat);
   });
 
-  test('rejects known invalid signature', () {
-    final result = RedeemService.instance.verifyAndRedeem('FITT-AAAA-BBBB-CCCC');
+  test('rejects known invalid signature', () async {
+    final result =
+        await RedeemService.instance.verifyAndRedeem('FITT-AAAA-BBBB-CCCC');
     expect(result, RedeemResult.invalidSignature);
   });
 
-  test('accepts a valid generated code', () {
+  test('accepts a valid generated code', () async {
     // Generate a known-good code using the same secret
     final code = RedeemService.instance.generateTestCode();
-    final result = RedeemService.instance.verifyAndRedeem(code);
+    final result = await RedeemService.instance.verifyAndRedeem(code);
     expect(result, RedeemResult.success);
     // Second redemption should fail (already redeemed)
-    final second = RedeemService.instance.verifyAndRedeem(code);
+    final second = await RedeemService.instance.verifyAndRedeem(code);
     expect(second, RedeemResult.alreadyRedeemed);
   });
 }
@@ -2530,7 +2531,6 @@ Create `fittrack_flutter/lib/services/redeem_service.dart`:
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import '../data/storage.dart';
-import 'iap_service.dart';
 
 enum RedeemResult {
   success,
@@ -2551,18 +2551,18 @@ class RedeemService {
   static final RegExp _pattern =
       RegExp(r'^FITT-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$');
 
-  RedeemResult verifyAndRedeem(String code) {
+  Future<RedeemResult> verifyAndRedeem(String code) async {
     if (!_pattern.hasMatch(code)) return RedeemResult.invalidFormat;
     if (_isAlreadyRedeemed(code)) return RedeemResult.alreadyRedeemed;
     if (!_verifySignature(code)) return RedeemResult.invalidSignature;
 
-    // Mark redeemed + unlock Pro
+    // Mark redeemed + unlock Pro (via Storage.setPremium, defined in Task 4)
     final list = getRedeemedCodes();
     list.add(code);
     final s = Storage.getSettings();
     s['redeemedCodes'] = list;
-    Storage.saveSettings(s);
-    IapService.instance.markPremiumLocally('redeem_code');
+    await Storage.saveSettings(s);
+    await Storage.setPremium(true, source: 'redeem_code');
     return RedeemResult.success;
   }
 
@@ -2631,7 +2631,7 @@ class _RedeemPageState extends State<RedeemPage> {
   Future<void> _submit() async {
     final code = _controller.text.trim().toUpperCase();
     setState(() => _processing = true);
-    final result = RedeemService.instance.verifyAndRedeem(code);
+    final result = await RedeemService.instance.verifyAndRedeem(code);
     setState(() => _processing = false);
 
     final msg = switch (result) {
