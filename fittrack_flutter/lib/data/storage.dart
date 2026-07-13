@@ -229,6 +229,8 @@ class Storage {
     _plansCacheDirty = true;
     // 异步持久化
     _db.updatePlan(planId, updates);
+    // 通知数据变更
+    dataChanged.value = !dataChanged.value;
     return _plansCache[idx];
   }
 
