@@ -21,6 +21,7 @@ import 'pages/reminder_settings_page.dart';
 import 'pages/gym_card_page.dart';
 import 'pages/body_data_page.dart';
 import 'pages/privacy_policy_page.dart';
+import 'pages/user_agreement_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -226,6 +227,11 @@ GoRouter createRouter() {
         path: '/privacy-full',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const PrivacyPolicyPage(),
+      ),
+      GoRoute(
+        path: '/agreement',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const UserAgreementPage(),
       ),
     ],
   );

@@ -597,6 +597,10 @@ class _SettingsPageState extends State<SettingsPage> {
             context.push('/privacy-full');
           }),
           DividerWidget(indent: 44),
+          _buildMenuTile(colors, Icons.description_outlined, '用户协议', '查看完整用户协议文本', () {
+            context.push('/agreement');
+          }),
+          DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.info_outline, '关于 FitTrack', '版本 1.0.0', _showAbout),
         ],
       ),
