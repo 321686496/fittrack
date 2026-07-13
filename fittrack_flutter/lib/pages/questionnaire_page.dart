@@ -604,7 +604,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
           mainAxisSpacing: 14,
           crossAxisSpacing: 12,
           // 单元格高度比例，保证标签 + 输入框能正常显示
-          childAspectRatio: 2.4,
+          childAspectRatio: 1.85,
           children: fields.map((f) {
             return FitTextField(
               controller: f[1] as TextEditingController,

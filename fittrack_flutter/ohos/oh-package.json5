@@ -15,9 +15,9 @@
   "overrides": {
     "@ohos/flutter_ohos": "file:./har/flutter.har",
     "@ohos/flutter_module": "file:./entry",
-    "permission_handler_ohos": "C:/Users/黄sir/AppData/Local/Pub/Cache/git/flutter_permission_handler-729c5ae84a1ce255c4c73749e0c0076c129ea386/permission_handler_ohos/ohos",
-    "shared_preferences_ohos": "C:/Users/黄sir/AppData/Local/Pub/Cache/git/flutter_packages-abe263023cbc77d95ee0a8a2511e8e02903b7a6c/packages/shared_preferences/shared_preferences_ohos/ohos",
-    "sqflite": "C:/Users/黄sir/AppData/Local/Pub/Cache/git/flutter_sqflite-c1dd8bfc2c167bcc4a657e7b4d28048fc77d7035/sqflite/ohos",
-    "flutter_local_notifications": "C:/Users/黄sir/AppData/Local/Pub/Cache/git/fluttertpc_flutter_local_notifications-5427351f2c1b6caae5bd3cf89f855e9b53bdcc57/flutter_local_notifications/ohos"
+    "shared_preferences_ohos": "file:./har/shared_preferences_ohos.har",
+    "permission_handler_ohos": "file:./har/permission_handler_ohos.har",
+    "sqflite": "file:./har/sqflite.har",
+    "flutter_local_notifications": "file:./har/flutter_local_notifications.har"
   }
 }
