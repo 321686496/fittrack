@@ -94,7 +94,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                           colors,
                           icon: Icons.vibration,
                           title: '振动提醒',
-                          subtitle: '休息结束时振动提醒',
+                          subtitle: '训练结束时振动提醒',
                           value: _vibrationEnabled,
                           onChanged: (v) {
                             setState(() => _vibrationEnabled = v);
@@ -355,7 +355,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            '• 应用在前台时，休息结束会立即振动并通知\n'
+            '• 应用在前台时，休息结束会立即通知\n'
+            '• 训练完成时会振动提醒（可在上方开关控制）\n'
             '• 应用在后台时，切回应用后会立即提醒\n'
             '• 后台代理提醒权限正在申请中，后续版本将支持后台通知',
             style: TextStyle(

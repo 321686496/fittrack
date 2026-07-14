@@ -354,10 +354,9 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   /// 休息结束时提醒
-  /// - 前台：增强振动 + 显示通知
-  /// - 后台恢复：wall-clock 检测到休息已结束，补发振动 + 通知
-  ///   （OHOS 上由 EntryAbility 的 reminderAgentManager 代理提醒处理，
-  ///     Flutter 侧仅做振动提醒）
+  /// - 前台：显示通知（震动仅在训练结束时触发）
+  /// - 后台恢复：wall-clock 检测到休息已结束，补发通知
+  ///   （OHOS 上由 EntryAbility 的 reminderAgentManager 代理提醒处理）
   Future<void> _notifyRestEnd() async {
     if (_restEndNotified) return;
     _restEndNotified = true;
@@ -367,9 +366,8 @@ class _TrainingPageState extends State<TrainingPage>
         : '';
 
     if (_appLifecycleState == AppLifecycleState.resumed) {
-      // 前台或从后台恢复：振动 + 显示通知
-      await RestNotificationService.vibrate();
-      // OHOS 平台：通知由 EntryAbility 的 notificationManager 处理，Flutter 侧仅振动
+      // 前台或从后台恢复：显示通知（震动仅在训练结束时触发）
+      // OHOS 平台：通知由 EntryAbility 的 notificationManager 处理
       if (!Platform.isOhos) {
         await RestNotificationService.instance
             .showRestEndNotification(exerciseName: exerciseName);
@@ -460,9 +458,13 @@ class _TrainingPageState extends State<TrainingPage>
       'restLog': _restLog,
     });
 
-    // 训练完成触觉反馈
+    // 训练完成触觉反馈（受振动设置控制）
     try {
-      await HapticFeedback.heavyImpact();
+      final settings = Storage.getSettings();
+      final vibrationEnabled = settings['vibrationEnabled'] as bool? ?? true;
+      if (vibrationEnabled) {
+        await HapticFeedback.heavyImpact();
+      }
     } catch (_) {}
 
     // B4: 成就检查（替代旧的 _checkAndShowNewAchievements）
