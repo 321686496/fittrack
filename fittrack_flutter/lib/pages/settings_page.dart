@@ -233,7 +233,7 @@ class _SettingsPageState extends State<SettingsPage> {
         '• 所有数据仅存储在本地设备\n'
         '• 不会上传任何个人信息到服务器\n'
         '• 通知权限仅用于训练提醒\n'
-        '• 振动权限仅用于休息结束提醒\n'
+        '• 振动权限仅用于训练结束时提醒\n'
         '• 您可以随时在此清除所有数据',
       icon: Icons.privacy_tip_outlined,
     );
@@ -301,7 +301,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 12),
           _buildPermissionItem(colors, Icons.notifications_outlined, '通知权限', '用于训练提醒和休息结束通知', _hasNotificationPermission),
           DividerWidget(),
-          _buildPermissionItem(colors, Icons.vibration, '震动权限', '休息结束时震动提醒', _hasVibratePermission),
+          _buildPermissionItem(colors, Icons.vibration, '震动权限', '训练结束时震动提醒', _hasVibratePermission),
           DividerWidget(),
           _buildPermissionItem(colors, Icons.schedule, '后台运行', '保证后台计时和提醒正常工作', _hasBackgroundPermission),
         ],

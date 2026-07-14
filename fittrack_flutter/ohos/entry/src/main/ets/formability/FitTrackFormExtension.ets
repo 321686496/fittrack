@@ -86,7 +86,15 @@ export default class FitTrackFormExtension extends FormExtensionAbility {
         data.restEndTime = this.getNumberValue(parsed, 'restEndTime', 0);
         data.totalRestSeconds = this.getNumberValue(parsed, 'totalRestSeconds', 0);
         if (data.mode === 'rest' && data.restEndTime > 0) {
-          data.restSeconds = Math.max(0, Math.round((data.restEndTime - Date.now()) / 1000));
+          const remainingSec = Math.max(0, Math.round((data.restEndTime - Date.now()) / 1000));
+          if (remainingSec > 0) {
+            data.restSeconds = remainingSec;
+          } else {
+            // 休息倒计时已结束但卡片未被刷新（App 可能后台挂起）
+            // 自动切换到训练态显示，避免卡片停留在"休息中 0秒"
+            data.mode = 'training';
+            data.restSeconds = 0;
+          }
         } else {
           data.restSeconds = this.getNumberValue(parsed, 'restSeconds', 0);
         }

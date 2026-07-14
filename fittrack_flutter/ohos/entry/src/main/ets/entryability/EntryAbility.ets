@@ -11,7 +11,6 @@ import { Want, AbilityConstant, wantAgent, WantAgent, bundleManager } from '@kit
 import { reminderAgentManager } from '@kit.BackgroundTasksKit';
 import { liveViewManager } from '@kit.LiveViewKit';
 import { notificationManager } from '@kit.NotificationKit';
-import { vibrator } from '@kit.SensorServiceKit';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
 const KEY_FORM_DATA: string = 'form_data';
@@ -156,9 +155,9 @@ export default class EntryAbility extends FlutterAbility {
         const restSeconds: number = Math.max(1, Math.round((restEndTime - Date.now()) / 1000));
         this.scheduleRestReminder(restSeconds);
       } else {
-        // 休息结束（或非休息状态）：停止实况窗 + 触发震动提醒
+        // 休息结束（或非休息状态）：停止实况窗
+        // 震动仅在训练结束时由 Flutter 侧 HapticFeedback 触发
         this.stopRestLiveView();
-        this.triggerRestEndVibration();
       }
     } catch (e) {
       const err: BusinessError = e as BusinessError;
@@ -193,13 +192,12 @@ export default class EntryAbility extends FlutterAbility {
     try {
       // 校验实况窗开关是否打开
       // 注意：模拟器上可能返回 false，也可能因实况窗权益未申请而无法创建
-      let enabled: boolean;
+      let enabled: boolean = true;
       try {
         enabled = await liveViewManager.isLiveViewEnabled();
       } catch (checkErr) {
         const checkError: BusinessError = checkErr as BusinessError;
-        console.error(`[FitTrack] isLiveViewEnabled 调用异常: code=${checkError.code}, msg=${checkError.message}`);
-        return;
+        console.warn(`[FitTrack] isLiveViewEnabled 调用异常: code=${checkError.code}, msg=${checkError.message}，将继续尝试创建实况窗`);
       }
       if (!enabled) {
         console.warn('[FitTrack] 实况窗开关未开启，无法创建实况窗。可能原因：1) 用户未在设置中开启实况窗开关；2) 模拟器环境限制；3) 实况窗权益未申请');
@@ -250,8 +248,10 @@ export default class EntryAbility extends FlutterAbility {
             type: liveViewManager.CapsuleType.CAPSULE_TYPE_TIMER,
             status: 1,
             icon: CAPSULE_ICON,
-            title: '休息中',
             content: '${placeholder.timer}',
+            time: remainingMs,
+            isCountdown: true,
+            isPaused: false,
             backgroundColor: '#FFFF6B35',
           }
         }
@@ -265,11 +265,67 @@ export default class EntryAbility extends FlutterAbility {
     } catch (e) {
       const err: BusinessError = e as BusinessError;
       console.error(`[FitTrack] startRestLiveView 失败: code=${err.code}, msg=${err.message}`);
-      // 常见错误码说明：
       // 1003500004: 实况窗开关关闭
-      // 1003500005: 实况窗权益未申请
+      // 1003500005: 实况窗权益未申请（需在 AppGallery Connect 申请）
       // 1003500006: 实况窗已存在（可能未正确停止上一次）
       // 1003500007: 无法连接服务器（模拟器常见）
+      if (err.code === 1003500006) {
+        // 实况窗已存在：先停止再重试一次
+        console.info('[FitTrack] 实况窗已存在，尝试先停止再重新创建');
+        this.liveViewActive = true;
+        await this.stopRestLiveView();
+        try {
+          this.liveViewSequence = 1;
+          const retryRemainingMs: number = Math.max(0, this.restEndTime - Date.now());
+          let retryView: liveViewManager.LiveView = {
+            id: REST_LIVE_VIEW_ID,
+            event: 'TIMER',
+            sequence: this.liveViewSequence,
+            isMute: false,
+            timer: {
+              time: retryRemainingMs,
+              isCountdown: true,
+              isPaused: false,
+            },
+            liveViewData: {
+              primary: {
+                title: 'FitTrack - 休息中',
+                content: [
+                  { text: '剩余 ' },
+                  { text: '${placeholder.timer}', textColor: '#FFFF6B35' },
+                  { text: ' | ' },
+                  { text: this.currentExerciseName, textColor: '#FFFF6B35' }
+                ],
+                keepTime: 1,
+                clickAction: this.liveViewWantAgent!,
+                layoutData: {
+                  layoutType: liveViewManager.LayoutType.LAYOUT_TYPE_PICKUP,
+                  title: '休息倒计时',
+                  content: '${placeholder.timer}',
+                  underlineColor: '#FFFF6B35',
+                  descPic: "liveview_icon.png"
+                }
+              },
+              capsule: {
+                type: liveViewManager.CapsuleType.CAPSULE_TYPE_TIMER,
+                status: 1,
+                icon: CAPSULE_ICON,
+                content: '${placeholder.timer}',
+                time: retryRemainingMs,
+                isCountdown: true,
+                isPaused: false,
+                backgroundColor: '#FFFF6B35',
+              }
+            }
+          };
+          await liveViewManager.startLiveView(retryView);
+          this.liveViewActive = true;
+          console.info('[FitTrack] startRestLiveView 重试成功');
+        } catch (retryErr) {
+          const retryError: BusinessError = retryErr as BusinessError;
+          console.error(`[FitTrack] startRestLiveView 重试失败: code=${retryError.code}, msg=${retryError.message}`);
+        }
+      }
     }
   }
 
@@ -313,7 +369,6 @@ export default class EntryAbility extends FlutterAbility {
             type: liveViewManager.CapsuleType.CAPSULE_TYPE_TIMER,
             status: 0,
             icon: CAPSULE_ICON,
-            title: '已结束',
             content: '完成',
             backgroundColor: '#FF999999',
           }
@@ -395,24 +450,4 @@ export default class EntryAbility extends FlutterAbility {
     }
   }
 
-  // 休息结束时触发震动，提醒用户
-  private triggerRestEndVibration(): void {
-    try {
-      // 震动效果：中等强度，持续 500ms
-      vibrator.startVibration({
-        type: 'time',
-        duration: 500,
-      }, {
-        id: 0,
-        usage: 'notification',
-      }).then(() => {
-        console.info('[FitTrack] 休息结束震动触发成功');
-      }).catch((err: BusinessError) => {
-        console.error(`[FitTrack] 休息结束震动触发失败: code=${err.code}, msg=${err.message}`);
-      });
-    } catch (e) {
-      const err: BusinessError = e as BusinessError;
-      console.error(`[FitTrack] triggerRestEndVibration 异常: code=${err.code}, msg=${err.message}`);
-    }
-  }
 }
