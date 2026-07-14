@@ -7,6 +7,7 @@ import 'themes/app_themes.dart';
 import 'data/storage.dart';
 import 'services/permission_service.dart';
 import 'services/rest_notification_service.dart';
+import 'services/smart_push_service.dart';
 import 'services/form_kit_service.dart';
 import 'services/ohos_reminder_service.dart';
 import 'router.dart' as app_router;
@@ -39,6 +40,8 @@ void main() {
     PermissionService.requestCorePermissions();
     // 初始化休息通知服务（内部会配置时区并 await 完成）
     await RestNotificationService.instance.init();
+    // 初始化智能推送服务
+    await SmartPushService.instance.init();
     // 初始化桌面卡片服务（OHOS）
     if (Platform.isOhos) {
       FormKitService.instance.init();
