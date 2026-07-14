@@ -33,4 +33,17 @@ void main() {
     final should = SmartPushService.instance.shouldPushNow();
     expect(should, false);
   });
+
+  test('resets pushCountIn7Days when last push was 7+ days ago', () async {
+    final eightDaysAgo = DateTime.now().subtract(const Duration(days: 8));
+    final lastPushDate =
+        '${eightDaysAgo.year}-${eightDaysAgo.month.toString().padLeft(2, '0')}-${eightDaysAgo.day.toString().padLeft(2, '0')}';
+    final s = Storage.getSettings();
+    s['smartPushEnabled'] = true;
+    s['lastPushDate'] = lastPushDate;
+    s['pushCountIn7Days'] = 2;
+    await Storage.saveSettings(s);
+    SmartPushService.instance.shouldPushNow();
+    expect(Storage.getSettings()['pushCountIn7Days'], 0);
+  });
 }

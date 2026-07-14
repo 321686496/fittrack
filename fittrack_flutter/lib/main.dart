@@ -83,18 +83,35 @@ class FitTrackApp extends StatefulWidget {
   State<FitTrackApp> createState() => _FitTrackAppState();
 }
 
-class _FitTrackAppState extends State<FitTrackApp> {
+class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
   late String _currentThemeId;
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _currentThemeId = Storage.getSettings()['theme'] ?? 'vitality-sport';
     _router = app_router.createRouter();
     _globalRouter = _router;
     // 设置全局主题变更回调
     app_router.onThemeChanged = _onThemeChanged;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // 应用回到前台时触发智能推送检查（fire-and-forget，
+      // maybePushNow 内部已处理所有失败路径）。
+      SmartPushService.instance.maybePushNow();
+    }
   }
 
   void _onThemeChanged(String themeId) {
