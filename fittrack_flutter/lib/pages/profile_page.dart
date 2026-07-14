@@ -489,6 +489,26 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
+            ValueListenableBuilder<bool>(
+              valueListenable: Storage.isPremiumNotifier,
+              builder: (context, isPremium, _) {
+                return isPremium
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('Pro',
+                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                      )
+                    : TextButton.icon(
+                        onPressed: () => context.push('/redeem'),
+                        icon: const Icon(Icons.workspace_premium),
+                        label: const Text('升级 Pro'),
+                      );
+              },
+            ),
             Icon(Icons.chevron_right, color: colors.textMuted, size: 22),
           ],
         ),

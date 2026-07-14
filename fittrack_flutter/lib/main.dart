@@ -8,6 +8,7 @@ import 'data/storage.dart';
 import 'services/permission_service.dart';
 import 'services/rest_notification_service.dart';
 import 'services/smart_push_service.dart';
+import 'services/iap_service.dart';
 import 'services/form_kit_service.dart';
 import 'services/ohos_reminder_service.dart';
 import 'router.dart' as app_router;
@@ -42,6 +43,8 @@ void main() {
     await RestNotificationService.instance.init();
     // 初始化智能推送服务
     await SmartPushService.instance.init();
+    // 初始化 IAP 服务（Android/iOS only, OHOS 使用兑换码路径）
+    await IapService.instance.init();
     // 初始化桌面卡片服务（OHOS）
     if (Platform.isOhos) {
       FormKitService.instance.init();
