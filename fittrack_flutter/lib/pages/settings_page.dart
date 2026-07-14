@@ -592,6 +592,13 @@ class _SettingsPageState extends State<SettingsPage> {
           }),
           DividerWidget(indent: 44),
           ListTile(
+            leading: const Icon(Icons.card_giftcard_outlined),
+            title: const Text('兑换 Pro'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/redeem'),
+          ),
+          DividerWidget(indent: 44),
+          ListTile(
             leading: const Icon(Icons.emoji_events_outlined),
             title: const Text('成就墙'),
             trailing: const Icon(Icons.chevron_right),
