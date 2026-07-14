@@ -7,6 +7,7 @@ import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/rest_notification_service.dart';
+import '../services/smart_push_service.dart';
 import '../services/ohos_reminder_service.dart';
 import '../services/form_kit_service.dart';
 import '../services/share_card_service.dart';
@@ -480,6 +481,9 @@ class _TrainingPageState extends State<TrainingPage>
             record: current, previousRecord: previous);
       }
     }
+
+    // B3: 训练完成回调，重置今日推送规避
+    SmartPushService.instance.onTrainingCompleted();
 
     // 返回上一页
     if (mounted) {
