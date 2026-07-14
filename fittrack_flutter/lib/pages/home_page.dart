@@ -5,6 +5,7 @@ import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/heatmap_grid.dart';
+import '../widgets/onboarding_coach.dart';
 import '../widgets/page_header.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,12 +21,44 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic> _stats = {};
   Map<String, dynamic> _streak = {};
   List<Map<String, dynamic>> _personalRecords = [];
+  bool _coachShown = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
     Storage.dataChanged.addListener(_loadData);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maybeShowCoach();
+  }
+
+  void _maybeShowCoach() {
+    if (_coachShown) return;
+    final settings = Storage.getSettings();
+    final onboardingV2Done = settings['onboardingV2Done'] == true;
+    if (!onboardingV2Done && !Storage.hasData()) {
+      _coachShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => OnboardingCoach(
+            onComplete: () => Navigator.pop(context),
+            onSkip: () {
+              final s = Storage.getSettings();
+              s['onboardingV2Done'] = true;
+              Storage.saveSettings(s);
+              Navigator.pop(context);
+            },
+          ),
+        );
+      });
+    }
   }
 
   @override
