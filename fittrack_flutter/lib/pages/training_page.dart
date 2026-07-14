@@ -15,6 +15,7 @@ import '../services/ad_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/celebration_overlay.dart';
+import '../widgets/rating_prompt_sheet.dart';
 
 class TrainingPage extends StatefulWidget {
   final Map<String, dynamic> params;
@@ -518,6 +519,11 @@ class _TrainingPageState extends State<TrainingPage>
 
     // B3: 训练完成回调，重置今日推送规避
     SmartPushService.instance.onTrainingCompleted();
+
+    // D2: 评分引导（第 2 次训练后弹窗 + 30 天上限）
+    if (mounted) {
+      await RatingPromptSheet.maybeShow(context);
+    }
 
     // 返回上一页
     if (mounted) {
