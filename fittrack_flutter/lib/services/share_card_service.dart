@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -46,10 +47,16 @@ class ShareCardService {
 
     final boundary = _boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 2.0);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final bytes = byteData!.buffer.asUint8List();
-    entry.remove();
+    late Uint8List bytes;
+    try {
+      final image = await boundary.toImage(pixelRatio: 2.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      bytes = byteData!.buffer.asUint8List();
+    } finally {
+      // 确保 OverlayEntry 在 toImage/toByteData 抛异常时也能被移除，
+      // 避免残留遮罩层。
+      entry.remove();
+    }
 
     // OHOS: getTemporaryDirectory() throws MissingPluginException.
     // Fall back to system temp dir.

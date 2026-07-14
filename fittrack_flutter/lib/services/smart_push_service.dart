@@ -17,8 +17,22 @@ class SmartPushService {
   bool shouldPushNow() {
     final s = Storage.getSettings();
     if (!(s['smartPushEnabled'] ?? true)) return false;
+    // 7 天滚动窗口：若距上次推送已 ≥ 7 天，重置计数器
+    final lastPushDateStr = s['lastPushDate'] as String? ?? '';
+    if (lastPushDateStr.isNotEmpty) {
+      try {
+        final lastPush = DateTime.parse(lastPushDateStr);
+        final daysSince = DateTime.now().difference(lastPush).inDays;
+        if (daysSince >= 7 && (s['pushCountIn7Days'] ?? 0) > 0) {
+          s['pushCountIn7Days'] = 0;
+          Storage.saveSettings(s);
+        }
+      } catch (_) {
+        // 解析失败：忽略（不影响其他检查）
+      }
+    }
     if ((s['pushCountIn7Days'] ?? 0) >= _maxPushPer7Days) return false;
-    if ((s['lastPushDate'] ?? '') == Storage.getTodayStr()) return false;
+    if (lastPushDateStr == Storage.getTodayStr()) return false;
     return true;
   }
 
