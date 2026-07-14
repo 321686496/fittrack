@@ -24,6 +24,7 @@ import 'pages/privacy_policy_page.dart';
 import 'pages/user_agreement_page.dart';
 import 'pages/data_privacy_page.dart';
 import 'pages/achievement_page.dart';
+import 'pages/redeem_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -244,6 +245,11 @@ GoRouter createRouter() {
         path: '/achievements',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const AchievementPage(),
+      ),
+      GoRoute(
+        path: '/redeem',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const RedeemPage(),
       ),
     ],
   );
