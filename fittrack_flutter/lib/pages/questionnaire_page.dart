@@ -20,12 +20,13 @@ class QuestionnairePage extends StatefulWidget {
 
 class _QuestionnairePageState extends State<QuestionnairePage> {
   int _currentStep = 0;
-  final int _totalSteps = 7;
+  final int _totalSteps = 8;
 
   String? _gender;
   String? _fitnessGoal;
   String? _fitnessLevel;
   String? _trainingFrequency;
+  String? _channelSource;
   String _trainingTime = '';
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
@@ -66,6 +67,15 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     {'value': '6天/周', 'label': '6天/周'},
   ];
 
+  final List<Map<String, String>> _channelOptions = [
+    {'label': '应用商店搜索', 'value': 'store'},
+    {'label': '小红书', 'value': 'xiaohongshu'},
+    {'label': '抖音', 'value': 'douyin'},
+    {'label': '朋友推荐', 'value': 'friend'},
+    {'label': '健身房', 'value': 'gym'},
+    {'label': '其他', 'value': 'other'},
+  ];
+
   bool get _canProceed {
     switch (_currentStep) {
       case 0:
@@ -82,6 +92,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         return true; // 身体数据详细字段均为可选，可跳过
       case 6:
         return true; // 训练时间可选
+      case 7:
+        return true; // 渠道来源可选，可跳过
       default:
         return false;
     }
@@ -186,6 +198,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     settings['avatarBgColor'] = profileData['avatarBgColor'];
     settings['onboardingDone'] = true;
     settings['trainingTime'] = _trainingTime;
+    settings['channelSource'] = _channelSource ?? '';
     Storage.saveSettings(settings);
 
     // Save body data if height/weight provided
@@ -370,6 +383,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         return _buildBodyDetailsStep(colors);
       case 6:
         return _buildTrainingTimeStep(colors);
+      case 7:
+        return _buildChannelStep(colors);
       default:
         return const SizedBox.shrink();
     }
@@ -768,6 +783,68 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
               ),
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildChannelStep(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          '你从哪里找到 FitTrack？',
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '帮助我们了解用户来源（可选）',
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: _channelOptions.map((option) {
+            final isSelected = _channelSource == option['value'];
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _channelSource = option['value'];
+                });
+              },
+              child: Container(
+                width: (MediaQuery.of(context).size.width - 60) / 2,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? colors.accentGlow.withOpacity(0.12)
+                      : colors.bgCard,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected ? colors.accentGlow : colors.borderColor,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Text(
+                  option['label']!,
+                  style: TextStyle(
+                    color: isSelected ? colors.accentGlow : colors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ],
     );
   }
