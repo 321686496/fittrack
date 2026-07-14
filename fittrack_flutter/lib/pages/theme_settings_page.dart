@@ -47,6 +47,29 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
 
   void _selectTheme(String themeId) {
     if (themeId == _selectedThemeId) return;
+    // Restrict to 2 themes for non-Pro users
+    const freeThemes = {'vitality-sport', 'fresh-minimal'};
+    if (!freeThemes.contains(themeId) && !Storage.isPremiumNotifier.value) {
+      // Show upgrade prompt
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('升级 Pro'),
+          content: const Text('解锁全部 7 套主题、高级统计、数据导出等权益'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+                context.push('/redeem');
+              },
+              child: const Text('去兑换'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     setState(() => _selectedThemeId = themeId);
     final settings = Storage.getSettings();
     settings['theme'] = themeId;
