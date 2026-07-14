@@ -12,6 +12,7 @@ import '../services/form_kit_service.dart';
 import '../services/share_card_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
+import '../widgets/celebration_overlay.dart';
 
 class TrainingPage extends StatefulWidget {
   final Map<String, dynamic> params;
@@ -467,6 +468,17 @@ class _TrainingPageState extends State<TrainingPage>
     // 更新桌面卡片数据
     if (Platform.isOhos) {
       FormKitService.instance.endTraining();
+    }
+
+    // B2: 训练完成庆祝动画
+    if (mounted) {
+      final records = Storage.getRecords();
+      if (records.isNotEmpty) {
+        final current = records.first;
+        final previous = records.length > 1 ? records[1] : null;
+        await CelebrationOverlay.show(context,
+            record: current, previousRecord: previous);
+      }
     }
 
     // 返回上一页
