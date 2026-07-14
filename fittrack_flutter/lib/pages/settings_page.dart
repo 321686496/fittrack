@@ -591,6 +591,13 @@ class _SettingsPageState extends State<SettingsPage> {
             context.push('/reminder-settings');
           }),
           DividerWidget(indent: 44),
+          ListTile(
+            leading: const Icon(Icons.emoji_events_outlined),
+            title: const Text('成就墙'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/achievements'),
+          ),
+          DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私设置', '查看隐私与权限说明', _showPrivacyInfo),
           DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.description_outlined, '隐私政策', '查看完整隐私政策文本', () {

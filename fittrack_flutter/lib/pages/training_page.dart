@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
-import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/rest_notification_service.dart';
 import '../services/smart_push_service.dart';
 import '../services/ohos_reminder_service.dart';
 import '../services/form_kit_service.dart';
 import '../services/share_card_service.dart';
+import '../services/achievement_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/celebration_overlay.dart';
@@ -463,8 +463,41 @@ class _TrainingPageState extends State<TrainingPage>
       await HapticFeedback.heavyImpact();
     } catch (_) {}
 
-    // 检查是否达成新成就
-    _checkAndShowNewAchievements();
+    // B4: 成就检查（替代旧的 _checkAndShowNewAchievements）
+    if (mounted) {
+      final records = Storage.getRecords();
+      final currentRecord = records.isNotEmpty ? records.first : <String, dynamic>{};
+      final unlockedAchievements =
+          await AchievementService.instance.checkAndUnlock(currentRecord);
+      if (unlockedAchievements.isNotEmpty && mounted) {
+        for (final id in unlockedAchievements) {
+          final all = AchievementService.instance.getAll();
+          final ach = all.where((a) => a.id == id).first;
+          await showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('解锁新成就'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.emoji_events, size: 64,
+                      color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(height: 12),
+                  Text(ach.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(ach.description),
+                ],
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('好的')),
+              ],
+            ),
+          );
+        }
+      }
+    }
 
     // 更新桌面卡片数据
     if (Platform.isOhos) {
@@ -516,103 +549,6 @@ class _TrainingPageState extends State<TrainingPage>
         );
       }
     }
-  }
-
-  void _checkAndShowNewAchievements() {
-    final records = Storage.getRecords();
-    final stats = Storage.getStats();
-    final totalTrainings = (stats['totalTrainings'] as num?)?.toInt() ?? records.length;
-    final totalWeight = (stats['totalWeight'] as num?)?.toDouble() ?? 0.0;
-    final totalDuration = (stats['totalDuration'] as num?)?.toDouble() ?? 0.0;
-
-    int currentStreak = 0;
-    if (records.isNotEmpty) {
-      final dates = <String>{};
-      for (final r in records) {
-        final ts = r['date'] ?? r['createTime'];
-        if (ts is int) {
-          final d = DateTime.fromMillisecondsSinceEpoch(ts);
-          dates.add('${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}');
-        }
-      }
-      var checkDate = DateTime.now();
-      while (dates.contains('${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}')) {
-        currentStreak++;
-        checkDate = checkDate.subtract(const Duration(days: 1));
-      }
-    }
-
-    int totalReps = 0;
-    for (final r in records) {
-      final setRecords = r['setRecords'];
-      if (setRecords is Map) {
-        for (final entry in setRecords.values) {
-          if (entry is List) {
-            for (final s in entry) {
-              if (s is Map) totalReps += (s['reps'] as num?)?.toInt() ?? 0;
-            }
-          }
-        }
-      }
-    }
-
-    final settings = Storage.getSettings();
-    final previouslyUnlocked = <String>{};
-    final saved = settings['unlockedAchievements'];
-    if (saved is List) {
-      for (final s in saved) previouslyUnlocked.add(s.toString());
-    }
-
-    final newlyUnlocked = <Map<String, dynamic>>[];
-    for (final a in MockData.achievements) {
-      final id = a['id'] as String;
-      if (previouslyUnlocked.contains(id)) continue;
-      bool unlocked = false;
-      switch (id) {
-        case 'a1': unlocked = totalTrainings >= 1; break;
-        case 'a2': unlocked = currentStreak >= 7; break;
-        case 'a3': unlocked = totalWeight >= 100000; break;
-        case 'a4': unlocked = totalDuration >= 6000; break;
-        case 'a5': unlocked = totalReps >= 1000; break;
-        case 'a6': unlocked = currentStreak >= 30; break;
-      }
-      if (unlocked) newlyUnlocked.add(Map<String, dynamic>.from(a));
-    }
-
-    // 保存当前已解锁的成就
-    final allUnlocked = MockData.achievements.where((a) {
-      final id = a['id'] as String;
-      bool u = false;
-      switch (id) {
-        case 'a1': u = totalTrainings >= 1; break;
-        case 'a2': u = currentStreak >= 7; break;
-        case 'a3': u = totalWeight >= 100000; break;
-        case 'a4': u = totalDuration >= 6000; break;
-        case 'a5': u = totalReps >= 1000; break;
-        case 'a6': u = currentStreak >= 30; break;
-      }
-      return u;
-    }).map((a) => a['id'] as String).toList();
-    Storage.saveSettings({...settings, 'unlockedAchievements': allUnlocked});
-
-    // 弹出恭喜弹窗
-    if (newlyUnlocked.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showAchievementSequence(newlyUnlocked, 0);
-      });
-    }
-  }
-
-  void _showAchievementSequence(List<Map<String, dynamic>> achievements, int index) {
-    if (index >= achievements.length || !mounted) return;
-    final a = achievements[index];
-    AchievementDialog.show(
-      context,
-      icon: a['icon'] as String,
-      name: a['name'] as String,
-      desc: a['desc'] as String,
-      onDone: () => _showAchievementSequence(achievements, index + 1),
-    );
   }
 
   // ── Build ────────────────────────────────────────────────────

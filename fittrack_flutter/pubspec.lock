@@ -468,6 +468,23 @@ packages:
       url: "https://gitcode.com/CPF-Flutter/flutter_sqflite.git"
     source: git
     version: "2.4.5+1"
+  sqflite_common_ffi:
+    dependency: "direct dev"
+    description:
+      path: sqflite_common_ffi
+      ref: HEAD
+      resolved-ref: e909d9f75a9b5e0939c073b6ebf3c45ea0ea69a3
+      url: "https://gitcode.com/CPF-Flutter/flutter_sqflite.git"
+    source: git
+    version: "2.2.5"
+  sqlite3:
+    dependency: transitive
+    description:
+      name: sqlite3
+      sha256: "281b672749af2edf259fc801f0fcba092257425bcd32a0ce1c8237130bc934c7"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.11.2"
   stack_trace:
     dependency: transitive
     description:

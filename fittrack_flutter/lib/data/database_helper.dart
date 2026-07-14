@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 2;
+  static const int _dbVersion = 3;
 
   Database? _database;
 
@@ -91,6 +91,17 @@ class DatabaseHelper {
       )
     ''');
     await db.execute('CREATE INDEX idx_gym_cards_endDate ON gym_cards(endDate)');
+
+    // 成就表 (v3)
+    await db.execute('''
+      CREATE TABLE achievements (
+        id TEXT PRIMARY KEY,
+        category TEXT NOT NULL,
+        unlockedAt INTEGER NOT NULL DEFAULT 0,
+        metadata TEXT NOT NULL DEFAULT '{}'
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_achievements_category ON achievements(category)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -113,6 +124,18 @@ class DatabaseHelper {
         )
       ''');
       await db.execute('CREATE INDEX idx_gym_cards_endDate ON gym_cards(endDate)');
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS achievements (
+          id TEXT PRIMARY KEY,
+          category TEXT NOT NULL,
+          unlockedAt INTEGER NOT NULL DEFAULT 0,
+          metadata TEXT NOT NULL DEFAULT '{}'
+        )
+      ''');
+      await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_achievements_category ON achievements(category)');
     }
   }
 
@@ -321,5 +344,18 @@ class DatabaseHelper {
 
   Map<String, Object?> _gymCardMapToRow(Map<String, dynamic> map) {
     return Map<String, Object?>.from(map);
+  }
+
+  // ── Achievements CRUD ───────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getAllAchievements() async {
+    final db = await database;
+    return db.query('achievements');
+  }
+
+  Future<int> upsertAchievement(Map<String, dynamic> achievement) async {
+    final db = await database;
+    return db.insert('achievements', achievement,
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 }

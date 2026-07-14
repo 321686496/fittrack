@@ -23,6 +23,7 @@ import 'pages/body_data_page.dart';
 import 'pages/privacy_policy_page.dart';
 import 'pages/user_agreement_page.dart';
 import 'pages/data_privacy_page.dart';
+import 'pages/achievement_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -238,6 +239,11 @@ GoRouter createRouter() {
         path: '/data-privacy',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const DataPrivacyPage(),
+      ),
+      GoRoute(
+        path: '/achievements',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const AchievementPage(),
       ),
     ],
   );
