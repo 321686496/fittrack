@@ -11,6 +11,7 @@ import '../services/ohos_reminder_service.dart';
 import '../services/form_kit_service.dart';
 import '../services/share_card_service.dart';
 import '../services/achievement_service.dart';
+import '../services/ad_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/celebration_overlay.dart';
@@ -1152,6 +1153,28 @@ class _TrainingPageState extends State<TrainingPage>
                       onPressed: () => _shareTrainingCard(totalWeight, duration),
                     ),
                   ),
+                  if (AdService.instance.shouldShowRewarded())
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: TextButton.icon(
+                          onPressed: () async {
+                            final result =
+                                await AdService.instance.showRewardedVideo();
+                            if (result == AdResult.success && mounted) {
+                              // Show detailed report
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('已解锁详细数据报告')),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.play_circle_outline),
+                          label: const Text('看广告解锁详细报告'),
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 24),
                 ],
               ),
