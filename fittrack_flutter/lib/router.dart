@@ -16,6 +16,9 @@ import 'pages/profile_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/theme_settings_page.dart';
 import 'pages/records_page.dart';
+import 'pages/plan_detail_page.dart';
+import 'pages/record_detail_page.dart';
+import 'pages/add_plan_page.dart';
 import 'pages/notification_test_page.dart';
 import 'pages/reminder_settings_page.dart';
 import 'pages/gym_card_page.dart';
@@ -25,10 +28,16 @@ import 'pages/user_agreement_page.dart';
 import 'pages/data_privacy_page.dart';
 import 'pages/achievement_page.dart';
 import 'pages/redeem_page.dart';
+import 'pages/invitation_page.dart';
+import 'pages/share_code_page.dart';
+import 'pages/tutorial_list_page.dart';
+import 'pages/tutorial_detail_page.dart';
+import 'pages/note_list_page.dart';
+import 'pages/note_edit_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 // 主题变更回调（由 main.dart 设置）
@@ -39,7 +48,7 @@ final ValueNotifier<int> currentTabIndex = ValueNotifier<int>(0);
 
 GoRouter createRouter() {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     debugLogDiagnostics: true,
     routes: [
@@ -177,7 +186,7 @@ GoRouter createRouter() {
       // ==================== 子页面（无底部导航栏，使用 root navigator） ====================
       GoRoute(
         path: '/training',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
           final planId = state.queryParams['planId'] ?? '';
           final dayIndex = int.tryParse(state.queryParams['dayIndex'] ?? '0') ?? 0;
@@ -185,20 +194,44 @@ GoRouter createRouter() {
         },
       ),
       GoRoute(
+        path: '/plan/:planId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final planId = state.params['planId'] ?? '';
+          return PlanDetailPage(planId: planId);
+        },
+      ),
+      GoRoute(
+        path: '/records/:recordId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final recordId = state.params['recordId'] ?? '';
+          return RecordDetailPage(recordId: recordId);
+        },
+      ),
+      GoRoute(
+        path: '/add-plan',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final editPlanId = state.queryParams['editPlanId'];
+          return AddPlanPage(editPlanId: editPlanId);
+        },
+      ),
+      GoRoute(
         path: '/exercise',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ExercisePage(),
       ),
       GoRoute(
         path: '/settings',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => SettingsPage(
           onThemeChanged: onThemeChanged ?? (_) {},
         ),
       ),
       GoRoute(
         path: '/theme-settings',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ThemeSettingsPage(
           currentThemeId: state.extra as String? ?? 'vitality-sport',
           onThemeChanged: (themeId) {
@@ -208,48 +241,96 @@ GoRouter createRouter() {
       ),
       GoRoute(
         path: '/notification-test',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NotificationTestPage(),
       ),
       GoRoute(
         path: '/reminder-settings',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ReminderSettingsPage(),
       ),
       GoRoute(
         path: '/gym-card',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const GymCardPage(),
       ),
       GoRoute(
         path: '/body-data',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const BodyDataPage(),
       ),
       GoRoute(
         path: '/privacy-full',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const PrivacyPolicyPage(),
       ),
       GoRoute(
         path: '/agreement',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const UserAgreementPage(),
       ),
       GoRoute(
         path: '/data-privacy',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const DataPrivacyPage(),
       ),
       GoRoute(
         path: '/achievements',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AchievementPage(),
       ),
       GoRoute(
         path: '/redeem',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const RedeemPage(),
+      ),
+      GoRoute(
+        path: '/invitation',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const InvitationPage(),
+      ),
+      GoRoute(
+        path: '/share-code',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ShareCodePage(),
+      ),
+      GoRoute(
+        path: '/tutorial',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const TutorialListPage(),
+      ),
+      GoRoute(
+        path: '/tutorial/:tutorialId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final tutorialId = state.params['tutorialId'] ?? '';
+          return TutorialDetailPage(tutorialId: tutorialId);
+        },
+      ),
+      // v1 V1-11: 训练笔记路由
+      GoRoute(
+        path: '/note',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const NoteListPage(),
+      ),
+      GoRoute(
+        path: '/note/edit',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const NoteEditPage(),
+      ),
+      GoRoute(
+        path: '/note/edit/:recordId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final recordId = state.params['recordId'] ?? '';
+          // 如果 recordId 是 note_xxx 格式（编辑现有笔记），不传 recordId
+          // 如果是 record_xxx 格式（从训练完成进入），传 recordId
+          if (recordId.startsWith('record_')) {
+            return NoteEditPage(recordId: recordId);
+          }
+          // 编辑现有笔记：加载笔记数据后传入
+          return NoteEditPage(noteId: recordId);
+        },
       ),
     ],
   );
