@@ -243,7 +243,7 @@ class _SettingsPageState extends State<SettingsPage> {
   // 权限管理相关
   // ============================================================
 
-  static const _permissionChannel = MethodChannel('com.example.fittrack_flutter/permission');
+  static const _permissionChannel = MethodChannel('com.fp.fitplan/permission');
 
   /// 检查权限状态
   Future<void> _checkPermissions() async {
@@ -297,14 +297,37 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SectionHeader(title: '权限管理'),
+          const SectionHeader(title: '权限管理'),
           const SizedBox(height: 12),
           _buildPermissionItem(colors, Icons.notifications_outlined, '通知权限', '用于训练提醒和休息结束通知', _hasNotificationPermission),
-          DividerWidget(),
+          const DividerWidget(),
           _buildPermissionItem(colors, Icons.vibration, '震动权限', '训练结束时震动提醒', _hasVibratePermission),
-          DividerWidget(),
+          const DividerWidget(),
           _buildPermissionItem(colors, Icons.schedule, '后台运行', '保证后台计时和提醒正常工作', _hasBackgroundPermission),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAdToggle(FitTrackColors colors) {
+    return CardWidget(
+      child: SwitchListTile(
+        title: Text('启用广告', style: TextStyle(
+          color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500,
+        )),
+        subtitle: Text(
+          '关闭后所有广告入口将隐藏，仅能使用积分解锁',
+          style: TextStyle(color: colors.textMuted, fontSize: 12),
+        ),
+        value: Storage.getSettings()['adsEnabled'] == true,
+        onChanged: (v) {
+          final settings = Storage.getSettings();
+          settings['adsEnabled'] = v;
+          Storage.saveSettings(settings);
+          Storage.dataChanged.value = !Storage.dataChanged.value;
+          setState(() {});
+        },
+        activeColor: colors.accentGlow,
       ),
     );
   }
@@ -371,21 +394,25 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SectionHeader(title: '风格主题'),
+                  const SectionHeader(title: '风格主题'),
                   const SizedBox(height: 10),
                   _buildThemeEntry(colors),
                   const SizedBox(height: 20),
-                  SectionHeader(title: '训练设置'),
+                  const SectionHeader(title: '训练设置'),
                   const SizedBox(height: 10),
                   _buildTrainingSettings(colors),
                   const SizedBox(height: 20),
-                  SectionHeader(title: '数据管理'),
+                  const SectionHeader(title: '数据管理'),
                   const SizedBox(height: 10),
                   _buildDataMenu(colors),
                   const SizedBox(height: 20),
+                  const SectionHeader(title: '广告设置'),
+                  const SizedBox(height: 10),
+                  _buildAdToggle(colors),
+                  const SizedBox(height: 20),
                   _buildPermissionMenu(colors),
                   const SizedBox(height: 20),
-                  SectionHeader(title: '其他'),
+                  const SectionHeader(title: '其他'),
                   const SizedBox(height: 10),
                   _buildOtherMenu(colors),
                   const SizedBox(height: 30),
@@ -467,7 +494,7 @@ class _SettingsPageState extends State<SettingsPage> {
             controller: _restTimeController,
             unit: '秒',
           ),
-          DividerWidget(indent: 0),
+          const DividerWidget(indent: 0),
           const SizedBox(height: 8),
           _buildSettingRow(
             colors,
@@ -476,7 +503,7 @@ class _SettingsPageState extends State<SettingsPage> {
             controller: _defaultSetsController,
             unit: '组',
           ),
-          DividerWidget(indent: 0),
+          const DividerWidget(indent: 0),
           const SizedBox(height: 8),
           _buildSettingRow(
             colors,
@@ -485,7 +512,7 @@ class _SettingsPageState extends State<SettingsPage> {
             controller: _defaultRepsController,
             unit: '次',
           ),
-          DividerWidget(indent: 0),
+          const DividerWidget(indent: 0),
           const SizedBox(height: 8),
           _buildSettingRow(
             colors,
@@ -574,9 +601,9 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Column(
         children: [
           _buildMenuTile(colors, Icons.upload_file_outlined, '导出数据', '复制所有数据到剪贴板', _exportData),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.download_outlined, '导入数据', '从剪贴板粘贴数据', _importData),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.delete_outline, '清除数据', '删除所有训练计划和记录', _clearData, color: Colors.redAccent),
         ],
       ),
@@ -587,38 +614,42 @@ class _SettingsPageState extends State<SettingsPage> {
     return CardWidget(
       child: Column(
         children: [
+          // v1 获客留存版：邀请裂变 & 计划分享入口
+          _buildMenuTile(colors, Icons.card_giftcard_outlined, '邀请有礼', '邀请好友训练，解锁进阶统计', () {
+            context.push('/invitation');
+          }),
+          const DividerWidget(indent: 44),
+          _buildMenuTile(colors, Icons.share_outlined, '计划分享', '导入或分享训练计划', () {
+            context.push('/share-code');
+          }),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.alarm_outlined, '训练提醒', '设置休息提醒与通知', () {
             context.push('/reminder-settings');
           }),
-          DividerWidget(indent: 44),
-          ListTile(
-            leading: const Icon(Icons.card_giftcard_outlined),
-            title: const Text('兑换 Pro'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/redeem'),
-          ),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
+          // v1 获客留存版：隐藏"兑换 Pro"入口（Pro/兑换码体系已编码但 v1 不启用）
+          // 后续版本可通过条件判断恢复入口：if (Storage.isPremiumNotifier.value == false) ...
           ListTile(
             leading: const Icon(Icons.emoji_events_outlined),
             title: const Text('成就墙'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/achievements'),
           ),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私设置', '查看隐私与权限说明', _showPrivacyInfo),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.description_outlined, '隐私政策', '查看完整隐私政策文本', () {
             context.push('/privacy-full');
           }),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.description_outlined, '用户协议', '查看完整用户协议文本', () {
             context.push('/agreement');
           }),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.shield_outlined, '数据与隐私', '管理数据授权与清除全部数据', () {
             context.push('/data-privacy');
           }),
-          DividerWidget(indent: 44),
+          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.info_outline, '关于 FitTrack', '版本 1.0.0', _showAbout),
         ],
       ),
