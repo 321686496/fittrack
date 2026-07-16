@@ -11,7 +11,13 @@ import 'services/smart_push_service.dart';
 import 'services/iap_service.dart';
 import 'services/form_kit_service.dart';
 import 'services/ohos_reminder_service.dart';
+import 'services/android_alarm_service.dart';
+import 'services/rom_adaptation_service.dart';
+import 'services/retention_chain_service.dart';
+import 'services/points_service.dart';
+import 'widgets/rom_guidance_sheet.dart';
 import 'router.dart' as app_router;
+import 'utils/platform_utils.dart';
 
 /// 全局路由器引用（用于卡片点击等场景的导航）
 GoRouter? _globalRouter;
@@ -33,6 +39,10 @@ void main() {
       await Storage.getPlansAsync();
       await Storage.getRecordsAsync();
       await Storage.getGymCardsAsync();
+      // v1 V1-11: 预加载训练笔记缓存
+      await Storage.getNotesAsync();
+      // v1 积分体系：预加载积分日志
+      PointsService.instance.getPointsLog();
     } catch (e, stack) {
       debugPrint('Storage.init() failed: $e');
       debugPrint('Stack: $stack');
@@ -43,10 +53,12 @@ void main() {
     await RestNotificationService.instance.init();
     // 初始化智能推送服务
     await SmartPushService.instance.init();
+    // v1 V1-04: 初始化新手7天留存链服务
+    await RetentionChainService.instance.init();
     // 初始化 IAP 服务（Android/iOS only, OHOS 使用兑换码路径）
     await IapService.instance.init();
     // 初始化桌面卡片服务（OHOS）
-    if (Platform.isOhos) {
+    if (isOhos) {
       FormKitService.instance.init();
       // 初始化通知点击监听（RestNotificationService.init 内部也会调用，此处幂等）
       OhosReminderService.instance.initListener();
@@ -86,6 +98,7 @@ class FitTrackApp extends StatefulWidget {
 class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
   late String _currentThemeId;
   late final GoRouter _router;
+  bool _romGuidanceShown = false;
 
   @override
   void initState() {
@@ -96,6 +109,12 @@ class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
     _globalRouter = _router;
     // 设置全局主题变更回调
     app_router.onThemeChanged = _onThemeChanged;
+    // Android: 启动后延迟检查 ROM 适配
+    if (!isOhos) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkRomAdaptationOnStartup();
+      });
+    }
   }
 
   @override
@@ -111,6 +130,10 @@ class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
       // 应用回到前台时触发智能推送检查（fire-and-forget，
       // maybePushNow 内部已处理所有失败路径）。
       SmartPushService.instance.maybePushNow();
+      // Android: 回到前台时重新检查 ROM 适配状态
+      if (!isOhos) {
+        _checkRomAdaptationOnResume();
+      }
     }
   }
 
@@ -122,8 +145,69 @@ class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
     settings['theme'] = themeId;
     Storage.saveSettings(settings);
     // 更新桌面卡片主题
-    if (Platform.isOhos) {
+    if (isOhos) {
       FormKitService.instance.pushFormData();
+    }
+  }
+
+  /// Android: 启动后检查 ROM 适配，仅对国产 ROM 且未优化的用户弹出引导
+  Future<void> _checkRomAdaptationOnStartup() async {
+    if (_romGuidanceShown) return;
+    final romService = RomAdaptationService.instance;
+
+    final needsGuidance = await romService.needsRomGuidance();
+    if (!needsGuidance) return;
+
+    final settings = Storage.getSettings();
+    // 用户已关闭引导则不再弹窗
+    if (settings['romGuidanceDismissed'] == true) return;
+
+    // 不阻塞 UI 显示，稍等片刻后再弹窗
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (!mounted) return;
+    _romGuidanceShown = true;
+
+    RomGuidanceSheet.show(context, onDismiss: () {
+      // 不强制，用户点"稍后设置"后 7 天内不再弹窗
+      final s = Storage.getSettings();
+      s['romGuidanceDismissed'] = true;
+      s['romGuidanceDismissTime'] = DateTime.now().toIso8601String();
+      Storage.saveSettings(s);
+    });
+  }
+
+  /// Android: 回到前台时检查 ROM 适配状态（用户可能在后台设置完自启动后返回）
+  Future<void> _checkRomAdaptationOnResume() async {
+    if (_romGuidanceShown) return;
+    final romService = RomAdaptationService.instance;
+
+    // 用户已完成优化，重置引导状态
+    final needsGuidance = await romService.needsRomGuidance();
+    if (!needsGuidance) {
+      final s = Storage.getSettings();
+      if (s['romGuidanceDismissed'] == true) {
+        s['romGuidanceDismissed'] = false;
+        s.remove('romGuidanceDismissTime');
+        Storage.saveSettings(s);
+        _romGuidanceShown = false;
+      }
+      return;
+    }
+
+    // 仍需要引导，检查是否超过 7 天未设置
+    final s = Storage.getSettings();
+    final dismissTimeStr = s['romGuidanceDismissTime'] as String? ?? '';
+    if (dismissTimeStr.isNotEmpty) {
+      try {
+        final dismissTime = DateTime.parse(dismissTimeStr);
+        final daysSince = DateTime.now().difference(dismissTime).inDays;
+        if (daysSince >= 7) {
+          s['romGuidanceDismissed'] = false;
+          s.remove('romGuidanceDismissTime');
+          Storage.saveSettings(s);
+          _romGuidanceShown = false;
+        }
+      } catch (_) {}
     }
   }
 
