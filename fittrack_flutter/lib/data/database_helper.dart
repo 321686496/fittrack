@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 3;
+  static const int _dbVersion = 5;
 
   Database? _database;
 
@@ -102,6 +102,49 @@ class DatabaseHelper {
       )
     ''');
     await db.execute('CREATE INDEX idx_achievements_category ON achievements(category)');
+
+    // v1 V1-11: 训练笔记表 (v4)
+    await db.execute('''
+      CREATE TABLE notes (
+        id TEXT PRIMARY KEY,
+        createTime INTEGER NOT NULL,
+        recordId TEXT,
+        feeling INTEGER NOT NULL DEFAULT 3,
+        bestExercise TEXT NOT NULL DEFAULT '',
+        soreParts TEXT NOT NULL DEFAULT '[]',
+        content TEXT NOT NULL DEFAULT '',
+        moodSticker TEXT NOT NULL DEFAULT '',
+        isFeatured INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_notes_createTime ON notes(createTime)');
+    await db.execute('CREATE INDEX idx_notes_recordId ON notes(recordId)');
+
+    // v1 积分体系：系统化课程表 (v5)
+    await db.execute('''
+      CREATE TABLE courses (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        subtitle TEXT NOT NULL,
+        description TEXT NOT NULL,
+        goal TEXT NOT NULL,
+        difficulty TEXT NOT NULL,
+        points_cost INTEGER NOT NULL,
+        cover_colors TEXT NOT NULL,
+        cover_emoji TEXT NOT NULL,
+        coach_name TEXT NOT NULL,
+        chapters TEXT NOT NULL
+      )
+    ''');
+
+    // v1 积分体系：课程解锁记录 (v5)
+    await db.execute('''
+      CREATE TABLE user_courses (
+        course_id TEXT PRIMARY KEY,
+        unlocked_at INTEGER NOT NULL,
+        progress INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -136,6 +179,51 @@ class DatabaseHelper {
       ''');
       await db.execute(
           'CREATE INDEX IF NOT EXISTS idx_achievements_category ON achievements(category)');
+    }
+    if (oldVersion < 4) {
+      // v1 V1-11: 训练笔记表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS notes (
+          id TEXT PRIMARY KEY,
+          createTime INTEGER NOT NULL,
+          recordId TEXT,
+          feeling INTEGER NOT NULL DEFAULT 3,
+          bestExercise TEXT NOT NULL DEFAULT '',
+          soreParts TEXT NOT NULL DEFAULT '[]',
+          content TEXT NOT NULL DEFAULT '',
+          moodSticker TEXT NOT NULL DEFAULT '',
+          isFeatured INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+      await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_notes_createTime ON notes(createTime)');
+      await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_notes_recordId ON notes(recordId)');
+    }
+    if (oldVersion < 5) {
+      // v1 积分体系：系统化课程表 + 解锁记录
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS courses (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          subtitle TEXT NOT NULL,
+          description TEXT NOT NULL,
+          goal TEXT NOT NULL,
+          difficulty TEXT NOT NULL,
+          points_cost INTEGER NOT NULL,
+          cover_colors TEXT NOT NULL,
+          cover_emoji TEXT NOT NULL,
+          coach_name TEXT NOT NULL,
+          chapters TEXT NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS user_courses (
+          course_id TEXT PRIMARY KEY,
+          unlocked_at INTEGER NOT NULL,
+          progress INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
     }
   }
 
@@ -357,5 +445,80 @@ class DatabaseHelper {
     final db = await database;
     return db.insert('achievements', achievement,
         conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  // ── Notes CRUD (v1 V1-11) ───────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getAllNotes() async {
+    final db = await database;
+    final rows = await db.query('notes', orderBy: 'createTime DESC');
+    return rows.map(_noteRowToMap).toList();
+  }
+
+  Future<Map<String, dynamic>?> getNoteById(String id) async {
+    final db = await database;
+    final rows = await db.query('notes', where: 'id = ?', whereArgs: [id]);
+    if (rows.isEmpty) return null;
+    return _noteRowToMap(rows.first);
+  }
+
+  Future<Map<String, dynamic>?> getNoteByRecordId(String recordId) async {
+    final db = await database;
+    final rows = await db.query('notes', where: 'recordId = ?', whereArgs: [recordId]);
+    if (rows.isEmpty) return null;
+    return _noteRowToMap(rows.first);
+  }
+
+  Future<void> insertNote(Map<String, dynamic> note) async {
+    final db = await database;
+    await db.insert('notes', _noteMapToRow(note),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<int> updateNote(String id, Map<String, dynamic> updates) async {
+    final db = await database;
+    return db.update('notes', _noteMapToRow(updates),
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteNote(String id) async {
+    final db = await database;
+    return db.delete('notes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Map<String, dynamic> _noteRowToMap(Map<String, Object?> row) {
+    final map = Map<String, dynamic>.from(row);
+    // soreParts: JSON 字符串 → List<String>
+    final sorePartsRaw = map['soreParts'];
+    if (sorePartsRaw is String) {
+      try {
+        final list = jsonDecode(sorePartsRaw) as List;
+        map['soreParts'] = list.map((e) => e.toString()).toList();
+      } catch (_) {
+        map['soreParts'] = <String>[];
+      }
+    }
+    // isFeatured: int → bool
+    map['isFeatured'] = (map['isFeatured'] as int?) == 1;
+    return map;
+  }
+
+  Map<String, Object?> _noteMapToRow(Map<String, dynamic> map) {
+    final row = Map<String, Object?>.from(map);
+    // soreParts: List<String> → JSON 字符串
+    final soreParts = row['soreParts'];
+    if (soreParts is List) {
+      row['soreParts'] = jsonEncode(soreParts);
+    } else if (soreParts == null) {
+      row['soreParts'] = '[]';
+    }
+    // isFeatured: bool → int
+    final isFeatured = row['isFeatured'];
+    if (isFeatured is bool) {
+      row['isFeatured'] = isFeatured ? 1 : 0;
+    } else if (isFeatured == null) {
+      row['isFeatured'] = 0;
+    }
+    return row;
   }
 }
