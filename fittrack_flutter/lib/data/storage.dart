@@ -134,7 +134,7 @@ class Storage {
     final s = getSettings();
     s['isPremium'] = value;
     s['premiumSource'] = source;
-    await saveSettings(s);
+    saveSettings(s);
     isPremiumNotifier.value = value;
   }
 
@@ -392,6 +392,40 @@ class Storage {
       'lastPushDate': '',
       'pushCountIn7Days': 0,
       'onboardingV2Done': false,
+      // ── v1 获客留存版 — 教学裂变体系（V1-08）──
+      'activatedInvitationCode': '', // 被邀请人已激活的邀请码
+      'invitationActivatedAt': 0, // 激活时间戳
+      'inviterIdentity': '', // 邀请人身份哈希前缀
+      'myReferralCodes': <String>[], // 邀请人视角：已记录的被邀请人激活码
+      'unlockedReferralBadges': <String>[], // 裂变徽章
+      'unlockedAdvancedTutorials': 0, // 已解锁进阶教学数（邀请1人=3个）
+      'unlockedMasterTutorials': false, // 高手教学专题（累计5人）
+      'unlockedOpponentSkin': false, // 专属虚拟对手皮肤（累计5人）
+      'unlockedAmbassadorTitle': false, // "燃力大使"称号（累计10人）
+      'adFreeReportUnlocked': false, // 永久免广告看训练报告（累计3人）
+      'retentionRewardUnlocked': false, // 7日留存奖励已解锁
+      'advancedStatsTrialUntil': 0, // 7天高级统计体验到期时间
+      // ── v1 获客留存版 — 虚拟对手系统（V1-01）──
+      'virtualOpponentMatched': false, // 是否已完成冷启动匹配
+      'virtualOpponentTier': '', // 匹配层（休闲/规律/活跃/硬核）
+      'virtualOpponentLastAdvance': 0, // 上次对手数据推进时间戳
+      // ── v1 获客留存版 — 新手7天留存链（V1-04）──
+      'retentionChainStage': 0, // 留存链当前阶段（0=未开始,1=D1,2=D2...）
+      'retentionChainLastShown': 0, // 上次留存链弹窗时间戳
+      'firstTrainingDate': 0, // 首次训练日期（用于计算 Day N）
+      // ── v1 获客留存版 — 训练彩蛋（V1-03）──
+      'lastEggTriggerDate': '', // 上次彩蛋触发日期（防同日重复）
+      // ── v1 获客留存版 — 计划进度链中断补救（V1-06）──
+      'interruptReminderLastShown': 0, // 上次中断提醒时间戳
+      // v1 积分体系
+      'points': 0,
+      'pointsEarnedTotal': 0,
+      'pointsSpentTotal': 0,
+      'lastCheckInDate': '',
+      'adsWatchedToday': 0,
+      'adsWatchedDate': '',
+      'adsEnabled': true,
+      'unlockedFeatures': '[]',
     };
     final result = _safeGet(_keySettings, <String, dynamic>{});
     if (result is Map) {
@@ -657,6 +691,7 @@ class Storage {
     return {
       'plans': await getPlansAsync(),
       'records': await getRecordsAsync(),
+      'notes': await getNotesAsync(),
       'settings': getSettings(),
       'stats': getStats(),
       'exportTime': DateTime.now().millisecondsSinceEpoch,
@@ -763,6 +798,82 @@ class Storage {
     _prefs?.remove('${_keyPrefsPrefix}fitplan_stats');
     _prefs?.remove('${_keyPrefsPrefix}fitplan_bodyData');
     _prefs?.remove('${_keyPrefsPrefix}fitplan_bodyDataHistory');
+  }
+
+  // ============================================================
+  // Notes (v1 V1-11 训练笔记)
+  // ============================================================
+
+  static List<Map<String, dynamic>> _notesCache = [];
+  static bool _notesCacheDirty = true;
+
+  static Future<List<Map<String, dynamic>>> getNotesAsync() async {
+    if (_notesCacheDirty) {
+      _notesCache = await _db.getAllNotes();
+      _notesCacheDirty = false;
+    }
+    return List<Map<String, dynamic>>.from(
+      _notesCache.map((e) => Map<String, dynamic>.from(e)),
+    );
+  }
+
+  static List<Map<String, dynamic>> getNotes() {
+    return List<Map<String, dynamic>>.from(
+      _notesCache.map((e) => Map<String, dynamic>.from(e)),
+    );
+  }
+
+  static Future<Map<String, dynamic>?> getNoteByRecordId(String recordId) async {
+    // 先查缓存
+    for (final n in _notesCache) {
+      if (n['recordId'] == recordId) {
+        return Map<String, dynamic>.from(n);
+      }
+    }
+    // 再查 DB
+    final note = await _db.getNoteByRecordId(recordId);
+    if (note != null) {
+      _notesCache.insert(0, Map<String, dynamic>.from(note));
+      return note;
+    }
+    return null;
+  }
+
+  static Map<String, dynamic> addNote(Map<String, dynamic> note) {
+    final newNote = <String, dynamic>{
+      ...note,
+      'id': note['id'] ?? generateId('note'),
+      'createTime': note['createTime'] ?? DateTime.now().millisecondsSinceEpoch,
+    };
+    _notesCache.insert(0, newNote);
+    _notesCacheDirty = true;
+    dataChanged.value = !dataChanged.value;
+    _db.insertNote(newNote);
+    return newNote;
+  }
+
+  static Future<bool> updateNoteAsync(String noteId, Map<String, dynamic> updates) async {
+    final idx = _notesCache.indexWhere((n) => n['id'] == noteId);
+    if (idx >= 0) {
+      _notesCache[idx] = {..._notesCache[idx], ...updates};
+    }
+    _notesCacheDirty = true;
+    await _db.updateNote(noteId, updates);
+    dataChanged.value = !dataChanged.value;
+    return true;
+  }
+
+  static Future<bool> deleteNoteAsync(String noteId) async {
+    _notesCache.removeWhere((n) => n['id'] == noteId);
+    _notesCacheDirty = true;
+    await _db.deleteNote(noteId);
+    dataChanged.value = !dataChanged.value;
+    return true;
+  }
+
+  static Future<void> reloadNotesAsync() async {
+    _notesCacheDirty = true;
+    await getNotesAsync();
   }
 
   static bool hasData() {
