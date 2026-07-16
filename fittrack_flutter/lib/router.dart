@@ -32,6 +32,9 @@ import 'pages/invitation_page.dart';
 import 'pages/share_code_page.dart';
 import 'pages/tutorial_list_page.dart';
 import 'pages/tutorial_detail_page.dart';
+import 'pages/course_list_page.dart';
+import 'pages/course_detail_page.dart';
+import 'pages/chapter_read_page.dart';
 import 'pages/note_list_page.dart';
 import 'pages/note_edit_page.dart';
 import 'widgets/bottom_nav.dart';
@@ -306,6 +309,25 @@ GoRouter createRouter() {
           final tutorialId = state.params['tutorialId'] ?? '';
           return TutorialDetailPage(tutorialId: tutorialId);
         },
+      ),
+      // 系统化课程路由
+      GoRoute(
+        path: '/course',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CourseListPage(),
+      ),
+      GoRoute(
+        path: '/course/:courseId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => CourseDetailPage(courseId: state.params['courseId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/course/:courseId/chapter/:chapterId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => ChapterReadPage(
+          courseId: state.params['courseId'] ?? '',
+          chapterId: state.params['chapterId'] ?? '',
+        ),
       ),
       // v1 V1-11: 训练笔记路由
       GoRoute(
