@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
@@ -6,9 +5,10 @@ import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/user_profile_generator.dart';
 import '../services/form_kit_service.dart';
-import '../services/ohos_reminder_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
+import '../widgets/custom_time_picker.dart';
+import '../utils/platform_utils.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -194,11 +194,11 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 _buildProfileHeader(colors),
                 const SizedBox(height: 20),
-                SectionHeader(title: '成就'),
+                const SectionHeader(title: '成就'),
                 const SizedBox(height: 10),
                 _buildAchievements(colors),
                 const SizedBox(height: 20),
-                SectionHeader(title: '身体数据'),
+                const SectionHeader(title: '身体数据'),
                 const SizedBox(height: 10),
                 if (_hasMeaningfulBodyData(body))
                   _buildBodyData(colors, body)
@@ -489,26 +489,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            ValueListenableBuilder<bool>(
-              valueListenable: Storage.isPremiumNotifier,
-              builder: (context, isPremium, _) {
-                return isPremium
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text('Pro',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                      )
-                    : TextButton.icon(
-                        onPressed: () => context.push('/redeem'),
-                        icon: const Icon(Icons.workspace_premium),
-                        label: const Text('升级 Pro'),
-                      );
-              },
-            ),
+            // v1 获客留存版：全免费策略，不展示 Pro 升级入口
+            // Pro/兑换码体系已编码但 v1 不启用，后续版本可通过 isPremiumNotifier 恢复展示
             Icon(Icons.chevron_right, color: colors.textMuted, size: 22),
           ],
         ),
@@ -738,27 +720,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: () async {
-                      final now = TimeOfDay.now();
                       final initialTime = trainingTime.isNotEmpty
                           ? _parseTimeOfDay(trainingTime)
                           : const TimeOfDay(hour: 18, minute: 0);
-                      final picked = await showTimePicker(
-                        context: ctx,
+                      // 使用自定义时间选择器（FitTrack 暗色主题风格滚轮）
+                      final picked = await CustomTimePicker.show(
+                        context,
                         initialTime: initialTime,
-                        builder: (context, child) {
-                          return Theme(
-                            data: ThemeData.dark().copyWith(
-                              timePickerTheme: TimePickerThemeData(
-                                backgroundColor: colors.bgCard,
-                                hourMinuteTextColor: colors.textPrimary,
-                                dialHandColor: colors.accentGlow,
-                                dialBackgroundColor: colors.bgSecondary,
-                                entryModeIconColor: colors.accentGlow,
-                              ),
-                            ),
-                            child: child!,
-                          );
-                        },
                       );
                       if (picked != null) {
                         setSheetState(() {
@@ -809,7 +777,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Navigator.of(ctx).pop();
                         setState(() {});
                         // 更新卡片数据（训练时间变更）
-                        if (Platform.isOhos) {
+                        if (isOhos) {
                           FormKitService.instance.pushFormData();
                         }
                         FitToast.success(context, '个人信息已更新');
@@ -1107,6 +1075,8 @@ class _ProfilePageState extends State<ProfilePage> {
       {'icon': Icons.card_membership_outlined, 'label': '健身卡', 'page': 'gym-card'},
       {'icon': Icons.history, 'label': '训练记录', 'page': 'records'},
       {'icon': Icons.sports_gymnastics, 'label': '动作库', 'page': 'exercise'},
+      {'icon': Icons.school_outlined, 'label': '动作教学', 'page': 'tutorial'},
+      {'icon': Icons.edit_note, 'label': '训练笔记', 'page': 'note'},
       {'icon': Icons.settings, 'label': '设置', 'page': 'settings'},
       {'icon': Icons.notifications_active_outlined, 'label': '提醒设置', 'page': 'reminder-settings'},
       {'icon': Icons.security_outlined, 'label': '隐私与安全', 'action': 'privacy'},
@@ -1134,10 +1104,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     context.push('/gym-card');
                     break;
                   case 'records':
-                    context.go('/records');
+                    context.push('/records');
                     break;
                   case 'exercise':
                     context.push('/exercise');
+                    break;
+                  case 'tutorial':
+                    context.push('/tutorial');
+                    break;
+                  case 'note':
+                    context.push('/note');
                     break;
                   case 'settings':
                     context.push('/settings');

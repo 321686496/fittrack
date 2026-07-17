@@ -748,7 +748,7 @@ class _HomePageState extends State<HomePage> {
         SectionHeader(
           title: '最近训练',
           moreText: recentList.isNotEmpty ? '查看全部' : null,
-          onMore: recentList.isNotEmpty ? () => context.go('/records') : null,
+          onMore: recentList.isNotEmpty ? () => context.push('/records') : null,
         ),
         const SizedBox(height: 12),
         if (displayList.isEmpty)
@@ -771,7 +771,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.only(bottom: 10),
               child: CardWidget(
                 padding: const EdgeInsets.all(12),
-                onTap: () => context.go('/records'),
+                onTap: () => context.push('/records'),
                 child: Row(
                   children: [
                     Container(
