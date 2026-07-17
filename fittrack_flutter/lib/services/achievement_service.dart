@@ -120,10 +120,12 @@ class AchievementService {
     if (totalWeight >= 50000) newlyUnlocked.add('weight_50t');
     if (totalWeight >= 100000) newlyUnlocked.add('weight_100t');
 
-    // Duration (seconds → hours)
-    if (totalDuration >= 86400) newlyUnlocked.add('duration_24h');
-    if (totalDuration >= 360000) newlyUnlocked.add('duration_100h');
-    if (totalDuration >= 1800000) newlyUnlocked.add('duration_500h');
+    // Duration (存储单位为分钟，需转换为小时比较)
+    // 修复：training_page 存入 duration 单位为分钟，此处原按秒比较导致阈值错误
+    // 24h = 1440min, 100h = 6000min, 500h = 30000min
+    if (totalDuration >= 1440) newlyUnlocked.add('duration_24h');
+    if (totalDuration >= 6000) newlyUnlocked.add('duration_100h');
+    if (totalDuration >= 30000) newlyUnlocked.add('duration_500h');
 
     // Plan first done
     final planId = record['planId'] as String?;
@@ -139,14 +141,17 @@ class AchievementService {
       }
     }
 
-    // Explore (unique exercise names across all records)
+    // Explore (unique exercise ids across all records)
+    // 修复：setRecords 结构为 Map<exId, List<{set,weight,reps}>>，
+    // 原代码读取 v['exerciseName'] 但 set 记录中无此字段，导致探索成就永不触发。
+    // 正确做法：使用 setRecords 的 key（动作 id）作为唯一标识。
     final exercises = <String>{};
     for (final r in records) {
       final setRecords = r['setRecords'];
       if (setRecords is Map) {
-        for (final v in setRecords.values) {
-          if (v is Map && v['exerciseName'] != null) {
-            exercises.add(v['exerciseName'].toString());
+        for (final key in setRecords.keys) {
+          if (key != null) {
+            exercises.add(key.toString());
           }
         }
       }
@@ -170,6 +175,14 @@ class AchievementService {
     }
     Storage.unlockedAchievementsNotifier.value = _unlocked.toList();
     return toAdd;
+  }
+
+  /// 评估所有成就解锁状态（不基于单条记录，用于 profile 页面初始化）
+  /// 返回新解锁的成就 ID 列表
+  Future<List<String>> evaluateAchievements() async {
+    // 构造一个空 record 用于触发判定（checkAndUnlock 内部会读取全部 records/stats）
+    final emptyRecord = <String, dynamic>{};
+    return await checkAndUnlock(emptyRecord);
   }
 
   int _computeStreak(List<Map<String, dynamic>> records) {
