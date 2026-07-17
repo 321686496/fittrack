@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
 import '../themes/app_themes.dart';
+import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
 
 /// v1 训练笔记列表页
@@ -69,8 +70,10 @@ class _NoteListPageState extends State<NoteListPage> {
     final sortedKeys = map.keys.toList()
       ..sort((a, b) {
         // 解析 "2026年7月" 格式
-        int parseYear(String s) => int.parse(s.replaceAll(RegExp(r'[^\d]'), ' ').trim().split(' ').first);
-        int parseMonth(String s) => int.parse(s.replaceAll(RegExp(r'[^\d]'), ' ').trim().split(' ').last);
+        int parseYear(String s) => int.parse(
+            s.replaceAll(RegExp(r'[^\d]'), ' ').trim().split(' ').first);
+        int parseMonth(String s) => int.parse(
+            s.replaceAll(RegExp(r'[^\d]'), ' ').trim().split(' ').last);
         final yA = parseYear(a), yB = parseYear(b);
         if (yA != yB) return yB - yA;
         return parseMonth(b) - parseMonth(a);
@@ -88,7 +91,8 @@ class _NoteListPageState extends State<NoteListPage> {
         children: [
           PageHeader(
             title: '训练笔记',
-            subtitle: '${_notes.length} 篇笔记 · ${_notes.where((n) => n.isFeatured).length} 篇精选',
+            subtitle:
+                '${_notes.length} 篇笔记 · ${_notes.where((n) => n.isFeatured).length} 篇精选',
             isTabPage: true,
           ),
           // v1 V1-11: 筛选条
@@ -119,7 +123,8 @@ class _NoteListPageState extends State<NoteListPage> {
                           itemCount: _groupedNotes.length,
                           itemBuilder: (ctx, idx) {
                             final entry = _groupedNotes.entries.elementAt(idx);
-                            return _buildMonthGroup(colors, entry.key, entry.value);
+                            return _buildMonthGroup(
+                                colors, entry.key, entry.value);
                           },
                         ),
                       ),
@@ -241,8 +246,7 @@ class _NoteListPageState extends State<NoteListPage> {
             // 顶部行：日期 + 感受 + 精选标记
             Row(
               children: [
-                Icon(Icons.calendar_today,
-                    size: 12, color: colors.textMuted),
+                Icon(Icons.calendar_today, size: 12, color: colors.textMuted),
                 const SizedBox(width: 4),
                 Text(
                   note.dateLabel,
@@ -268,9 +272,18 @@ class _NoteListPageState extends State<NoteListPage> {
                   ),
                 ),
                 const Spacer(),
-                if (note.isFeatured)
-                  Icon(Icons.bookmark,
-                      size: 14, color: colors.accentGlow),
+                IconButton(
+                  icon: Icon(Icons.share_outlined,
+                      size: 16, color: colors.textMuted),
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onPressed: () => NotePosterSheet.show(context, note),
+                ),
+                if (note.isFeatured) ...[
+                  const SizedBox(width: 4),
+                  Icon(Icons.bookmark, size: 14, color: colors.accentGlow),
+                ],
               ],
             ),
             // 最满意动作
@@ -300,9 +313,7 @@ class _NoteListPageState extends State<NoteListPage> {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color: colors.textSecondary,
-                    fontSize: 12,
-                    height: 1.5),
+                    color: colors.textSecondary, fontSize: 12, height: 1.5),
               ),
             ],
             // 底部：心情贴纸 + 酸痛部位
@@ -343,8 +354,7 @@ class _NoteListPageState extends State<NoteListPage> {
           if (icon)
             Padding(
               padding: const EdgeInsets.only(right: 2),
-              child: Icon(Icons.mood,
-                  size: 10, color: colors.accentGlow),
+              child: Icon(Icons.mood, size: 10, color: colors.accentGlow),
             ),
           Text(
             label,
@@ -394,15 +404,14 @@ class _NoteListPageState extends State<NoteListPage> {
               ),
               onTap: () async {
                 Navigator.pop(ctx);
-                await Storage.updateNoteAsync(note.id,
-                    {'isFeatured': !note.isFeatured});
+                await Storage.updateNoteAsync(
+                    note.id, {'isFeatured': !note.isFeatured});
                 _loadNotes();
               },
             ),
             ListTile(
               leading: Icon(Icons.delete_outline, color: Colors.red.shade400),
-              title: Text('删除笔记',
-                  style: TextStyle(color: Colors.red.shade400)),
+              title: Text('删除笔记', style: TextStyle(color: Colors.red.shade400)),
               onTap: () async {
                 Navigator.pop(ctx);
                 final confirmed = await _confirmDelete(colors);
