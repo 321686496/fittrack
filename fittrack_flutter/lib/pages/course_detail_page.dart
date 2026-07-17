@@ -6,14 +6,19 @@ import '../services/points_service.dart';
 import '../widgets/unlock_panel.dart';
 import '../widgets/page_header.dart';
 
-class CourseDetailPage extends StatelessWidget {
+class CourseDetailPage extends StatefulWidget {
   final String courseId;
   const CourseDetailPage({super.key, required this.courseId});
 
   @override
+  State<CourseDetailPage> createState() => _CourseDetailPageState();
+}
+
+class _CourseDetailPageState extends State<CourseDetailPage> {
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final course = CourseLibrary.getById(courseId);
+    final course = CourseLibrary.getById(widget.courseId);
     if (course == null) return const Scaffold(body: Center(child: Text('课程不存在')));
 
     final isUnlocked = PointsService.instance.isFeatureUnlocked(course.id);
@@ -33,13 +38,16 @@ class CourseDetailPage extends StatelessWidget {
                   child: GestureDetector(
                     onTap: isUnlocked
                       ? () => context.push('/course/${course.id}/chapter/${ch.id}')
-                      : () => UnlockPanel.show(
-                        context: context,
-                        title: course.title,
-                        description: course.description,
-                        pointsCost: course.pointsCost,
-                        featureId: course.id,
-                      ),
+                      : () async {
+                        final unlocked = await UnlockPanel.show(
+                          context: context,
+                          title: course.title,
+                          description: course.description,
+                          pointsCost: course.pointsCost,
+                          featureId: course.id,
+                        );
+                        if (unlocked && mounted) setState(() {});
+                      },
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(

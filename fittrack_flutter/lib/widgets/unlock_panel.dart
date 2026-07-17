@@ -53,6 +53,7 @@ class UnlockPanel {
                 onTap: () async {
                   final adResult = await AdService.instance.showRewardedVideo();
                   if (adResult == AdResult.success || adResult == AdResult.notAvailable) {
+                    await PointsService.instance.unlockFeature(featureId, 0);
                     if (ctx.mounted) Navigator.of(ctx).pop(true);
                   }
                 },
