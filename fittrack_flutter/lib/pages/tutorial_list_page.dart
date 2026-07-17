@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/tutorial_content.dart';
 import '../data/course_content.dart';
+import '../services/recommendation_service.dart';
 import '../widgets/tutorial_cover_card.dart';
 import '../widgets/page_header.dart';
 
@@ -12,8 +13,8 @@ import '../widgets/page_header.dart';
 /// UI规格：docs/versions/v1-获客留存版/05_UI设计文档.md §7.2
 ///
 /// 展示策略：
-/// - 基础教学（免费）：30个，按肌群过滤
-/// - 进阶/专题/高手教学（裂变解锁）：展示但锁定，点击提示解锁方式
+/// - 推荐 tab：个性化推荐（教学 banner + 精选课程）+ "查看更多"按钮
+/// - 全部 tab：基础教学（免费）按肌群过滤 + 系统化课程 + 动作教学
 class TutorialListPage extends StatefulWidget {
   const TutorialListPage({super.key});
 
@@ -27,24 +28,158 @@ class _TutorialListPageState extends State<TutorialListPage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    return Scaffold(
-      body: Column(
+    return DefaultTabController(
+      length: 2,
+      child: Column(
         children: [
-          PageHeader(title: '教学中心', subtitle: '动作教学 · 系统化课程', onBack: () => Navigator.of(context).pop()),
-          _buildGoalFilter(colors),
+          const PageHeader(title: '教学中心', isTabPage: true),
+          Container(
+            decoration: BoxDecoration(
+              color: colors.bgSecondary,
+              border: Border(bottom: BorderSide(color: colors.borderColor)),
+            ),
+            child: TabBar(
+              labelColor: colors.accentGlow,
+              unselectedLabelColor: colors.textMuted,
+              indicatorColor: colors.accentGlow,
+              indicatorSize: TabBarIndicatorSize.label,
+              tabs: const [Tab(text: '推荐'), Tab(text: '全部')],
+            ),
+          ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TabBarView(
+              children: [
+                _buildRecommendTab(colors),
+                _buildAllTab(colors),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ========== 推荐 tab ==========
+
+  Widget _buildRecommendTab(FitTrackColors colors) {
+    final banners = RecommendationService.generateBanners()
+        .where((b) => b.type == 'teaching' || b.type == 'premium')
+        .take(5)
+        .toList();
+    final recommendedCourses = CourseLibrary.courses.take(3).toList();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('为你推荐', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          ...banners.map((b) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _buildRecommendCard(colors, b),
+          )),
+          const SizedBox(height: 20),
+          Text('精选课程', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          ...recommendedCourses.map((c) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: GestureDetector(
+              onTap: () => context.push('/course/${c.id}'),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: c.coverColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Text(c.coverEmoji, style: const TextStyle(fontSize: 32)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(c.title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                          Text(c.subtitle, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.9)),
+                  ],
+                ),
+              ),
+            ),
+          )),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                DefaultTabController.of(context).animateTo(1);
+              },
+              child: const Text('查看更多'),
+            ),
+          ),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendCard(FitTrackColors colors, BannerItem b) {
+    return GestureDetector(
+      onTap: () {
+        if (b.route != null) context.push(b.route!);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: colors.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colors.borderColor),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: colors.accentGlow.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.school, color: colors.accentGlow, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCourseSection(colors), // 系统化课程
-                  const SizedBox(height: 16),
-                  _buildTutorialSection(colors), // 按目标分类的教学
+                  Text(b.title, style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(b.subtitle, style: TextStyle(color: colors.textMuted, fontSize: 12)),
                 ],
               ),
             ),
-          ),
+            Icon(Icons.chevron_right, color: colors.textMuted, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ========== 全部 tab（保留原有逻辑） ==========
+
+  Widget _buildAllTab(FitTrackColors colors) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildGoalFilter(colors),
+          const SizedBox(height: 16),
+          _buildCourseSection(colors),
+          const SizedBox(height: 16),
+          _buildTutorialSection(colors),
+          const SizedBox(height: 100),
         ],
       ),
     );
