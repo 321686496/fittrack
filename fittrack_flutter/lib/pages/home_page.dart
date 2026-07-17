@@ -4,10 +4,12 @@ import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/clipboard_invite_service.dart';
+import '../services/recommendation_service.dart';
 import '../services/retention_chain_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/onboarding_coach.dart';
 import '../widgets/page_header.dart';
+import '../widgets/recommendation_banner.dart';
 import '../widgets/virtual_opponent_card.dart';
 import '../widgets/invite_activation_banner.dart';
 import '../widgets/retention_weekly_report_dialog.dart';
@@ -344,7 +346,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTeachingRecommendation(colors),
+                    _buildRecommendationBanners(colors),
                     const SizedBox(height: 14),
                     if (todayPlan != null)
                       _buildTodayPlanCard(colors, todayPlan)
@@ -382,50 +384,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ── 教学推荐 ──────────────────────────────────────────
+  // ── 推荐轮播 Banner ──────────────────────────────────────
 
-  Widget _buildTeachingRecommendation(FitTrackColors colors) {
-    return GestureDetector(
-      onTap: () => context.push('/tutorial'),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [colors.accentGlow.withOpacity(0.1), colors.accentGlow.withOpacity(0.05)],
-            begin: Alignment.topLeft, end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48, height: 48,
-              decoration: BoxDecoration(
-                color: colors.accentGlow.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.school, color: colors.accentGlow, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('今日推荐教学', style: TextStyle(
-                    color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
-                  )),
-                  Text('30个基础动作 · 系统化课程', style: TextStyle(
-                    color: colors.textMuted, fontSize: 12,
-                  )),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: colors.textMuted),
-          ],
-        ),
-      ),
-    );
+  Widget _buildRecommendationBanners(FitTrackColors colors) {
+    final banners = RecommendationService.generateBanners();
+    return RecommendationBanner(items: banners);
   }
 
   Widget _buildNoPlanCard(FitTrackColors colors) {
