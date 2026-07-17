@@ -1,5 +1,6 @@
 import 'dart:convert';
 import '../data/storage.dart';
+import 'ad_service.dart';
 
 enum PointsSource { checkIn, ad, invite, training, note, other }
 enum PointsReason { unlockReport, unlockFeature, unlockCourse, other }
@@ -53,7 +54,7 @@ class PointsService {
 
   Future<bool> canWatchAd() async {
     final settings = Storage.getSettings();
-    if (settings['adsEnabled'] != true) return false;
+    if (!AdService.adsEnabled) return false;
     final today = _todayString();
     final lastDate = settings['adsWatchedDate'] as String? ?? '';
     if (lastDate != today) return true;
