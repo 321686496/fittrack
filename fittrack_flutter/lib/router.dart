@@ -142,7 +142,7 @@ GoRouter createRouter() {
           final path = state.location;
           int tabIndex = 0;
           if (path.startsWith('/plan')) tabIndex = 1;
-          if (path.startsWith('/records')) tabIndex = 2;
+          if (path.startsWith('/tutorial')) tabIndex = 2;
           if (path.startsWith('/stats')) tabIndex = 3;
           if (path.startsWith('/profile')) tabIndex = 4;
           currentTabIndex.value = tabIndex;
@@ -169,6 +169,12 @@ GoRouter createRouter() {
             path: '/records',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: RecordsPage(),
+            ),
+          ),
+          GoRoute(
+            path: '/tutorial',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: TutorialListPage(),
             ),
           ),
           GoRoute(
@@ -298,11 +304,6 @@ GoRouter createRouter() {
         builder: (context, state) => const ShareCodePage(),
       ),
       GoRoute(
-        path: '/tutorial',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const TutorialListPage(),
-      ),
-      GoRoute(
         path: '/tutorial/:tutorialId',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
@@ -384,7 +385,7 @@ class _AppShellState extends State<AppShell> {
     if (!_initialized) {
       _children[0] = const HomePage();
       _children[1] = const PlanPage();
-      _children[2] = const RecordsPage();
+      _children[2] = const TutorialListPage();
       _children[3] = const StatsPage();
       _children[4] = const ProfilePage();
       _initialized = true;
@@ -408,7 +409,7 @@ class _AppShellState extends State<AppShell> {
             child: BottomNav(
               currentIndex: widget.currentIndex,
               onTap: (index) {
-                const paths = ['/home', '/plan', '/records', '/stats', '/profile'];
+                const paths = ['/home', '/plan', '/tutorial', '/stats', '/profile'];
                 if (index < paths.length) {
                   context.go(paths[index]);
                 }

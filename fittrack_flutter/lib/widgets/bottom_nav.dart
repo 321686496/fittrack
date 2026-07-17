@@ -14,7 +14,7 @@ class BottomNav extends StatelessWidget {
   static const _items = [
     _NavItem(label: '首页', icon: Icons.home_outlined, activeIcon: Icons.home),
     _NavItem(label: '计划', icon: Icons.assignment_outlined, activeIcon: Icons.assignment),
-    _NavItem(label: '记录', icon: Icons.edit_note_outlined, activeIcon: Icons.edit_note),
+    _NavItem(label: '教学', icon: Icons.school_outlined, activeIcon: Icons.school),
     _NavItem(label: '统计', icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart),
     _NavItem(label: '我的', icon: Icons.person_outline, activeIcon: Icons.person),
   ];
