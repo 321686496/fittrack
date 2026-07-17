@@ -166,12 +166,6 @@ GoRouter createRouter() {
             ),
           ),
           GoRoute(
-            path: '/records',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: RecordsPage(),
-            ),
-          ),
-          GoRoute(
             path: '/tutorial',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: TutorialListPage(),
@@ -209,6 +203,12 @@ GoRouter createRouter() {
           final planId = state.params['planId'] ?? '';
           return PlanDetailPage(planId: planId);
         },
+      ),
+      // /records 作为全屏页面（rootNavigatorKey），避免 AppShell IndexedStack 忽略 widget.child 导致渲染 HomePage
+      GoRoute(
+        path: '/records',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const RecordsPage(),
       ),
       GoRoute(
         path: '/records/:recordId',
