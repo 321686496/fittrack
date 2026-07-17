@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../data/storage.dart';
 import '../services/points_service.dart';
 import '../services/ad_service.dart';
 import '../themes/app_themes.dart';
@@ -13,7 +12,7 @@ class UnlockPanel {
     required String featureId,
   }) async {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final adsEnabled = Storage.getSettings()['adsEnabled'] == true;
+    final adsEnabled = AdService.adsEnabled;
     final currentPoints = PointsService.instance.points;
 
     final result = await showModalBottomSheet<bool>(
