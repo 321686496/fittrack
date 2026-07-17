@@ -602,13 +602,6 @@ class _SettingsPageState extends State<SettingsPage> {
           const DividerWidget(indent: 44),
           // v1 获客留存版：隐藏"兑换 Pro"入口（Pro/兑换码体系已编码但 v1 不启用）
           // 后续版本可通过条件判断恢复入口：if (Storage.isPremiumNotifier.value == false) ...
-          ListTile(
-            leading: const Icon(Icons.emoji_events_outlined),
-            title: const Text('成就墙'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/achievements'),
-          ),
-          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私设置', '查看隐私与权限说明', _showPrivacyInfo),
           const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.description_outlined, '隐私政策', '查看完整隐私政策文本', () {
