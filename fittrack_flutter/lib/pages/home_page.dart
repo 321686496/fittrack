@@ -857,8 +857,15 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCurrentPlanCard(FitTrackColors colors, Map<String, dynamic> plan) {
     final progress = (plan['progress'] as num? ?? 0) / 100.0;
-    final totalWeeks = plan['totalWeeks'] ?? 0;
-    final currentWeek = plan['week'] ?? 0;
+    final createTime = plan['createTime'] as int? ?? DateTime.now().millisecondsSinceEpoch;
+    final totalWeeks = (plan['totalWeeks'] as int?) ?? 8;
+    final startDate = DateTime.fromMillisecondsSinceEpoch(createTime);
+    final elapsedDays = DateTime.now().difference(startDate).inDays;
+    final elapsedWeeks = elapsedDays ~/ 7;
+    final totalRounds = (plan['totalRounds'] as int?) ?? 1;
+    final currentRound = (elapsedWeeks ~/ totalWeeks) + 1;
+    final weekInRound = (elapsedWeeks % totalWeeks) + 1;
+    final overallProgress = (currentRound / totalRounds * 100).clamp(0, 100).toDouble();
 
     return CardWidget(
       onTap: () => context.push('/plan?planId=${plan['id']}'),
@@ -885,10 +892,16 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Text(
-                '第$currentWeek/$totalWeeks周',
-                style: TextStyle(color: colors.textSecondary, fontSize: 13),
-              ),
+              if (totalRounds > 1)
+                Text(
+                  '第 $currentRound/$totalRounds 轮 · 第 $weekInRound/$totalWeeks 周',
+                  style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                )
+              else
+                Text(
+                  '第 $weekInRound/$totalWeeks 周',
+                  style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                ),
               const SizedBox(width: 12),
               Text(
                 '${plan['frequency'] ?? ''}',
@@ -898,6 +911,23 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 10),
           ProgressBar(progress: progress),
+          if (totalRounds > 1) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('整体进度', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                Text('${overallProgress.toInt()}%', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            LinearProgressIndicator(
+              value: overallProgress / 100,
+              backgroundColor: colors.borderColor,
+              valueColor: AlwaysStoppedAnimation<Color>(colors.accentGlow.withOpacity(0.5)),
+              minHeight: 3,
+            ),
+          ],
         ],
       ),
     );
