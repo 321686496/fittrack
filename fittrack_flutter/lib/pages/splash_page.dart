@@ -22,6 +22,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  Timer? _navTimer;
 
   @override
   void initState() {
@@ -37,7 +38,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   }
 
   void _startTimer() {
-    Timer(const Duration(seconds: 2), () {
+    _navTimer = Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
       final settings = Storage.getSettings();
       final privacyAgreed = settings['privacyAgreed'] == true;
@@ -55,6 +56,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _navTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }

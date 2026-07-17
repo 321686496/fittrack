@@ -1,6 +1,6 @@
 {
   "app": {
-    "bundleName": "com.ft.fittrack",
+    "bundleName": "com.fp.fitplan",
     
     "vendor": "example",
     "versionCode": 1000000,

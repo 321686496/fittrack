@@ -9,6 +9,7 @@ import '../services/rest_notification_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/page_header.dart';
 import 'package:go_router/go_router.dart';
+import '../utils/platform_utils.dart';
 
 /// 通知测试页面 —— 用于验证通知功能是否可用
 class NotificationTestPage extends StatefulWidget {
@@ -41,7 +42,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
   Future<void> _checkStatus() async {
     final service = RestNotificationService.instance;
     _plugin = FlutterLocalNotificationsPlugin();
-    _log('Platform: ${Platform.isOhos ? "OHOS" : Platform.isAndroid ? "Android" : Platform.operatingSystem}');
+    _log('Platform: ${isOhos ? "OHOS" : Platform.isAndroid ? "Android" : Platform.operatingSystem}');
     _log('Service initialized: ${service.isInitialized}');
     _isInitialized = service.isInitialized;
     _log('Plugin instance: ${service.plugin != null ? "available" : "null"}');
@@ -53,7 +54,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     _log('Requesting notification permission...');
     try {
       final plugin = RestNotificationService.instance.plugin ?? _plugin!;
-      if (Platform.isOhos) {
+      if (isOhos) {
         final ohosPlugin = plugin.resolvePlatformSpecificImplementation<
             OhosFlutterLocalNotificationsPlugin>();
         if (ohosPlugin != null) {
@@ -393,7 +394,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
         children: [
           Text('状态信息', style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          _buildStatusRow(colors, '平台', Platform.isOhos ? 'OHOS (HarmonyOS)' : Platform.operatingSystem),
+          _buildStatusRow(colors, '平台', isOhos ? 'OHOS (HarmonyOS)' : Platform.operatingSystem),
           _buildStatusRow(colors, 'Service 已初始化', _isInitialized ? '是' : '否',
               valueColor: _isInitialized ? Colors.greenAccent : Colors.redAccent),
           _buildStatusRow(colors, '权限已授予', _permissionGranted ? '是' : '否',

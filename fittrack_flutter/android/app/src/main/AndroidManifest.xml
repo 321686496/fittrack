@@ -1,7 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.fittrack_flutter">
-   <application
-        android:label="fittrack_flutter"
+    package="com.fp.fitplan">
+    <!-- Android 12+ (API 31+) 精确闹钟权限：用于 setExactAndAllowWhileIdle -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    <!-- 通知权限（Android 13+ / API 33+ 要求） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- 唤醒锁：确保闹钟触发时设备唤醒 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- 开机广播：设备重启后重新注册闹钟 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- 振动权限 -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- 前台服务 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <application
+        android:label="FitTrack"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -11,11 +25,9 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
-            <!-- Specifies an Android theme to apply to this Activity as soon as
-                 the Android process has started. This theme is visible to the user
-                 while the Flutter UI initializes. After that, this theme continues
-                 to determine the Window background behind the Flutter UI. -->
+            android:windowSoftInputMode="adjustResize"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true">
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
@@ -24,9 +36,26 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- v1 一键裂变：fittrack:// 邀请协议 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="fittrack" android:host="invite"/>
+            </intent-filter>
         </activity>
-        <!-- Don't delete the meta-data below.
-             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+
+        <!-- AlarmReceiver: 系统闹钟触发时接收广播 -->
+        <receiver
+            android:name=".AlarmReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.fp.fitplan.REST_ALARM"/>
+            </intent-filter>
+        </receiver>
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

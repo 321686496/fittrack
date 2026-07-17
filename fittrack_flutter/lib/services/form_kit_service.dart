@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../data/storage.dart';
+import '../utils/platform_utils.dart';
 
 /// OHOS 桌面卡片（Form Kit）服务
 ///
@@ -21,7 +22,7 @@ class FormKitService {
 
   static final FormKitService instance = FormKitService._();
 
-  static const String _channelName = 'com.example.fittrack_flutter/form';
+  static const String _channelName = 'com.fp.fitplan/form';
 
   final MethodChannel _channel = const MethodChannel(_channelName);
 
@@ -245,7 +246,7 @@ class FormKitService {
 
   /// 推送卡片数据到原生 preferences
   Future<void> pushFormData() async {
-    if (!Platform.isOhos) return;
+    if (!isOhos) return;
 
     final data = _buildFormData();
     final jsonStr = jsonEncode(data);
@@ -284,7 +285,7 @@ class FormKitService {
 
   /// 请求刷新卡片（训练完成后调用）
   Future<void> requestFormUpdate() async {
-    if (!Platform.isOhos) return;
+    if (!isOhos) return;
     await pushFormData();
   }
 

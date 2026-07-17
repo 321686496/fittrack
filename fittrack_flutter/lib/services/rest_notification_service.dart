@@ -5,13 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'ohos_reminder_service.dart';
+import 'android_alarm_service.dart';
+import '../utils/platform_utils.dart';
 
 /// 休息结束提醒服务
 ///
-/// 提供振动提醒 + 本地通知 + OHOS后台代理提醒 三重机制：
+/// 提供振动提醒 + 本地通知 + 后台代理提醒 三重机制：
 /// - 前台：Dart Timer 倒计时 → 振动 + show() 通知
 /// - OHOS后台：reminderAgentManager 代理提醒（系统级定时，后台也能触发）
-/// - Android后台：zonedSchedule（系统级定时，后台也能触发）
+/// - Android后台：AlarmManager + BroadcastReceiver（系统级定时，应用被杀后仍能触发）
 /// - 后台恢复兜底：由 training_page 的 wall-clock 机制检测并补发通知
 class RestNotificationService {
   RestNotificationService._();
@@ -81,8 +83,11 @@ class RestNotificationService {
       await _requestNotificationPermission();
 
       // 初始化 OHOS 后台代理提醒监听器
-      if (Platform.isOhos) {
+      if (isOhos) {
         OhosReminderService.instance.initListener();
+      } else {
+        // 初始化 Android 原生闹钟监听器
+        AndroidAlarmService.instance.initListener();
       }
 
       _initialized = true;
@@ -96,7 +101,7 @@ class RestNotificationService {
     try {
       // OHOS 平台：跳过 flutter_local_notifications 权限请求，避免触发系统通知
       // OHOS 的通知权限由原生 EntryAbility 处理
-      if (Platform.isOhos) {
+      if (isOhos) {
         debugPrint('OHOS: skip flutter_local_notifications permission request');
         return true;
       }
@@ -116,7 +121,7 @@ class RestNotificationService {
   Future<void> _configureLocalTimeZone() async {
     if (kIsWeb) return;
     try {
-      if (Platform.isOhos) {
+      if (isOhos) {
         final String timeZoneName = await _plugin!.getLocalTimezone();
         debugPrint('OHOS timezone: $timeZoneName');
         tz.setLocalLocation(tz.getLocation(timeZoneName));
@@ -149,7 +154,7 @@ class RestNotificationService {
 
   /// 预约定时通知：在 [delaySeconds] 秒后发送休息结束通知
   ///
-  /// - Android: 使用 zonedSchedule（系统级定时，后台也能触发）+ Dart Timer 保底
+  /// - Android: 使用原生 AlarmManager + BroadcastReceiver（应用被杀后仍能触发）+ Dart Timer 保底
   /// - OHOS: 使用 reminderAgentManager 代理提醒（后台也能触发）+ Dart Timer 保底
   Future<void> scheduleRestEndNotification({
     required String exerciseName,
@@ -168,37 +173,24 @@ class RestNotificationService {
       // 所有平台：Dart Timer 保底（前台有效）
       _scheduleWithDartTimer(exerciseName: exerciseName, delaySeconds: delaySeconds);
 
-      if (Platform.isOhos) {
+      if (isOhos) {
         // OHOS：由 EntryAbility 原生侧处理代理提醒（通过 MethodChannel 接收 rest 数据后自动发布）
         // Flutter 侧不再调用 OhosReminderService.publishReminder()，避免重复创建带进度条的通知
         debugPrint('OHOS reminder handled by native EntryAbility, skip Flutter side');
       } else {
-        // Android：使用 zonedSchedule（后台也能触发）
-        final scheduledDate =
-            tz.TZDateTime.now(tz.local).add(Duration(seconds: delaySeconds));
-
-        const androidDetails = AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          channelDescription: _channelDesc,
-          importance: Importance.high,
-          priority: Priority.high,
-          enableVibration: true,
-          fullScreenIntent: true,
+        // Android：使用原生 AlarmManager + BroadcastReceiver（应用被杀后仍能触发）
+        final result = await AndroidAlarmService.instance.scheduleRestAlarm(
+          title: title,
+          content: content,
+          exerciseName: exerciseName,
+          triggerTimeInSeconds: delaySeconds,
+          notificationId: _notificationId,
         );
-        const details = NotificationDetails(android: androidDetails);
-
-        await _plugin!.zonedSchedule(
-          _notificationId,
-          title,
-          content,
-          scheduledDate,
-          details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-        );
-        debugPrint('Android zonedSchedule set');
+        if (result != null) {
+          debugPrint('Android native alarm scheduled, triggerAt: $result');
+        } else {
+          debugPrint('Android native alarm scheduling failed');
+        }
       }
     } catch (e) {
       debugPrint('scheduleRestEndNotification() error: $e');
@@ -262,9 +254,11 @@ class RestNotificationService {
     try {
       await _plugin?.cancel(_notificationId);
     } catch (_) {}
-    // 同时取消 OHOS 代理提醒
-    if (Platform.isOhos) {
+    // 同时取消 OHOS 代理提醒 或 Android 原生闹钟
+    if (isOhos) {
       await OhosReminderService.instance.cancelCurrentReminder();
+    } else {
+      await AndroidAlarmService.instance.cancelRestAlarm();
     }
   }
 
@@ -275,9 +269,11 @@ class RestNotificationService {
     try {
       await _plugin?.cancelAll();
     } catch (_) {}
-    // 同时取消 OHOS 所有代理提醒
-    if (Platform.isOhos) {
+    // 同时取消 OHOS 所有代理提醒 或 Android 原生闹钟
+    if (isOhos) {
       await OhosReminderService.instance.cancelAllReminders();
+    } else {
+      await AndroidAlarmService.instance.cancelAllAlarms();
     }
   }
 }
