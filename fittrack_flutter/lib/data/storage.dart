@@ -424,7 +424,6 @@ class Storage {
       'lastCheckInDate': '',
       'adsWatchedToday': 0,
       'adsWatchedDate': '',
-      'adsEnabled': true,
       'unlockedFeatures': '[]',
     };
     final result = _safeGet(_keySettings, <String, dynamic>{});

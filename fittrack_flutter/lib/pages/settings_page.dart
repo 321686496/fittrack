@@ -309,29 +309,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildAdToggle(FitTrackColors colors) {
-    return CardWidget(
-      child: SwitchListTile(
-        title: Text('启用广告', style: TextStyle(
-          color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500,
-        )),
-        subtitle: Text(
-          '关闭后所有广告入口将隐藏，仅能使用积分解锁',
-          style: TextStyle(color: colors.textMuted, fontSize: 12),
-        ),
-        value: Storage.getSettings()['adsEnabled'] == true,
-        onChanged: (v) {
-          final settings = Storage.getSettings();
-          settings['adsEnabled'] = v;
-          Storage.saveSettings(settings);
-          Storage.dataChanged.value = !Storage.dataChanged.value;
-          setState(() {});
-        },
-        activeColor: colors.accentGlow,
-      ),
-    );
-  }
-
   /// 构建单个权限项
   Widget _buildPermissionItem(FitTrackColors colors, IconData icon, String title, String desc, bool granted) {
     return InkWell(
@@ -405,10 +382,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SectionHeader(title: '数据管理'),
                   const SizedBox(height: 10),
                   _buildDataMenu(colors),
-                  const SizedBox(height: 20),
-                  const SectionHeader(title: '广告设置'),
-                  const SizedBox(height: 10),
-                  _buildAdToggle(colors),
                   const SizedBox(height: 20),
                   _buildPermissionMenu(colors),
                   const SizedBox(height: 20),
