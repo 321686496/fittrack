@@ -6,6 +6,7 @@ import '../data/storage.dart';
 import '../services/user_profile_generator.dart';
 import '../services/form_kit_service.dart';
 import '../services/points_service.dart';
+import '../services/achievement_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/custom_time_picker.dart';
@@ -19,157 +20,61 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  List<Map<String, dynamic>> _achievements = [];
-
   @override
   void initState() {
     super.initState();
     _evaluateAchievements();
   }
 
-  /// 根据真实训练数据判定成就是否达成
-  void _evaluateAchievements() {
-    final records = Storage.getRecords();
-    final stats = Storage.getStats();
-    final totalTrainings = (stats['totalTrainings'] as num?)?.toInt() ?? records.length;
-    final totalWeight = (stats['totalWeight'] as num?)?.toDouble() ?? 0.0;
-    final totalDuration = (stats['totalDuration'] as num?)?.toDouble() ?? 0.0;
-
-    // 计算连续打卡天数
-    int currentStreak = 0;
-    if (records.isNotEmpty) {
-      final dates = <String>{};
-      for (final r in records) {
-        final ts = r['date'] ?? r['createTime'];
-        if (ts is int) {
-          final d = DateTime.fromMillisecondsSinceEpoch(ts);
-          dates.add('${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}');
-        }
-      }
-      var checkDate = DateTime.now();
-      while (dates.contains('${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}')) {
-        currentStreak++;
-        checkDate = checkDate.subtract(const Duration(days: 1));
-      }
-    }
-
-    // 计算总动作次数
-    int totalReps = 0;
-    for (final r in records) {
-      final setRecords = r['setRecords'];
-      if (setRecords is Map) {
-        for (final entry in setRecords.values) {
-          if (entry is List) {
-            for (final s in entry) {
-              if (s is Map) {
-                totalReps += (s['reps'] as num?)?.toInt() ?? 0;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // 读取之前已解锁的成就列表
-    final settings = Storage.getSettings();
-    final previouslyUnlocked = <String>{};
-    final saved = settings['unlockedAchievements'];
-    if (saved is List) {
-      for (final s in saved) {
-        previouslyUnlocked.add(s.toString());
-      }
-    }
-
-    // 新达成的成就列表
-    final newlyUnlocked = <Map<String, dynamic>>[];
-
-    // 判定各成就
-    _achievements = MockData.achievements.map((a) {
-      final map = Map<String, dynamic>.from(a);
-      final id = a['id'] as String;
-      bool unlocked = false;
-      String? progressText;
-
-      switch (id) {
-        case 'a1': // 初出茅庐 - 完成第一次训练
-          unlocked = totalTrainings >= 1;
-          progressText = '$totalTrainings/1';
-          break;
-        case 'a2': // 铁人意志 - 连续打卡7天
-          unlocked = currentStreak >= 7;
-          progressText = '$currentStreak/7天';
-          break;
-        case 'a3': // 百吨俱乐部 - 累计举起100吨
-          unlocked = totalWeight >= 100000;
-          progressText = '${(totalWeight / 1000).toStringAsFixed(1)}/100吨';
-          break;
-        case 'a4': // 马拉松选手 - 累计训练100小时
-          unlocked = totalDuration >= 6000; // 分钟
-          progressText = '${(totalDuration / 60).toStringAsFixed(1)}/100小时';
-          break;
-        case 'a5': // 千次达人 - 累计完成1000次动作
-          unlocked = totalReps >= 1000;
-          progressText = '$totalReps/1000次';
-          break;
-        case 'a6': // 不倒翁 - 连续打卡30天
-          unlocked = currentStreak >= 30;
-          progressText = '$currentStreak/30天';
-          break;
-      }
-
-      map['unlocked'] = unlocked;
-      map['progressText'] = progressText;
-
-      // 检测新达成的成就（之前未解锁，现在解锁了）
-      if (unlocked && !previouslyUnlocked.contains(id)) {
-        newlyUnlocked.add(map);
-      }
-
-      return map;
-    }).toList();
-
-    // 保存当前已解锁的成就到 Storage
-    final currentUnlocked = _achievements
-        .where((a) => a['unlocked'] == true)
-        .map((a) => a['id'] as String)
-        .toList();
-    Storage.saveSettings({...settings, 'unlockedAchievements': currentUnlocked});
-
-    // 延迟弹出新达成成就的恭喜弹窗
-    if (newlyUnlocked.isNotEmpty) {
+  Future<void> _evaluateAchievements() async {
+    await AchievementService.instance.init();
+    final newlyUnlocked = await AchievementService.instance.evaluateAchievements();
+    if (mounted) setState(() {});
+    // 弹出新达成成就的恭喜弹窗
+    if (newlyUnlocked.isNotEmpty && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showCongratsSequence(newlyUnlocked, 0);
       });
     }
   }
 
-  void _showCongratsSequence(List<Map<String, dynamic>> achievements, int index) {
-    if (index >= achievements.length || !mounted) return;
-    _showCongrats(achievements[index], () {
-      _showCongratsSequence(achievements, index + 1);
+  void _showCongratsSequence(List<String> achievementIds, int index) {
+    if (index >= achievementIds.length || !mounted) return;
+    _showCongrats(achievementIds[index], () {
+      _showCongratsSequence(achievementIds, index + 1);
     });
   }
 
-  void _showCongrats(Map<String, dynamic> achievement, [VoidCallback? onDismiss]) {
+  void _showCongrats(String achievementId, [VoidCallback? onDismiss]) {
+    final all = AchievementService.instance.getAll();
+    Achievement? ach;
+    try {
+      ach = all.firstWhere((a) => a.id == achievementId);
+    } catch (_) {
+      ach = null;
+    }
+    if (ach == null) {
+      onDismiss?.call();
+      return;
+    }
     AchievementDialog.show(
       context,
-      icon: achievement['icon'] as String,
-      name: achievement['name'] as String,
-      desc: achievement['desc'] as String,
+      icon: _achievementEmoji(ach.icon),
+      name: ach.title,
+      desc: ach.description,
       onDone: onDismiss,
     );
   }
 
-  void _showAchievementDetail(Map<String, dynamic> achievement) {
-    final unlocked = achievement['unlocked'] as bool;
+  void _showAchievementDetail(Achievement a) {
     InfoDialog.show(
       context,
-      title: achievement['name'] as String,
-      content: unlocked
-          ? '${achievement['desc']}\n\n已达成'
-          : '进度: ${achievement['progressText'] ?? achievement['desc']}',
-      icon: unlocked ? Icons.emoji_events : Icons.lock_outline,
-      iconColor: unlocked ? null : Colors.grey,
+      title: a.title,
+      content: a.unlocked
+          ? '${a.description}\n\n已达成'
+          : '进度: ${a.description}',
+      icon: a.unlocked ? Icons.emoji_events : Icons.lock_outline,
+      iconColor: a.unlocked ? null : Colors.grey,
     );
   }
 
@@ -197,8 +102,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 20),
                 _buildPointsCard(colors),
                 const SizedBox(height: 20),
-                const SectionHeader(title: '成就'),
-                const SizedBox(height: 10),
                 _buildAchievements(colors),
                 const SizedBox(height: 20),
                 const SectionHeader(title: '身体数据'),
@@ -857,77 +760,136 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildAchievements(FitTrackColors colors) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      childAspectRatio: 0.85,
-      children: _achievements.map<Widget>((a) {
-        final unlocked = a['unlocked'] as bool;
-        return GestureDetector(
-          onTap: () => _showAchievementDetail(a),
-          child: Opacity(
-            opacity: unlocked ? 1.0 : 0.4,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: colors.bgCard,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: unlocked ? colors.accentGlow.withOpacity(0.3) : colors.borderColor,
-                  width: unlocked ? 1.5 : 1,
+    final achievements = AchievementService.instance.getAll();
+    final unlocked = achievements.where((a) => a.unlocked).toList();
+    final display = unlocked.isNotEmpty ? unlocked.take(6).toList() : achievements.take(3).toList();
+    final hasUnlocked = unlocked.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('成就', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            TextButton(
+              onPressed: () => context.push('/achievements'),
+              child: Text('查看全部', style: TextStyle(color: colors.accentGlow, fontSize: 12)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 0.85,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: display.length,
+          itemBuilder: (ctx, i) {
+            final a = display[i];
+            return GestureDetector(
+              onTap: () => _showAchievementDetail(a),
+              child: Opacity(
+                opacity: a.unlocked ? 1.0 : 0.4,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: colors.bgCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: a.unlocked ? colors.accentGlow.withOpacity(0.3) : colors.borderColor,
+                      width: a.unlocked ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _achievementIcon(a.icon),
+                        size: 28,
+                        color: a.unlocked ? colors.accentGlow : colors.textMuted,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        a.title,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        a.description,
+                        style: TextStyle(color: colors.textMuted, fontSize: 10),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    a['icon'] as String,
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    a['name'] as String,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    a['desc'] as String,
-                    style: TextStyle(
-                      color: colors.textMuted,
-                      fontSize: 10,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (!unlocked && a['progressText'] != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      a['progressText'] as String,
-                      style: TextStyle(
-                        color: colors.accentGlow,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+            );
+          },
+        ),
+        if (!hasUnlocked)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text('完成训练解锁更多成就', style: TextStyle(color: colors.textMuted, fontSize: 12)),
           ),
-        );
-      }).toList(),
+      ],
     );
+  }
+
+  IconData _achievementIcon(String iconKey) {
+    switch (iconKey) {
+      case 'streak':
+        return Icons.local_fire_department;
+      case 'weight':
+        return Icons.fitness_center;
+      case 'duration':
+        return Icons.timer;
+      case 'month':
+        return Icons.calendar_month;
+      case 'explore':
+        return Icons.explore;
+      case 'plan':
+        return Icons.assignment_turned_in;
+      case 'share':
+        return Icons.share;
+      default:
+        return Icons.emoji_events;
+    }
+  }
+
+  /// AchievementDialog 通过 Text 渲染 icon，需要 emoji 而非 key
+  String _achievementEmoji(String iconKey) {
+    switch (iconKey) {
+      case 'streak':
+        return '🔥';
+      case 'weight':
+        return '💪';
+      case 'duration':
+        return '⏱️';
+      case 'month':
+        return '📅';
+      case 'explore':
+        return '🧭';
+      case 'plan':
+        return '✅';
+      case 'share':
+        return '📣';
+      default:
+        return '🏆';
+    }
   }
 
   Widget _buildBodyData(FitTrackColors colors, Map<String, dynamic> body) {
