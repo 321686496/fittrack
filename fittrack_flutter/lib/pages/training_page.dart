@@ -8,14 +8,19 @@ import '../data/storage.dart';
 import '../services/rest_notification_service.dart';
 import '../services/smart_push_service.dart';
 import '../services/ohos_reminder_service.dart';
+import '../services/android_alarm_service.dart';
 import '../services/form_kit_service.dart';
 import '../services/share_card_service.dart';
 import '../services/achievement_service.dart';
 import '../services/ad_service.dart';
+import '../services/retention_chain_service.dart';
+import '../data/virtual_opponent.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/celebration_overlay.dart';
+import '../widgets/celebration_dialog.dart';
 import '../widgets/rating_prompt_sheet.dart';
+import '../utils/platform_utils.dart';
 
 class TrainingPage extends StatefulWidget {
   final Map<String, dynamic> params;
@@ -66,6 +71,16 @@ class _TrainingPageState extends State<TrainingPage>
   Timer? _restTimer;
   late DateTime _startTime;
 
+  // ── Save state ───────────────────────────────────────────────
+  /// 防止自动保存重复触发
+  bool _isSaved = false;
+
+  /// 详细报告是否已通过广告解锁
+  bool _detailedReportUnlocked = false;
+
+  /// v1 V1-11: 训练完成后保存的记录ID，用于跳转写笔记
+  String? _savedRecordId;
+
   // ── Lifecycle ────────────────────────────────────────────────
 
   @override
@@ -76,10 +91,13 @@ class _TrainingPageState extends State<TrainingPage>
     _loadData();
 
     // 监听 OHOS 通知点击
-    if (Platform.isOhos) {
+    if (isOhos) {
       OhosReminderService.instance.onNotificationClick = _onNotificationClicked;
       // 注册训练卡片交互回调：卡片点击时原地处理，避免跳转首页销毁本页
       OhosReminderService.instance.onTrainingCardAction = _onTrainingCardAction;
+    } else {
+      // 监听 Android 通知点击
+      AndroidAlarmService.instance.onCardClick = _onAndroidAlarmCardClick;
     }
   }
 
@@ -90,18 +108,33 @@ class _TrainingPageState extends State<TrainingPage>
     _weightController.dispose();
     _repsController.dispose();
     // 清理通知点击回调
-    if (Platform.isOhos) {
+    if (isOhos) {
       OhosReminderService.instance.onNotificationClick = null;
       OhosReminderService.instance.onTrainingCardAction = null;
+    } else {
+      AndroidAlarmService.instance.onCardClick = null;
     }
     super.dispose();
+  }
+
+  /// Android 通知卡片点击回调：回到训练页并处理休息结束
+  void _onAndroidAlarmCardClick(Map<String, dynamic> args) {
+    if (!mounted) return;
+    final targetPage = args['targetPage'] as String?;
+    final cardAction = args['cardAction'] as String?;
+
+    if (targetPage == 'training' && cardAction == 'resume') {
+      _onNotificationClicked(args);
+    } else if (cardAction == 'skipRest' && _isResting) {
+      _skipRest();
+    }
   }
 
   /// 真正退出训练页时，将卡片恢复为空闲态。
   /// 只在用户主动离开（返回按钮 / 系统返回 / 保存返回）时调用，
   /// 不放在 dispose() 中，避免 go_router 页面重建时被误重置。
   void _resetWidgetOnExit() {
-    if (Platform.isOhos) {
+    if (isOhos) {
       FormKitService.instance.endTraining();
     }
   }
@@ -131,7 +164,7 @@ class _TrainingPageState extends State<TrainingPage>
       if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
         _restSeconds = 0;
         // OHOS 平台：代理提醒由 EntryAbility 自动管理，无需 Flutter 侧取消
-        if (!Platform.isOhos) {
+        if (!isOhos) {
           RestNotificationService.instance.cancelScheduledNotification();
         }
         _notifyRestEnd();
@@ -162,7 +195,7 @@ class _TrainingPageState extends State<TrainingPage>
       _restSeconds = 0;
       // 取消预约通知（可能已发送，清理）
       // OHOS 平台：代理提醒由 EntryAbility 自动管理，无需 Flutter 侧取消
-      if (!Platform.isOhos) {
+      if (!isOhos) {
         RestNotificationService.instance.cancelScheduledNotification();
       }
       // 后台可能没有收到 zonedSchedule 通知，恢复前台时补发通知+振动
@@ -244,7 +277,7 @@ class _TrainingPageState extends State<TrainingPage>
 
   // ── Actions ──────────────────────────────────────────────────
 
-  void _completeSet() {
+  Future<void> _completeSet() async {
     if (_currentExIdx >= _exercises.length) return;
 
     final currentEx = _exercises[_currentExIdx];
@@ -263,9 +296,20 @@ class _TrainingPageState extends State<TrainingPage>
     final isLastExercise = _currentExIdx + 1 >= _exercises.length;
 
     if (isLastSet && isLastExercise) {
+      // 训练完成：立即触觉反馈（修复 Issue 1a — 震动与完成动作同步）
+      try {
+        final settings = Storage.getSettings();
+        final vibrationEnabled = settings['vibrationEnabled'] as bool? ?? true;
+        if (vibrationEnabled) {
+          await HapticFeedback.heavyImpact();
+        }
+      } catch (_) {}
+
       setState(() {
         _trainingDone = true;
       });
+      // 自动保存训练记录并触发成就检查/庆祝动画（修复 Issue 1b — 无需用户点击即可保存）
+      _autoSaveTraining();
     } else {
       final restTime = _getRestTimeForCurrentExercise();
       _startRest(restTime, isLastSet);
@@ -284,7 +328,7 @@ class _TrainingPageState extends State<TrainingPage>
     });
 
     // 推送休息状态到卡片（含 restEndTime 绝对时间戳，卡片侧本地倒计时据此运行）
-    if (Platform.isOhos && _currentExIdx < _exercises.length) {
+    if (isOhos && _currentExIdx < _exercises.length) {
       final currentEx = _exercises[_currentExIdx];
       FormKitService.instance.startRest(
         exerciseName: currentEx['name'] as String,
@@ -303,7 +347,7 @@ class _TrainingPageState extends State<TrainingPage>
     // 预约定时通知（后台时系统自动触发）
     // OHOS 平台：EntryAbility 接收到 mode=rest 数据后自动发布 reminderAgentManager 代理提醒，
     // 无需 Flutter 侧再通过 flutter_local_notifications 预约，避免 MissingPluginException
-    if (!Platform.isOhos) {
+    if (!isOhos) {
       final exerciseName = _currentExIdx < _exercises.length
           ? _exercises[_currentExIdx]['name'] as String
           : '';
@@ -347,7 +391,7 @@ class _TrainingPageState extends State<TrainingPage>
     _restTimer?.cancel();
     // 跳过休息时才取消预约通知
     // OHOS 平台：代理提醒由 EntryAbility 自动管理（收到 mode=training/idle 时取消），无需 Flutter 侧取消
-    if (!Platform.isOhos) {
+    if (!isOhos) {
       RestNotificationService.instance.cancelScheduledNotification();
     }
     _advanceAfterRest();
@@ -368,7 +412,7 @@ class _TrainingPageState extends State<TrainingPage>
     if (_appLifecycleState == AppLifecycleState.resumed) {
       // 前台或从后台恢复：显示通知（震动仅在训练结束时触发）
       // OHOS 平台：通知由 EntryAbility 的 notificationManager 处理
-      if (!Platform.isOhos) {
+      if (!isOhos) {
         await RestNotificationService.instance
             .showRestEndNotification(exerciseName: exerciseName);
       }
@@ -402,7 +446,7 @@ class _TrainingPageState extends State<TrainingPage>
 
   /// 推送训练状态到桌面卡片
   void _pushTrainingToWidget() {
-    if (!Platform.isOhos) return;
+    if (!isOhos) return;
     if (_currentExIdx >= _exercises.length) return;
     final currentEx = _exercises[_currentExIdx];
     FormKitService.instance.updateTrainingState(
@@ -430,7 +474,12 @@ class _TrainingPageState extends State<TrainingPage>
     }
   }
 
-  Future<void> _saveAndReturn() async {
+  /// 训练完成后自动保存记录、检查成就、显示庆祝动画。
+  /// 不导航离开，用户仍可查看完成页面、分享成果。
+  Future<void> _autoSaveTraining() async {
+    if (_isSaved) return; // 防止重复保存
+    _isSaved = true;
+
     final duration = DateTime.now().difference(_startTime).inMinutes;
     int totalWeight = 0;
     final muscles = <String>{};
@@ -446,7 +495,7 @@ class _TrainingPageState extends State<TrainingPage>
       if (muscle.isNotEmpty) muscles.add(muscle);
     }
 
-    Storage.addRecord({
+    final savedRecord = Storage.addRecord({
       'name': _dayConfig?['label'] ?? '训练',
       'date': DateTime.now().millisecondsSinceEpoch,
       'duration': duration,
@@ -456,18 +505,14 @@ class _TrainingPageState extends State<TrainingPage>
       'muscles': muscles.toList(),
       'setRecords': _setRecords.map((k, v) => MapEntry(k, v)),
       'restLog': _restLog,
+      // 修复 Issue 1d：写入 planId/planName 以解锁计划完成成就 + 记录页正确显示
+      'planId': _plan?['id'],
+      'planName': _plan?['name'],
     });
+    // v1 V1-11: 保存记录ID，用于训练完成页"写笔记"入口
+    _savedRecordId = savedRecord['id'] as String?;
 
-    // 训练完成触觉反馈（受振动设置控制）
-    try {
-      final settings = Storage.getSettings();
-      final vibrationEnabled = settings['vibrationEnabled'] as bool? ?? true;
-      if (vibrationEnabled) {
-        await HapticFeedback.heavyImpact();
-      }
-    } catch (_) {}
-
-    // B4: 成就检查（替代旧的 _checkAndShowNewAchievements）
+    // B4: 成就检查（训练完成后自动计算并弹出 — 修复 Issue 1d）
     if (mounted) {
       final records = Storage.getRecords();
       final currentRecord = records.isNotEmpty ? records.first : <String, dynamic>{};
@@ -503,11 +548,6 @@ class _TrainingPageState extends State<TrainingPage>
       }
     }
 
-    // 更新桌面卡片数据
-    if (Platform.isOhos) {
-      FormKitService.instance.endTraining();
-    }
-
     // B2: 训练完成庆祝动画
     if (mounted) {
       final records = Storage.getRecords();
@@ -519,8 +559,30 @@ class _TrainingPageState extends State<TrainingPage>
       }
     }
 
+    // v1 训练笔记情感化：弹出祝贺框
+    if (mounted) {
+      await CelebrationDialog.show(
+        context,
+        totalWeight: totalWeight,
+        totalSets: _completedSets,
+        duration: duration,
+        recordId: _savedRecordId ?? '',
+      );
+    }
+  }
+
+  /// 返回首页：更新桌面卡片、评分引导、导航离开。
+  /// 训练记录已在 _autoSaveTraining() 中自动保存。
+  Future<void> _returnHome() async {
+    // 更新桌面卡片数据
+    if (isOhos) {
+      FormKitService.instance.endTraining();
+    }
+
     // B3: 训练完成回调，重置今日推送规避
     SmartPushService.instance.onTrainingCompleted();
+    // v1 V1-04: 记录首次训练日（用于7天留存链触发）
+    RetentionChainService.instance.recordFirstTrainingIfNeeded();
 
     // D2: 评分引导（第 2 次训练后弹窗 + 30 天上限）
     if (mounted) {
@@ -544,7 +606,7 @@ class _TrainingPageState extends State<TrainingPage>
     try {
       final path = await ShareCardService.generateShareCard(record, context);
       if (!mounted) return;
-      if (Platform.isOhos) {
+      if (isOhos) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('训练卡片已生成，分享功能即将上线')),
         );
@@ -1097,6 +1159,9 @@ class _TrainingPageState extends State<TrainingPage>
                       ),
                     ],
                   ),
+                  // v1 虚拟对手 PK 对比
+                  const SizedBox(height: 20),
+                  _buildOpponentPKCard(colors),
                   // Rest log
                   if (_restLog.isNotEmpty) ...[
                     const SizedBox(height: 24),
@@ -1131,11 +1196,11 @@ class _TrainingPageState extends State<TrainingPage>
                         )),
                   ],
                   const SizedBox(height: 24),
-                  // Save button
+                  // 返回首页按钮（训练记录已自动保存）
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _saveAndReturn,
+                      onPressed: _returnHome,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -1143,7 +1208,7 @@ class _TrainingPageState extends State<TrainingPage>
                         ),
                       ),
                       child: const Text(
-                        '保存并返回首页',
+                        '返回首页',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1161,6 +1226,19 @@ class _TrainingPageState extends State<TrainingPage>
                       onPressed: () => _shareTrainingCard(totalWeight, duration),
                     ),
                   ),
+                  // v1 V1-11: 写训练笔记入口
+                  if (_savedRecordId != null) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.edit_note),
+                        label: const Text('写训练笔记'),
+                        onPressed: () =>
+                            context.push('/note/edit/record_$_savedRecordId'),
+                      ),
+                    ),
+                  ],
                   if (AdService.instance.shouldShowRewarded())
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
@@ -1170,11 +1248,23 @@ class _TrainingPageState extends State<TrainingPage>
                           onPressed: () async {
                             final result =
                                 await AdService.instance.showRewardedVideo();
-                            if (result == AdResult.success && mounted) {
-                              // Show detailed report
+                            if (!mounted) return;
+                            // Phase 2：未集成真实广告 SDK，AdService 始终返回 notAvailable。
+                            // 此处对 notAvailable 直接解锁详细报告，避免用户点击无反馈。
+                            if (result == AdResult.success ||
+                                result == AdResult.notAvailable) {
+                              setState(() => _detailedReportUnlocked = true);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                     content: Text('已解锁详细数据报告')),
+                              );
+                            } else if (result == AdResult.userDismissed) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('广告未观看完成')),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('广告加载失败，请稍后重试')),
                               );
                             }
                           },
@@ -1183,6 +1273,42 @@ class _TrainingPageState extends State<TrainingPage>
                         ),
                       ),
                     ),
+                  if (_detailedReportUnlocked) ...[
+                    const SizedBox(height: 16),
+                    const SectionHeader(title: '详细数据报告'),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colors.bgCard,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: colors.borderColor),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _detailRow('平均每组重量',
+                              _completedSets > 0
+                                  ? '${(totalWeight / _completedSets).toStringAsFixed(1)} kg'
+                                  : '0 kg',
+                              colors),
+                          const SizedBox(height: 8),
+                          _detailRow('训练密度',
+                              '${(_completedSets / (duration > 0 ? duration : 1)).toStringAsFixed(2)} 组/分',
+                              colors),
+                          const SizedBox(height: 8),
+                          _detailRow('完成动作数',
+                              '${_exercises.length} 个', colors),
+                          const SizedBox(height: 8),
+                          _detailRow('平均休息时长',
+                              _restLog.isEmpty
+                                  ? '0 秒'
+                                  : '${(_restLog.fold<int>(0, (sum, l) => sum + (l['actualTime'] as num).toInt()) / _restLog.length).round()} 秒',
+                              colors),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                 ],
               ),
@@ -1190,6 +1316,144 @@ class _TrainingPageState extends State<TrainingPage>
           ),
         ],
       ),
+    );
+  }
+
+  /// 详细报告行
+  Widget _detailRow(String label, String value, FitTrackColors colors) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: TextStyle(color: colors.textSecondary, fontSize: 14)),
+        Text(value,
+            style: TextStyle(
+                color: colors.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  /// v1 虚拟对手 PK 对比卡片 —— 训练完成后展示本周 PK 结果
+  Widget _buildOpponentPKCard(FitTrackColors colors) {
+    final settings = Storage.getSettings();
+    final opponentJson = settings['virtualOpponentData'] as Map<String, dynamic>?;
+    if (opponentJson == null) return const SizedBox.shrink();
+
+    final opponent = VirtualOpponent.fromJson(Map<String, dynamic>.from(opponentJson));
+    final records = Storage.getRecords();
+
+    // 计算用户本周训练次数
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final weekStartMs = DateTime(weekStart.year, weekStart.month, weekStart.day).millisecondsSinceEpoch;
+    int userWeeklyTrainings = 0;
+    for (final r in records) {
+      final ts = r['date'] as int? ?? r['createTime'] as int?;
+      if (ts != null && ts >= weekStartMs) userWeeklyTrainings++;
+    }
+
+    // 计算 PK 结果
+    final outcome = VirtualOpponentEngine.instance.computeOutcome(
+      userWeeklyTrainings,
+      opponent,
+    );
+    final userWon = outcome.userScore > outcome.opponentScore;
+    final percentile = VirtualOpponentEngine.instance.computePercentile(
+      userWeeklyTrainings,
+      opponent.tier,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: userWon ? colors.successColor.withOpacity(0.4) : colors.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.emoji_events, size: 18, color: colors.accentGlow),
+              const SizedBox(width: 6),
+              Text(
+                '本周PK · vs ${opponent.nickname}',
+                style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: (userWon ? colors.successColor : colors.warningColor).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  userWon ? '领先' : '追赶中',
+                  style: TextStyle(
+                    color: userWon ? colors.successColor : colors.warningColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 双方进度条对比
+          _buildPKBar(colors, '我', userWeeklyTrainings, outcome.userScore, colors.accentGlow),
+          const SizedBox(height: 8),
+          _buildPKBar(colors, opponent.nickname, opponent.weeklyTrainings, outcome.opponentScore, colors.textMuted),
+          const SizedBox(height: 12),
+          // 超越百分比
+          Row(
+            children: [
+              Text(
+                '超越同水平 $percentile% 用户',
+                style: TextStyle(color: colors.textSecondary, fontSize: 12),
+              ),
+              const Spacer(),
+              if (opponent.currentStatus != null)
+                Text(
+                  '${opponent.nickname}：${opponent.currentStatus}',
+                  style: TextStyle(color: colors.textMuted, fontSize: 11, fontStyle: FontStyle.italic),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPKBar(FitTrackColors colors, String label, int trainings, double score, Color color) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 60,
+          child: Text(label, style: TextStyle(color: colors.textSecondary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: score.clamp(0.0, 1.0),
+              backgroundColor: color.withOpacity(0.15),
+              color: color,
+              minHeight: 8,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 30,
+          child: Text('$trainings次', style: TextStyle(color: colors.textSecondary, fontSize: 11), textAlign: TextAlign.end),
+        ),
+      ],
     );
   }
 }
