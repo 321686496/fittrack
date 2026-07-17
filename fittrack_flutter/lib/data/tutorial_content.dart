@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'content_block.dart';
 
 /// v1 教学信息系统 —— 数据模型与基础内容
 ///
@@ -152,6 +153,7 @@ class Tutorial {
   final List<Color> coverColors; // 封面渐变双色
   final List<String> recommendedExerciseIds; // 推荐动作ID列表（跳转动作库）
   final String? coverEmoji; // 封面Emoji图标
+  final List<ContentBlock> blocks; // 富文本块（预留字段，当前未使用）
 
   const Tutorial({
     required this.id,
@@ -172,6 +174,7 @@ class Tutorial {
     this.coverColors = const [Color(0xFFFF6B35), Color(0xFFFFD700)],
     this.recommendedExerciseIds = const [],
     this.coverEmoji,
+    this.blocks = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -193,6 +196,7 @@ class Tutorial {
         'coverColors': coverColors.map((c) => c.value).toList(),
         'recommendedExerciseIds': recommendedExerciseIds,
         'coverEmoji': coverEmoji,
+        'blocks': blocks.map((b) => {'type': b.type.name, 'text': b.text}).toList(),
       };
 }
 
