@@ -6,15 +6,13 @@ import '../services/invitation_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
-/// v1 邀请裂变页面
+/// v1.1 邀请有礼页面（4 区段结构）
 ///
-/// 依据：docs/versions/v1-获客留存版/02_功能清单.md §E3
-/// UI规格：docs/versions/v1-获客留存版/05_UI设计文档.md §7.3
-///
-/// 三大区域：
-/// 1. 我的邀请码（展示 + 分享）
-/// 2. 裂变进度（里程碑解锁）
-/// 3. 输入邀请码（被邀请人激活）
+/// 依据：v1.1 优化迭代需求 #5
+/// 1. 邀请码大卡片（展示 + 复制 + 分享 + 有效期）
+/// 2. 进度概览（已邀请 + 已获积分 + 4 档里程碑 + 整体进度条）
+/// 3. 奖励规则说明（4 档奖励列表 + 双方获奖备注）
+/// 4. 邀请流程图解（4 步水平流程：分享→注册→训练→获奖）
 class InvitationPage extends StatefulWidget {
   const InvitationPage({super.key});
 
@@ -64,9 +62,13 @@ class _InvitationPageState extends State<InvitationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMyCodeCard(colors),
+                  _buildCodeCard(colors),
                   const SizedBox(height: 16),
-                  _buildMilestonesCard(colors),
+                  _buildProgressCard(colors),
+                  const SizedBox(height: 16),
+                  _buildRewardRulesCard(colors),
+                  const SizedBox(height: 16),
+                  _buildFlowCard(colors),
                   const SizedBox(height: 16),
                   _buildActivateCard(colors),
                   const SizedBox(height: 100),
@@ -79,9 +81,9 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-  // ── 我的邀请码 ──────────────────────────────────────────────
+  // ── 1. 邀请码大卡片 ──────────────────────────────────────────────
 
-  Widget _buildMyCodeCard(FitTrackColors colors) {
+  Widget _buildCodeCard(FitTrackColors colors) {
     return CardWidget(
       child: Column(
         children: [
@@ -102,30 +104,36 @@ class _InvitationPageState extends State<InvitationPage> {
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
             decoration: BoxDecoration(
-              color: colors.accentGlow.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
-            ),
-            child: SelectableText(
-              _myCode,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: colors.accentGlow,
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 2,
+              gradient: LinearGradient(
+                colors: [colors.accentGlow.withOpacity(0.12), colors.accentGlow.withOpacity(0.04)],
+                begin: Alignment.topLeft, end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.accentGlow.withOpacity(0.25)),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '分享给好友，好友输入你的邀请码激活后：\n• 你：解锁进阶教学 + 徽章\n• 好友：7天高级统计全开放体验',
-            style: TextStyle(
-              color: colors.textSecondary,
-              fontSize: 13,
-              height: 1.6,
+            child: Column(
+              children: [
+                SelectableText(
+                  _myCode,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.accentGlow,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '永久有效',
+                  style: TextStyle(
+                    color: colors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),
@@ -135,7 +143,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 child: OutlinedButton.icon(
                   onPressed: () => _copyCode(colors),
                   icon: const Icon(Icons.copy, size: 18),
-                  label: const Text('复制'),
+                  label: const Text('复制邀请码'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.accentGlow,
                     side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -151,7 +159,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 child: ElevatedButton.icon(
                   onPressed: () => _shareCode(),
                   icon: const Icon(Icons.share, size: 18),
-                  label: const Text('分享'),
+                  label: const Text('立即分享'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     foregroundColor: Colors.white,
@@ -188,19 +196,186 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-  // ── 裂变里程碑 ──────────────────────────────────────────────
+  // ── 2. 进度概览 ──────────────────────────────────────────────
 
-  Widget _buildMilestonesCard(FitTrackColors colors) {
+  Widget _buildProgressCard(FitTrackColors colors) {
     final totalReferrals = _progress['totalReferrals'] as int? ?? 0;
-    final nextMilestone = _progress['nextMilestone'] as int? ?? 1;
+    final totalPoints = _progress['totalPoints'] as int? ?? 0;
     final isAmbassador = _progress['isAmbassador'] == true;
-    final adFreeReport = _progress['adFreeReport'] == true;
 
+    // 4 档里程碑
     final milestones = [
-      _MilestoneData(1, '首次激活', '解锁3个进阶教学 + 引路人徽章', Icons.school, totalReferrals >= 1),
-      _MilestoneData(3, '累计3人', '永久免广告看训练报告 + 布道者徽章', Icons.block, totalReferrals >= 3),
-      _MilestoneData(5, '累计5人', '解锁高手教学专题 + 对手皮肤', Icons.emoji_events, totalReferrals >= 5),
-      _MilestoneData(10, '累计10人', '燃力大使永久称号', Icons.military_tech, totalReferrals >= 10),
+      _MilestoneData(1, '首次激活', totalReferrals >= 1),
+      _MilestoneData(3, '累计 3 人', totalReferrals >= 3),
+      _MilestoneData(5, '累计 5 人', totalReferrals >= 5),
+      _MilestoneData(10, '累计 10 人', totalReferrals >= 10),
+    ];
+
+    // 整体进度（基于最高档 10 人）
+    final overallProgress = (totalReferrals / 10).clamp(0.0, 1.0);
+
+    return CardWidget(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.trending_up, size: 20, color: colors.accentGlow),
+              const SizedBox(width: 8),
+              Text(
+                '进度概览',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // 两列统计
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatBox(colors, '已邀请人数', '$totalReferrals', '人', Icons.person_add),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatBox(colors, '已获积分', '$totalPoints', '分', Icons.stars),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // 4 档里程碑进度条
+          Row(
+            children: milestones.map((m) {
+              final active = m.unlocked;
+              return Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: active ? colors.accentGlow : colors.borderColor,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${m.count}',
+                      style: TextStyle(
+                        color: active ? colors.accentGlow : colors.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 12),
+          // 整体进度条
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('整体进度', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+              Text('${(overallProgress * 100).toInt()}%', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: overallProgress,
+              minHeight: 6,
+              backgroundColor: colors.borderColor,
+              valueColor: AlwaysStoppedAnimation(colors.accentGlow),
+            ),
+          ),
+          if (isAmbassador) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colors.accentGlow.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.military_tech, color: colors.accentGlow, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '已获得「燃力大使」永久称号',
+                    style: TextStyle(
+                      color: colors.accentGlow,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatBox(FitTrackColors colors, String label, String value, String unit, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: colors.accentGlow.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: colors.accentGlow, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                const SizedBox(height: 2),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(value, style: TextStyle(
+                      color: colors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold,
+                    )),
+                    const SizedBox(width: 2),
+                    Text(unit, style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 3. 奖励规则说明 ──────────────────────────────────────────────
+
+  Widget _buildRewardRulesCard(FitTrackColors colors) {
+    final rules = [
+      _RewardRule(1, '首次激活', '解锁 3 个进阶教学 + 引路人徽章', '7 天高级统计体验'),
+      _RewardRule(3, '累计 3 人', '永久免广告看训练报告 + 布道者徽章', '7 天高级统计体验'),
+      _RewardRule(5, '累计 5 人', '解锁高手教学专题 + 对手皮肤', '7 天高级统计体验'),
+      _RewardRule(10, '累计 10 人', '燃力大使永久称号', '7 天高级统计体验'),
     ];
 
     return CardWidget(
@@ -212,120 +387,65 @@ class _InvitationPageState extends State<InvitationPage> {
               Icon(Icons.emoji_events, size: 20, color: colors.accentGlow),
               const SizedBox(width: 8),
               Text(
-                '裂变进度',
+                '奖励规则',
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colors.accentGlow.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '$totalReferrals / $nextMilestone',
-                  style: TextStyle(
-                    color: colors.accentGlow,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 16),
-          // 进度条
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: nextMilestone > 0 ? (totalReferrals / nextMilestone).clamp(0.0, 1.0) : 1.0,
-              minHeight: 8,
-              backgroundColor: colors.bgSecondary,
-              valueColor: AlwaysStoppedAnimation(colors.accentGlow),
+          const SizedBox(height: 12),
+          ...rules.map((r) => _buildRewardRuleItem(colors, r)),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.accentGlow.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, color: colors.accentGlow, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '好友输入你的邀请码激活后，双方均获得对应奖励。好友奖励为 7 天高级统计全开放体验。',
+                    style: TextStyle(color: colors.textSecondary, fontSize: 12, height: 1.5),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          // 里程碑列表
-          ...milestones.map((m) => _buildMilestoneItem(colors, m)),
-          if (isAmbassador) ...[
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colors.purpleColor.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colors.purpleColor.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.military_tech, color: colors.purpleColor, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    '已获得「燃力大使」永久称号',
-                    style: TextStyle(
-                      color: colors.purpleColor,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          if (adFreeReport && !isAmbassador) ...[
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colors.successColor.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colors.successColor.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle, color: colors.successColor, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    '已解锁永久免广告看训练报告',
-                    style: TextStyle(
-                      color: colors.successColor,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildMilestoneItem(FitTrackColors colors, _MilestoneData m) {
+  Widget _buildRewardRuleItem(FitTrackColors colors, _RewardRule r) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 32, height: 32,
             decoration: BoxDecoration(
-              color: m.unlocked
-                  ? colors.accentGlow.withOpacity(0.1)
-                  : colors.bgSecondary,
+              color: colors.accentGlow.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              m.unlocked ? m.icon : Icons.lock_outline,
-              size: 18,
-              color: m.unlocked ? colors.accentGlow : colors.textMuted,
+            child: Center(
+              child: Text(
+                '${r.count}',
+                style: TextStyle(
+                  color: colors.accentGlow,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -333,45 +453,92 @@ class _InvitationPageState extends State<InvitationPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      '${m.count}人',
-                      style: TextStyle(
-                        color: m.unlocked ? colors.textPrimary : colors.textMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      m.title,
-                      style: TextStyle(
-                        color: m.unlocked ? colors.textPrimary : colors.textMuted,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
+                Text(r.title, style: TextStyle(
+                  color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
+                )),
                 const SizedBox(height: 2),
-                Text(
-                  m.desc,
-                  style: TextStyle(
-                    color: colors.textMuted,
-                    fontSize: 12,
-                  ),
-                ),
+                Text('你：${r.yourReward}', style: TextStyle(color: colors.textSecondary, fontSize: 12, height: 1.4)),
+                Text('好友：${r.friendReward}', style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.4)),
               ],
             ),
           ),
-          if (m.unlocked)
-            Icon(Icons.check_circle, size: 18, color: colors.successColor),
         ],
       ),
     );
   }
 
-  // ── 输入邀请码 ──────────────────────────────────────────────
+  // ── 4. 邀请流程图解 ──────────────────────────────────────────────
+
+  Widget _buildFlowCard(FitTrackColors colors) {
+    final steps = [
+      _FlowStep(Icons.share, '分享邀请码', '微信/QQ/复制'),
+      _FlowStep(Icons.person_add, '好友注册', '输入你的邀请码'),
+      _FlowStep(Icons.fitness_center, '开始训练', '好友完成首次训练'),
+      _FlowStep(Icons.card_giftcard, '双方获奖', '自动发放奖励'),
+    ];
+
+    return CardWidget(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.route, size: 20, color: colors.accentGlow),
+              const SizedBox(width: 8),
+              Text(
+                '邀请流程',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: steps.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final s = entry.value;
+              final isLast = idx == steps.length - 1;
+              return Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 44, height: 44,
+                            decoration: BoxDecoration(
+                              color: colors.accentGlow.withOpacity(0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(s.icon, color: colors.accentGlow, size: 22),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(s.title, style: TextStyle(
+                            color: colors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600,
+                          ), textAlign: TextAlign.center),
+                          const SizedBox(height: 2),
+                          Text(s.desc, style: TextStyle(
+                            color: colors.textMuted, fontSize: 10,
+                          ), textAlign: TextAlign.center),
+                        ],
+                      ),
+                    ),
+                    if (!isLast)
+                      Icon(Icons.chevron_right, color: colors.textMuted, size: 18),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 输入邀请码（保留原逻辑） ──────────────────────────────────────────────
 
   Widget _buildActivateCard(FitTrackColors colors) {
     final activatedCode = InvitationService.instance.getActivatedCode();
@@ -522,6 +689,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
     if (!mounted) return;
 
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
     String msg;
     bool success = false;
     switch (result) {
@@ -555,16 +723,29 @@ class _InvitationPageState extends State<InvitationPage> {
       _loadData();
     }
   }
-
-  FitTrackColors get colors => Theme.of(context).extension<FitTrackColors>()!;
 }
 
 class _MilestoneData {
   final int count;
   final String title;
-  final String desc;
-  final IconData icon;
   final bool unlocked;
 
-  const _MilestoneData(this.count, this.title, this.desc, this.icon, this.unlocked);
+  const _MilestoneData(this.count, this.title, this.unlocked);
+}
+
+class _RewardRule {
+  final int count;
+  final String title;
+  final String yourReward;
+  final String friendReward;
+
+  const _RewardRule(this.count, this.title, this.yourReward, this.friendReward);
+}
+
+class _FlowStep {
+  final IconData icon;
+  final String title;
+  final String desc;
+
+  const _FlowStep(this.icon, this.title, this.desc);
 }

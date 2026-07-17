@@ -587,11 +587,6 @@ class _SettingsPageState extends State<SettingsPage> {
     return CardWidget(
       child: Column(
         children: [
-          // v1 获客留存版：邀请裂变 & 计划分享入口
-          _buildMenuTile(colors, Icons.card_giftcard_outlined, '邀请有礼', '邀请好友训练，解锁进阶统计', () {
-            context.push('/invitation');
-          }),
-          const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.share_outlined, '计划分享', '导入或分享训练计划', () {
             context.push('/share-code');
           }),

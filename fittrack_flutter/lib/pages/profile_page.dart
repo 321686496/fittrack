@@ -1092,6 +1092,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final menus = [
       {'icon': Icons.card_membership_outlined, 'label': '健身卡', 'page': 'gym-card'},
       {'icon': Icons.history, 'label': '训练记录', 'page': 'records'},
+      {'icon': Icons.card_giftcard, 'label': '邀请有礼', 'page': 'invitation'},
       {'icon': Icons.sports_gymnastics, 'label': '动作库', 'page': 'exercise'},
       {'icon': Icons.school_outlined, 'label': '动作教学', 'page': 'tutorial'},
       {'icon': Icons.edit_note, 'label': '训练笔记', 'page': 'note'},
@@ -1123,6 +1124,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     break;
                   case 'records':
                     context.push('/records');
+                    break;
+                  case 'invitation':
+                    context.push('/invitation');
                     break;
                   case 'exercise':
                     context.push('/exercise');
