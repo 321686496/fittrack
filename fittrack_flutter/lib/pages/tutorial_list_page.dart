@@ -114,11 +114,15 @@ class _TutorialListPageState extends State<TutorialListPage> {
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {
-                DefaultTabController.of(context).animateTo(1);
+            child: Builder(
+              builder: (context) {
+                return OutlinedButton(
+                  onPressed: () {
+                    DefaultTabController.of(context).animateTo(1);
+                  },
+                  child: const Text('查看更多'),
+                );
               },
-              child: const Text('查看更多'),
             ),
           ),
           const SizedBox(height: 100),
