@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../data/storage.dart';
+import '../utils/platform_utils.dart';
 
 class SmartPushService {
   static final SmartPushService instance = SmartPushService._();
@@ -99,7 +100,7 @@ class SmartPushService {
   }
 
   Future<void> _sendPush(String message) async {
-    if (Platform.isOhos) {
+    if (isOhos) {
       // OHOS: rely on OhosReminderService.publishReminder
       return;
     }

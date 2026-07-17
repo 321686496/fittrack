@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTrack · LOGO 设计方案 V4</title>
+<style>
+  :root{
+    --primary:#FF6B35;
+    --primary-light:#FF8C42;
+    --primary-dark:#FF5722;
+    --ink:#1A1A1A;
+    --ink-soft:#2D2D2D;
+    --paper:#FAF8F5;
+    --sand:#E8E0D5;
+    --muted:#8B8580;
+    --line:#EAE4DC;
+    --grad:linear-gradient(135deg,#FF8C42 0%,#FF5722 100%);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+
+  .hero{
+    background:linear-gradient(180deg,#1A1A1A 0%,#2D2D2D 100%);
+    color:#fff;padding:88px 0 72px;position:relative;overflow:hidden;
+  }
+  .hero::after{
+    content:"";position:absolute;right:-120px;top:-120px;
+    width:420px;height:420px;
+    background:radial-gradient(circle,rgba(255,107,53,.35) 0%,transparent 65%);
+    border-radius:50%;
+  }
+  .hero .wrap{position:relative;z-index:1}
+  .hero-tag{
+    display:inline-block;font-size:12px;letter-spacing:3px;color:var(--primary);
+    border:1px solid rgba(255,107,53,.4);padding:6px 14px;border-radius:20px;
+    margin-bottom:24px;text-transform:uppercase;
+  }
+  .hero h1{font-size:56px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;}
+  .hero h1 .accent{color:var(--primary)}
+  .hero .slogan{font-size:18px;color:rgba(255,255,255,.7);max-width:720px;font-weight:300;}
+  .hero .slogan b{color:var(--primary);font-weight:500;}
+  .hero-meta{display:flex;gap:32px;margin-top:36px;font-size:13px;color:rgba(255,255,255,.5);flex-wrap:wrap;}
+  .hero-meta span b{color:#fff;font-weight:500;margin-right:6px}
+
+  section{padding:72px 0}
+  .sec-head{margin-bottom:40px}
+  .sec-num{font-size:13px;letter-spacing:2px;color:var(--primary);font-weight:600;text-transform:uppercase;}
+  .sec-title{font-size:32px;font-weight:700;margin-top:8px;letter-spacing:-.5px;}
+  .sec-desc{color:var(--muted);margin-top:8px;max-width:800px;font-size:15px;line-height:1.7;}
+
+  .insight{
+    background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:28px 32px;margin-top:24px;border-left:3px solid var(--primary);
+  }
+  .insight h4{font-size:13px;color:var(--primary);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+  .insight .slogan-quote{
+    font-size:18px;font-weight:500;color:var(--ink);
+    line-height:1.6;padding:12px 20px;background:var(--paper);border-radius:8px;
+    margin-bottom:14px;font-style:italic;
+  }
+  .insight .slogan-quote b{color:var(--primary);font-weight:700;font-style:normal;}
+  .insight p{font-size:14px;color:var(--ink-soft);line-height:1.8;}
+  .insight .keys{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .insight .key{
+    background:rgba(255,107,53,.08);color:var(--primary-dark);
+    padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;
+  }
+
+  .found-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+  .found-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;}
+  .found-card h4{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;}
+  .swatch-row{display:flex;gap:10px;flex-wrap:wrap}
+  .swatch{width:56px;height:56px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+  .swatch-label{font-size:11px;color:var(--muted);margin-top:6px;text-align:center;font-family:Menlo,monospace;}
+
+  .concept{
+    background:#fff;border:1px solid var(--line);border-radius:24px;
+    overflow:hidden;margin-bottom:32px;box-shadow:0 1px 3px rgba(0,0,0,.03);
+  }
+  .concept-head{
+    padding:32px 36px 24px;border-bottom:1px solid var(--line);
+    display:flex;align-items:flex-start;justify-content:space-between;
+    flex-wrap:wrap;gap:16px;
+  }
+  .concept-title{display:flex;align-items:center;gap:16px}
+  .concept-no{
+    width:44px;height:44px;border-radius:12px;background:var(--grad);
+    color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px;
+  }
+  .concept-name{font-size:24px;font-weight:700}
+  .concept-key{font-size:13px;color:var(--muted);margin-top:2px;}
+  .concept-tag{
+    font-size:12px;background:rgba(255,107,53,.1);color:var(--primary);
+    padding:6px 14px;border-radius:20px;font-weight:600;
+  }
+  .concept-body{padding:36px}
+
+  .logo-main{
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#FAF8F5 0%,#F0EAE2 100%);
+    border-radius:20px;padding:48px;margin-bottom:32px;
+  }
+  .logo-main svg{width:200px;height:200px}
+  .logo-name{margin-left:32px;border-left:1px solid var(--line);padding-left:32px;}
+  .logo-name .en{font-size:40px;font-weight:800;letter-spacing:-1px;}
+  .logo-name .en .accent{color:var(--primary)}
+  .logo-name .cn{font-size:16px;color:var(--muted);margin-top:6px;letter-spacing:4px;}
+
+  .variants{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
+  .variant{
+    border:1px solid var(--line);border-radius:16px;padding:28px 16px 16px;
+    text-align:center;background:#fff;display:flex;flex-direction:column;align-items:center;gap:14px;
+  }
+  .variant.dark{background:var(--ink)}
+  .variant.dark .v-label{color:rgba(255,255,255,.5)}
+  .variant svg{width:64px;height:64px}
+  .v-label{font-size:12px;color:var(--muted);letter-spacing:1px}
+
+  .scenes{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .scene{border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;background:#fff;}
+  .scene .v-label{margin-bottom:14px;display:block}
+  .app-icon{
+    width:88px;height:88px;border-radius:20px;margin:0 auto 14px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 20px rgba(255,107,53,.3);
+  }
+  .app-icon svg{width:56px;height:56px}
+  .splash{
+    width:88px;height:140px;border-radius:16px;background:var(--ink);
+    margin:0 auto 14px;display:flex;align-items:center;justify-content:center;
+  }
+  .share-card{
+    width:120px;height:80px;border-radius:10px;
+    background:linear-gradient(135deg,#FFF5EE 0%,#FFE8D6 100%);
+    margin:0 auto 14px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);
+  }
+  .share-card svg{width:36px;height:36px}
+  .tab-icon svg{width:28px;height:28px}
+
+  .notes{background:var(--paper);border-radius:16px;padding:24px 28px;border-left:3px solid var(--primary);}
+  .notes h5{font-size:13px;color:var(--primary);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+  .notes p{font-size:14px;color:var(--ink-soft);line-height:1.7}
+  .notes ul{margin-top:8px;padding-left:18px}
+  .notes li{font-size:14px;color:var(--ink-soft);margin-bottom:4px}
+
+  .compare-table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line);}
+  .compare-table th,.compare-table td{padding:16px 20px;text-align:left;border-bottom:1px solid var(--line);font-size:14px;}
+  .compare-table th{background:var(--paper);font-weight:700;color:var(--ink);}
+  .compare-table tr:last-child td{border-bottom:none}
+  .compare-table .c-no{
+    width:36px;height:36px;border-radius:10px;background:var(--grad);
+    color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;font-size:14px;
+  }
+
+  footer{background:var(--ink);color:rgba(255,255,255,.5);padding:48px 0;text-align:center;font-size:13px;}
+  footer b{color:var(--primary)}
+
+  @media(max-width:760px){
+    .hero h1{font-size:36px}
+    .variants,.scenes{grid-template-columns:repeat(2,1fr)}
+    .logo-main{flex-direction:column}
+    .logo-name{margin-left:0;border-left:none;padding-left:0;border-top:1px solid var(--line);padding-top:24px;margin-top:24px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="hero-tag">LOGO DESIGN V4 · 2026</span>
+    <h1>FitTrack <span class="accent">LOGO</span> 设计方案</h1>
+    <p class="slogan">纯粹围绕英文名 <b>FitTrack</b>（<b>Fit 健身 + Track 追踪</b>）做减法设计 —— 字母图形化 + 力量元素，追求简洁、现代、大牌感。</p>
+    <div class="hero-meta">
+      <span><b>名称</b>FitTrack（确定）</span>
+      <span><b>设计思路</b>Fit + Track 字母图形化</span>
+      <span><b>风格</b>极简 · 现代 · 几何</span>
+      <span><b>平台</b>Android · iOS · HarmonyOS</span>
+    </div>
+  </div>
+</header>
+
+<!-- Design Logic -->
+<section style="padding-bottom:36px">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">01 / 设计逻辑</div>
+      <h2 class="sec-title">从 FitTrack 名字本身拆解设计</h2>
+      <p class="sec-desc">不再依赖任何中文品牌名或附加概念，纯粹从「FitTrack」英文名本身拆解 —— Fit（健身/适配）+ Track（追踪/轨迹/记录），用字母图形化 + 力量元素做减法设计。</p>
+    </div>
+    <div class="insight">
+      <h4>名称拆解 · Fit + Track</h4>
+      <div class="slogan-quote"><b>Fit</b>（健身/力量）+ <b>Track</b>（追踪/记录/轨迹）= <b>FitTrack</b></div>
+      <p>FitTrack 这个名字本身就已经完整表达了产品定位 —— "健身追踪"。LOGO 应该让名字自己说话：要么把 <b>F</b> 图形化为力量元素（杠铃/哑铃），要么把 <b>Track</b>（追踪）视觉化为轨迹/圆环/对勾。不需要再附加额外的概念。</p>
+      <div class="keys">
+        <span class="key">F = Fit（力量）</span>
+        <span class="key">T = Track（追踪）</span>
+        <span class="key">Track = 轨迹/圆环/对勾</span>
+        <span class="key">Fit = 杠铃/哑铃</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Foundation -->
+<section style="padding-top:36px">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">02 / 品牌基础</div>
+      <h2 class="sec-title">设计基础规范</h2>
+      <p class="sec-desc">保留活力橙主色，追求极简现代的设计语言。</p>
+    </div>
+    <div class="found-grid">
+      <div class="found-card">
+        <h4>主色 · Primary</h4>
+        <div class="swatch-row">
+          <div><div class="swatch" style="background:#FF6B35"></div><div class="swatch-label">#FF6B35</div></div>
+          <div><div class="swatch" style="background:linear-gradient(135deg,#FF8C42,#FF5722)"></div><div class="swatch-label">渐变</div></div>
+          <div><div class="swatch" style="background:#FF5722"></div><div class="swatch-label">#FF5722</div></div>
+        </div>
+      </div>
+      <div class="found-card">
+        <h4>辅色 · Neutral</h4>
+        <div class="swatch-row">
+          <div><div class="swatch" style="background:#1A1A1A"></div><div class="swatch-label">#1A1A1A</div></div>
+          <div><div class="swatch" style="background:#2D2D2D"></div><div class="swatch-label">#2D2D2D</div></div>
+          <div><div class="swatch" style="background:#FAF8F5"></div><div class="swatch-label">#FAF8F5</div></div>
+        </div>
+      </div>
+      <div class="found-card">
+        <h4>字体 · Typography</h4>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:22px;font-weight:800">FitTrack</span>
+          <span style="font-size:12px;color:var(--muted)">无衬线粗体 · 思源黑体</span>
+          <span style="font-size:12px;color:var(--muted);margin-top:6px">字重 800 · 字间距 -0.5px</span>
+        </div>
+      </div>
+      <div class="found-card">
+        <h4>圆角 · Radius</h4>
+        <div style="display:flex;gap:10px;align-items:flex-end;margin-top:8px">
+          <div><div style="width:36px;height:36px;background:#FF6B35;border-radius:8px"></div><div class="swatch-label">8</div></div>
+          <div><div style="width:36px;height:36px;background:#FF6B35;border-radius:16px"></div><div class="swatch-label">16</div></div>
+          <div><div style="width:36px;height:36px;background:#FF6B35;border-radius:20px"></div><div class="swatch-label">20</div></div>
+          <div><div style="width:36px;height:36px;background:#FF6B35;border-radius:50%"></div><div class="swatch-label">full</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Concepts -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">03 / LOGO 方案</div>
+      <h2 class="sec-title">四套极简字母图形化方案</h2>
+      <p class="sec-desc">全部围绕 FitTrack 英文名的字母 F / T 做图形化，融合力量元素（杠铃/哑铃）或追踪元素（圆环/对勾/轨迹），每个方案只用一个核心图形，做减法不做加法。</p>
+    </div>
+
+    <!-- 方案一：F杠铃（字母F图形化为杠铃） -->
+    <div class="concept">
+      <div class="concept-head">
+        <div class="concept-title">
+          <div class="concept-no">1</div>
+          <div>
+            <div class="concept-name">F · 杠铃</div>
+            <div class="concept-key">F-Barbell · 字母 F 本身就是一根杠铃</div>
+          </div>
+        </div>
+        <span class="concept-tag">最简洁 · 推荐</span>
+      </div>
+      <div class="concept-body">
+        <div class="logo-main">
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF8C42"/>
+                <stop offset="100%" stop-color="#FF5722"/>
+              </linearGradient>
+            </defs>
+            <!-- F 竖线（杠铃杆） -->
+            <rect x="52" y="18" width="16" height="84" rx="4" fill="url(#g1)"/>
+            <!-- F 上横（杠铃片组-大） -->
+            <rect x="28" y="18" width="44" height="16" rx="4" fill="url(#g1)"/>
+            <!-- F 中横（杠铃片组-小） -->
+            <rect x="36" y="50" width="32" height="13" rx="4" fill="url(#g1)"/>
+            <!-- 杠铃片两端装饰（右侧，强化杠铃感） -->
+            <rect x="72" y="14" width="9" height="24" rx="2.5" fill="url(#g1)" opacity="0.9"/>
+            <rect x="70" y="48" width="8" height="17" rx="2" fill="url(#g1)" opacity="0.9"/>
+          </svg>
+          <div class="logo-name">
+            <div class="en"><span class="accent">F</span>itTrack</div>
+            <div class="cn">F = 杠 铃</div>
+          </div>
+        </div>
+
+        <div class="variants">
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="52" y="18" width="16" height="84" rx="4" fill="#FF6B35"/><rect x="28" y="18" width="44" height="16" rx="4" fill="#FF6B35"/><rect x="36" y="50" width="32" height="13" rx="4" fill="#FF6B35"/><rect x="72" y="14" width="9" height="24" rx="2.5" fill="#FF6B35" opacity="0.9"/><rect x="70" y="48" width="8" height="17" rx="2" fill="#FF6B35" opacity="0.9"/></svg>
+            <span class="v-label">彩色纯色</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="52" y="18" width="16" height="84" rx="4" fill="#1A1A1A"/><rect x="28" y="18" width="44" height="16" rx="4" fill="#1A1A1A"/><rect x="36" y="50" width="32" height="13" rx="4" fill="#1A1A1A"/></svg>
+            <span class="v-label">单色极简</span>
+          </div>
+          <div class="variant dark">
+            <svg viewBox="0 0 120 120"><rect x="52" y="18" width="16" height="84" rx="4" fill="#FFFFFF"/><rect x="28" y="18" width="44" height="16" rx="4" fill="#FFFFFF"/><rect x="36" y="50" width="32" height="13" rx="4" fill="#FFFFFF"/></svg>
+            <span class="v-label">反白</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="52" y="14" width="16" height="92" rx="4" fill="#FF6B35"/><rect x="22" y="14" width="50" height="20" rx="5" fill="#FF6B35"/><rect x="32" y="50" width="40" height="16" rx="5" fill="#FF6B35"/></svg>
+            <span class="v-label">加粗版</span>
+          </div>
+        </div>
+
+        <div class="scenes">
+          <div class="scene">
+            <span class="v-label">APP 图标</span>
+            <div class="app-icon" style="background:linear-gradient(135deg,#FF8C42,#FF5722)">
+              <svg viewBox="0 0 120 120"><rect x="52" y="18" width="16" height="84" rx="4" fill="#FFF"/><rect x="28" y="18" width="44" height="16" rx="4" fill="#FFF"/><rect x="36" y="50" width="32" height="13" rx="4" fill="#FFF"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">启动页</span>
+            <div class="splash">
+              <svg viewBox="0 0 120 120"><rect x="52" y="18" width="16" height="84" rx="4" fill="#FF6B35"/><rect x="28" y="18" width="44" height="16" rx="4" fill="#FF6B35"/><rect x="36" y="50" width="32" height="13" rx="4" fill="#FF6B35"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">分享卡片</span>
+            <div class="share-card">
+              <svg viewBox="0 0 120 120"><rect x="52" y="18" width="16" height="84" rx="4" fill="#FF6B35"/><rect x="28" y="18" width="44" height="16" rx="4" fill="#FF6B35"/><rect x="36" y="50" width="32" height="13" rx="4" fill="#FF6B35"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">Tab 栏</span>
+            <div class="tab-icon" style="margin-top:18px">
+              <svg viewBox="0 0 120 120"><rect x="52" y="14" width="16" height="92" rx="4" fill="#FF6B35"/><rect x="22" y="14" width="50" height="20" rx="5" fill="#FF6B35"/><rect x="32" y="50" width="40" height="16" rx="5" fill="#FF6B35"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <h5>设计说明</h5>
+          <p>字母 <b>F</b>（FitTrack 首字母）的<b>竖线 = 杠铃杆</b>，<b>横线 = 杠铃片</b>。F 本身就是一根杠铃的抽象形态 —— 上横较长（大重量片），中横较短（小重量片），呼应杠铃配重层次。</p>
+          <ul>
+            <li>LOGO 即品牌字母，认知成本最低，看一眼就知道是 FitTrack</li>
+            <li>图形极简（一个 F 字母），24×24 极小尺寸仍清晰可辨</li>
+            <li>横线长短不一呼应杠铃配重，富有层次又不失简洁</li>
+            <li>几何块面构成，现代感强，应用商店图标识别度高</li>
+            <li>可适配 Favicon、Tab 图标、启动页等多种窄长场景</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 方案二：追踪环·F -->
+    <div class="concept">
+      <div class="concept-head">
+        <div class="concept-title">
+          <div class="concept-no">2</div>
+          <div>
+            <div class="concept-name">追踪环 · F</div>
+            <div class="concept-key">TrackRing · Track=追踪圆环 + F字母</div>
+          </div>
+        </div>
+        <span class="concept-tag">最现代 · 几何感</span>
+      </div>
+      <div class="concept-body">
+        <div class="logo-main">
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF8C42"/>
+                <stop offset="100%" stop-color="#FF5722"/>
+              </linearGradient>
+            </defs>
+            <!-- 追踪圆环（Track 视觉化） -->
+            <circle cx="60" cy="60" r="46" fill="none" stroke="url(#g2)" stroke-width="12" stroke-linecap="round" stroke-dasharray="240 50" transform="rotate(-90 60 60)"/>
+            <!-- 圆环缺口处的小圆点（追踪点） -->
+            <circle cx="60" cy="14" r="6" fill="url(#g2)"/>
+            <!-- 内嵌 F 字母 -->
+            <rect x="50" y="32" width="20" height="56" rx="3" fill="url(#g2)"/>
+            <rect x="50" y="32" width="34" height="13" rx="3" fill="url(#g2)"/>
+            <rect x="50" y="56" width="26" height="11" rx="3" fill="url(#g2)"/>
+          </svg>
+          <div class="logo-name">
+            <div class="en"><span class="accent">F</span>it<span class="accent">Track</span></div>
+            <div class="cn">追 踪 你 的 训 练</div>
+          </div>
+        </div>
+
+        <div class="variants">
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="#FF6B35" stroke-width="12" stroke-linecap="round" stroke-dasharray="240 50" transform="rotate(-90 60 60)"/><circle cx="60" cy="14" r="6" fill="#FF6B35"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#FF6B35"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#FF6B35"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#FF6B35"/></svg>
+            <span class="v-label">彩色</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="#1A1A1A" stroke-width="12" stroke-linecap="round" stroke-dasharray="240 50" transform="rotate(-90 60 60)"/><circle cx="60" cy="14" r="6" fill="#1A1A1A"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#1A1A1A"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#1A1A1A"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#1A1A1A"/></svg>
+            <span class="v-label">单色</span>
+          </div>
+          <div class="variant dark">
+            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-dasharray="240 50" transform="rotate(-90 60 60)"/><circle cx="60" cy="14" r="6" fill="#FFFFFF"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#FFFFFF"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#FFFFFF"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#FFFFFF"/></svg>
+            <span class="v-label">反白</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="#FF6B35"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#FFF"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#FFF"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#FFF"/></svg>
+            <span class="v-label">实心圆环</span>
+          </div>
+        </div>
+
+        <div class="scenes">
+          <div class="scene">
+            <span class="v-label">APP 图标</span>
+            <div class="app-icon" style="background:linear-gradient(135deg,#FF8C42,#FF5722)">
+              <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="#FFF" stroke-width="12" stroke-linecap="round" stroke-dasharray="240 50" transform="rotate(-90 60 60)"/><circle cx="60" cy="14" r="6" fill="#FFF"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#FFF"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#FFF"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#FFF"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">启动页</span>
+            <div class="splash">
+              <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="#FF6B35" stroke-width="12" stroke-linecap="round" stroke-dasharray="240 50" transform="rotate(-90 60 60)"/><circle cx="60" cy="14" r="6" fill="#FF6B35"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#FF6B35"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#FF6B35"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#FF6B35"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">分享卡片</span>
+            <div class="share-card">
+              <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="#FF6B35"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#FFF"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#FFF"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#FFF"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">Tab 栏</span>
+            <div class="tab-icon" style="margin-top:18px">
+              <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="#FF6B35"/><rect x="50" y="32" width="20" height="56" rx="3" fill="#FFF"/><rect x="50" y="32" width="34" height="13" rx="3" fill="#FFF"/><rect x="50" y="56" width="26" height="11" rx="3" fill="#FFF"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <h5>设计说明</h5>
+          <p><b>追踪圆环</b>（带缺口的圆，Track=追踪轨迹）+ <b>内嵌 F 字母</b>（FitTrack 首字母）。圆环顶部的缺口处有一个小圆点，象征"追踪进行中"。</p>
+          <ul>
+            <li>Track = 追踪，圆环是最直观的"追踪/循环"视觉符号</li>
+            <li>圆环 + F 双重图形，同时承载 Fit + Track 两个词的含义</li>
+            <li>圆环缺口处的追踪点增加动感和品牌识别度</li>
+            <li>几何感强，符合现代极简设计趋势（类似 Apple Fitness+）</li>
+            <li>圆环可做加载进度动画，动效潜力强</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 方案三：对勾·F -->
+    <div class="concept">
+      <div class="concept-head">
+        <div class="concept-title">
+          <div class="concept-no">3</div>
+          <div>
+            <div class="concept-name">对勾 · F</div>
+            <div class="concept-key">CheckF · 记录完成 + 品牌字母</div>
+          </div>
+        </div>
+        <span class="concept-tag">完成感 · 打卡</span>
+      </div>
+      <div class="concept-body">
+        <div class="logo-main">
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF8C42"/>
+                <stop offset="100%" stop-color="#FF5722"/>
+              </linearGradient>
+            </defs>
+            <!-- F 字母（左半部分） -->
+            <rect x="28" y="22" width="14" height="76" rx="3" fill="url(#g3)"/>
+            <rect x="28" y="22" width="36" height="13" rx="3" fill="url(#g3)"/>
+            <rect x="28" y="52" width="28" height="11" rx="3" fill="url(#g3)"/>
+            <!-- 对勾（从 F 中横起笔，向右下延伸） -->
+            <path d="M42 58 L56 78 L92 32" fill="none" stroke="url(#g3)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="logo-name">
+            <div class="en"><span class="accent">F</span>itTrack</div>
+            <div class="cn">记 录 完 成</div>
+          </div>
+        </div>
+
+        <div class="variants">
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="28" y="22" width="14" height="76" rx="3" fill="#FF6B35"/><rect x="28" y="22" width="36" height="13" rx="3" fill="#FF6B35"/><rect x="28" y="52" width="28" height="11" rx="3" fill="#FF6B35"/><path d="M42 58 L56 78 L92 32" fill="none" stroke="#FF6B35" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="v-label">彩色</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="28" y="22" width="14" height="76" rx="3" fill="#1A1A1A"/><rect x="28" y="22" width="36" height="13" rx="3" fill="#1A1A1A"/><rect x="28" y="52" width="28" height="11" rx="3" fill="#1A1A1A"/><path d="M42 58 L56 78 L92 32" fill="none" stroke="#1A1A1A" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="v-label">单色</span>
+          </div>
+          <div class="variant dark">
+            <svg viewBox="0 0 120 120"><rect x="28" y="22" width="14" height="76" rx="3" fill="#FFFFFF"/><rect x="28" y="22" width="36" height="13" rx="3" fill="#FFFFFF"/><rect x="28" y="52" width="28" height="11" rx="3" fill="#FFFFFF"/><path d="M42 58 L56 78 L92 32" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="v-label">反白</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><path d="M28 22 L64 22 L64 35 L42 35 L42 52 L56 52 L56 63 L42 63 L42 98 L28 98 Z M42 58 L56 78 L92 32" fill="none" stroke="#FF6B35" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="v-label">线框版</span>
+          </div>
+        </div>
+
+        <div class="scenes">
+          <div class="scene">
+            <span class="v-label">APP 图标</span>
+            <div class="app-icon" style="background:linear-gradient(135deg,#FF8C42,#FF5722)">
+              <svg viewBox="0 0 120 120"><rect x="28" y="22" width="14" height="76" rx="3" fill="#FFF"/><rect x="28" y="22" width="36" height="13" rx="3" fill="#FFF"/><rect x="28" y="52" width="28" height="11" rx="3" fill="#FFF"/><path d="M42 58 L56 78 L92 32" fill="none" stroke="#FFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">启动页</span>
+            <div class="splash">
+              <svg viewBox="0 0 120 120"><rect x="28" y="22" width="14" height="76" rx="3" fill="#FF6B35"/><rect x="28" y="22" width="36" height="13" rx="3" fill="#FF6B35"/><rect x="28" y="52" width="28" height="11" rx="3" fill="#FF6B35"/><path d="M42 58 L56 78 L92 32" fill="none" stroke="#FF6B35" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">分享卡片</span>
+            <div class="share-card">
+              <svg viewBox="0 0 120 120"><rect x="28" y="22" width="14" height="76" rx="3" fill="#FF6B35"/><rect x="28" y="22" width="36" height="13" rx="3" fill="#FF6B35"/><rect x="28" y="52" width="28" height="11" rx="3" fill="#FF6B35"/><path d="M42 58 L56 78 L92 32" fill="none" stroke="#FF6B35" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">Tab 栏</span>
+            <div class="tab-icon" style="margin-top:18px">
+              <svg viewBox="0 0 120 120"><path d="M42 58 L56 78 L92 32" fill="none" stroke="#FF6B35" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <h5>设计说明</h5>
+          <p>左半部分是 <b>F 字母</b>（FitTrack 首字母），从 F 的中横起笔延伸出一道<b>对勾</b>（✓）。F = 品牌，对勾 = 记录完成 / 打卡，组合含义："FitTrack 帮你完成并记录每一次训练"。</p>
+          <ul>
+            <li>F + 对勾双重图形，同时承载品牌字母与"记录完成"功能感</li>
+            <li>对勾自带正向反馈，每次看到 LOGO 都有"完成"的愉悦感</li>
+            <li>对勾可延伸为训练完成动画、打卡反馈等品牌资产</li>
+            <li>小尺寸（Tab 栏/Favicon）可简化为纯对勾，依然可辨</li>
+            <li>F 字母与对勾自然衔接，不是生硬拼贴</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 方案四：哑铃T -->
+    <div class="concept">
+      <div class="concept-head">
+        <div class="concept-title">
+          <div class="concept-no">4</div>
+          <div>
+            <div class="concept-name">哑铃 · T</div>
+            <div class="concept-key">DumbbellT · 哑铃本身就是 T 字母</div>
+          </div>
+        </div>
+        <span class="concept-tag">极简大牌</span>
+      </div>
+      <div class="concept-body">
+        <div class="logo-main">
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF8C42"/>
+                <stop offset="100%" stop-color="#FF5722"/>
+              </linearGradient>
+            </defs>
+            <!-- T 字母 = 哑铃形态 -->
+            <!-- T 横线（哑铃杆 + 两侧配重） -->
+            <rect x="14" y="28" width="92" height="16" rx="4" fill="url(#g4)"/>
+            <!-- 左侧哑铃头（大配重） -->
+            <rect x="8" y="18" width="14" height="36" rx="4" fill="url(#g4)"/>
+            <!-- 右侧哑铃头（大配重） -->
+            <rect x="98" y="18" width="14" height="36" rx="4" fill="url(#g4)"/>
+            <!-- 左侧内配重 -->
+            <rect x="26" y="22" width="8" height="28" rx="2" fill="url(#g4)" opacity="0.85"/>
+            <!-- 右侧内配重 -->
+            <rect x="86" y="22" width="8" height="28" rx="2" fill="url(#g4)" opacity="0.85"/>
+            <!-- T 竖线（哑铃握把向下延伸） -->
+            <rect x="52" y="44" width="16" height="58" rx="4" fill="url(#g4)"/>
+          </svg>
+          <div class="logo-name">
+            <div class="en">Fit<span class="accent">T</span>rack</div>
+            <div class="cn">T = 哑 铃</div>
+          </div>
+        </div>
+
+        <div class="variants">
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="14" y="28" width="92" height="16" rx="4" fill="#FF6B35"/><rect x="8" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="98" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="26" y="22" width="8" height="28" rx="2" fill="#FF6B35" opacity="0.85"/><rect x="86" y="22" width="8" height="28" rx="2" fill="#FF6B35" opacity="0.85"/><rect x="52" y="44" width="16" height="58" rx="4" fill="#FF6B35"/></svg>
+            <span class="v-label">彩色</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="14" y="28" width="92" height="16" rx="4" fill="#1A1A1A"/><rect x="8" y="18" width="14" height="36" rx="4" fill="#1A1A1A"/><rect x="98" y="18" width="14" height="36" rx="4" fill="#1A1A1A"/><rect x="52" y="44" width="16" height="58" rx="4" fill="#1A1A1A"/></svg>
+            <span class="v-label">单色极简</span>
+          </div>
+          <div class="variant dark">
+            <svg viewBox="0 0 120 120"><rect x="14" y="28" width="92" height="16" rx="4" fill="#FFFFFF"/><rect x="8" y="18" width="14" height="36" rx="4" fill="#FFFFFF"/><rect x="98" y="18" width="14" height="36" rx="4" fill="#FFFFFF"/><rect x="52" y="44" width="16" height="58" rx="4" fill="#FFFFFF"/></svg>
+            <span class="v-label">反白</span>
+          </div>
+          <div class="variant">
+            <svg viewBox="0 0 120 120"><rect x="20" y="24" width="80" height="20" rx="5" fill="#FF6B35"/><rect x="10" y="14" width="16" height="40" rx="5" fill="#FF6B35"/><rect x="94" y="14" width="16" height="40" rx="5" fill="#FF6B35"/><rect x="50" y="44" width="20" height="62" rx="5" fill="#FF6B35"/></svg>
+            <span class="v-label">加粗版</span>
+          </div>
+        </div>
+
+        <div class="scenes">
+          <div class="scene">
+            <span class="v-label">APP 图标</span>
+            <div class="app-icon" style="background:linear-gradient(135deg,#FF8C42,#FF5722)">
+              <svg viewBox="0 0 120 120"><rect x="14" y="28" width="92" height="16" rx="4" fill="#FFF"/><rect x="8" y="18" width="14" height="36" rx="4" fill="#FFF"/><rect x="98" y="18" width="14" height="36" rx="4" fill="#FFF"/><rect x="52" y="44" width="16" height="58" rx="4" fill="#FFF"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">启动页</span>
+            <div class="splash">
+              <svg viewBox="0 0 120 120"><rect x="14" y="28" width="92" height="16" rx="4" fill="#FF6B35"/><rect x="8" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="98" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="52" y="44" width="16" height="58" rx="4" fill="#FF6B35"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">分享卡片</span>
+            <div class="share-card">
+              <svg viewBox="0 0 120 120"><rect x="14" y="28" width="92" height="16" rx="4" fill="#FF6B35"/><rect x="8" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="98" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="52" y="44" width="16" height="58" rx="4" fill="#FF6B35"/></svg>
+            </div>
+          </div>
+          <div class="scene">
+            <span class="v-label">Tab 栏</span>
+            <div class="tab-icon" style="margin-top:18px">
+              <svg viewBox="0 0 120 120"><rect x="14" y="28" width="92" height="16" rx="4" fill="#FF6B35"/><rect x="8" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="98" y="18" width="14" height="36" rx="4" fill="#FF6B35"/><rect x="52" y="44" width="16" height="58" rx="4" fill="#FF6B35"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <h5>设计说明</h5>
+          <p>字母 <b>T</b>（Track 首字母）本身就是一根<b>哑铃</b>的形态 —— 横线 = 哑铃杆+两侧配重，竖线 = 哑铃握把。T = 哑铃，是最自然、最巧妙的字母图形化。</p>
+          <ul>
+            <li>T 字母天然就是哑铃形态，无需额外装饰，"做减法"的极致</li>
+            <li>横线两端的配重块面强化"哑铃"识别度，又不失字母 T 的可读性</li>
+            <li>横竖结构规整，几何感最强，符合现代大牌 LOGO 趋势</li>
+            <li>与方案一的 F·杠铃 可作为系列设计（F=杠铃, T=哑铃）</li>
+            <li>24×24 极小尺寸下依然清晰可辨</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Comparison -->
+<section style="background:#fff;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">04 / 方案对比</div>
+      <h2 class="sec-title">四套方案对比</h2>
+      <p class="sec-desc">从简洁度、品牌字母承载、识别性、小尺寸适配、现代感五个维度对比。</p>
+    </div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>方案</th>
+          <th>核心概念</th>
+          <th>字母承载</th>
+          <th>简洁度</th>
+          <th>小尺寸适配</th>
+          <th>现代感</th>
+          <th>特点</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="c-no">1</span></td>
+          <td>F · 杠铃</td>
+          <td>F=杠铃（竖线杆+横线片）</td>
+          <td>F（Fit）</td>
+          <td>★★★★★</td>
+          <td>★★★★★</td>
+          <td>★★★★</td>
+          <td>最简洁推荐</td>
+        </tr>
+        <tr>
+          <td><span class="c-no">2</span></td>
+          <td>追踪环 · F</td>
+          <td>圆环(Track)+F字母</td>
+          <td>F（Fit）</td>
+          <td>★★★★</td>
+          <td>★★★★</td>
+          <td>★★★★★</td>
+          <td>最现代几何</td>
+        </tr>
+        <tr>
+          <td><span class="c-no">3</span></td>
+          <td>对勾 · F</td>
+          <td>F字母+对勾(记录完成)</td>
+          <td>F（Fit）</td>
+          <td>★★★★</td>
+          <td>★★★★</td>
+          <td>★★★★</td>
+          <td>完成打卡感</td>
+        </tr>
+        <tr>
+          <td><span class="c-no">4</span></td>
+          <td>哑铃 · T</td>
+          <td>T=哑铃（横线杆+竖线握把）</td>
+          <td>T（Track）</td>
+          <td>★★★★★</td>
+          <td>★★★★★</td>
+          <td>★★★★★</td>
+          <td>极简大牌</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="notes" style="margin-top:32px">
+      <h5>设计师推荐</h5>
+      <p><b>方案 1（F·杠铃）</b> 与 <b>方案 4（哑铃·T）</b> 可作为系列设计 —— F = 杠铃，T = 哑铃，两个字母都是力量器械的自然形态，品牌系统感最强。</p>
+      <ul>
+        <li>主 LOGO 用 <b>方案 1（F·杠铃）</b>：F 是首字母，更适合作为主标识</li>
+        <li>方案 4（T·哑铃）可作为辅助图形：用于 Tab 栏、加载动画、水印等场景</li>
+        <li>两个方案都极简，24×24 仍清晰，多平台适配无忧</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>FitTrack LOGO Design V4 · <b>纯粹围绕英文名做减法</b> · 4 套极简方案</p>
+    <p style="margin-top:8px">设计日期 2026-07-15 · 多平台适配 Android / iOS / HarmonyOS</p>
+  </div>
+</footer>
+
+</body>
+</html>

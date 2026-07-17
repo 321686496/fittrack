@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../utils/platform_utils.dart';
 
 /// OHOS 后台代理提醒服务
 ///
@@ -17,7 +18,7 @@ class OhosReminderService {
 
   static final OhosReminderService instance = OhosReminderService._();
 
-  static const String _channelName = 'com.example.fittrack_flutter/reminder';
+  static const String _channelName = 'com.fp.fitplan/reminder';
 
   final MethodChannel _channel = const MethodChannel(_channelName);
 
@@ -79,7 +80,7 @@ class OhosReminderService {
     required int triggerTimeInSeconds,
     required int notificationId,
   }) async {
-    if (!Platform.isOhos) {
+    if (!isOhos) {
       debugPrint('[OhosReminder] Not on OHOS platform, skip');
       return null;
     }
@@ -146,7 +147,7 @@ class OhosReminderService {
     required String content,
     required String timeStr,
   }) async {
-    if (!Platform.isOhos) return;
+    if (!isOhos) return;
     try {
       await _channel.invokeMethod<void>('scheduleTrainingReminder', {
         'title': title,
@@ -161,7 +162,7 @@ class OhosReminderService {
 
   /// 取消每日训练提醒
   Future<void> cancelTrainingReminder() async {
-    if (!Platform.isOhos) return;
+    if (!isOhos) return;
     try {
       await _channel.invokeMethod<void>('cancelTrainingReminder');
       debugPrint('[OhosReminder] cancelTrainingReminder success');

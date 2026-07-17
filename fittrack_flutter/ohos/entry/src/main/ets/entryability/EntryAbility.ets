@@ -14,8 +14,8 @@ import { notificationManager } from '@kit.NotificationKit';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
 const KEY_FORM_DATA: string = 'form_data';
-const FORM_CHANNEL_NAME: string = 'com.example.fittrack_flutter/form';
-const REMINDER_CHANNEL_NAME: string = 'com.example.fittrack_flutter/reminder';
+const FORM_CHANNEL_NAME: string = 'com.fp.fitplan/form';
+const REMINDER_CHANNEL_NAME: string = 'com.fp.fitplan/reminder';
 const REST_LIVE_VIEW_ID: number = 30001;
 
 const CAPSULE_ICON: string = 'liveview_icon.png';
@@ -155,9 +155,12 @@ export default class EntryAbility extends FlutterAbility {
         const restSeconds: number = Math.max(1, Math.round((restEndTime - Date.now()) / 1000));
         this.scheduleRestReminder(restSeconds);
       } else {
-        // 休息结束（或非休息状态）：停止实况窗
+        // 休息结束（或非休息状态）：停止实况窗 + 取消尚未触发的代理提醒
+        // 修复：跳过休息 / 休息自然结束时，必须显式取消已发布的 reminderAgentManager 代理提醒，
+        // 否则提醒会一直保留到设定时间触发，弹出"休息时间到"的过期通知。
         // 震动仅在训练结束时由 Flutter 侧 HapticFeedback 触发
         this.stopRestLiveView();
+        this.cancelRestReminder();
       }
     } catch (e) {
       const err: BusinessError = e as BusinessError;

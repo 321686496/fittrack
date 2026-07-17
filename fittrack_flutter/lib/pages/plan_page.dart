@@ -170,7 +170,6 @@ class PlanPage extends StatefulWidget {
 
 class _PlanPageState extends State<PlanPage> {
   List<Map<String, dynamic>> _plans = [];
-  String? _selectedPlanId;
 
   @override
   void initState() {
@@ -200,21 +199,6 @@ class _PlanPageState extends State<PlanPage> {
   List<Map<String, dynamic>> get _otherPlans =>
       _plans.where((p) => p['status'] != 'active').toList();
 
-  Map<String, dynamic>? get _selectedPlan {
-    if (_selectedPlanId == null) return null;
-    try {
-      return _plans.firstWhere((p) => p['id'] == _selectedPlanId);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  void _selectPlan(String? planId) {
-    setState(() {
-      _selectedPlanId = planId;
-    });
-  }
-
   void _deletePlan(String planId) async {
     final confirmed = await ConfirmDialog.show(
       context,
@@ -226,63 +210,55 @@ class _PlanPageState extends State<PlanPage> {
     );
     if (confirmed == true) {
       Storage.deletePlan(planId);
-      if (_selectedPlanId == planId) {
-        _selectedPlanId = null;
-      }
       _loadPlans();
     }
   }
 
   void _showPlanEditor({Map<String, dynamic>? existingPlan}) {
-    FitBottomSheet.show(
-      context: context,
-      maxHeightRatio: 0.85,
-      builder: (ctx) => _PlanEditorSheet(
-        existingPlan: existingPlan,
-        onSave: (planData) {
-          if (existingPlan != null) {
+    if (existingPlan != null) {
+      // 编辑模式：使用弹窗编辑详细天数
+      FitBottomSheet.show(
+        context: context,
+        maxHeightRatio: 0.85,
+        builder: (ctx) => _PlanEditorSheet(
+          existingPlan: existingPlan,
+          onSave: (planData) {
             Storage.updatePlan(existingPlan['id'] as String, planData);
-          } else {
-            Storage.addPlan(planData);
-          }
-          _loadPlans();
-          Navigator.of(ctx).pop();
-        },
-      ),
-    );
+            _loadPlans();
+            Navigator.of(ctx).pop();
+          },
+        ),
+      );
+    } else {
+      // 新建模式：跳转到独立添加页面（含推荐）
+      context.push('/add-plan');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final selectedPlan = _selectedPlan;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
           PageHeader(
-            onBack: selectedPlan != null ? () => _selectPlan(null) : null,
-            title: selectedPlan != null ? '${selectedPlan['name']}' : '训练计划',
-            subtitle: selectedPlan != null ? '${selectedPlan['frequency']} · ${selectedPlan['difficulty']}' : null,
-            isTabPage: selectedPlan == null,
+            title: '训练计划',
+            isTabPage: true,
           ),
           Expanded(
-            child: selectedPlan != null
-                ? _buildPlanDetail(colors, selectedPlan)
-                : _buildPlanList(colors),
+            child: _buildPlanList(colors),
           ),
         ],
       ),
-      floatingActionButton: selectedPlan == null
-          ? Padding(
-              padding: const EdgeInsets.only(bottom: 96),
-              child: FloatingActionButton(
-                onPressed: () => _showPlanEditor(),
-                child: const Icon(Icons.add),
-              ),
-            )
-          : null,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 96),
+        child: FloatingActionButton(
+          onPressed: () => _showPlanEditor(),
+          child: const Icon(Icons.add),
+        ),
+      ),
     );
   }
 
@@ -652,7 +628,7 @@ class _PlanPageState extends State<PlanPage> {
     }
 
     return CardWidget(
-      onTap: () => _selectPlan(plan['id'] as String?),
+      onTap: () => context.push('/plan/${plan['id']}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -694,20 +670,7 @@ class _PlanPageState extends State<PlanPage> {
             style: TextStyle(color: colors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconBtn(
-                icon: Icons.edit_outlined,
-                onTap: () => _showPlanEditor(existingPlan: plan),
-              ),
-              const SizedBox(width: 8),
-              IconBtn(
-                icon: Icons.delete_outline,
-                onTap: () => _deletePlan(plan['id'] as String),
-              ),
-            ],
-          ),
+
         ],
       ),
     );
@@ -726,312 +689,6 @@ class _PlanPageState extends State<PlanPage> {
     }
   }
 
-  // ── Plan Detail View ───────────────────────────────────────
-
-  Widget _buildPlanDetail(FitTrackColors colors, Map<String, dynamic> plan) {
-    final days = (plan['days'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final progress = ((plan['progress'] as num? ?? 0) / 100.0).clamp(0.0, 1.0);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Plan info card
-          CardWidget(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    BadgeWidget(
-                      text: '${plan['badge'] ?? _statusLabel(plan['status'] as String? ?? '')}',
-                      variant: plan['status'] == 'active' ? BadgeVariant.accent : BadgeVariant.info,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${plan['frequency'] ?? ''} · ${plan['difficulty'] ?? ''}',
-                      style: TextStyle(color: colors.textSecondary, fontSize: 13),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Text(
-                      '第${plan['week'] ?? 0}/${plan['totalWeeks'] ?? 0}周',
-                      style: TextStyle(color: colors.textSecondary, fontSize: 14),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${(progress * 100).toInt()}%',
-                      style: TextStyle(color: colors.accentGlow, fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ProgressBar(progress: progress),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Days list
-          const SectionHeader(title: '训练日'),
-          const SizedBox(height: 12),
-          ...days.asMap().entries.map((entry) {
-            final index = entry.key;
-            final day = entry.value;
-            return _buildDayCard(colors, plan, day, index);
-          }),
-
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _showPlanEditor(existingPlan: plan),
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('编辑计划'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colors.textSecondary,
-                    side: BorderSide(color: colors.borderColor),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _deletePlan(plan['id'] as String),
-                  icon: Icon(Icons.delete_outline, size: 18, color: colors.warningColor),
-                  label: Text('删除计划', style: TextStyle(color: colors.warningColor)),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: colors.borderColor),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
-  }
-
-  // ── Exercise detail item (plan detail view) ──────────────────
-  Widget _buildExerciseDetailItem(FitTrackColors colors, Map<String, dynamic> ex) {
-    final setConfig = ex['setConfig'] as List?;
-    final hasPerSet = setConfig != null && setConfig.length > 1;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: colors.bgSecondary.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.borderColor.withOpacity(0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.fitness_center, size: 14, color: colors.accentGlow),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  '${ex['name']}',
-                  style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: colors.accentGlow.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  '共${ex['sets'] ?? 0}组',
-                  style: TextStyle(color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (hasPerSet)
-            _buildPerSetTable(colors, setConfig)
-          else
-            _buildUniformStats(colors, ex),
-        ],
-      ),
-    );
-  }
-
-  // ── Uniform stats display (all sets same) ────────────────────
-  Widget _buildUniformStats(FitTrackColors colors, Map<String, dynamic> ex) {
-    final reps = ex['reps'] ?? '-';
-    final weight = ex['weight'];
-    final restTime = ex['restTime'] ?? 90;
-    final weightStr = (weight == null) ? '-' : '${_formatWeight(weight)}kg';
-
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: [
-        _buildStatChip(colors, Icons.repeat, '次数', '$reps'),
-        _buildStatChip(colors, Icons.monitor_weight_outlined, '重量', weightStr),
-        _buildStatChip(colors, Icons.timer_outlined, '休息', '$restTime秒'),
-      ],
-    );
-  }
-
-  // ── Per-set table (each set has different params) ────────────
-  Widget _buildPerSetTable(FitTrackColors colors, List setConfig) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.bgCard.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: colors.borderColor.withOpacity(0.5)),
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-            decoration: BoxDecoration(
-              color: colors.borderColor.withOpacity(0.2),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
-            ),
-            child: Row(
-              children: [
-                Expanded(flex: 2, child: Text('组', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
-                Expanded(flex: 3, child: Text('次数', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-                Expanded(flex: 3, child: Text('重量', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-                Expanded(flex: 3, child: Text('休息', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
-              ],
-            ),
-          ),
-          ...setConfig.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final s = entry.value as Map;
-            final isLast = idx == setConfig.length - 1;
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: isLast ? BorderSide.none : BorderSide(color: colors.borderColor.withOpacity(0.3)),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(flex: 2, child: Text('第${idx + 1}组', style: TextStyle(color: colors.textSecondary, fontSize: 11))),
-                  Expanded(flex: 3, child: Text('${s['reps'] ?? '-'}', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.center)),
-                  Expanded(flex: 3, child: Text('${_formatWeight(s['weight'])}kg', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.center)),
-                  Expanded(flex: 3, child: Text('${s['restTime'] ?? 90}秒', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.right)),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatChip(FitTrackColors colors, IconData icon, String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: colors.bgCard.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: colors.borderColor.withOpacity(0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 11, color: colors.textMuted),
-          const SizedBox(width: 3),
-          Text('$label ', style: TextStyle(color: colors.textMuted, fontSize: 10)),
-          Text(value, style: TextStyle(color: colors.textPrimary, fontSize: 11, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
-  String _formatWeight(dynamic w) {
-    if (w == null) return '-';
-    final d = (w is num) ? w.toDouble() : double.tryParse('$w') ?? 0;
-    return d == d.toInt().toDouble() ? '${d.toInt()}' : '$d';
-  }
-
-  Widget _buildDayCard(FitTrackColors colors, Map<String, dynamic> plan, Map<String, dynamic> day, int dayIndex) {
-    final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: CardWidget(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: colors.accentGlow.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${day['day'] ?? dayIndex + 1}',
-                      style: TextStyle(color: colors.accentGlow, fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    '${day['label'] ?? '训练日 ${dayIndex + 1}'}',
-                    style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                if (day['muscle'] != null)
-                  BadgeWidget(text: '${day['muscle']}', variant: BadgeVariant.purple),
-              ],
-            ),
-            if (exercises.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              ...exercises.map((ex) => _buildExerciseDetailItem(colors, ex)),
-            ] else ...[
-              const SizedBox(height: 8),
-              Text(
-                '暂无动作，编辑计划添加',
-                style: TextStyle(color: colors.textMuted, fontSize: 13),
-              ),
-            ],
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  context.push('/training?planId=${plan['id']}&dayIndex=$dayIndex');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: const Text('开始训练', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ============================================================

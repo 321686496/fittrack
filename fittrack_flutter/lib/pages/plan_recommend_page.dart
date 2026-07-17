@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../services/invitation_service.dart';
 
 class PlanRecommendPage extends StatefulWidget {
   final Map<String, dynamic> profileData;
@@ -457,6 +459,180 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
     widget.onComplete();
   }
 
+  /// v1 新手引导末尾：邀请码激活弹层
+  void _showInviteCodeSheet() {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final controller = TextEditingController();
+    bool activating = false;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.bgSecondary,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                16, 12, 16,
+                16 + MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: colors.borderColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.card_giftcard,
+                          size: 20, color: colors.accentGlow),
+                      const SizedBox(width: 8),
+                      Text(
+                        '输入邀请码',
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '输入好友的邀请码，激活后双方获得奖励',
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'[A-Za-z0-9\-]')),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'FIT-INV-XXXXXX',
+                      hintStyle: TextStyle(
+                          color: colors.textMuted, letterSpacing: 1),
+                      filled: true,
+                      fillColor: colors.bgCard,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                    ),
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 16,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: activating
+                          ? null
+                          : () async {
+                              final code =
+                                  controller.text.trim().toUpperCase();
+                              if (code.isEmpty) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('请输入邀请码'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+                              setSheetState(() => activating = true);
+                              final result = await InvitationService.instance
+                                  .activateInvitationCode(code);
+                              if (!ctx.mounted) return;
+                              setSheetState(() => activating = false);
+
+                              String msg;
+                              bool success = false;
+                              switch (result) {
+                                case InvitationResult.success:
+                                  msg = '激活成功！已获得7天高级统计全开放体验';
+                                  success = true;
+                                  break;
+                                case InvitationResult.invalidFormat:
+                                  msg = '格式错误：应为 FIT-INV-XXXXXX';
+                                  break;
+                                case InvitationResult.invalidSignature:
+                                  msg = '邀请码无效，请检查后重试';
+                                  break;
+                                case InvitationResult.selfInvite:
+                                  msg = '不能输入自己的邀请码哦';
+                                  break;
+                                case InvitationResult.alreadyActivated:
+                                  msg = '你已激活过邀请码（一码一绑）';
+                                  break;
+                              }
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                SnackBar(
+                                  content: Text(msg),
+                                  backgroundColor: success
+                                      ? colors.successColor
+                                      : colors.bgElevated,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              if (success && ctx.mounted) {
+                                Navigator.of(ctx).pop();
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.accentGlow,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                      child: activating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('立即激活',
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
@@ -530,6 +706,20 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  // v1 新手引导末尾：邀请码激活入口
+                  TextButton.icon(
+                    onPressed: _showInviteCodeSheet,
+                    icon: Icon(Icons.card_giftcard_outlined,
+                        size: 16, color: colors.accentGlow),
+                    label: Text(
+                      '我有邀请码',
+                      style: TextStyle(
+                        color: colors.accentGlow,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                   TextButton(
                     onPressed: widget.onComplete,
                     child: Text(

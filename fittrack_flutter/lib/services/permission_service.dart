@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../utils/platform_utils.dart';
 
 /// 权限管理服务 - 集中处理 HarmonyOS 权限申请与状态检查
 class PermissionService {
@@ -10,10 +11,9 @@ class PermissionService {
   /// 是否为支持权限处理的平台（移动端 + HarmonyOS）
   static bool get _isPermissionPlatform {
     print("kis web: $kIsWeb");
-    final isOhos=Platform.isOhos;
     print("platform is harmony: $isOhos");
     if (kIsWeb) return false;
-    return Platform.isAndroid || Platform.isIOS || Platform.isFuchsia || Platform.isOhos;
+    return Platform.isAndroid || Platform.isIOS || Platform.isFuchsia || isOhos;
   }
 
   /// 请求通知权限，返回是否已授予
