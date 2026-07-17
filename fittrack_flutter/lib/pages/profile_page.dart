@@ -5,6 +5,7 @@ import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/user_profile_generator.dart';
 import '../services/form_kit_service.dart';
+import '../services/points_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/custom_time_picker.dart';
@@ -193,6 +194,8 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildProfileHeader(colors),
+                const SizedBox(height: 20),
+                _buildPointsCard(colors),
                 const SizedBox(height: 20),
                 const SectionHeader(title: '成就'),
                 const SizedBox(height: 10),
@@ -492,6 +495,59 @@ class _ProfilePageState extends State<ProfilePage> {
             // v1 获客留存版：全免费策略，不展示 Pro 升级入口
             // Pro/兑换码体系已编码但 v1 不启用，后续版本可通过 isPremiumNotifier 恢复展示
             Icon(Icons.chevron_right, color: colors.textMuted, size: 22),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPointsCard(FitTrackColors colors) {
+    final points = PointsService.instance.points;
+    final earnedTotal = Storage.getSettings()['pointsEarnedTotal'] ?? 0;
+    final spentTotal = Storage.getSettings()['pointsSpentTotal'] ?? 0;
+
+    return GestureDetector(
+      onTap: () => context.push('/points-detail'),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [colors.accentGlow.withOpacity(0.08), colors.accentGlow.withOpacity(0.05)],
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.borderColor),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: colors.accentGlow.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.stars_rounded, color: colors.accentGlow, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('我的积分', style: TextStyle(
+                    color: colors.textMuted, fontSize: 12,
+                  )),
+                  const SizedBox(height: 4),
+                  Text('$points', style: TextStyle(
+                    color: colors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold,
+                  )),
+                  const SizedBox(height: 2),
+                  Text('累计获得 $earnedTotal · 累计消耗 $spentTotal', style: TextStyle(
+                    color: colors.textMuted, fontSize: 11,
+                  )),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: colors.textMuted),
           ],
         ),
       ),
