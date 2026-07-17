@@ -37,6 +37,7 @@ import 'pages/course_detail_page.dart';
 import 'pages/chapter_read_page.dart';
 import 'pages/note_list_page.dart';
 import 'pages/note_edit_page.dart';
+import 'pages/points_detail_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -329,6 +330,11 @@ GoRouter createRouter() {
           courseId: state.params['courseId'] ?? '',
           chapterId: state.params['chapterId'] ?? '',
         ),
+      ),
+      GoRoute(
+        path: '/points-detail',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PointsDetailPage(),
       ),
       // v1 V1-11: 训练笔记路由
       GoRoute(
