@@ -3,9 +3,14 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
+import '../services/clipboard_invite_service.dart';
+import '../services/retention_chain_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/onboarding_coach.dart';
 import '../widgets/page_header.dart';
+import '../widgets/virtual_opponent_card.dart';
+import '../widgets/invite_activation_banner.dart';
+import '../widgets/retention_weekly_report_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,12 +26,31 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic> _streak = {};
   List<Map<String, dynamic>> _personalRecords = [];
   bool _coachShown = false;
+  String? _detectedInviteCode;
 
   @override
   void initState() {
     super.initState();
     _loadData();
     Storage.dataChanged.addListener(_loadData);
+    // v1 一键裂变：启动时检测剪贴板邀请码
+    WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardInvite());
+    // v1 V1-04：启动时检查7天留存链触发（Day2/4 推送 / Day7 周报弹窗）
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkRetentionChain());
+  }
+
+  Future<void> _checkRetentionChain() async {
+    final report = await RetentionChainService.instance.checkAndTrigger();
+    if (report != null && mounted) {
+      await RetentionWeeklyReportDialog.show(context, report);
+    }
+  }
+
+  Future<void> _detectClipboardInvite() async {
+    final code = await ClipboardInviteService.instance.detectInviteCode();
+    if (code != null && mounted) {
+      setState(() => _detectedInviteCode = code);
+    }
   }
 
   @override
@@ -301,6 +325,12 @@ class _HomePageState extends State<HomePage> {
             onBellTap: () => _showNotifications(context),
             onCalendarTap: () => _showCalendar(context),
           ),
+          // v1 一键裂变：剪贴板邀请码激活横幅
+          if (_detectedInviteCode != null)
+            InviteActivationBanner(
+              inviteCode: _detectedInviteCode!,
+              onDismissed: () => setState(() => _detectedInviteCode = null),
+            ),
           Expanded(
             child: RefreshIndicator(
               color: colors.accentGlow,
@@ -314,6 +344,8 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildTeachingRecommendation(colors),
+                    const SizedBox(height: 14),
                     if (todayPlan != null)
                       _buildTodayPlanCard(colors, todayPlan)
                     else
@@ -329,6 +361,9 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 14),
                     _buildStreakCard(colors, streakData),
                     const SizedBox(height: 14),
+                    // v1 获客留存版：首页虚拟对手 PK 卡片
+                    const VirtualOpponentCard(),
+                    const SizedBox(height: 14),
                     _buildRecentTrainings(colors),
                     if (prData.isNotEmpty) ...[
                       const SizedBox(height: 14),
@@ -343,6 +378,52 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── 教学推荐 ──────────────────────────────────────────
+
+  Widget _buildTeachingRecommendation(FitTrackColors colors) {
+    return GestureDetector(
+      onTap: () => context.push('/tutorial'),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [colors.accentGlow.withOpacity(0.1), colors.accentGlow.withOpacity(0.05)],
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                color: colors.accentGlow.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.school, color: colors.accentGlow, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('今日推荐教学', style: TextStyle(
+                    color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
+                  )),
+                  Text('30个基础动作 · 系统化课程', style: TextStyle(
+                    color: colors.textMuted, fontSize: 12,
+                  )),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: colors.textMuted),
+          ],
+        ),
       ),
     );
   }
