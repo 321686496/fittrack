@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../data/system_plan_library.dart';
+import '../services/plan_recommendation_service.dart';
 import '../widgets/common_widgets.dart';
 
 const List<String> _planTypes = ['三分化', '四分化', '五分化', '全身训练', '自定义'];
@@ -102,45 +104,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
     setState(() {});
   }
 
-  List<Map<String, dynamic>> _generateRecommendedPlans() {
-    final settings = Storage.getSettings();
-    final goal = settings['fitnessGoal'] as String? ?? '';
-    final level = settings['fitnessLevel'] as String? ?? '';
-    final frequency = settings['trainingFrequency'] as String? ?? '';
-    final plans = <Map<String, dynamic>>[];
-
-    if (goal == '增肌') {
-      if (frequency.contains('4') || frequency.contains('5') || frequency.contains('6')) {
-        plans.add(_makeRecommendedPlan(name: '五分化增肌计划', type: '五分化', difficulty: level == '新手' ? '初级' : (level.isEmpty ? '进阶' : level), frequency: '5天/周', totalWeeks: 8, desc: '胸/背/腿/肩/手臂 五天循环，最大化肌肉刺激', icon: Icons.fitness_center));
-      } else {
-        plans.add(_makeRecommendedPlan(name: '三分化增肌计划', type: '三分化', difficulty: level == '新手' ? '初级' : (level.isEmpty ? '进阶' : level), frequency: '6天/周', totalWeeks: 8, desc: '推/拉/腿 三天循环，高效增肌', icon: Icons.fitness_center));
-      }
-    } else if (goal == '减脂') {
-      plans.add(_makeRecommendedPlan(name: 'HIIT燃脂计划', type: '全身训练', difficulty: level == '新手' ? '入门' : (level.isEmpty ? '初级' : level), frequency: '3天/周', totalWeeks: 6, desc: '高强度间歇训练，快速燃烧脂肪', icon: Icons.local_fire_department));
-    } else if (goal == '塑形') {
-      plans.add(_makeRecommendedPlan(name: '塑形美体计划', type: '四分化', difficulty: level == '新手' ? '初级' : (level.isEmpty ? '进阶' : level), frequency: '4天/周', totalWeeks: 8, desc: '均衡训练各部位，打造匀称体型', icon: Icons.accessibility_new));
-    } else {
-      plans.add(_makeRecommendedPlan(name: '三分化基础计划', type: '三分化', difficulty: '初级', frequency: '6天/周', totalWeeks: 8, desc: '适合大多数人的经典训练分割', icon: Icons.fitness_center));
-      plans.add(_makeRecommendedPlan(name: '全身燃脂计划', type: '全身训练', difficulty: '入门', frequency: '3天/周', totalWeeks: 6, desc: '每周三次全身训练，适合初学者', icon: Icons.local_fire_department));
-    }
-    return plans;
-  }
-
-  Map<String, dynamic> _makeRecommendedPlan({required String name, required String type, required String difficulty, required String frequency, required int totalWeeks, required String desc, required IconData icon}) {
-    return {
-      'name': name, 'type': type, 'difficulty': difficulty, 'frequency': frequency,
-      'totalWeeks': totalWeeks, 'desc': desc, 'icon': icon,
-    };
-  }
-
-  void _addRecommendedPlanAsNew(Map<String, dynamic> rec) {
-    _nameController.text = rec['name'] as String;
-    _selectedType = rec['type'] as String;
-    _selectedDifficulty = rec['difficulty'] as String;
-    _totalWeeksController.text = '${rec['totalWeeks']}';
-    _applyQuickSetup(_selectedType);
-    setState(() {});
-    Scrollable.ensureVisible(context);
+  List<PlanRecommendation> _generateRecommendedPlans() {
+    if (!SystemPlanLibrary.instance.isLoaded) return [];
+    return PlanRecommendationService.instance.recommend(limit: 3);
   }
 
   void _save() {
@@ -339,31 +305,49 @@ class _AddPlanPageState extends State<AddPlanPage> {
     );
   }
 
-  Widget _buildRecommendedCard(FitTrackColors colors, Map<String, dynamic> rec) {
-    final icon = rec['icon'] as IconData? ?? Icons.fitness_center;
+  Widget _buildRecommendedCard(FitTrackColors colors, PlanRecommendation rec) {
+    final plan = rec.plan;
+    final difficultyLabel = kDifficultyLabelsZh[plan.difficulty] ?? plan.difficulty;
+    final typeLabel = kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType;
+    final frequencyLabel = '${plan.recommendedFrequency}天/周';
     return CardWidget(
-      onTap: () => _addRecommendedPlanAsNew(rec),
+      onTap: () => context.go('/plan-library/detail/${plan.id}'),
       child: Row(
         children: [
           Container(
             width: 44, height: 44,
             decoration: BoxDecoration(color: colors.accentGlow.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, size: 22, color: colors.accentGlow),
+            child: Center(
+              child: Text(plan.coverEmoji, style: const TextStyle(fontSize: 22)),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(rec['name'] as String, style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                Text(plan.name, style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
-                Text('${rec['frequency']} · ${rec['difficulty']} · ${rec['totalWeeks']}周', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                Text('$typeLabel · $frequencyLabel · $difficultyLabel · ${plan.totalWeeks}周', style: TextStyle(color: colors.textMuted, fontSize: 11)),
                 const SizedBox(height: 2),
-                Text(rec['desc'] as String? ?? '', style: TextStyle(color: colors.textSecondary, fontSize: 12)),
+                Text(plan.description, style: TextStyle(color: colors.textSecondary, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
+                if (rec.reasons.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6, runSpacing: 4,
+                    children: rec.reasons.take(2).map((r) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: colors.accentGlow.withOpacity(0.08), borderRadius: BorderRadius.circular(4)),
+                        child: Text(r, style: TextStyle(color: colors.accentGlow, fontSize: 10, fontWeight: FontWeight.w500)),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
             ),
           ),
-          Icon(Icons.add_circle_outline, size: 22, color: colors.accentGlow),
+          Icon(Icons.chevron_right, size: 22, color: colors.accentGlow),
         ],
       ),
     );
