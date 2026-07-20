@@ -1,0 +1,656 @@
+[
+  {
+    "id": "bulk_3day_split_beginner_1",
+    "name": "新手增肌三分化",
+    "goal": "bulk",
+    "difficulty": "beginner",
+    "trainingType": "3day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 90,
+    "description": "专为健身新手设计的推拉腿三分化训练计划，每周三次训练覆盖主要肌群，动作简单易学，注重基础动作模式建立，帮助新手快速适应力量训练，打造坚实的肌肉基础。",
+    "coverEmoji": "💪",
+    "coverColors": ["#E89B9B", "#C47070"],
+    "tags": ["新手友好", "三分化", "基础动作"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 18-24，体脂率 18-25%，健身经验 0-6 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部日",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_001", "name": "杠铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_chest_002", "name": "上斜哑铃卧推", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_chest_003", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_chest_004", "name": "俯卧撑", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部日",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_001", "name": "高位下拉", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_back_002", "name": "坐姿划船", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_back_003", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_back_004", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_001", "name": "深蹲", "sets": 4, "reps": 10, "restTime": 150},
+          {"id": "ex_leg_002", "name": "腿举", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_leg_003", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_leg_004", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_full_body_beginner_1",
+    "name": "全身增肌入门计划",
+    "goal": "bulk",
+    "difficulty": "beginner",
+    "trainingType": "full_body",
+    "isPremium": true,
+    "pointsCost": 100,
+    "totalWeeks": 6,
+    "defaultRestTime": 90,
+    "description": "精品全身训练计划，每次训练覆盖全身主要肌群，适合健身新手快速建立力量基础。包含详细的动作指导与重量进阶建议，4 天训练日灵活安排，让你在家或健身房都能高效增肌。",
+    "coverEmoji": "✨",
+    "coverColors": ["#D4A574", "#B08355"],
+    "tags": ["精品", "全身训练", "新手友好"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 18-24，体脂率 18-25%，希望全身均衡发展",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_001", "name": "深蹲", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_full_002", "name": "杠铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_full_003", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_004", "name": "平板支撑", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_005", "name": "硬拉", "sets": 4, "reps": 8, "restTime": 150},
+          {"id": "ex_full_006", "name": "哑铃推举", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_007", "name": "杠铃划船", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_full_008", "name": "卷腹", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_009", "name": "腿举", "sets": 4, "reps": 12, "restTime": 120},
+          {"id": "ex_full_010", "name": "上斜哑铃卧推", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_011", "name": "坐姿划船", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_012", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "全身D",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_013", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_014", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_015", "name": "引体向上", "sets": 3, "reps": 8, "restTime": 120},
+          {"id": "ex_full_016", "name": "俄罗斯转体", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_3day_split_beginner_2",
+    "name": "基础增肌三分化进阶版",
+    "goal": "bulk",
+    "difficulty": "beginner",
+    "trainingType": "3day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 90,
+    "description": "适合完成首轮增肌训练后的新手进阶计划，三分化训练中加入更多孤立动作，逐步提升训练容量与强度，帮助突破新手适应期，持续刺激肌肉生长，为后续进阶打下基础。",
+    "coverEmoji": "🏋️",
+    "coverColors": ["#E89B9B", "#C47070"],
+    "tags": ["新手进阶", "三分化", "容量提升"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 18-25，体脂率 16-24%，健身经验 1-3 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部+三头",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_010", "name": "杠铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_chest_011", "name": "上斜哑铃卧推", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_chest_012", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_arm_001", "name": "三头肌下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部+二头",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_010", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_back_011", "name": "杠铃划船", "sets": 3, "reps": 10, "restTime": 120},
+          {"id": "ex_back_012", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_arm_010", "name": "杠铃弯举", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部+核心",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_010", "name": "深蹲", "sets": 4, "reps": 10, "restTime": 150},
+          {"id": "ex_leg_011", "name": "罗马尼亚硬拉", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_leg_012", "name": "腿屈伸", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_core_001", "name": "平板支撑", "sets": 3, "reps": 45, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_4day_split_elementary_1",
+    "name": "经典增肌四分化",
+    "goal": "bulk",
+    "difficulty": "elementary",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 200,
+    "totalWeeks": 10,
+    "defaultRestTime": 90,
+    "description": "精品四分化增肌计划，胸背腿肩独立训练日，每个肌群获得充分刺激与恢复。包含进阶动作组合与负重进阶策略，适合有一定训练基础的健身者，系统提升各部位肌肉维度与力量。",
+    "coverEmoji": "💪",
+    "coverColors": ["#D4A574", "#B08355"],
+    "tags": ["精品", "四分化", "进阶训练"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 19-25，体脂率 15-22%，健身经验 3-12 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部日",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_020", "name": "杠铃卧推", "sets": 5, "reps": 8, "restTime": 150},
+          {"id": "ex_chest_021", "name": "上斜哑铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_chest_022", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_chest_023", "name": "双杠臂屈伸", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部日",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_020", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_back_021", "name": "杠铃划船", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_back_022", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_back_023", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_020", "name": "深蹲", "sets": 5, "reps": 8, "restTime": 180},
+          {"id": "ex_leg_021", "name": "罗马尼亚硬拉", "sets": 4, "reps": 10, "restTime": 150},
+          {"id": "ex_leg_022", "name": "腿举", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_leg_023", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部日",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_001", "name": "哑铃推举", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_shoulder_002", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 90},
+          {"id": "ex_shoulder_003", "name": "前平举", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_shoulder_004", "name": "俯身飞鸟", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_full_body_elementary_1",
+    "name": "全身增肌初级计划",
+    "goal": "bulk",
+    "difficulty": "elementary",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 90,
+    "description": "适合初级健身者的全身增肌计划，每周四次训练覆盖全身主要肌群，复合动作优先，注重渐进式超负荷。计划中包含动作替换建议，让你在器械有限时也能灵活完成训练，持续进步。",
+    "coverEmoji": "🏋️",
+    "coverColors": ["#E89B9B", "#C47070"],
+    "tags": ["全身训练", "初级", "复合动作"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 18-25，体脂率 16-23%，健身经验 3-6 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_020", "name": "深蹲", "sets": 4, "reps": 8, "restTime": 150},
+          {"id": "ex_full_021", "name": "杠铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_full_022", "name": "杠铃划船", "sets": 3, "reps": 10, "restTime": 120},
+          {"id": "ex_full_023", "name": "平板支撑", "sets": 3, "reps": 45, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_030", "name": "硬拉", "sets": 4, "reps": 6, "restTime": 180},
+          {"id": "ex_full_031", "name": "哑铃推举", "sets": 3, "reps": 10, "restTime": 120},
+          {"id": "ex_full_032", "name": "引体向上", "sets": 3, "reps": 8, "restTime": 120},
+          {"id": "ex_full_033", "name": "卷腹", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_040", "name": "前蹲", "sets": 4, "reps": 8, "restTime": 150},
+          {"id": "ex_full_041", "name": "上斜哑铃卧推", "sets": 3, "reps": 10, "restTime": 120},
+          {"id": "ex_full_042", "name": "坐姿划船", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_043", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "全身D",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_050", "name": "保加利亚分腿蹲", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_full_051", "name": "双杠臂屈伸", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_052", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_full_053", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_4day_split_intermediate_1",
+    "name": "进阶增肌四分化计划",
+    "goal": "bulk",
+    "difficulty": "intermediate",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 12,
+    "defaultRestTime": 90,
+    "description": "精品进阶四分化增肌计划，针对有一定训练经验者设计，融合力量与肌肥大训练法，每个训练日包含主项与辅助动作，配合精准的组数次数安排，最大化肌肉生长刺激，突破训练瓶颈期。",
+    "coverEmoji": "💪",
+    "coverColors": ["#D4A574", "#B08355"],
+    "tags": ["精品", "进阶", "肌肥大"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部日",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_030", "name": "杠铃卧推", "sets": 5, "reps": 6, "restTime": 180},
+          {"id": "ex_chest_031", "name": "上斜哑铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_chest_032", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_chest_033", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_chest_034", "name": "双杠臂屈伸", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部日",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_030", "name": "引体向上", "sets": 5, "reps": 6, "restTime": 150},
+          {"id": "ex_back_031", "name": "杠铃划船", "sets": 4, "reps": 8, "restTime": 150},
+          {"id": "ex_back_032", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_back_033", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_back_034", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_030", "name": "深蹲", "sets": 5, "reps": 6, "restTime": 180},
+          {"id": "ex_leg_031", "name": "罗马尼亚硬拉", "sets": 4, "reps": 8, "restTime": 150},
+          {"id": "ex_leg_032", "name": "腿举", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_leg_033", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_leg_034", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩臂日",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_010", "name": "哑铃推举", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_shoulder_011", "name": "阿诺德推举", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_shoulder_012", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 90},
+          {"id": "ex_shoulder_013", "name": "面拉", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_arm_020", "name": "杠铃弯举", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_5day_split_intermediate_1",
+    "name": "五分化增肌计划",
+    "goal": "bulk",
+    "difficulty": "intermediate",
+    "trainingType": "5day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 12,
+    "defaultRestTime": 90,
+    "description": "经典五分化增肌计划，胸背腿肩臂独立训练日，每个肌群获得最大训练容量与充分恢复。适合追求肌肉维度突破的中级训练者，融合多种训练技巧，让每块肌肉都得到精准刺激。",
+    "coverEmoji": "💪",
+    "coverColors": ["#E89B9B", "#C47070"],
+    "tags": ["五分化", "中级", "高容量"],
+    "recommendedFrequency": 5,
+    "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部日",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_040", "name": "杠铃卧推", "sets": 4, "reps": 8, "restTime": 150},
+          {"id": "ex_chest_041", "name": "上斜哑铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_chest_042", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_chest_043", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部日",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_040", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_back_041", "name": "杠铃划船", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_back_042", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_back_043", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_040", "name": "深蹲", "sets": 4, "reps": 8, "restTime": 180},
+          {"id": "ex_leg_041", "name": "罗马尼亚硬拉", "sets": 4, "reps": 10, "restTime": 150},
+          {"id": "ex_leg_042", "name": "腿举", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_leg_043", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部日",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_020", "name": "哑铃推举", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_shoulder_021", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 90},
+          {"id": "ex_shoulder_022", "name": "前平举", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_shoulder_023", "name": "俯身飞鸟", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 5,
+        "label": "手臂日",
+        "muscle": "手臂",
+        "exercises": [
+          {"id": "ex_arm_030", "name": "杠铃弯举", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_arm_031", "name": "锤式弯举", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_arm_032", "name": "三头肌下压", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_arm_033", "name": "法式推举", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_5day_split_intermediate_2",
+    "name": "高容量五分化增肌",
+    "goal": "bulk",
+    "difficulty": "intermediate",
+    "trainingType": "5day_split",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 12,
+    "defaultRestTime": 75,
+    "description": "精品高容量五分化增肌计划，每个训练日采用 5-6 个动作高容量训练法，结合超级组与递减组技巧，最大化肌肉代谢压力。详细的组间歇控制与节奏指导，让你的肌肉无处可逃，实现维度突破。",
+    "coverEmoji": "💯",
+    "coverColors": ["#D4A574", "#B08355"],
+    "tags": ["精品", "高容量", "超级组"],
+    "recommendedFrequency": 5,
+    "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部日",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_050", "name": "杠铃卧推", "sets": 5, "reps": 8, "restTime": 120},
+          {"id": "ex_chest_051", "name": "上斜哑铃卧推", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_chest_052", "name": "哑铃飞鸟", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_chest_053", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_chest_054", "name": "俯卧撑", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部日",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_050", "name": "引体向上", "sets": 5, "reps": 8, "restTime": 120},
+          {"id": "ex_back_051", "name": "杠铃划船", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_back_052", "name": "哑铃划船", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_back_053", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_back_054", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_050", "name": "深蹲", "sets": 5, "reps": 8, "restTime": 180},
+          {"id": "ex_leg_051", "name": "罗马尼亚硬拉", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_leg_052", "name": "腿举", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_leg_053", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_leg_054", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部日",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_030", "name": "哑铃推举", "sets": 5, "reps": 8, "restTime": 120},
+          {"id": "ex_shoulder_031", "name": "阿诺德推举", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_shoulder_032", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 75},
+          {"id": "ex_shoulder_033", "name": "前平举", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_shoulder_034", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 5,
+        "label": "手臂日",
+        "muscle": "手臂",
+        "exercises": [
+          {"id": "ex_arm_040", "name": "杠铃弯举", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_arm_041", "name": "哑铃弯举", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_arm_042", "name": "锤式弯举", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_arm_043", "name": "三头肌下压", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_arm_044", "name": "法式推举", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_5day_split_advanced_1",
+    "name": "高级五分化增肌计划",
+    "goal": "bulk",
+    "difficulty": "advanced",
+    "trainingType": "5day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 16,
+    "defaultRestTime": 90,
+    "description": "面向高级训练者的五分化增肌计划，融合力量周期与肌肥大周期，每个肌群训练日包含主项力量动作与辅助肌肥大动作。训练容量与强度并重，适合追求极限肌肉维度与力量突破的进阶者。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#E89B9B", "#C47070"],
+    "tags": ["高级", "力量周期", "五分化"],
+    "recommendedFrequency": 5,
+    "suitableFor": "BMI 21-27，体脂率 12-20%，健身经验 2 年以上",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部日",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_060", "name": "杠铃卧推", "sets": 5, "reps": 5, "restTime": 180},
+          {"id": "ex_chest_061", "name": "上斜哑铃卧推", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_chest_062", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_chest_063", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部日",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_060", "name": "引体向上", "sets": 5, "reps": 6, "restTime": 150},
+          {"id": "ex_back_061", "name": "杠铃划船", "sets": 5, "reps": 6, "restTime": 150},
+          {"id": "ex_back_062", "name": "哑铃划船", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_back_063", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_060", "name": "深蹲", "sets": 5, "reps": 5, "restTime": 180},
+          {"id": "ex_leg_061", "name": "硬拉", "sets": 4, "reps": 6, "restTime": 180},
+          {"id": "ex_leg_062", "name": "腿举", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_leg_063", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部日",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_040", "name": "哑铃推举", "sets": 5, "reps": 6, "restTime": 150},
+          {"id": "ex_shoulder_041", "name": "阿诺德推举", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_shoulder_042", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 90},
+          {"id": "ex_shoulder_043", "name": "俯身飞鸟", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 5,
+        "label": "手臂日",
+        "muscle": "手臂",
+        "exercises": [
+          {"id": "ex_arm_050", "name": "杠铃弯举", "sets": 4, "reps": 8, "restTime": 90},
+          {"id": "ex_arm_051", "name": "锤式弯举", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_arm_052", "name": "三头肌下压", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_arm_053", "name": "法式推举", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bulk_4day_split_advanced_1",
+    "name": "精英增肌四分化计划",
+    "goal": "bulk",
+    "difficulty": "advanced",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 800,
+    "totalWeeks": 16,
+    "defaultRestTime": 90,
+    "description": "精品精英级增肌四分化计划，融合力量举训练法与健美式肌肥大训练，主项动作采用 5x5 力量训练，辅助动作采用 8-12 次肌肥大区间。系统化周期化训练，帮助你突破基因极限，达到最佳肌肉维度与力量表现。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#D4A574", "#B08355"],
+    "tags": ["精品", "精英", "力量举融合"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 21-28，体脂率 12-20%，健身经验 3 年以上",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部+三头",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_070", "name": "杠铃卧推", "sets": 5, "reps": 5, "restTime": 180},
+          {"id": "ex_chest_071", "name": "上斜哑铃卧推", "sets": 4, "reps": 10, "restTime": 120},
+          {"id": "ex_chest_072", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_arm_060", "name": "三头肌下压", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_arm_061", "name": "法式推举", "sets": 3, "reps": 10, "restTime": 90}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部+二头",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_070", "name": "引体向上", "sets": 5, "reps": 6, "restTime": 150},
+          {"id": "ex_back_071", "name": "杠铃划船", "sets": 5, "reps": 6, "restTime": 150},
+          {"id": "ex_back_072", "name": "哑铃划船", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_arm_070", "name": "杠铃弯举", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_arm_071", "name": "锤式弯举", "sets": 3, "reps": 12, "restTime": 90}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_070", "name": "深蹲", "sets": 5, "reps": 5, "restTime": 180},
+          {"id": "ex_leg_071", "name": "硬拉", "sets": 4, "reps": 5, "restTime": 180},
+          {"id": "ex_leg_072", "name": "腿举", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_leg_073", "name": "罗马尼亚硬拉", "sets": 3, "reps": 10, "restTime": 120},
+          {"id": "ex_leg_074", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部+核心",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_050", "name": "哑铃推举", "sets": 5, "reps": 6, "restTime": 150},
+          {"id": "ex_shoulder_051", "name": "阿诺德推举", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_shoulder_052", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 90},
+          {"id": "ex_shoulder_053", "name": "面拉", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_core_010", "name": "悬垂举腿", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  }
+]

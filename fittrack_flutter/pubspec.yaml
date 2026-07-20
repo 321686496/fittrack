@@ -55,6 +55,7 @@ dependencies:
     git:
       url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_local_notifications.git
       path: flutter_local_notifications
+      ref: master
   timezone: ^0.9.4
 #  permission_handler: ^11.0.1
 #  permission_handler_ohos: ^0.0.8
@@ -93,6 +94,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/exercises/
+    - assets/data/system_plans/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

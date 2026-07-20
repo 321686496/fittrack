@@ -1,0 +1,632 @@
+[
+  {
+    "id": "shape_3day_split_beginner_1",
+    "name": "塑形入门三分化",
+    "goal": "shape",
+    "difficulty": "beginner",
+    "trainingType": "3day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 75,
+    "description": "专为塑形新手设计的三分化训练计划，胸背腿均匀发展，注重身体线条塑造。中等重量高次数训练法，激活目标肌群的同时改善体态。每周三次训练，每次 45 分钟，轻松融入日常生活节奏。",
+    "coverEmoji": "🧘",
+    "coverColors": ["#B5C5E0", "#8FA3C7"],
+    "tags": ["塑形", "三分化", "新手友好"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 18-23，体脂率 20-26%，希望改善线条",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部塑形",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_120", "name": "哑铃卧推", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_chest_121", "name": "上斜哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_chest_122", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_123", "name": "俯卧撑", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部塑形",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_120", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_back_121", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_back_122", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_back_123", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "臀腿塑形",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_130", "name": "深蹲", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_leg_131", "name": "臀桥", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_leg_132", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_leg_133", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_full_body_beginner_1",
+    "name": "全身塑形精品计划",
+    "goal": "shape",
+    "difficulty": "beginner",
+    "trainingType": "full_body",
+    "isPremium": true,
+    "pointsCost": 100,
+    "totalWeeks": 8,
+    "defaultRestTime": 75,
+    "description": "精品全身塑形计划，专为追求匀称线条的女性和新手设计。融合力量训练与拉伸元素，每次训练覆盖全身主要肌群，配合核心稳定训练改善体态。详细动作指导与替代方案，让你轻松完成塑形目标。",
+    "coverEmoji": "✨",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["精品", "全身塑形", "女性友好"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 17-22，体脂率 22-28%，追求匀称线条",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身塑形A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_170", "name": "深蹲", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_171", "name": "哑铃卧推", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_172", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_173", "name": "平板支撑", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身塑形B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_180", "name": "臀桥", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_full_181", "name": "哑铃推举", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_182", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_183", "name": "卷腹", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身塑形C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_190", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_191", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_192", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_193", "name": "俄罗斯转体", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "全身塑形D",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_200", "name": "罗马尼亚硬拉", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_201", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_202", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_203", "name": "悬垂举腿", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_3day_split_beginner_2",
+    "name": "女性塑形三分化",
+    "goal": "shape",
+    "difficulty": "beginner",
+    "trainingType": "3day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 75,
+    "description": "专为女性设计的塑形三分化计划，重点训练臀腿、背部与核心肌群，打造蜜桃臀与紧致背部线条。动作选择贴合女性生理特点，避开容易粗腰的动作，让你在塑形同时保持优雅体态。",
+    "coverEmoji": "🧘",
+    "coverColors": ["#B5C5E0", "#8FA3C7"],
+    "tags": ["女性塑形", "三分化", "臀腿重点"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 17-23，体脂率 22-28%，女性塑形",
+    "days": [
+      {
+        "day": 1,
+        "label": "臀腿日",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_140", "name": "臀桥", "sets": 4, "reps": 20, "restTime": 75},
+          {"id": "ex_leg_141", "name": "深蹲", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_leg_142", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_143", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部肩部",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_130", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_back_131", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_shoulder_080", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_081", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "胸部核心",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_130", "name": "哑铃卧推", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_chest_131", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_core_070", "name": "平板支撑", "sets": 3, "reps": 45, "restTime": 60},
+          {"id": "ex_core_071", "name": "卷腹", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_4day_split_elementary_1",
+    "name": "塑形四分化精品计划",
+    "goal": "shape",
+    "difficulty": "elementary",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 200,
+    "totalWeeks": 10,
+    "defaultRestTime": 75,
+    "description": "精品塑形四分化计划，胸背臀腿肩独立训练日，每个肌群获得充分刺激与精雕细琢。融合孤立动作与多关节动作，特别强化臀部、肩部与背部线条塑造。包含进阶负重策略，让你的身材比例更趋完美。",
+    "coverEmoji": "✨",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["精品", "四分化", "身材比例"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 18-24，体脂率 20-26%，健身经验 3-12 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部塑形",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_140", "name": "哑铃卧推", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_chest_141", "name": "上斜哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_chest_142", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_143", "name": "俯卧撑", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部塑形",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_140", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 90},
+          {"id": "ex_back_141", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_back_142", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_back_143", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "臀腿塑形",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_150", "name": "臀桥", "sets": 4, "reps": 20, "restTime": 75},
+          {"id": "ex_leg_151", "name": "深蹲", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_leg_152", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_153", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩臂塑形",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_090", "name": "哑铃推举", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_shoulder_091", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_092", "name": "俯身飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_arm_080", "name": "哑铃弯举", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_full_body_elementary_1",
+    "name": "全身塑形循环计划",
+    "goal": "shape",
+    "difficulty": "elementary",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 75,
+    "description": "全身塑形循环训练计划，每次训练以循环形式完成全身肌群训练。中等重量配合 12-15 次次数区间，刺激肌肉塑形同时避免过度增肌。适合希望整体塑形、改善体态的初中级健身者，每周四次训练效果显著。",
+    "coverEmoji": "🧘",
+    "coverColors": ["#B5C5E0", "#8FA3C7"],
+    "tags": ["全身塑形", "循环训练", "初级"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 18-24，体脂率 20-26%，健身经验 3-12 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身塑形A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_210", "name": "深蹲", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_211", "name": "哑铃卧推", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_212", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_213", "name": "卷腹", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身塑形B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_220", "name": "臀桥", "sets": 3, "reps": 20, "restTime": 75},
+          {"id": "ex_full_221", "name": "哑铃推举", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_222", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_223", "name": "平板支撑", "sets": 3, "reps": 45, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身塑形C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_230", "name": "罗马尼亚硬拉", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_231", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_232", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_233", "name": "俄罗斯转体", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "全身塑形D",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_240", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_241", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_242", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_243", "name": "悬垂举腿", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_4day_split_elementary_2",
+    "name": "蜜桃臀腿塑形计划",
+    "goal": "shape",
+    "difficulty": "elementary",
+    "trainingType": "4day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 10,
+    "defaultRestTime": 75,
+    "description": "重点塑形臀腿的四分化计划，每周两次臀腿训练日，配合背肩胸训练平衡上半身。包含多种臀肌激活动作与孤立训练，全面塑造蜜桃臀线条，同时紧致大腿与小腿，打造完美下肢比例。",
+    "coverEmoji": "🧘",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["臀腿塑形", "四分化", "蜜桃臀"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 17-23，体脂率 22-28%，希望塑形臀腿",
+    "days": [
+      {
+        "day": 1,
+        "label": "臀腿A",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_160", "name": "臀桥", "sets": 4, "reps": 20, "restTime": 75},
+          {"id": "ex_leg_161", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_leg_162", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_163", "name": "腿弯举", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部肩部",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_150", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_back_151", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_shoulder_100", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_101", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "臀腿B",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_170", "name": "罗马尼亚硬拉", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_171", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_172", "name": "臀桥", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_leg_173", "name": "腿举", "sets": 3, "reps": 15, "restTime": 75}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "胸部核心",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_150", "name": "哑铃卧推", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_chest_151", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_core_080", "name": "平板支撑", "sets": 3, "reps": 45, "restTime": 60},
+          {"id": "ex_core_081", "name": "悬垂举腿", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_5day_split_intermediate_1",
+    "name": "塑形五分化精品计划",
+    "goal": "shape",
+    "difficulty": "intermediate",
+    "trainingType": "5day_split",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 12,
+    "defaultRestTime": 75,
+    "description": "精品塑形五分化计划，胸背腿肩臂独立训练日，每个肌群获得精雕细琢。融合高次数肌耐力训练与孤立塑形动作，特别强化肩部、臀部、背部等关键线条肌群。详细的节奏控制与顶峰收缩指导，让你的肌肉线条清晰可见。",
+    "coverEmoji": "✨",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["精品", "五分化", "线条雕刻"],
+    "recommendedFrequency": 5,
+    "suitableFor": "BMI 18-24，体脂率 18-24%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部塑形",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_160", "name": "哑铃卧推", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_chest_161", "name": "上斜哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_chest_162", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_163", "name": "双杠臂屈伸", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部塑形",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_160", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 90},
+          {"id": "ex_back_161", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_back_162", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_back_163", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "臀腿塑形",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_180", "name": "臀桥", "sets": 4, "reps": 20, "restTime": 75},
+          {"id": "ex_leg_181", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_leg_182", "name": "罗马尼亚硬拉", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_183", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部塑形",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_110", "name": "哑铃推举", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_shoulder_111", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_112", "name": "前平举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_113", "name": "俯身飞鸟", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 5,
+        "label": "手臂核心",
+        "muscle": "手臂",
+        "exercises": [
+          {"id": "ex_arm_090", "name": "哑铃弯举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_arm_091", "name": "锤式弯举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_arm_092", "name": "三头肌下压", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_core_090", "name": "悬垂举腿", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_full_body_intermediate_1",
+    "name": "全身塑形进阶计划",
+    "goal": "shape",
+    "difficulty": "intermediate",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 10,
+    "defaultRestTime": 75,
+    "description": "中级全身塑形计划，每次训练结合复合动作与孤立塑形动作，全面雕琢身材线条。融合超级组与递减组技巧，提升训练强度同时保持中等重量。适合已掌握基础动作的健身者，进一步提升肌肉线条与体态。",
+    "coverEmoji": "🧘",
+    "coverColors": ["#B5C5E0", "#8FA3C7"],
+    "tags": ["全身塑形", "中级", "超级组"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 18-24，体脂率 18-24%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身塑形A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_250", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_full_251", "name": "哑铃卧推", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_full_252", "name": "引体向上", "sets": 3, "reps": 8, "restTime": 75},
+          {"id": "ex_full_253", "name": "悬垂举腿", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身塑形B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_260", "name": "罗马尼亚硬拉", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_full_261", "name": "哑铃推举", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_full_262", "name": "杠铃划船", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_263", "name": "卷腹", "sets": 3, "reps": 20, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身塑形C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_270", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_271", "name": "上斜哑铃卧推", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_272", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_full_273", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "全身塑形D",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_280", "name": "臀桥", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_full_281", "name": "双杠臂屈伸", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_282", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_full_283", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_5day_split_advanced_1",
+    "name": "精英塑形五分化计划",
+    "goal": "shape",
+    "difficulty": "advanced",
+    "trainingType": "5day_split",
+    "isPremium": true,
+    "pointsCost": 800,
+    "totalWeeks": 16,
+    "defaultRestTime": 60,
+    "description": "精品精英塑形计划，针对高级训练者设计，融合健美备赛训练法与功能性训练。每个训练日采用高强度超级组与递减组，结合顶峰收缩与离心控制，精雕细琢每块肌肉。让你的肌肉线条达到比赛级别，呈现完美身材比例。",
+    "coverEmoji": "💯",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["精品", "精英塑形", "超级组"],
+    "recommendedFrequency": 5,
+    "suitableFor": "BMI 19-25，体脂率 15-22%，健身经验 2 年以上",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部精雕",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_170", "name": "哑铃卧推", "sets": 5, "reps": 12, "restTime": 75},
+          {"id": "ex_chest_171", "name": "上斜哑铃飞鸟", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_172", "name": "绳索夹胸", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_173", "name": "双杠臂屈伸", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部精雕",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_170", "name": "引体向上", "sets": 5, "reps": 10, "restTime": 90},
+          {"id": "ex_back_171", "name": "杠铃划船", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_back_172", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_back_173", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "臀腿精雕",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_190", "name": "臀桥", "sets": 5, "reps": 20, "restTime": 75},
+          {"id": "ex_leg_191", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_leg_192", "name": "罗马尼亚硬拉", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_193", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部精雕",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_120", "name": "哑铃推举", "sets": 5, "reps": 12, "restTime": 75},
+          {"id": "ex_shoulder_121", "name": "阿诺德推举", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_shoulder_122", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_123", "name": "俯身飞鸟", "sets": 4, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 5,
+        "label": "手臂核心精雕",
+        "muscle": "手臂",
+        "exercises": [
+          {"id": "ex_arm_100", "name": "哑铃弯举", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_arm_101", "name": "锤式弯举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_arm_102", "name": "三头肌下压", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_core_100", "name": "悬垂举腿", "sets": 4, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_4day_split_advanced_1",
+    "name": "高级塑形四分化计划",
+    "goal": "shape",
+    "difficulty": "advanced",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 800,
+    "totalWeeks": 12,
+    "defaultRestTime": 60,
+    "description": "精品高级塑形四分化计划，融合健美式训练法与功能性训练，每个肌群训练日包含主项塑形动作与孤立精雕动作。采用 12-15 次肌耐力区间配合短间歇，最大化肌肉代谢压力与塑形效果，让你的身材线条清晰分明。",
+    "coverEmoji": "✨",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["精品", "高级", "肌耐力"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 19-25，体脂率 16-22%，健身经验 2 年以上",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸肩塑形",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_180", "name": "哑铃卧推", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_chest_181", "name": "上斜哑铃飞鸟", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_182", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_130", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部塑形",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_180", "name": "引体向上", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_back_181", "name": "杠铃划船", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_back_182", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_back_183", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "臀腿塑形",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_200", "name": "臀桥", "sets": 4, "reps": 20, "restTime": 75},
+          {"id": "ex_leg_201", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_leg_202", "name": "罗马尼亚硬拉", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_203", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "手臂核心塑形",
+        "muscle": "手臂",
+        "exercises": [
+          {"id": "ex_arm_110", "name": "哑铃弯举", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_arm_111", "name": "锤式弯举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_arm_112", "name": "三头肌下压", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_core_110", "name": "悬垂举腿", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  }
+]
