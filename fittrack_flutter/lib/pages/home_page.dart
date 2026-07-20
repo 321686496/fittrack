@@ -4,7 +4,6 @@ import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/clipboard_invite_service.dart';
-import '../services/recommendation_service.dart';
 import '../services/retention_chain_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/onboarding_coach.dart';
@@ -387,8 +386,7 @@ class _HomePageState extends State<HomePage> {
   // ── 推荐轮播 Banner ──────────────────────────────────────
 
   Widget _buildRecommendationBanners(FitTrackColors colors) {
-    final banners = RecommendationService.generateBanners();
-    return RecommendationBanner(items: banners);
+    return const RecommendationBanner();
   }
 
   Widget _buildNoPlanCard(FitTrackColors colors) {
