@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../data/system_plan_library.dart';
 import '../services/invitation_service.dart';
+import '../services/plan_recommendation_service.dart';
+import '../services/plan_unlock_service.dart';
 
 class PlanRecommendPage extends StatefulWidget {
   final Map<String, dynamic> profileData;
@@ -19,443 +23,42 @@ class PlanRecommendPage extends StatefulWidget {
 }
 
 class _PlanRecommendPageState extends State<PlanRecommendPage> {
-  List<Map<String, dynamic>> _recommendedPlans = [];
+  List<PlanRecommendation> _recommendedPlans = [];
 
   @override
   void initState() {
     super.initState();
-    _generateRecommendations();
+    _recommendedPlans = _generateRecommendations();
   }
 
-  void _generateRecommendations() {
-    final goal = widget.profileData['fitnessGoal'] as String? ?? '';
-    final level = widget.profileData['fitnessLevel'] as String? ?? '';
-    final frequency = widget.profileData['trainingFrequency'] as String? ?? '';
-
-    final freqNum = int.tryParse(frequency.replaceAll(RegExp(r'[^0-9]'), '')) ?? 3;
-
-    final plans = <Map<String, dynamic>>[];
-
-    // === 计划1: 基于目标+频率的主推荐计划 ===
-    if (goal == '增肌' && freqNum >= 4) {
-      plans.add(_buildPlan(
-        name: '五分化增肌计划',
-        type: '五分化',
-        frequency: '5天/周',
-        difficulty: '进阶',
-        totalWeeks: 8,
-        desc: '针对有一定基础的训练者，每天专注一个肌群，最大化肌肉刺激与生长。',
-        days: _fiveDaySplitDays(),
-      ));
-    } else if (goal == '增肌' && freqNum < 4) {
-      plans.add(_buildPlan(
-        name: '三分化增肌计划',
-        type: '三分化',
-        frequency: '3天/周',
-        difficulty: '中级',
-        totalWeeks: 8,
-        desc: '推拉腿三分化训练，每次训练覆盖多个肌群，适合时间有限的增肌者。',
-        days: _threeDaySplitDays(),
-      ));
-    } else if (goal == '减脂') {
-      plans.add(_buildPlan(
-        name: 'HIIT燃脂计划',
-        type: 'HIIT',
-        frequency: '3天/周',
-        difficulty: '中级',
-        totalWeeks: 6,
-        desc: '高强度间歇训练结合力量动作，最大化燃脂效果，保留肌肉量。',
-        days: _hiitDays(),
-      ));
-    } else if (goal == '塑形') {
-      plans.add(_buildPlan(
-        name: '塑形美体计划',
-        type: '塑形',
-        frequency: '4天/周',
-        difficulty: '中级',
-        totalWeeks: 8,
-        desc: '兼顾力量与有氧，重点塑造身体线条，打造匀称体态。',
-        days: _shapingDays(),
-      ));
-    } else {
-      plans.add(_buildPlan(
-        name: '全身健康计划',
-        type: '全身训练',
-        frequency: '3天/周',
-        difficulty: '初级',
-        totalWeeks: 6,
-        desc: '全面均衡的全身训练，维持身体机能，提升整体健康水平。',
-        days: _fullBodyDays(),
-      ));
-    }
-
-    // === 计划2: 不同类型的备选计划 ===
-    if (goal != '减脂') {
-      plans.add(_buildPlan(
-        name: 'HIIT燃脂计划',
-        type: 'HIIT',
-        frequency: '3天/周',
-        difficulty: '中级',
-        totalWeeks: 6,
-        desc: '高强度间歇训练，快速燃烧脂肪，提升心肺能力。',
-        days: _hiitDays(),
-      ));
-    }
-    if (goal != '增肌' && freqNum >= 4) {
-      plans.add(_buildPlan(
-        name: '五分化增肌计划',
-        type: '五分化',
-        frequency: '5天/周',
-        difficulty: '进阶',
-        totalWeeks: 8,
-        desc: '胸/背/腿/肩/手臂 五天循环，最大化肌肉刺激。',
-        days: _fiveDaySplitDays(),
-      ));
-    }
-    if (goal != '塑形' && freqNum < 4) {
-      plans.add(_buildPlan(
-        name: '塑形美体计划',
-        type: '塑形',
-        frequency: '4天/周',
-        difficulty: '中级',
-        totalWeeks: 8,
-        desc: '兼顾力量与有氧，重点塑造身体线条。',
-        days: _shapingDays(),
-      ));
-    }
-
-    // === 计划3: 新手入门计划（适合所有用户） ===
-    if (level == '新手' || level == '初级' || level.isEmpty) {
-      plans.add(_buildPlan(
-        name: '新手入门计划',
-        type: '全身训练',
-        frequency: '3天/周',
-        difficulty: '入门',
-        totalWeeks: 4,
-        desc: '从零开始的基础训练计划，动作简单安全，帮助建立运动习惯。',
-        days: _fullBodyDays(),
-      ));
-    }
-
-    // === 计划4: 全身健康计划（兜底选项） ===
-    if (plans.length < 3) {
-      plans.add(_buildPlan(
-        name: '全身健康计划',
-        type: '全身训练',
-        frequency: '3天/周',
-        difficulty: '初级',
-        totalWeeks: 6,
-        desc: '全面均衡的全身训练，维持身体机能，提升整体健康水平。',
-        days: _fullBodyDays(),
-      ));
-    }
-
-    // 去重（按名称）
-    final seen = <String>{};
-    plans.removeWhere((p) {
-      final name = p['name'] as String;
-      if (seen.contains(name)) return true;
-      seen.add(name);
-      return false;
-    });
-
-    // 根据身体数据调整推荐顺序
-    _reorderByBodyData(plans);
-
-    setState(() {
-      _recommendedPlans = plans;
-    });
+  List<PlanRecommendation> _generateRecommendations() {
+    if (!SystemPlanLibrary.instance.isLoaded) return [];
+    return PlanRecommendationService.instance.recommend(limit: 5);
   }
 
-  /// 根据身体数据（体脂率、目标体重、静息心率、BMI）调整推荐顺序
-  void _reorderByBodyData(List<Map<String, dynamic>> plans) {
-    if (plans.isEmpty) return;
-
-    // 合并 profileData 和 Storage 中的身体数据
-    final bodyData = <String, dynamic>{
-      ...Storage.getBodyData(),
-      ...widget.profileData,
-    };
-    final gender = bodyData['gender'] as String? ??
-        Storage.getSettings()['gender'] as String? ??
-        '';
-
-    final bodyFat = (bodyData['bodyFat'] as num?)?.toDouble() ?? 0;
-    final targetWeight = (bodyData['targetWeight'] as num?)?.toDouble() ?? 0;
-    final currentWeight = (bodyData['weight'] as num?)?.toDouble() ?? 0;
-    final restingHeartRate = (bodyData['restingHeartRate'] as num?)?.toDouble() ?? 0;
-    final height = (bodyData['height'] as num?)?.toDouble() ?? 0;
-
-    // 计算 BMI
-    double bmi = 0;
-    if (height > 0 && currentWeight > 0) {
-      bmi = currentWeight / ((height / 100) * (height / 100));
-    }
-
-    // 判断条件
-    final isHighBodyFat = bodyFat > 0 && (
-        (gender == '女' && bodyFat > 30) ||
-        (gender != '女' && bodyFat > 25));
-    final isWeightLoss = targetWeight > 0 &&
-        currentWeight > 0 &&
-        targetWeight < currentWeight;
-    final isHighHeartRate = restingHeartRate > 80;
-    final isHighBMI = bmi > 28;
-
-    // 无任何身体数据可用时，保持原顺序
-    if (!isHighBodyFat && !isWeightLoss && !isHighHeartRate && !isHighBMI) {
-      return;
-    }
-
-    // 为每个计划计算优先级分数
-    int scoreOf(Map<String, dynamic> plan) {
-      final name = plan['name'] as String? ?? '';
-      final difficulty = plan['difficulty'] as String? ?? '';
-      var score = 0;
-
-      // 高体脂：优先 HIIT 燃脂
-      if (isHighBodyFat && name.contains('HIIT')) score += 10;
-
-      // 减重需求：优先 HIIT 或塑形
-      if (isWeightLoss) {
-        if (name.contains('HIIT')) score += 8;
-        if (name.contains('塑形')) score += 5;
-      }
-
-      // 高 BMI：优先全身训练 + HIIT
-      if (isHighBMI) {
-        if (name.contains('全身')) score += 5;
-        if (name.contains('HIIT')) score += 5;
-      }
-
-      // 高静息心率：优先入门级，避免高强度
-      if (isHighHeartRate) {
-        if (difficulty == '入门' || difficulty == '初级') score += 8;
-        if (difficulty == '进阶' || difficulty == '高级') score -= 5;
-      }
-
-      return score;
-    }
-
-    // 按分数排序（保留原顺序作为 tiebreaker）
-    final indexed = plans.asMap().entries.toList();
-    indexed.sort((a, b) {
-      final scoreA = scoreOf(a.value);
-      final scoreB = scoreOf(b.value);
-      if (scoreA != scoreB) return scoreB - scoreA; // 降序
-      return a.key - b.key; // 原顺序
-    });
-
-    plans
-      ..clear()
-      ..addAll(indexed.map((e) => e.value));
-  }
-
-  // === 内置计划模板 ===
-
-  List<Map<String, dynamic>> _fiveDaySplitDays() => [
-    {
-      'day': 1, 'label': '胸部', 'muscle': '胸',
-      'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
-        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
-      ],
-    },
-    {
-      'day': 2, 'label': '背部', 'muscle': '背',
-      'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
-        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
-      ],
-    },
-    {
-      'day': 3, 'label': '腿部', 'muscle': '腿',
-      'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
-      ],
-    },
-    {
-      'day': 4, 'label': '肩部', 'muscle': '肩',
-      'exercises': [
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
-      ],
-    },
-    {
-      'day': 5, 'label': '手臂+核心', 'muscle': '手臂/核心',
-      'exercises': [
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
-        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'weight': 0.0, 'restTime': 45},
-        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
-      ],
-    },
-  ];
-
-  List<Map<String, dynamic>> _threeDaySplitDays() => [
-    {
-      'day': 1, 'label': '推（胸+肩+三头）', 'muscle': '胸/肩',
-      'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 3, 'reps': '10-12', 'weight': 35.0, 'restTime': 90},
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'weight': 15.0, 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
-      ],
-    },
-    {
-      'day': 2, 'label': '拉（背+二头）', 'muscle': '背',
-      'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75},
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
-      ],
-    },
-    {
-      'day': 3, 'label': '腿（腿+核心）', 'muscle': '腿',
-      'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'weight': 0.0, 'restTime': 45},
-        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
-      ],
-    },
-  ];
-
-  List<Map<String, dynamic>> _hiitDays() => [
-    {
-      'day': 1, 'label': '上肢HIIT', 'muscle': '上肢',
-      'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '12-15', 'weight': 40.0, 'restTime': 45},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '12-15', 'weight': 40.0, 'restTime': 45},
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '12-15', 'weight': 15.0, 'restTime': 45},
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '15', 'weight': 10.0, 'restTime': 30},
-      ],
-    },
-    {
-      'day': 2, 'label': '下肢HIIT', 'muscle': '腿',
-      'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 4, 'reps': '10-12', 'weight': 50.0, 'restTime': 60},
-        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '12-15', 'weight': 80.0, 'restTime': 45},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'weight': 0.0, 'restTime': 30},
-        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 30},
-      ],
-    },
-    {
-      'day': 3, 'label': '全身HIIT', 'muscle': '全身',
-      'exercises': [
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '15', 'weight': 12.0, 'restTime': 30},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12-15', 'weight': 35.0, 'restTime': 45},
-        {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '15', 'weight': 8.0, 'restTime': 30},
-        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '15', 'weight': 12.0, 'restTime': 30},
-      ],
-    },
-  ];
-
-  List<Map<String, dynamic>> _shapingDays() => [
-    {
-      'day': 1, 'label': '上肢塑形', 'muscle': '上肢',
-      'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '12-15', 'weight': 40.0, 'restTime': 60},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '15', 'weight': 12.0, 'restTime': 45},
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '12', 'weight': 15.0, 'restTime': 60},
-        {'id': 'e12', 'name': '侧平举', 'sets': 3, 'reps': '15', 'weight': 8.0, 'restTime': 45},
-      ],
-    },
-    {
-      'day': 2, 'label': '下肢塑形', 'muscle': '腿',
-      'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 4, 'reps': '10-12', 'weight': 50.0, 'restTime': 90},
-        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '12-15', 'weight': 80.0, 'restTime': 60},
-        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
-      ],
-    },
-    {
-      'day': 3, 'label': '背部塑形', 'muscle': '背',
-      'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 60},
-        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
-      ],
-    },
-    {
-      'day': 4, 'label': '核心+手臂', 'muscle': '核心/手臂',
-      'exercises': [
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 3, 'reps': '12-15', 'weight': 10.0, 'restTime': 45},
-        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 45},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '45秒', 'weight': 0.0, 'restTime': 30},
-        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 30},
-      ],
-    },
-  ];
-
-  List<Map<String, dynamic>> _fullBodyDays() => [
-    {
-      'day': 1, 'label': '全身训练A', 'muscle': '全身',
-      'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'weight': 50.0, 'restTime': 90},
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'weight': 0.0, 'restTime': 90},
-      ],
-    },
-    {
-      'day': 2, 'label': '全身训练B', 'muscle': '全身',
-      'exercises': [
-        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'weight': 15.0, 'restTime': 90},
-      ],
-    },
-    {
-      'day': 3, 'label': '全身训练C', 'muscle': '全身',
-      'exercises': [
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'weight': 0.0, 'restTime': 30},
-      ],
-    },
-  ];
-
-  Map<String, dynamic> _buildPlan({
-    required String name,
-    required String type,
-    required String frequency,
-    required String difficulty,
-    required int totalWeeks,
-    required String desc,
-    required List<Map<String, dynamic>> days,
-  }) {
-    return {
-      'name': name,
-      'type': type,
-      'frequency': frequency,
-      'difficulty': difficulty,
-      'totalWeeks': totalWeeks,
-      'desc': desc,
-      'days': days,
-    };
-  }
-
-  void _selectPlan(Map<String, dynamic> plan) {
-    // 先将现有活跃计划设为暂停
+  Future<void> _selectPlan(PlanRecommendation rec) async {
+    // 暂停现有 active 计划
     final existingPlans = Storage.getPlans();
     for (final p in existingPlans) {
       if (p['status'] == 'active') {
-        Storage.updatePlan(p['id'] as String, {...p, 'status': 'pending', 'badge': '待开始'});
+        Storage.updatePlan(p['id'] as String, {'status': 'paused'});
       }
     }
-    Storage.addPlan({
-      ...plan,
-      'status': 'active',
-      'progress': 0,
-      'week': 1,
-      'badge': '进行中',
-    });
+
+    // 检查是否为精品计划且未解锁
+    if (rec.plan.isPremium &&
+        !PlanUnlockService.instance.isPlanUnlocked(rec.plan.id)) {
+      // 跳转到详情页让用户解锁
+      if (!mounted) return;
+      context.go('/plan-library/detail/${rec.plan.id}');
+      return;
+    }
+
+    // 添加新计划
+    final newPlan = rec.plan.toStoragePlan();
+    Storage.addPlan(newPlan);
+    Storage.dataChanged.value = !Storage.dataChanged.value;
+
     widget.onComplete();
   }
 
@@ -668,16 +271,34 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
             ),
             // Plan list
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                itemCount: _recommendedPlans.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildPlanCard(colors, _recommendedPlans[index], index),
-                  );
-                },
-              ),
+              child: _recommendedPlans.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          '计划库加载中，请稍后重试',
+                          style: TextStyle(
+                            color: colors.textSecondary,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      itemCount: _recommendedPlans.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _buildPlanCard(
+                            colors,
+                            _recommendedPlans[index],
+                            index,
+                          ),
+                        );
+                      },
+                    ),
             ),
             // Bottom actions
             Padding(
@@ -739,13 +360,30 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
     );
   }
 
-  Widget _buildPlanCard(FitTrackColors colors, Map<String, dynamic> plan, int index) {
+  Widget _buildPlanCard(
+    FitTrackColors colors,
+    PlanRecommendation rec,
+    int index,
+  ) {
     final isPrimary = index == 0;
-    final days = plan['days'] as List? ?? [];
-    final exerciseCount = days.fold<int>(0, (sum, day) {
-      final exercises = (day as Map<String, dynamic>)['exercises'] as List? ?? [];
-      return sum + exercises.length;
-    });
+    final plan = rec.plan;
+    final exerciseCount = plan.days.fold<int>(
+      0,
+      (sum, day) => sum + day.exercises.length,
+    );
+    final matchPercent = (rec.score.clamp(0, 100)).round();
+
+    // 难度 / 训练类型 / 目标 中文化
+    final difficultyLabel =
+        kDifficultyLabelsZh[plan.difficulty] ?? plan.difficulty;
+    final typeLabel =
+        kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType;
+    final goalLabel = kGoalLabelsZh[plan.goal] ?? plan.goal;
+    final frequencyLabel = '${plan.recommendedFrequency}天/周';
+
+    // 按钮文案：精品未解锁 → "前往解锁"，否则 → "选择此计划"
+    final isLocked =
+        plan.isPremium && !PlanUnlockService.instance.isPlanUnlocked(plan.id);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -760,27 +398,74 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Recommended badge for first plan
-          if (isPrimary)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: colors.accentGlow.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                '推荐',
-                style: TextStyle(
-                  color: colors.accentGlow,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+          // Top badges row
+          Row(
+            children: [
+              if (isPrimary)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colors.accentGlow.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '推荐',
+                    style: TextStyle(
+                      color: colors.accentGlow,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              if (isPrimary) const SizedBox(width: 8),
+              if (plan.isPremium)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colors.accentGlow.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: colors.accentGlow.withOpacity(0.4),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.workspace_premium,
+                          size: 12, color: colors.accentGlow),
+                      const SizedBox(width: 4),
+                      Text(
+                        isLocked
+                            ? '精品 · 需${plan.pointsCost}积分解锁'
+                            : '精品 · 已解锁',
+                        style: TextStyle(
+                          color: colors.accentGlow,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const Spacer(),
+              if (matchPercent > 0)
+                Text(
+                  '匹配度 $matchPercent%',
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
           // Plan name
           Text(
-            plan['name'] as String? ?? '',
+            plan.name,
             style: TextStyle(
               color: colors.textPrimary,
               fontSize: 18,
@@ -790,7 +475,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
           const SizedBox(height: 8),
           // Description
           Text(
-            plan['desc'] as String? ?? '',
+            plan.description,
             style: TextStyle(
               color: colors.textSecondary,
               fontSize: 13,
@@ -803,21 +488,55 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _buildTag(colors, Icons.category_outlined, plan['type'] as String? ?? ''),
-              _buildTag(colors, Icons.repeat, plan['frequency'] as String? ?? ''),
-              _buildTag(colors, Icons.signal_cellular_alt, plan['difficulty'] as String? ?? ''),
+              _buildTag(colors, Icons.flag_outlined, goalLabel),
+              _buildTag(colors, Icons.category_outlined, typeLabel),
+              _buildTag(colors, Icons.repeat, frequencyLabel),
+              _buildTag(colors, Icons.signal_cellular_alt, difficultyLabel),
               _buildTag(colors, Icons.fitness_center, '$exerciseCount个动作'),
+              _buildTag(
+                  colors, Icons.calendar_today, '${plan.totalWeeks}周'),
             ],
           ),
+          // Recommendation reasons (最多 3 条)
+          if (rec.reasons.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: rec.reasons.map((reason) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle,
+                          size: 14, color: colors.accentGlow),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          reason,
+                          style: TextStyle(
+                            color: colors.textSecondary,
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
           const SizedBox(height: 16),
           // Select button
           SizedBox(
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () => _selectPlan(plan),
+              onPressed: () => _selectPlan(rec),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isPrimary ? colors.accentGlow : colors.bgElevated,
+                backgroundColor:
+                    isPrimary ? colors.accentGlow : colors.bgElevated,
                 foregroundColor: isPrimary
                     ? (Theme.of(context).brightness == Brightness.dark
                         ? colors.textPrimary
@@ -830,9 +549,9 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                       : BorderSide(color: colors.accentGlow),
                 ),
               ),
-              child: const Text(
-                '选择此计划',
-                style: TextStyle(
+              child: Text(
+                isLocked ? '前往解锁' : '选择此计划',
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
