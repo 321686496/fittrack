@@ -8,6 +8,7 @@ import 'pages/onboarding_page.dart';
 import 'pages/questionnaire_page.dart';
 import 'pages/plan_recommend_page.dart';
 import 'pages/home_page.dart';
+import 'pages/honor_wall_page.dart';
 import 'pages/plan_page.dart';
 import 'pages/training_page.dart';
 import 'pages/stats_page.dart';
@@ -288,6 +289,11 @@ GoRouter createRouter() {
         path: '/achievements',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AchievementPage(),
+      ),
+      GoRoute(
+        path: '/honor-wall',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const HonorWallPage(),
       ),
       GoRoute(
         path: '/redeem',
