@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
+import '../pages/note_poster_page.dart';
 import '../themes/app_themes.dart';
-import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
 
 /// v1 训练笔记编写页
@@ -710,7 +710,15 @@ class _NoteEditPageState extends State<NoteEditPage> {
         final notes = Storage.getNotes();
         if (notes.isNotEmpty) {
           final note = TrainingNote.fromMap(notes.first);
-          await NotePosterSheet.show(context, note, boundRecord: _boundRecord);
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => NotePosterPage(
+                note: note,
+                boundRecord: _boundRecord,
+              ),
+            ),
+          );
         }
       }
     }
