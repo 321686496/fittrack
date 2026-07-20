@@ -39,6 +39,9 @@ import 'pages/chapter_read_page.dart';
 import 'pages/note_list_page.dart';
 import 'pages/note_edit_page.dart';
 import 'pages/points_detail_page.dart';
+import 'pages/plan_library_home_page.dart';
+import 'pages/plan_library_category_page.dart';
+import 'pages/plan_library_detail_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -227,6 +230,29 @@ GoRouter createRouter() {
           final editPlanId = state.queryParams['editPlanId'];
           return AddPlanPage(editPlanId: editPlanId);
         },
+      ),
+      // 系统计划库路由（注意：detail 必须在 :goal 之前，避免 :goal 匹配 "detail"）
+      GoRoute(
+        path: '/plan-library',
+        name: 'planLibraryHome',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PlanLibraryHomePage(),
+      ),
+      GoRoute(
+        path: '/plan-library/detail/:planId',
+        name: 'planLibraryDetail',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => PlanLibraryDetailPage(
+          planId: state.params['planId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/plan-library/:goal',
+        name: 'planLibraryCategory',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => PlanLibraryCategoryPage(
+          goal: state.params['goal']!,
+        ),
       ),
       GoRoute(
         path: '/exercise',
