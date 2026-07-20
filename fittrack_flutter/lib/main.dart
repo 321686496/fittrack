@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'themes/app_themes.dart';
 import 'data/storage.dart';
+import 'data/system_plan_library.dart';
 import 'services/permission_service.dart';
 import 'services/rest_notification_service.dart';
 import 'services/smart_push_service.dart';
@@ -35,6 +36,8 @@ void main() {
 
     try {
       await Storage.init();
+      // 加载系统训练计划库（assets/data/system_plans/*.json）
+      await SystemPlanLibrary.instance.load();
       // 预加载 SQLite 中的 Plans/Records 到内存缓存
       await Storage.getPlansAsync();
       await Storage.getRecordsAsync();
