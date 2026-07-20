@@ -211,6 +211,125 @@ class _StatsPageState extends State<StatsPage> {
     _personalRecords = allSets.take(3).toList();
   }
 
+  // ── 按周聚合数据（近6周）─────────────────────────────────────
+  Map<int, Map<String, dynamic>> _computeWeeklyStats() {
+    final now = DateTime.now();
+    final result = <int, Map<String, dynamic>>{};
+    for (int weekOffset = 0; weekOffset < 6; weekOffset++) {
+      result[weekOffset] = {
+        'totalVolume': 0.0,
+        'totalDuration': 0,
+        'trainingCount': 0,
+      };
+    }
+    for (final r in _records) {
+      final ts = r['date'] as int? ?? r['createTime'] as int?;
+      if (ts == null) continue;
+      final d = DateTime.fromMillisecondsSinceEpoch(ts);
+      final diff = now.difference(d).inDays;
+      if (diff < 0) continue;
+      final weekOffset = diff ~/ 7;
+      if (weekOffset >= 0 && weekOffset < 6) {
+        final sr = r['setRecords'];
+        double volume = 0;
+        if (sr is Map) {
+          for (final entry in sr.entries) {
+            final sets = entry.value as List<dynamic>? ?? [];
+            for (final s in sets) {
+              final sm = s as Map<dynamic, dynamic>;
+              final w = (sm['weight'] as num?) ?? 0;
+              final reps = (sm['reps'] as num?) ?? 0;
+              volume += w * reps;
+            }
+          }
+        }
+        result[weekOffset]!['totalVolume'] =
+            (result[weekOffset]!['totalVolume'] as double) + volume;
+        final duration = (r['duration'] as num?) ?? 0;
+        result[weekOffset]!['totalDuration'] =
+            (result[weekOffset]!['totalDuration'] as int) + duration.toInt();
+        result[weekOffset]!['trainingCount'] =
+            (result[weekOffset]!['trainingCount'] as int) + 1;
+      }
+    }
+    return result;
+  }
+
+  // ── 动作热度计数 Top 5 ──────────────────────────────────────
+  List<Map<String, dynamic>> _computeExercisePopularity() {
+    final counts = <String, int>{};
+    for (final r in _records) {
+      final sr = r['setRecords'];
+      if (sr is! Map) continue;
+      for (final entry in sr.entries) {
+        final exId = entry.key.toString();
+        counts[exId] = (counts[exId] ?? 0) + 1;
+      }
+    }
+    final exLookup = <String, String>{};
+    for (final ex in MockData.exercises) {
+      exLookup[ex['id'] as String] = ex['name'] as String;
+    }
+    final list = counts.entries.map((e) {
+      return {
+        'name': exLookup[e.key] ?? e.key,
+        'count': e.value,
+      };
+    }).toList();
+    list.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+    return list.take(5).toList();
+  }
+
+  // ── PR 进度追踪（Top 3 动作近6周最大重量）─────────────────────
+  Map<String, List<Map<String, dynamic>>> _computePrProgression() {
+    final topExercises = _computeExercisePopularity().take(3).toList();
+    final exLookup = <String, String>{};
+    for (final ex in MockData.exercises) {
+      exLookup[ex['id'] as String] = ex['name'] as String;
+    }
+    // 反向查找 name → id
+    final nameToId = <String, String>{};
+    for (final entry in exLookup.entries) {
+      nameToId[entry.value] = entry.key;
+    }
+
+    final result = <String, List<Map<String, dynamic>>>{};
+    for (final ex in topExercises) {
+      final exName = ex['name'] as String;
+      final exId = nameToId[exName];
+      if (exId == null) continue;
+      result[exName] = [];
+      final now = DateTime.now();
+      for (int weekOffset = 0; weekOffset < 6; weekOffset++) {
+        double maxWeight = 0;
+        for (final r in _records) {
+          final ts = r['date'] as int? ?? r['createTime'] as int?;
+          if (ts == null) continue;
+          final d = DateTime.fromMillisecondsSinceEpoch(ts);
+          final diff = now.difference(d).inDays;
+          if (diff < 0) continue;
+          final wOffset = diff ~/ 7;
+          if (wOffset == weekOffset) {
+            final sr = r['setRecords'];
+            if (sr is Map) {
+              final sets = sr[exId] as List<dynamic>? ?? [];
+              for (final s in sets) {
+                final sm = s as Map<dynamic, dynamic>;
+                final w = (sm['weight'] as num?) ?? 0;
+                if (w > maxWeight) maxWeight = w.toDouble();
+              }
+            }
+          }
+        }
+        result[exName]!.add({
+          'week': weekOffset,
+          'maxWeight': maxWeight,
+        });
+      }
+    }
+    return result;
+  }
+
   // ── Helpers ──────────────────────────────────────────────────
 
   String _formatDuration(int minutes) {
@@ -429,6 +548,22 @@ class _StatsPageState extends State<StatsPage> {
                   _buildFrequencyChart(colors),
                   const SizedBox(height: 24),
 
+                  // ── 训练容量趋势（新增）─────────────────────────
+                  _buildVolumeChart(colors),
+                  const SizedBox(height: 24),
+
+                  // ── 动作热度榜（新增）─────────────────────────
+                  _buildExercisePopularityChart(colors),
+                  const SizedBox(height: 24),
+
+                  // ── 训练时长趋势（新增）─────────────────────────
+                  _buildDurationTrendChart(colors),
+                  const SizedBox(height: 24),
+
+                  // ── PR 进度追踪（新增）─────────────────────────
+                  _buildPrProgressionChart(colors),
+                  const SizedBox(height: 24),
+
                   // ── Muscle distribution ──────────────────────
                   if (_muscleData.isNotEmpty) ...[
                     const SectionHeader(title: '肌群分布'),
@@ -466,9 +601,11 @@ class _StatsPageState extends State<StatsPage> {
     final rangeStart =
         currentWeekMonday.subtract(const Duration(days: 7 * 11));
 
-    const cellSize = 12.0;
-    const spacing = 3.0;
-    const borderRadius = 2.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final availableWidth = screenWidth - 32 - 32 - 20; // page padding + card padding + weekday label + spacing
+    const spacing = 4.0;
+    const borderRadius = 3.0;
+    final cellSize = ((availableWidth - 11 * spacing) / 12).clamp(18.0, 28.0);
 
     // 根据训练次数返回对应颜色
     Color colorForCount(int count) {
@@ -920,4 +1057,397 @@ class _StatsPageState extends State<StatsPage> {
       ),
     );
   }
+
+  // ── 训练容量趋势（柱状图）─────────────────────────────────────
+  Widget _buildVolumeChart(FitTrackColors colors) {
+    final weeklyStats = _computeWeeklyStats();
+    final volumes = List.generate(6, (i) {
+      final stat = weeklyStats[5 - i]!; // 倒序：最旧→最新
+      return {
+        'label': 'W${i + 1}',
+        'value': (stat['totalVolume'] as double) / 1000, // 转换为 kg
+      };
+    });
+    final maxVol = volumes.fold(0.0, (max, d) {
+      final v = d['value'] as double;
+      return v > max ? v : max;
+    });
+    final chartMax = maxVol > 0 ? maxVol : 1.0;
+
+    return CardWidget(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('训练容量趋势',
+              style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text('近6周总重量 (kg)',
+              style: TextStyle(color: colors.textMuted, fontSize: 12)),
+          const SizedBox(height: 20),
+          if (maxVol == 0)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text('暂无训练数据',
+                    style: TextStyle(color: colors.textMuted, fontSize: 13)),
+              ),
+            )
+          else
+            SizedBox(
+              height: 140,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: volumes.map((item) {
+                  final value = item['value'] as double;
+                  final label = item['label'] as String;
+                  final barHeight = (value / chartMax) * 100;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (value > 0)
+                            Text(
+                              '${value.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                  color: colors.accentGlow,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          const SizedBox(height: 4),
+                          Container(
+                            height: value > 0 ? barHeight.clamp(4.0, 100.0) : 4,
+                            decoration: BoxDecoration(
+                              color: value > 0
+                                  ? colors.accentGlow
+                                  : colors.borderColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(label,
+                              style: TextStyle(
+                                  color: colors.textMuted, fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── 动作热度榜（水平条形图 Top 5）─────────────────────────────
+  Widget _buildExercisePopularityChart(FitTrackColors colors) {
+    final data = _computeExercisePopularity();
+    if (data.isEmpty) return const SizedBox.shrink();
+    final maxCount = data.first['count'] as int;
+
+    return CardWidget(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('动作热度榜',
+              style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text('Top 5 训练次数',
+              style: TextStyle(color: colors.textMuted, fontSize: 12)),
+          const SizedBox(height: 16),
+          ...data.map((item) {
+            final name = item['name'] as String;
+            final count = item['count'] as int;
+            final barWidth = maxCount > 0 ? count / maxCount : 0.0;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colors.accentGlow,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 80,
+                    child: Text(name,
+                        style: TextStyle(
+                            color: colors.textPrimary, fontSize: 13),
+                        overflow: TextOverflow.ellipsis),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Container(
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: colors.borderColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: barWidth,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  colors.accentGlow,
+                                  colors.accentGlow.withOpacity(0.6),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('$count',
+                      style: TextStyle(
+                          color: colors.textMuted, fontSize: 12)),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ── 训练时长趋势（折线图）─────────────────────────────────────
+  Widget _buildDurationTrendChart(FitTrackColors colors) {
+    final weeklyStats = _computeWeeklyStats();
+    final durations = List.generate(6, (i) {
+      final stat = weeklyStats[5 - i]!;
+      return {
+        'label': 'W${i + 1}',
+        'value': (stat['totalDuration'] as int) / 60, // 转换为小时
+      };
+    });
+    final maxDur = durations.fold(0.0, (max, d) {
+      final v = d['value'] as double;
+      return v > max ? v : max;
+    });
+    if (maxDur == 0) return const SizedBox.shrink();
+
+    return CardWidget(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('训练时长趋势',
+              style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text('近6周总时长 (小时)',
+              style: TextStyle(color: colors.textMuted, fontSize: 12)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 120,
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _LineChartPainter(
+                data: durations,
+                lineColor: colors.accentGlow,
+                fillColor: colors.accentGlow.withOpacity(0.1),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── PR 进度追踪（多折线图）─────────────────────────────────────
+  Widget _buildPrProgressionChart(FitTrackColors colors) {
+    final prData = _computePrProgression();
+    if (prData.isEmpty) return const SizedBox.shrink();
+    final colorsList = [colors.accentGlow, colors.successColor, colors.warningColor];
+
+    return CardWidget(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('PR 进度追踪',
+              style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text('近6周最大重量 (kg)',
+              style: TextStyle(color: colors.textMuted, fontSize: 12)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 120,
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _MultiLineChartPainter(
+                data: prData,
+                colors: colorsList,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // 图例
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            children: prData.entries.toList().asMap().entries.map((entry) {
+              final idx = entry.key;
+              final name = entry.value.key;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 3,
+                    color: colorsList[idx % colorsList.length],
+                  ),
+                  const SizedBox(width: 4),
+                  Text(name,
+                      style: TextStyle(
+                          color: colors.textMuted, fontSize: 11)),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LineChartPainter extends CustomPainter {
+  final List<Map<String, dynamic>> data;
+  final Color lineColor;
+  final Color fillColor;
+
+  _LineChartPainter({
+    required this.data,
+    required this.lineColor,
+    required this.fillColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final maxVal = data.fold(0.0, (max, d) {
+      final v = d['value'] as double;
+      return v > max ? v : max;
+    });
+    if (maxVal == 0) return;
+
+    final points = <Offset>[];
+    for (int i = 0; i < data.length; i++) {
+      final x = data.length > 1
+          ? (size.width / (data.length - 1)) * i
+          : size.width / 2;
+      final v = data[i]['value'] as double;
+      final y = size.height - (v / (maxVal * 1.2)) * size.height;
+      points.add(Offset(x, y));
+    }
+
+    // 填充区域
+    final fillPath = Path()
+      ..moveTo(points.first.dx, size.height)
+      ..lineTo(points.first.dx, points.first.dy);
+    for (final p in points) {
+      fillPath.lineTo(p.dx, p.dy);
+    }
+    fillPath.lineTo(points.last.dx, size.height);
+    fillPath.close();
+    canvas.drawPath(fillPath, Paint()..color = fillColor);
+
+    // 折线
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final p in points) {
+      linePath.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(
+        linePath,
+        Paint()
+          ..color = lineColor
+          ..strokeWidth = 2
+          ..style = PaintingStyle.stroke);
+
+    // 数据点
+    for (final p in points) {
+      canvas.drawCircle(p, 4, Paint()..color = lineColor);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _MultiLineChartPainter extends CustomPainter {
+  final Map<String, List<Map<String, dynamic>>> data;
+  final List<Color> colors;
+
+  _MultiLineChartPainter({
+    required this.data,
+    required this.colors,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final allValues = <double>[];
+    for (final entry in data.values) {
+      for (final d in entry) {
+        allValues.add(d['maxWeight'] as double);
+      }
+    }
+    final maxVal = allValues.isEmpty ? 1.0 : allValues.reduce((a, b) => a > b ? a : b);
+    if (maxVal == 0) return;
+
+    int colorIdx = 0;
+    for (final entry in data.entries) {
+      final points = <Offset>[];
+      final lineData = entry.value;
+      for (int i = 0; i < lineData.length; i++) {
+        final x = lineData.length > 1
+            ? (size.width / (lineData.length - 1)) * i
+            : size.width / 2;
+        final v = lineData[i]['maxWeight'] as double;
+        final y = size.height - (v / (maxVal * 1.2)) * size.height;
+        points.add(Offset(x, y));
+      }
+      if (points.length < 2) continue;
+      final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+      for (final p in points) {
+        linePath.lineTo(p.dx, p.dy);
+      }
+      canvas.drawPath(
+          linePath,
+          Paint()
+            ..color = colors[colorIdx % colors.length]
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke);
+      for (final p in points) {
+        canvas.drawCircle(p, 3, Paint()..color = colors[colorIdx % colors.length]);
+      }
+      colorIdx++;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
