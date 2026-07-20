@@ -69,6 +69,11 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
 
     return GestureDetector(
       onTap: () {
+        // plan 类型用 go 而非 push，跳转到计划详情页（route 已是 /plan-library/detail/:planId）
+        if (banner.type == 'plan') {
+          if (banner.route != null) context.go(banner.route!);
+          return;
+        }
         if (banner.route != null) context.push(banner.route!);
       },
       child: Container(
@@ -199,6 +204,15 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
           ],
         );
       case 'achievement':
+        return LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors.purpleColor,
+            colors.purpleColor.withOpacity(0.6),
+          ],
+        );
+      case 'plan':
         return LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
