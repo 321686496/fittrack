@@ -2,6 +2,8 @@ import 'dart:math';
 import '../data/storage.dart';
 import '../data/course_content.dart';
 import '../data/tutorial_content.dart';
+import 'plan_recommendation_service.dart';
+import '../data/system_plan_library.dart';
 
 class BannerItem {
   final String type; // teaching / premium / invitation / achievement
@@ -77,6 +79,22 @@ class RecommendationService {
         icon: 'lock',
         route: '/course/${c.id}',
       ));
+    }
+
+    // 训练计划推荐 banner
+    if (SystemPlanLibrary.instance.isLoaded) {
+      final planRecs = PlanRecommendationService.instance.recommend(limit: 1);
+      if (planRecs.isNotEmpty) {
+        final rec = planRecs.first;
+        items.add(BannerItem(
+          type: 'plan',
+          title: '推荐计划：${rec.plan.name}',
+          subtitle: rec.reasons.isNotEmpty ? rec.reasons.first : '为你智能推荐',
+          icon: 'fitness_center',
+          route: '/plan-library/detail/${rec.plan.id}',
+          extra: {'planId': rec.plan.id, 'score': rec.score},
+        ));
+      }
     }
 
     // 3. 内部推广
