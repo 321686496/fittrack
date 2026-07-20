@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
+import '../data/system_plan_library.dart';
+import '../services/plan_recommendation_service.dart';
+import '../services/plan_unlock_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
@@ -196,9 +199,6 @@ class _PlanPageState extends State<PlanPage> {
   List<Map<String, dynamic>> get _activePlans =>
       _plans.where((p) => p['status'] == 'active').toList();
 
-  List<Map<String, dynamic>> get _otherPlans =>
-      _plans.where((p) => p['status'] != 'active').toList();
-
   void _deletePlan(String planId) async {
     final confirmed = await ConfirmDialog.show(
       context,
@@ -265,11 +265,16 @@ class _PlanPageState extends State<PlanPage> {
   // ── Plan List View ─────────────────────────────────────────
 
   Widget _buildPlanList(FitTrackColors colors) {
+    // 自定义计划 Top 3：排除来自系统库的计划（有 sourcePlanId 的）
+    final customSorted = _sortCustomPlans(_plans);
+    final top3 = customSorted.take(3).toList();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 200),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── 第一段：当前训练计划 ─────────────────────────────
           if (_activePlans.isNotEmpty) ...[
             const SectionHeader(title: '进行中的计划'),
             const SizedBox(height: 12),
@@ -279,335 +284,201 @@ class _PlanPageState extends State<PlanPage> {
                 )),
             const SizedBox(height: 8),
           ],
-          if (_otherPlans.isNotEmpty) ...[
+          // ── 第二段：自定义计划 Top 3 ─────────────────────────
+          if (top3.isNotEmpty) ...[
             SectionHeader(
-              title: _activePlans.isNotEmpty ? '其他计划' : '训练计划',
+              title: _activePlans.isNotEmpty ? '我的计划' : '自定义计划',
             ),
             const SizedBox(height: 12),
-            ..._otherPlans.map((plan) => Padding(
+            ...top3.map((plan) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _buildPlanCard(colors, plan),
                 )),
           ],
-          if (_plans.isEmpty) ...[
-            _buildRecommendedPlans(colors),
-          ],
+          // ── 第三段：推荐计划（始终展示）─────────────────────
+          _buildRecommendedSection(),
           const SizedBox(height: 200),
         ],
       ),
     );
   }
 
-  Widget _buildRecommendedPlans(FitTrackColors colors) {
-    final settings = Storage.getSettings();
-    final gender = settings['gender'] as String? ?? '';
-    final goal = settings['fitnessGoal'] as String? ?? '';
-    final level = settings['fitnessLevel'] as String? ?? '';
-    final frequency = settings['trainingFrequency'] as String? ?? '';
+  /// 自定义计划排序：创建时间 30% + 使用次数 70%
+  List<Map<String, dynamic>> _sortCustomPlans(List<Map<String, dynamic>> plans) {
+    // 排除来自系统库的计划（有 sourcePlanId 的）
+    final customPlans = plans.where((p) => p['sourcePlanId'] == null).toList();
+    final records = Storage.getRecords();
 
-    // 根据用户信息生成推荐计划
-    final recommendedPlans = _generateRecommendedPlans(gender, goal, level, frequency);
+    // 计算每个计划的使用次数
+    final useCount = <String, int>{};
+    for (final r in records) {
+      final planId = r['planId'] as String? ?? r['sourcePlanId'] as String?;
+      if (planId != null) {
+        useCount[planId] = (useCount[planId] ?? 0) + 1;
+      }
+    }
 
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final scored = customPlans.map((p) {
+      final planId = p['id'] as String;
+      final createTime = (p['createTime'] as num?)?.toInt() ?? now;
+      final daysSinceCreated = ((now - createTime) / (24 * 60 * 60 * 1000)).clamp(0, 365);
+      // 创建时间越近分数越高（归一化到 0-30）
+      final timeScore = (30 * (1 - daysSinceCreated / 365)).clamp(0.0, 30.0);
+      // 使用次数归一化到 0-70
+      final count = useCount[planId] ?? 0;
+      final maxCount = useCount.values.fold(0, (a, b) => a > b ? a : b);
+      final useScore = maxCount > 0 ? (70 * count / maxCount) : 0.0;
+      return {'plan': p, 'score': timeScore + useScore};
+    }).toList();
+
+    scored.sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
+    return scored.map((e) => e['plan'] as Map<String, dynamic>).toList();
+  }
+
+  /// 推荐区段：标题 + 3 个推荐卡片 + 浏览系统计划库按钮
+  Widget _buildRecommendedSection() {
+    if (!SystemPlanLibrary.instance.isLoaded) {
+      return const SizedBox.shrink();
+    }
+    final recommendations = PlanRecommendationService.instance.recommend(limit: 3);
+    if (recommendations.isEmpty) return const SizedBox.shrink();
+
+    final ft = Theme.of(context).extension<FitTrackColors>()!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.auto_awesome, size: 20, color: colors.accentGlow),
-            const SizedBox(width: 6),
-            Text(
-              '为你推荐',
-              style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const Spacer(),
-            Text(
-              '基于你的信息',
-              style: TextStyle(color: colors.textMuted, fontSize: 12),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ...recommendedPlans.map((plan) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildRecommendedPlanCard(colors, plan),
-            )),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _showPlanEditor(),
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                label: const Text('自定义计划'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colors.accentGlow,
-                  side: BorderSide(color: colors.borderColor),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  List<Map<String, dynamic>> _generateRecommendedPlans(String gender, String goal, String level, String frequency) {
-    final plans = <Map<String, dynamic>>[];
-
-    // 主推荐计划
-    if (goal == '增肌') {
-      if (frequency.contains('4') || frequency.contains('5') || frequency.contains('6')) {
-        plans.add(_makeRecommendedPlan(
-          name: '五分化增肌计划',
-          type: '五分化',
-          difficulty: level == '新手' ? '初级' : (level.isEmpty ? '进阶' : level),
-          frequency: '5天/周',
-          totalWeeks: 8,
-          desc: '胸/背/腿/肩/手臂 五天循环，最大化肌肉刺激',
-          icon: Icons.fitness_center,
-        ));
-      } else {
-        plans.add(_makeRecommendedPlan(
-          name: '三分化增肌计划',
-          type: '三分化',
-          difficulty: level == '新手' ? '初级' : (level.isEmpty ? '进阶' : level),
-          frequency: '6天/周',
-          totalWeeks: 8,
-          desc: '推/拉/腿 三天循环，高效增肌',
-          icon: Icons.fitness_center,
-        ));
-      }
-    } else if (goal == '减脂') {
-      plans.add(_makeRecommendedPlan(
-        name: 'HIIT燃脂计划',
-        type: '全身训练',
-        difficulty: level == '新手' ? '入门' : (level.isEmpty ? '初级' : level),
-        frequency: '3天/周',
-        totalWeeks: 6,
-        desc: '高强度间歇训练，快速燃烧脂肪',
-        icon: Icons.local_fire_department,
-      ));
-    } else if (goal == '塑形') {
-      plans.add(_makeRecommendedPlan(
-        name: '塑形美体计划',
-        type: '四分化',
-        difficulty: level == '新手' ? '初级' : (level.isEmpty ? '进阶' : level),
-        frequency: '4天/周',
-        totalWeeks: 8,
-        desc: '均衡训练各部位，打造匀称体型',
-        icon: Icons.accessibility_new,
-      ));
-    } else {
-      plans.add(_makeRecommendedPlan(
-        name: '全身健康计划',
-        type: '全身训练',
-        difficulty: level == '新手' ? '入门' : (level.isEmpty ? '初级' : level),
-        frequency: '3天/周',
-        totalWeeks: 6,
-        desc: '全身均衡训练，提升整体健康水平',
-        icon: Icons.favorite_outline,
-      ));
-    }
-
-    // 新手/初级额外推荐入门计划
-    if (level == '新手' || level == '初级' || level.isEmpty) {
-      plans.add(_makeRecommendedPlan(
-        name: '新手入门计划',
-        type: '全身训练',
-        difficulty: '入门',
-        frequency: '3天/周',
-        totalWeeks: 4,
-        desc: '从基础动作开始，循序渐进建立训练习惯',
-        icon: Icons.directions_run,
-      ));
-    }
-
-    // 女性用户额外推荐
-    if (gender == '女') {
-      plans.add(_makeRecommendedPlan(
-        name: '女性塑形计划',
-        type: '四分化',
-        difficulty: level == '新手' ? '初级' : (level.isEmpty ? '进阶' : level),
-        frequency: '4天/周',
-        totalWeeks: 8,
-        desc: '针对女性体型特点，重点塑形臀腿和核心',
-        icon: Icons.self_improvement,
-      ));
-    }
-
-    // 如果没有用户信息，提供默认推荐
-    if (goal.isEmpty && gender.isEmpty && level.isEmpty) {
-      plans.clear();
-      plans.add(_makeRecommendedPlan(
-        name: '三分化增肌计划',
-        type: '三分化',
-        difficulty: '进阶',
-        frequency: '6天/周',
-        totalWeeks: 8,
-        desc: '推/拉/腿 三天循环，经典增肌方案',
-        icon: Icons.fitness_center,
-      ));
-      plans.add(_makeRecommendedPlan(
-        name: '全身健康计划',
-        type: '全身训练',
-        difficulty: '初级',
-        frequency: '3天/周',
-        totalWeeks: 6,
-        desc: '全身均衡训练，适合大多数健身者',
-        icon: Icons.favorite_outline,
-      ));
-      plans.add(_makeRecommendedPlan(
-        name: '新手入门计划',
-        type: '全身训练',
-        difficulty: '入门',
-        frequency: '3天/周',
-        totalWeeks: 4,
-        desc: '从基础动作开始，循序渐进',
-        icon: Icons.directions_run,
-      ));
-    }
-
-    return plans;
-  }
-
-  Map<String, dynamic> _makeRecommendedPlan({
-    required String name,
-    required String type,
-    required String difficulty,
-    required String frequency,
-    required int totalWeeks,
-    required String desc,
-    required IconData icon,
-  }) {
-    // 从快速设置模板获取训练日
-    List<Map<String, dynamic>> days;
-    final template = _quickSetup[type];
-    if (template != null) {
-      days = template.map((d) {
-        final map = Map<String, dynamic>.from(d);
-        final exs = map['exercises'];
-        if (exs is List) {
-          map['exercises'] = exs.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-        }
-        return map;
-      }).toList();
-    } else {
-      days = [
-        {'day': 1, 'label': '训练日1', 'muscle': '全身', 'exercises': <Map<String, dynamic>>[]},
-      ];
-    }
-
-    return {
-      'name': name,
-      'type': type,
-      'difficulty': difficulty,
-      'frequency': frequency,
-      'totalWeeks': totalWeeks,
-      'desc': desc,
-      'icon': icon,
-      'days': days,
-      'defaultRestTime': 90,
-    };
-  }
-
-  Widget _buildRecommendedPlanCard(FitTrackColors colors, Map<String, dynamic> plan) {
-    return CardWidget(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+          child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: colors.accentGlow.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+              Text(
+                '为你推荐',
+                style: TextStyle(
+                  color: ft.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Icon(plan['icon'] as IconData, size: 24, color: colors.accentGlow),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              const Spacer(),
+              GestureDetector(
+                onTap: () => context.go('/plan-library'),
+                child: Row(
                   children: [
                     Text(
-                      plan['name'] as String,
-                      style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                      '全部系统计划',
+                      style: TextStyle(color: ft.purpleColor, fontSize: 13),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      plan['desc'] as String,
-                      style: TextStyle(color: colors.textMuted, fontSize: 12),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Icon(Icons.chevron_right, color: ft.purpleColor, size: 16),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _buildTag(colors, plan['frequency'] as String),
-              const SizedBox(width: 8),
-              _buildTag(colors, plan['difficulty'] as String),
-              const SizedBox(width: 8),
-              _buildTag(colors, '${plan['totalWeeks']}周'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
+        ),
+        ...recommendations.map((r) => _buildRecommendationCard(r, ft)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _adoptRecommendedPlan(plan),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.accentGlow,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: OutlinedButton.icon(
+              onPressed: () => context.go('/plan-library'),
+              icon: const Icon(Icons.library_books),
+              label: const Text('浏览系统计划库'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: ft.purpleColor,
+                side: BorderSide(color: ft.purpleColor),
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text('采用此计划', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildTag(FitTrackColors colors, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: colors.accentGlow.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: colors.accentGlow.withOpacity(0.3)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w500),
+  /// 单个推荐卡片
+  Widget _buildRecommendationCard(PlanRecommendation rec, FitTrackColors ft) {
+    final plan = rec.plan;
+    final isUnlocked = !plan.isPremium ||
+        PlanUnlockService.instance.isPlanUnlocked(plan.id);
+    return GestureDetector(
+      onTap: () => context.go('/plan-library/detail/${plan.id}'),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: ft.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: ft.borderColor),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  colors: plan.coverColors
+                      .map((c) => Color(int.parse(c.substring(1), radix: 16) | 0xFF000000))
+                      .toList(),
+                ),
+              ),
+              child: Center(
+                child: Text(plan.coverEmoji, style: const TextStyle(fontSize: 24)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          plan.name,
+                          style: TextStyle(
+                            color: ft.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (plan.isPremium && !isUnlocked)
+                        Icon(Icons.lock, size: 14, color: ft.warningColor),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  if (rec.reasons.isNotEmpty)
+                    Text(
+                      rec.reasons.first,
+                      style: TextStyle(color: ft.textSecondary, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              children: [
+                Text(
+                  '${rec.score.toInt()}%',
+                  style: TextStyle(
+                    color: ft.successColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text('匹配', style: TextStyle(color: ft.textMuted, fontSize: 10)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
-  }
-
-  void _adoptRecommendedPlan(Map<String, dynamic> plan) {
-    // 先将现有活跃计划设为暂停
-    for (final p in _plans) {
-      if (p['status'] == 'active') {
-        Storage.updatePlan(p['id'] as String, {...p, 'status': 'pending', 'badge': '待开始'});
-      }
-    }
-    final planData = Map<String, dynamic>.from(plan);
-    planData.remove('icon');
-    planData.remove('desc');
-    planData['status'] = 'active';
-    planData['badge'] = '进行中';
-    planData['week'] = 0;
-    planData['progress'] = 0;
-    Storage.addPlan(planData);
-    _loadPlans();
   }
 
   Widget _buildPlanCard(FitTrackColors colors, Map<String, dynamic> plan) {
