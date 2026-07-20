@@ -100,8 +100,6 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 _buildProfileHeader(colors),
                 const SizedBox(height: 20),
-                _buildPointsCard(colors),
-                const SizedBox(height: 20),
                 _buildAchievements(colors),
                 const SizedBox(height: 20),
                 const SectionHeader(title: '身体数据'),
@@ -346,6 +344,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final level = settings['fitnessLevel'] as String? ?? '';
     final avatarEmoji = settings['avatarEmoji'] as String? ?? '💪';
     final avatarBgColor = settings['avatarBgColor'] as int? ?? 0xFFFF6B35;
+    final points = PointsService.instance.points;
+    final earnedTotal = settings['pointsEarnedTotal'] ?? 0;
+    final spentTotal = settings['pointsSpentTotal'] ?? 0;
 
     // 构建副标题
     final tags = <String>[
@@ -360,7 +361,14 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: colors.bgCard,
+          gradient: LinearGradient(
+            colors: [
+              colors.accentGlow.withOpacity(0.08),
+              colors.accentGlow.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: colors.borderColor),
         ),
@@ -368,10 +376,10 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             UserProfileGenerator.buildAvatarWidget(
               {'emoji': avatarEmoji, 'bgColor': avatarBgColor},
-              size: 60,
+              size: 56,
               borderColor: Color(avatarBgColor),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,7 +388,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     userName,
                     style: TextStyle(
                       color: colors.textPrimary,
-                      fontSize: 20,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -389,68 +397,45 @@ class _ProfilePageState extends State<ProfilePage> {
                     subtitle,
                     style: TextStyle(
                       color: colors.textMuted,
-                      fontSize: 13,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '累计获得 $earnedTotal · 消耗 $spentTotal',
+                    style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 11,
                     ),
                   ),
                 ],
               ),
             ),
-            // v1 获客留存版：全免费策略，不展示 Pro 升级入口
-            // Pro/兑换码体系已编码但 v1 不启用，后续版本可通过 isPremiumNotifier 恢复展示
-            Icon(Icons.chevron_right, color: colors.textMuted, size: 22),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPointsCard(FitTrackColors colors) {
-    final points = PointsService.instance.points;
-    final earnedTotal = Storage.getSettings()['pointsEarnedTotal'] ?? 0;
-    final spentTotal = Storage.getSettings()['pointsSpentTotal'] ?? 0;
-
-    return GestureDetector(
-      onTap: () => context.push('/points-detail'),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [colors.accentGlow.withOpacity(0.08), colors.accentGlow.withOpacity(0.05)],
-            begin: Alignment.topLeft, end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.borderColor),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(
-                color: colors.accentGlow.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.stars_rounded, color: colors.accentGlow, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
+            // 积分大数字（点击进入积分详情）
+            GestureDetector(
+              onTap: () => context.push('/points-detail'),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('我的积分', style: TextStyle(
-                    color: colors.textMuted, fontSize: 12,
-                  )),
-                  const SizedBox(height: 4),
-                  Text('$points', style: TextStyle(
-                    color: colors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold,
-                  )),
+                  Text(
+                    '$points',
+                    style: TextStyle(
+                      color: colors.accentGlow,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('累计获得 $earnedTotal · 累计消耗 $spentTotal', style: TextStyle(
-                    color: colors.textMuted, fontSize: 11,
-                  )),
+                  Text(
+                    '积分 →',
+                    style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: colors.textMuted),
           ],
         ),
       ),
@@ -760,91 +745,133 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildAchievements(FitTrackColors colors) {
-    final achievements = AchievementService.instance.getAll();
-    final unlocked = achievements.where((a) => a.unlocked).toList();
-    final display = unlocked.isNotEmpty ? unlocked.take(6).toList() : achievements.take(3).toList();
-    final hasUnlocked = unlocked.isNotEmpty;
+    final all = AchievementService.instance.getAll();
+    final unlocked = all.where((a) => a.unlocked).toList();
+    final pct = all.isNotEmpty ? (unlocked.length / all.length * 100).round() : 0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('成就', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            TextButton(
-              onPressed: () => context.push('/achievements'),
-              child: Text('查看全部', style: TextStyle(color: colors.accentGlow, fontSize: 12)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 0.85,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: display.length,
-          itemBuilder: (ctx, i) {
-            final a = display[i];
-            return GestureDetector(
-              onTap: () => _showAchievementDetail(a),
-              child: Opacity(
-                opacity: a.unlocked ? 1.0 : 0.4,
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: colors.bgCard,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: a.unlocked ? colors.accentGlow.withOpacity(0.3) : colors.borderColor,
-                      width: a.unlocked ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+        // 左卡：荣誉墙
+        Expanded(
+          child: GestureDetector(
+            onTap: () => context.push('/honor-wall'),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: colors.bgCard,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Icon(
-                        _achievementIcon(a.icon),
-                        size: 28,
-                        color: a.unlocked ? colors.accentGlow : colors.textMuted,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        a.title,
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                      Icon(Icons.emoji_events, size: 18, color: colors.accentGlow),
+                      const SizedBox(width: 6),
+                      Text('荣誉墙',
+                          style: TextStyle(
+                              color: colors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text('${unlocked.length}/${all.length}',
+                      style: TextStyle(
+                          color: colors.accentGlow,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  // 缩略徽章横滑
+                  SizedBox(
+                    height: 32,
+                    child: unlocked.isEmpty
+                        ? Text('尚未解锁',
+                            style: TextStyle(
+                                color: colors.textMuted, fontSize: 11))
+                        : ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: unlocked.length.clamp(0, 3),
+                            separatorBuilder: (_, __) => const SizedBox(width: 6),
+                            itemBuilder: (ctx, i) {
+                              final a = unlocked[i];
+                              return Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: colors.accentGlow.withOpacity(0.15),
+                                ),
+                                child: Icon(_achievementIcon(a.icon),
+                                    size: 16, color: colors.accentGlow),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        // 右卡：成就墙
+        Expanded(
+          child: GestureDetector(
+            onTap: () => context.push('/achievements'),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: colors.bgCard,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.assignment_turned_in,
+                          size: 18, color: colors.accentGlow),
+                      const SizedBox(width: 6),
+                      Text('成就墙',
+                          style: TextStyle(
+                              color: colors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('$pct%',
+                          style: TextStyle(
+                              color: colors.accentGlow,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: CircularProgressIndicator(
+                          value: all.isNotEmpty ? unlocked.length / all.length : 0,
+                          strokeWidth: 3,
+                          backgroundColor: colors.borderColor,
+                          valueColor: AlwaysStoppedAnimation<Color>(colors.accentGlow),
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        a.description,
-                        style: TextStyle(color: colors.textMuted, fontSize: 10),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Text('总进度',
+                      style: TextStyle(
+                          color: colors.textMuted, fontSize: 11)),
+                ],
               ),
-            );
-          },
-        ),
-        if (!hasUnlocked)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text('完成训练解锁更多成就', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+            ),
           ),
+        ),
       ],
     );
   }
