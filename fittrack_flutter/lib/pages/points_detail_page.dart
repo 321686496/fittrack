@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../services/points_service.dart';
+import '../services/ad_service.dart';
 import '../data/storage.dart';
 import '../widgets/page_header.dart';
 
@@ -99,35 +100,82 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: colors.borderColor),
                     ),
-                    child: Row(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text('当前积分', style: TextStyle(color: colors.textMuted, fontSize: 12)),
-                              const SizedBox(height: 4),
-                              Text('$points', style: TextStyle(color: colors.accentGlow, fontSize: 28, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
+                        // 大数字 + 当前积分
+                        Text('$points',
+                            style: TextStyle(
+                                color: colors.accentGlow,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text('当前积分',
+                            style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                        const SizedBox(height: 16),
+                        // 分隔线
+                        Container(width: double.infinity, height: 1, color: colors.borderColor),
+                        const SizedBox(height: 16),
+                        // 累计获得 / 累计消耗
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text('+$earnedTotal',
+                                      style: TextStyle(
+                                          color: colors.successColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 2),
+                                  Text('累计获得',
+                                      style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                            Container(width: 1, height: 30, color: colors.borderColor),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text('-$spentTotal',
+                                      style: TextStyle(
+                                          color: colors.warningColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 2),
+                                  Text('累计消耗',
+                                      style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(width: 1, height: 40, color: colors.borderColor),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text('累计获得', style: TextStyle(color: colors.textMuted, fontSize: 12)),
-                              const SizedBox(height: 4),
-                              Text('+$earnedTotal', style: TextStyle(color: colors.successColor, fontSize: 18, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
-                        Container(width: 1, height: 40, color: colors.borderColor),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text('累计消耗', style: TextStyle(color: colors.textMuted, fontSize: 12)),
-                              const SizedBox(height: 4),
-                              Text('-$spentTotal', style: TextStyle(color: colors.warningColor, fontSize: 18, fontWeight: FontWeight.w600)),
-                            ],
+                        const SizedBox(height: 16),
+                        // 看广告加积分按钮
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              final adResult = await AdService.instance.showRewardedVideo();
+                              if (adResult == AdResult.success || adResult == AdResult.notAvailable) {
+                                await PointsService.instance.addPoints(5, 'ad_watched');
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('获得 5 积分！')),
+                                  );
+                                  _loadLog();
+                                  setState(() {});
+                                }
+                              }
+                            },
+                            icon: const Icon(Icons.ondemand_video, size: 16),
+                            label: const Text('看广告 +5 积分'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: colors.accentGlow,
+                              side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50)),
+                            ),
                           ),
                         ),
                       ],
@@ -155,56 +203,78 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Container(
-                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: colors.bgCard,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: colors.borderColor),
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36, height: 36,
-                                decoration: BoxDecoration(
-                                  color: (isIncome ? colors.successColor : colors.warningColor).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(
-                                  _sourceIcon(source, isIncome),
-                                  size: 18,
-                                  color: isIncome ? colors.successColor : colors.warningColor,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(_sourceLabel(source), style: TextStyle(
-                                      color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500,
-                                    )),
-                                    Text(_formatTime(time), style: TextStyle(
-                                      color: colors.textMuted, fontSize: 11,
-                                    )),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '${isIncome ? '+' : ''}$delta',
-                                    style: TextStyle(
-                                      color: isIncome ? colors.successColor : colors.warningColor,
-                                      fontSize: 16, fontWeight: FontWeight.bold,
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                // 左侧 4px 色条
+                                Container(
+                                  width: 4,
+                                  decoration: BoxDecoration(
+                                    color: isIncome ? colors.successColor : colors.warningColor,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(12),
+                                      bottomLeft: Radius.circular(12),
                                     ),
                                   ),
-                                  Text('余额 $balance', style: TextStyle(
-                                    color: colors.textMuted, fontSize: 10,
-                                  )),
-                                ],
-                              ),
-                            ],
+                                ),
+                                // 原有内容
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 36, height: 36,
+                                          decoration: BoxDecoration(
+                                            color: (isIncome ? colors.successColor : colors.warningColor).withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Icon(
+                                            _sourceIcon(source, isIncome),
+                                            size: 18,
+                                            color: isIncome ? colors.successColor : colors.warningColor,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(_sourceLabel(source), style: TextStyle(
+                                                color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500,
+                                              )),
+                                              Text(_formatTime(time), style: TextStyle(
+                                                color: colors.textMuted, fontSize: 11,
+                                              )),
+                                            ],
+                                          ),
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '${isIncome ? '+' : ''}$delta',
+                                              style: TextStyle(
+                                                color: isIncome ? colors.successColor : colors.warningColor,
+                                                fontSize: 16, fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text('余额 $balance', style: TextStyle(
+                                              color: colors.textMuted, fontSize: 10,
+                                            )),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
