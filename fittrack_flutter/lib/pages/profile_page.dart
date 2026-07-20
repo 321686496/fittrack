@@ -66,18 +66,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showAchievementDetail(Achievement a) {
-    InfoDialog.show(
-      context,
-      title: a.title,
-      content: a.unlocked
-          ? '${a.description}\n\n已达成'
-          : '进度: ${a.description}',
-      icon: a.unlocked ? Icons.emoji_events : Icons.lock_outline,
-      iconColor: a.unlocked ? null : Colors.grey,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
