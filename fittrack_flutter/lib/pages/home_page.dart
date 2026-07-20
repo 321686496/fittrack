@@ -853,6 +853,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildRoundRing(FitTrackColors colors, int currentRound, int totalRounds) {
+    final progress = totalRounds > 0 ? currentRound / totalRounds : 0.0;
+    return SizedBox(
+      width: 60,
+      height: 60,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 60,
+            height: 60,
+            child: CircularProgressIndicator(
+              value: progress,
+              strokeWidth: 4,
+              backgroundColor: colors.borderColor,
+              valueColor: AlwaysStoppedAnimation<Color>(colors.accentGlow),
+            ),
+          ),
+          Text(
+            '$currentRound/$totalRounds',
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCurrentPlanCard(FitTrackColors colors, Map<String, dynamic> plan) {
     final progress = (plan['progress'] as num? ?? 0) / 100.0;
     final createTime = plan['createTime'] as int? ?? DateTime.now().millisecondsSinceEpoch;
@@ -880,6 +911,10 @@ class _HomePageState extends State<HomePage> {
               ),
               const Spacer(),
               BadgeWidget(text: '${plan['badge'] ?? '进行中'}', variant: BadgeVariant.accent),
+              if (totalRounds > 1) ...[
+                const SizedBox(width: 8),
+                _buildRoundRing(colors, currentRound, totalRounds),
+              ],
             ],
           ),
           const SizedBox(height: 12),
@@ -908,8 +943,13 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 10),
-          ProgressBar(progress: progress),
           if (totalRounds > 1) ...[
+            Text('当前轮次进度',
+                style: TextStyle(color: colors.textMuted, fontSize: 11)),
+            const SizedBox(height: 4),
+            ProgressBar(
+              progress: totalWeeks > 0 ? weekInRound / totalWeeks : 0.0,
+            ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -920,11 +960,13 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 4),
             LinearProgressIndicator(
-              value: overallProgress / 100,
+              value: totalRounds > 0 ? currentRound / totalRounds : 0.0,
               backgroundColor: colors.borderColor,
               valueColor: AlwaysStoppedAnimation<Color>(colors.accentGlow.withOpacity(0.5)),
               minHeight: 3,
             ),
+          ] else ...[
+            ProgressBar(progress: progress),
           ],
         ],
       ),
