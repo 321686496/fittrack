@@ -122,8 +122,8 @@ packages:
     dependency: "direct main"
     description:
       path: flutter_local_notifications
-      ref: HEAD
-      resolved-ref: "5427351f2c1b6caae5bd3cf89f855e9b53bdcc57"
+      ref: master
+      resolved-ref: "4481d9357c0275ea86469e6fbd723313b15fe888"
       url: "https://gitcode.com/openharmony-sig/fluttertpc_flutter_local_notifications.git"
     source: git
     version: "17.1.0"
