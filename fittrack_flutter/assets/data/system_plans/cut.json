@@ -1,0 +1,610 @@
+[
+  {
+    "id": "cut_hiit_beginner_1",
+    "name": "新手燃脂HIIT入门",
+    "goal": "cut",
+    "difficulty": "beginner",
+    "trainingType": "hiit",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 6,
+    "defaultRestTime": 60,
+    "description": "专为减脂新手设计的 HIIT 入门计划，每周三次高强度间歇训练，动作简单易学，结合有氧与基础力量训练。短时间内最大化热量消耗，提升心肺功能，帮助你高效燃脂，塑造健康体型。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#E8B97A", "#C4914D"],
+    "tags": ["新手友好", "HIIT", "燃脂"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 24-30，体脂率 25-35%，希望减脂塑形",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身HIIT",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_hiit_001", "name": "开合跳", "sets": 4, "reps": 30, "restTime": 60},
+          {"id": "ex_hiit_002", "name": "高抬腿", "sets": 4, "reps": 30, "restTime": 60},
+          {"id": "ex_hiit_003", "name": "深蹲跳", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_hiit_004", "name": "俯卧撑", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "核心燃脂",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_core_020", "name": "平板支撑", "sets": 3, "reps": 30, "restTime": 60},
+          {"id": "ex_core_021", "name": "卷腹", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_core_022", "name": "俄罗斯转体", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_hiit_005", "name": "登山跑", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "下肢燃脂",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_080", "name": "深蹲", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_leg_081", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_hiit_006", "name": "波比跳", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_hiit_007", "name": "开合跳", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_full_body_beginner_1",
+    "name": "全身燃脂塑形计划",
+    "goal": "cut",
+    "difficulty": "beginner",
+    "trainingType": "full_body",
+    "isPremium": true,
+    "pointsCost": 100,
+    "totalWeeks": 8,
+    "defaultRestTime": 60,
+    "description": "精品全身燃脂计划，结合力量训练与有氧运动，每周四次训练加速基础代谢。计划包含详细的热身、主训练与拉伸指导，帮助你保留肌肉的同时高效减脂，特别适合初次系统性减脂的健身者。",
+    "coverEmoji": "✨",
+    "coverColors": ["#A8D5BA", "#7AB593"],
+    "tags": ["精品", "全身燃脂", "新手友好"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 23-30，体脂率 25-32%，健身经验 0-6 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身A+有氧",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_060", "name": "深蹲", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_061", "name": "俯卧撑", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_full_062", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_063", "name": "开合跳", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身B+有氧",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_070", "name": "哑铃推举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_071", "name": "哑铃划船", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_072", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_full_073", "name": "高抬腿", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身C+有氧",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_080", "name": "腿举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_081", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_082", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_full_083", "name": "波比跳", "sets": 3, "reps": 10, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "核心+有氧",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_core_030", "name": "平板支撑", "sets": 3, "reps": 45, "restTime": 60},
+          {"id": "ex_core_031", "name": "卷腹", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_hiit_008", "name": "登山跑", "sets": 3, "reps": 30, "restTime": 60},
+          {"id": "ex_hiit_009", "name": "深蹲跳", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_3day_split_beginner_1",
+    "name": "三分化减脂计划",
+    "goal": "cut",
+    "difficulty": "beginner",
+    "trainingType": "3day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 60,
+    "description": "适合新手的减脂三分化计划，胸背腿三分化配合短时有氧，每次训练 45 分钟内完成。低组间歇高次数训练法，提升热量消耗同时保留肌肉量，让你的减脂之路高效可持续。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#E8B97A", "#C4914D"],
+    "tags": ["三分化", "新手友好", "保留肌肉"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 23-29，体脂率 24-32%，健身经验 0-6 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部+有氧",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_080", "name": "杠铃卧推", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_chest_081", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_082", "name": "俯卧撑", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_hiit_010", "name": "开合跳", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部+有氧",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_080", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_back_081", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_back_082", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_hiit_011", "name": "高抬腿", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部+有氧",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_090", "name": "深蹲", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_leg_091", "name": "腿举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_leg_092", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_hiit_012", "name": "波比跳", "sets": 3, "reps": 10, "restTime": 90}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_hiit_elementary_1",
+    "name": "进阶燃脂HIIT计划",
+    "goal": "cut",
+    "difficulty": "elementary",
+    "trainingType": "hiit",
+    "isPremium": true,
+    "pointsCost": 200,
+    "totalWeeks": 8,
+    "defaultRestTime": 45,
+    "description": "精品进阶 HIIT 燃脂计划，融合 Tabata 与循环训练法，每周四次高强度训练。动作组合更具挑战性，短间歇高心率让你训练后持续燃脂数小时。包含心率区间指导与动作进阶建议，让减脂效率翻倍。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#A8D5BA", "#7AB593"],
+    "tags": ["精品", "HIIT", "Tabata"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 23-29，体脂率 22-30%，健身经验 3-12 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身燃脂",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_hiit_020", "name": "波比跳", "sets": 5, "reps": 12, "restTime": 45},
+          {"id": "ex_hiit_021", "name": "深蹲跳", "sets": 5, "reps": 15, "restTime": 45},
+          {"id": "ex_hiit_022", "name": "登山跑", "sets": 5, "reps": 30, "restTime": 45},
+          {"id": "ex_hiit_023", "name": "高抬腿", "sets": 5, "reps": 30, "restTime": 45}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "核心+战绳",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_hiit_024", "name": "战绳", "sets": 5, "reps": 30, "restTime": 45},
+          {"id": "ex_core_040", "name": "平板支撑", "sets": 3, "reps": 60, "restTime": 45},
+          {"id": "ex_core_041", "name": "俄罗斯转体", "sets": 4, "reps": 20, "restTime": 45},
+          {"id": "ex_hiit_025", "name": "波比跳", "sets": 4, "reps": 10, "restTime": 45}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "下肢爆发",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_hiit_026", "name": "深蹲跳", "sets": 5, "reps": 15, "restTime": 45},
+          {"id": "ex_leg_100", "name": "箭步跳", "sets": 4, "reps": 12, "restTime": 45},
+          {"id": "ex_hiit_027", "name": "高抬腿", "sets": 5, "reps": 30, "restTime": 45},
+          {"id": "ex_hiit_028", "name": "开合跳", "sets": 5, "reps": 30, "restTime": 45}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "上肢燃脂",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_hiit_029", "name": "战绳", "sets": 5, "reps": 30, "restTime": 45},
+          {"id": "ex_chest_090", "name": "俯卧撑", "sets": 4, "reps": 15, "restTime": 45},
+          {"id": "ex_back_090", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 45},
+          {"id": "ex_hiit_030", "name": "登山跑", "sets": 5, "reps": 30, "restTime": 45}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_full_body_elementary_1",
+    "name": "全身循环减脂计划",
+    "goal": "cut",
+    "difficulty": "elementary",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 60,
+    "description": "循环训练式全身减脂计划，每次训练以循环形式完成 4-5 个动作组合，提升心率同时锻炼全身肌群。适合已掌握基础动作的健身者，在保留肌肉的同时最大化热量消耗，让减脂更高效。",
+    "coverEmoji": "🏃",
+    "coverColors": ["#E8B97A", "#C4914D"],
+    "tags": ["循环训练", "全身减脂", "初级"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 23-29，体脂率 22-30%，健身经验 3-12 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "循环A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_090", "name": "深蹲", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_full_091", "name": "俯卧撑", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_092", "name": "哑铃划船", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_093", "name": "开合跳", "sets": 4, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "循环B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_100", "name": "箭步蹲", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_101", "name": "哑铃推举", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_102", "name": "高位下拉", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_103", "name": "高抬腿", "sets": 4, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "循环C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_110", "name": "硬拉", "sets": 4, "reps": 10, "restTime": 60},
+          {"id": "ex_full_111", "name": "哑铃飞鸟", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_112", "name": "坐姿划船", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_113", "name": "波比跳", "sets": 4, "reps": 10, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "循环D",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_120", "name": "腿举", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_full_121", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 60},
+          {"id": "ex_full_122", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 60},
+          {"id": "ex_full_123", "name": "登山跑", "sets": 4, "reps": 30, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_4day_split_elementary_1",
+    "name": "四分化力量减脂计划",
+    "goal": "cut",
+    "difficulty": "elementary",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 200,
+    "totalWeeks": 10,
+    "defaultRestTime": 60,
+    "description": "精品四分化力量减脂计划，胸背腿肩独立训练日配合短时有氧收尾。在保留肌肉量的同时高效燃脂，每个训练日以力量训练为主，搭配 10 分钟有氧加速脂肪燃烧。适合希望减脂同时维持力量的健身者。",
+    "coverEmoji": "💪",
+    "coverColors": ["#A8D5BA", "#7AB593"],
+    "tags": ["精品", "四分化", "力量减脂"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 23-28，体脂率 22-28%，健身经验 6-12 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部+有氧",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_100", "name": "杠铃卧推", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_chest_101", "name": "上斜哑铃卧推", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_chest_102", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_103", "name": "俯卧撑", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部+有氧",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_100", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 60},
+          {"id": "ex_back_101", "name": "杠铃划船", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_back_102", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_back_103", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部+有氧",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_110", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 90},
+          {"id": "ex_leg_111", "name": "罗马尼亚硬拉", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_leg_112", "name": "腿举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_leg_113", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部+有氧",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_060", "name": "哑铃推举", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_shoulder_061", "name": "侧平举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_062", "name": "前平举", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_shoulder_063", "name": "面拉", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_hiit_intermediate_1",
+    "name": "高强度燃脂HIIT进阶",
+    "goal": "cut",
+    "difficulty": "intermediate",
+    "trainingType": "hiit",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 10,
+    "defaultRestTime": 30,
+    "description": "精品高强度 HIIT 燃脂计划，采用 Tabata 20/10 训练法与 EMOM 训练法，极短间歇让你心率持续维持在高燃脂区间。包含复杂多关节动作与爆发力训练，最大化 EPOC 效应，训练后持续燃脂 24-48 小时。",
+    "coverEmoji": "🥵",
+    "coverColors": ["#A8D5BA", "#7AB593"],
+    "tags": ["精品", "Tabata", "EPOC"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 22-28，体脂率 20-28%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "Tabata全身",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_hiit_040", "name": "波比跳", "sets": 8, "reps": 15, "restTime": 30},
+          {"id": "ex_hiit_041", "name": "深蹲跳", "sets": 8, "reps": 20, "restTime": 30},
+          {"id": "ex_hiit_042", "name": "战绳", "sets": 8, "reps": 30, "restTime": 30},
+          {"id": "ex_hiit_043", "name": "高抬腿", "sets": 8, "reps": 30, "restTime": 30}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "EMOM爆发",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_hiit_044", "name": "波比跳", "sets": 10, "reps": 12, "restTime": 30},
+          {"id": "ex_hiit_045", "name": "箭步跳", "sets": 10, "reps": 12, "restTime": 30},
+          {"id": "ex_hiit_046", "name": "俯卧撑跳", "sets": 10, "reps": 15, "restTime": 30},
+          {"id": "ex_hiit_047", "name": "登山跑", "sets": 10, "reps": 30, "restTime": 30}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "核心燃脂",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_core_050", "name": "悬垂举腿", "sets": 4, "reps": 12, "restTime": 30},
+          {"id": "ex_core_051", "name": "俄罗斯转体", "sets": 4, "reps": 25, "restTime": 30},
+          {"id": "ex_hiit_048", "name": "波比跳", "sets": 5, "reps": 12, "restTime": 30},
+          {"id": "ex_hiit_049", "name": "战绳", "sets": 5, "reps": 30, "restTime": 30}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "全身燃脂",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_hiit_050", "name": "波比跳", "sets": 6, "reps": 15, "restTime": 30},
+          {"id": "ex_hiit_051", "name": "深蹲跳", "sets": 6, "reps": 20, "restTime": 30},
+          {"id": "ex_hiit_052", "name": "开合跳", "sets": 6, "reps": 40, "restTime": 30},
+          {"id": "ex_hiit_053", "name": "高抬腿", "sets": 6, "reps": 40, "restTime": 30}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_full_body_intermediate_1",
+    "name": "复合燃脂全身计划",
+    "goal": "cut",
+    "difficulty": "intermediate",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 10,
+    "defaultRestTime": 60,
+    "description": "中级复合动作全身减脂计划，以多关节复合动作为核心，每次训练激活全身大肌群，最大化代谢消耗。结合力量与有氧的混合训练模式，提升基础代谢率，让你在休息时也能持续燃脂，突破减脂平台期。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#E8B97A", "#C4914D"],
+    "tags": ["复合动作", "中级", "代谢训练"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 22-28，体脂率 20-28%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身力量A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_130", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_131", "name": "杠铃卧推", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_132", "name": "杠铃划船", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_133", "name": "波比跳", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身力量B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_140", "name": "硬拉", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_full_141", "name": "哑铃推举", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_142", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 60},
+          {"id": "ex_full_143", "name": "战绳", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身力量C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_150", "name": "前蹲", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_151", "name": "上斜哑铃卧推", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_152", "name": "坐姿划船", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_153", "name": "深蹲跳", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "全身力量D",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_160", "name": "保加利亚分腿蹲", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_161", "name": "双杠臂屈伸", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_162", "name": "高位下拉", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_full_163", "name": "登山跑", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_hiit_advanced_1",
+    "name": "极限燃脂HIIT挑战",
+    "goal": "cut",
+    "difficulty": "advanced",
+    "trainingType": "hiit",
+    "isPremium": true,
+    "pointsCost": 800,
+    "totalWeeks": 12,
+    "defaultRestTime": 20,
+    "description": "精品极限 HIIT 燃脂挑战，融合 CrossFit 训练理念与军事化训练法，超短间歇高强度爆发。包含体操动作、力量爆发动作与有氧冲刺，每次训练 30 分钟内完成。适合追求极限燃脂效率的高级训练者，挑战你的体能极限。",
+    "coverEmoji": "🥵",
+    "coverColors": ["#A8D5BA", "#7AB593"],
+    "tags": ["精品", "极限燃脂", "CrossFit"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 21-27，体脂率 18-25%，健身经验 2 年以上",
+    "days": [
+      {
+        "day": 1,
+        "label": "极限燃脂A",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_hiit_060", "name": "波比跳", "sets": 10, "reps": 15, "restTime": 20},
+          {"id": "ex_hiit_061", "name": "深蹲跳", "sets": 10, "reps": 20, "restTime": 20},
+          {"id": "ex_hiit_062", "name": "战绳", "sets": 10, "reps": 40, "restTime": 20},
+          {"id": "ex_hiit_063", "name": "高抬腿", "sets": 10, "reps": 40, "restTime": 20}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "爆发力训练",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_hiit_064", "name": "箭步跳", "sets": 8, "reps": 15, "restTime": 20},
+          {"id": "ex_hiit_065", "name": "俯卧撑跳", "sets": 8, "reps": 15, "restTime": 20},
+          {"id": "ex_hiit_066", "name": "波比跳", "sets": 8, "reps": 12, "restTime": 20},
+          {"id": "ex_hiit_067", "name": "登山跑", "sets": 8, "reps": 40, "restTime": 20}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "核心爆发",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_core_060", "name": "悬垂举腿", "sets": 5, "reps": 15, "restTime": 30},
+          {"id": "ex_core_061", "name": "俄罗斯转体", "sets": 5, "reps": 30, "restTime": 30},
+          {"id": "ex_hiit_068", "name": "波比跳", "sets": 6, "reps": 15, "restTime": 20},
+          {"id": "ex_hiit_069", "name": "战绳", "sets": 6, "reps": 40, "restTime": 20}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "极限冲刺",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_hiit_070", "name": "波比跳", "sets": 12, "reps": 15, "restTime": 20},
+          {"id": "ex_hiit_071", "name": "深蹲跳", "sets": 12, "reps": 20, "restTime": 20},
+          {"id": "ex_hiit_072", "name": "开合跳", "sets": 12, "reps": 50, "restTime": 20},
+          {"id": "ex_hiit_073", "name": "高抬腿", "sets": 12, "reps": 50, "restTime": 20}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cut_4day_split_advanced_1",
+    "name": "精英减脂塑形计划",
+    "goal": "cut",
+    "difficulty": "advanced",
+    "trainingType": "4day_split",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 12,
+    "defaultRestTime": 45,
+    "description": "面向高级训练者的精英减脂计划，四分化训练配合精准的有氧安排，在最大化保留肌肉量的同时高效剥离脂肪。包含力量周期与代谢训练结合，针对最后几斤顽固脂肪设计，让你达到最佳线条状态。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#E8B97A", "#C4914D"],
+    "tags": ["高级", "减脂塑形", "保留肌肉"],
+    "recommendedFrequency": 5,
+    "suitableFor": "BMI 21-27，体脂率 18-25%，健身经验 2 年以上",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部+HIIT",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_110", "name": "杠铃卧推", "sets": 4, "reps": 10, "restTime": 60},
+          {"id": "ex_chest_111", "name": "上斜哑铃卧推", "sets": 4, "reps": 12, "restTime": 45},
+          {"id": "ex_chest_112", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_hiit_080", "name": "战绳", "sets": 4, "reps": 30, "restTime": 30}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部+HIIT",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_110", "name": "引体向上", "sets": 4, "reps": 10, "restTime": 60},
+          {"id": "ex_back_111", "name": "杠铃划船", "sets": 4, "reps": 10, "restTime": 60},
+          {"id": "ex_back_112", "name": "哑铃划船", "sets": 3, "reps": 12, "restTime": 45},
+          {"id": "ex_hiit_081", "name": "波比跳", "sets": 4, "reps": 12, "restTime": 30}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "腿部+有氧",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_120", "name": "深蹲", "sets": 4, "reps": 10, "restTime": 90},
+          {"id": "ex_leg_121", "name": "罗马尼亚硬拉", "sets": 4, "reps": 10, "restTime": 60},
+          {"id": "ex_leg_122", "name": "腿举", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_hiit_082", "name": "深蹲跳", "sets": 4, "reps": 15, "restTime": 30}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩臂+HIIT",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_070", "name": "哑铃推举", "sets": 4, "reps": 10, "restTime": 60},
+          {"id": "ex_shoulder_071", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 45},
+          {"id": "ex_shoulder_072", "name": "面拉", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_hiit_083", "name": "登山跑", "sets": 4, "reps": 30, "restTime": 30}
+        ]
+      }
+    ]
+  }
+]
