@@ -63,7 +63,10 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
                 const SizedBox(height: 16),
                 _buildDescription(plan, ft),
                 const SizedBox(height: 16),
-                _buildDays(plan, ft),
+                if (isUnlocked)
+                  _buildDays(plan, ft)
+                else
+                  _buildLockedDays(plan, ft),
                 const SizedBox(height: 80), // 底部按钮空间
               ],
             ),
@@ -217,6 +220,56 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
               style: TextStyle(color: ft.textSecondary, fontSize: 13),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// 未解锁付费计划时的训练日占位卡片
+  Widget _buildLockedDays(SystemPlan plan, FitTrackColors ft) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: ft.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ft.borderColor),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: ft.warningColor.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.lock_outline,
+              color: ft.warningColor,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '解锁后查看完整训练安排',
+            style: TextStyle(
+              color: ft.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '本计划共 ${plan.days.length} 个训练日，包含详细动作、组数次数与休息时间',
+            style: TextStyle(color: ft.textSecondary, fontSize: 13, height: 1.5),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '支付 ${plan.pointsCost} 积分解锁，90 天内可查看与使用',
+            style: TextStyle(color: ft.textMuted, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
