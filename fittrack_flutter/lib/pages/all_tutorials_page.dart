@@ -2,34 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/course_content.dart';
 import '../data/tutorial_content.dart';
-import '../services/recommendation_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
-class TutorialListPage extends StatefulWidget {
-  const TutorialListPage({super.key});
+/// 全部教学页面 —— 展示完整的系统化课程与动作教学列表
+///
+/// 与教学中心（TutorialListPage）不同，本页不再截断列表，并提供顶部
+/// 目标筛选 Chip 用于过滤动作教学。卡片样式与 TutorialListPage 保持一致。
+class AllTutorialsPage extends StatefulWidget {
+  const AllTutorialsPage({super.key});
 
   @override
-  State<TutorialListPage> createState() => _TutorialListPageState();
+  State<AllTutorialsPage> createState() => _AllTutorialsPageState();
 }
 
-class _TutorialListPageState extends State<TutorialListPage> {
+class _AllTutorialsPageState extends State<AllTutorialsPage> {
   FitnessGoal? _filterGoal;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final banners = RecommendationService.generateBanners()
-        .where((b) => b.type == 'teaching' || b.type == 'premium')
-        .toList();
-    final courses = CourseLibrary.courses.take(3).toList();
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
       body: Column(
         children: [
-          const PageHeader(title: '教学中心', isTabPage: true),
+          PageHeader(
+            title: '全部教学',
+            isTabPage: false,
+            onBack: () => Navigator.of(context).pop(),
+          ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -37,43 +40,18 @@ class _TutorialListPageState extends State<TutorialListPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                  // ── 为你推荐横滑区段 ──────────────────────
-                  if (banners.isNotEmpty) ...[
-                    const SectionHeader(title: '为你推荐'),
-                    const SizedBox(height: 12),
-                    _buildRecommendRow(colors, banners, courses),
-                    const SizedBox(height: 24),
-                  ],
-                  // ── 肌群筛选 ──────────────────────────────
+                  // ── 目标筛选 ─────────────────────────────
                   _buildGoalFilter(colors),
                   const SizedBox(height: 20),
-                  // ── 系统化课程 ────────────────────────────
+                  // ── 系统化课程（全部） ────────────────────
                   const SectionHeader(title: '系统化课程'),
                   const SizedBox(height: 12),
                   _buildCourseSection(colors),
                   const SizedBox(height: 20),
-                  // ── 动作教学 ──────────────────────────────
+                  // ── 动作教学（全部，按筛选过滤） ──────────
                   const SectionHeader(title: '动作教学'),
                   const SizedBox(height: 12),
                   _buildTutorialSection(colors),
-                  const SizedBox(height: 24),
-                  // ── 查看全部教学入口 ─────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => context.push('/all-tutorials'),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: colors.accentGlow),
-                        foregroundColor: colors.accentGlow,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text('查看全部教学',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                    ),
-                  ),
                   const SizedBox(height: 200),
                 ],
               ),
@@ -84,111 +62,7 @@ class _TutorialListPageState extends State<TutorialListPage> {
     );
   }
 
-  Widget _buildRecommendRow(FitTrackColors colors, List<dynamic> banners, List<Course> courses) {
-    return SizedBox(
-      height: 100,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: (banners.length + courses.length).clamp(0, 3),
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (ctx, i) {
-          if (i < banners.length) {
-            final banner = banners[i];
-            return GestureDetector(
-              onTap: () {
-                if (banner.route != null) context.push(banner.route!);
-              },
-              child: Container(
-                width: 160,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colors.accentGlow.withOpacity(0.8),
-                      colors.accentGlow.withOpacity(0.5),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      banner.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      banner.subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          } else {
-            final course = courses[i - banners.length];
-            return GestureDetector(
-              onTap: () => context.push('/course/${course.id}'),
-              child: Container(
-                width: 160,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: course.coverColors,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      course.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      course.subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-        },
-      ),
-    );
-  }
-
+  // ── 筛选 Chip ────────────────────────────────────────────────
   Widget _buildGoalFilter(FitTrackColors colors) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -234,8 +108,9 @@ class _TutorialListPageState extends State<TutorialListPage> {
     );
   }
 
+  // ── 系统化课程列表（全部） ─────────────────────────────────
   Widget _buildCourseSection(FitTrackColors colors) {
-    final courses = CourseLibrary.courses.take(2).toList();
+    const courses = CourseLibrary.courses;
     return Column(
       children: courses.map((c) {
         return GestureDetector(
@@ -287,12 +162,27 @@ class _TutorialListPageState extends State<TutorialListPage> {
     );
   }
 
+  // ── 动作教学列表（全部，按筛选过滤） ───────────────────────
   Widget _buildTutorialSection(FitTrackColors colors) {
-    final tutorials = (_filterGoal == null
+    final tutorials = _filterGoal == null
         ? TutorialLibrary.getBasic()
-        : TutorialLibrary.getBasic().where((t) => t.goal == _filterGoal).toList())
-        .take(4)
-        .toList();
+        : TutorialLibrary.getBasic().where((t) => t.goal == _filterGoal).toList();
+    if (tutorials.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(Icons.play_circle_outline,
+                  size: 48, color: colors.textMuted.withOpacity(0.5)),
+              const SizedBox(height: 12),
+              Text('该筛选下暂无动作教学',
+                  style: TextStyle(color: colors.textMuted, fontSize: 13)),
+            ],
+          ),
+        ),
+      );
+    }
     return Column(
       children: tutorials.map((t) {
         return GestureDetector(

@@ -79,6 +79,7 @@ class AchievementService {
   ];
 
   final Set<String> _unlocked = {};
+  final Map<String, int> _unlockedAtMap = {};
   bool _inited = false;
 
   Future<void> init() async {
@@ -87,7 +88,10 @@ class AchievementService {
     for (final r in rows) {
       final id = r['id'] as String?;
       final unlockedAt = r['unlockedAt'] as int? ?? 0;
-      if (id != null && unlockedAt > 0) _unlocked.add(id);
+      if (id != null && unlockedAt > 0) {
+        _unlocked.add(id);
+        _unlockedAtMap[id] = unlockedAt;
+      }
     }
     _inited = true;
   }
@@ -95,6 +99,7 @@ class AchievementService {
   @visibleForTesting
   Future<void> resetForTest() async {
     _unlocked.clear();
+    _unlockedAtMap.clear();
     _inited = false;
     final db = await DatabaseHelper.instance.database;
     await db.delete('achievements');
@@ -172,6 +177,7 @@ class AchievementService {
         'metadata': '{}',
       });
       _unlocked.add(id);
+      _unlockedAtMap[id] = now;
     }
     Storage.unlockedAchievementsNotifier.value = _unlocked.toList();
     return toAdd;
@@ -210,6 +216,7 @@ class AchievementService {
               description: a.description,
               icon: a.icon,
               unlocked: _unlocked.contains(a.id),
+              unlockedAt: _unlockedAtMap[a.id],
             ))
         .toList();
   }
