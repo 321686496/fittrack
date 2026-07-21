@@ -111,7 +111,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   void _save() {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请输入计划名称')));
+      FitToast.info(context, '请输入计划名称');
       return;
     }
     final totalWeeks = int.tryParse(_totalWeeksController.text) ?? 8;

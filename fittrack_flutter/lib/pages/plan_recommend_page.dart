@@ -7,6 +7,7 @@ import '../data/system_plan_library.dart';
 import '../services/invitation_service.dart';
 import '../services/plan_recommendation_service.dart';
 import '../services/plan_unlock_service.dart';
+import '../widgets/common_widgets.dart';
 
 class PlanRecommendPage extends StatefulWidget {
   final Map<String, dynamic> profileData;
@@ -159,12 +160,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                               final code =
                                   controller.text.trim().toUpperCase();
                               if (code.isEmpty) {
-                                ScaffoldMessenger.of(ctx).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('请输入邀请码'),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
+                                FitToast.info(ctx, '请输入邀请码');
                                 return;
                               }
                               setSheetState(() => activating = true);
@@ -193,15 +189,11 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                                   msg = '你已激活过邀请码（一码一绑）';
                                   break;
                               }
-                              ScaffoldMessenger.of(ctx).showSnackBar(
-                                SnackBar(
-                                  content: Text(msg),
-                                  backgroundColor: success
-                                      ? colors.successColor
-                                      : colors.bgElevated,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
+                              if (success) {
+                                FitToast.success(ctx, msg);
+                              } else {
+                                FitToast.error(ctx, msg);
+                              }
                               if (success && ctx.mounted) {
                                 Navigator.of(ctx).pop();
                               }

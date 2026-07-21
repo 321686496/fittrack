@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/platform_utils.dart';
+import '../widgets/common_widgets.dart';
 
 /// 权限管理服务 - 集中处理 HarmonyOS 权限申请与状态检查
 class PermissionService {
@@ -67,29 +68,18 @@ class PermissionService {
     required String permissionName,
     required String reason,
   }) async {
-    return showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('$permissionName权限被拒绝'),
-        content: Text(reason),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              if (_isPermissionPlatform) {
-                try {
-                  await openAppSettings();
-                } catch (_) {}
-              }
-            },
-            child: const Text('去设置'),
-          ),
-        ],
-      ),
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: '$permissionName权限被拒绝',
+      content: reason,
+      confirmText: '去设置',
+      cancelText: '取消',
+      icon: Icons.privacy_tip_outlined,
     );
+    if (confirmed == true && _isPermissionPlatform) {
+      try {
+        await openAppSettings();
+      } catch (_) {}
+    }
   }
 }

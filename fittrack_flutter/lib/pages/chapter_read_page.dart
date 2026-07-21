@@ -6,6 +6,7 @@ import '../data/content_block.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/points_service.dart';
+import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 class ChapterReadPage extends StatefulWidget {
@@ -40,11 +41,8 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
     await PointsService.instance.addPoints(reward, 'course_learn');
 
     if (mounted) {
-      final colors = Theme.of(context).extension<FitTrackColors>()!;
       setState(() => _learned = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('恭喜获得 $reward 积分'), backgroundColor: colors.successColor),
-      );
+      FitToast.success(context, '恭喜获得 $reward 积分');
     }
   }
 

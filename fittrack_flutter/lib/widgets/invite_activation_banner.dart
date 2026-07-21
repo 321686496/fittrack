@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../services/invitation_service.dart';
 import '../services/clipboard_invite_service.dart';
+import 'common_widgets.dart';
 
 /// v1 一键裂变 —— 邀请码激活横幅
 ///
@@ -122,7 +123,6 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
 
     setState(() => _activating = false);
 
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
     String msg;
     bool success = false;
     switch (result) {
@@ -151,13 +151,11 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: success ? colors.successColor : colors.bgElevated,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (success) {
+      FitToast.success(context, msg);
+    } else {
+      FitToast.error(context, msg);
+    }
 
     widget.onDismissed();
   }

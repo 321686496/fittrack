@@ -4,6 +4,7 @@ import '../themes/app_themes.dart';
 import '../services/points_service.dart';
 import '../services/ad_service.dart';
 import '../data/storage.dart';
+import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 class PointsDetailPage extends StatefulWidget {
@@ -159,9 +160,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                               if (adResult == AdResult.success || adResult == AdResult.notAvailable) {
                                 await PointsService.instance.addPoints(5, 'ad_watched');
                                 if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('获得 5 积分！')),
-                                  );
+                                  FitToast.success(context, '获得 5 积分！');
                                   _loadLog();
                                   setState(() {});
                                 }

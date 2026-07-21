@@ -4,6 +4,7 @@ import '../data/storage.dart';
 import '../data/training_note.dart';
 import '../pages/note_poster_page.dart';
 import '../themes/app_themes.dart';
+import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 /// v1 训练笔记编写页
@@ -673,37 +674,13 @@ class _NoteEditPageState extends State<NoteEditPage> {
     if (!mounted) return;
     // 询问是否生成海报（仅新建时询问）
     if (_existingNote == null) {
-      final shouldPoster = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: Theme.of(ctx).extension<FitTrackColors>()!.bgSecondary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text('笔记已保存',
-              style: TextStyle(
-                  color: Theme.of(ctx).extension<FitTrackColors>()!.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700)),
-          content: Text('是否生成笔记海报分享？',
-              style: TextStyle(
-                  color: Theme.of(ctx).extension<FitTrackColors>()!.textSecondary,
-                  fontSize: 13)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('稍后'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    Theme.of(ctx).extension<FitTrackColors>()!.accentGlow,
-                foregroundColor: Colors.white,
-                elevation: 0,
-              ),
-              child: const Text('生成海报'),
-            ),
-          ],
-        ),
+      final shouldPoster = await ConfirmDialog.show(
+        context,
+        title: '笔记已保存',
+        content: '已成功保存训练笔记，是否生成海报分享？',
+        confirmText: '生成海报',
+        cancelText: '稍后再说',
+        icon: Icons.photo_camera_outlined,
       );
 
       if (shouldPoster == true && mounted) {

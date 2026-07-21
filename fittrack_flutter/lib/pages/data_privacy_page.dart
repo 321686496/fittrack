@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../router.dart' as app_router;
+import '../widgets/common_widgets.dart';
 
 class DataPrivacyPage extends StatefulWidget {
   const DataPrivacyPage({super.key});
@@ -37,19 +38,14 @@ class _DataPrivacyPageState extends State<DataPrivacyPage> {
   }
 
   Future<void> _showClearDataDialog() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('确认清除'),
-        content: const Text('此操作将删除所有训练记录、计划、身体数据。无法恢复。是否继续？'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('继续'),
-          ),
-        ],
-      ),
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: '确认清除',
+      content: '此操作将删除所有训练记录、计划、身体数据。无法恢复。是否继续？',
+      confirmText: '继续',
+      cancelText: '取消',
+      confirmColor: Colors.red,
+      icon: Icons.warning_amber_rounded,
     );
     if (confirmed != true) return;
     await _showSecondConfirmation();
@@ -152,9 +148,7 @@ class _DataPrivacyPageState extends State<DataPrivacyPage> {
     // Defer to existing export logic in settings_page.dart
     // If not accessible, prompt user to use Settings → Export
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请前往"设置 → 数据导出"完成导出')),
-      );
+      FitToast.info(context, '请前往"设置 → 数据导出"完成导出');
     }
   }
 }
