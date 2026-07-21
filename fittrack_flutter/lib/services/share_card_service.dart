@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../widgets/share_card_frame.dart';
 import '../utils/platform_utils.dart';
 
@@ -84,14 +83,5 @@ class ShareCardService {
     final file = File(path);
     await file.writeAsBytes(bytes);
     return path;
-  }
-
-  static Future<void> shareImage(String imagePath) async {
-    // OHOS: share_plus has no OHOS platform implementation.
-    // Skip the Share call; caller should show a SnackBar fallback.
-    if (isOhos) {
-      return;
-    }
-    await Share.shareXFiles([XFile(imagePath)], text: '我用 FitTrack 完成了今日训练');
   }
 }
