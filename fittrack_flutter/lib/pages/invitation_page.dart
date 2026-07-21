@@ -182,13 +182,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   void _copyCode(FitTrackColors colors) {
     Clipboard.setData(ClipboardData(text: _myCode));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('邀请码已复制'),
-        backgroundColor: colors.bgElevated,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    FitToast.success(context, '邀请码已复制');
   }
 
   Future<void> _shareCode() async {
@@ -737,9 +731,7 @@ class _InvitationPageState extends State<InvitationPage> {
   Future<void> _activate() async {
     final code = _activateController.text.trim().toUpperCase();
     if (code.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入邀请码'), behavior: SnackBarBehavior.floating),
-      );
+      FitToast.info(context, '请输入邀请码');
       return;
     }
 
@@ -749,7 +741,6 @@ class _InvitationPageState extends State<InvitationPage> {
 
     if (!mounted) return;
 
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
     String msg;
     bool success = false;
     switch (result) {
@@ -771,13 +762,11 @@ class _InvitationPageState extends State<InvitationPage> {
         break;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: success ? colors.successColor : colors.bgElevated,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (success) {
+      FitToast.success(context, msg);
+    } else {
+      FitToast.error(context, msg);
+    }
 
     if (success) {
       _loadData();

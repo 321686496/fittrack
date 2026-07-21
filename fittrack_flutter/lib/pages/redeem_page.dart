@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/redeem_service.dart';
+import '../widgets/common_widgets.dart';
 
 class RedeemPage extends StatefulWidget {
   const RedeemPage({super.key});
@@ -34,7 +35,11 @@ class _RedeemPageState extends State<RedeemPage> {
         break;
     }
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    if (result == RedeemResult.success) {
+      FitToast.success(context, msg);
+    } else {
+      FitToast.error(context, msg);
+    }
     if (result == RedeemResult.success) {
       context.pop();
     }

@@ -356,13 +356,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
 
   void _copyString(FitTrackColors colors) {
     Clipboard.setData(ClipboardData(text: _generatedShareString!));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('分享串已复制'),
-        backgroundColor: colors.bgElevated,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    FitToast.success(context, '分享串已复制');
   }
 
   void _shareString() {
@@ -469,9 +463,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
   Future<void> _import() async {
     final input = _importController.text.trim();
     if (input.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请粘贴分享串'), behavior: SnackBarBehavior.floating),
-      );
+      FitToast.info(context, '请粘贴分享串');
       return;
     }
 
@@ -507,50 +499,23 @@ class _ShareCodePageState extends State<ShareCodePage> {
           }
         } else {
           // 仅6位码，无计划内容
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('分享码验证通过，但未包含计划数据。\n请让好友复制完整分享串发送。'),
-              backgroundColor: colors.warningColor,
-              behavior: SnackBarBehavior.floating,
-            ),
+          FitToast.warning(
+            context,
+            '分享码验证通过，但未包含计划数据。\n请让好友复制完整分享串发送。',
           );
         }
         break;
       case ShareCodeResult.invalidFormat:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('格式错误：应以 FITT- 开头'),
-            backgroundColor: colors.bgElevated,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        FitToast.error(context, '格式错误：应以 FITT- 开头');
         break;
       case ShareCodeResult.invalidSignature:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('分享码签名无效，可能已损坏'),
-            backgroundColor: colors.bgElevated,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        FitToast.error(context, '分享码签名无效，可能已损坏');
         break;
       case ShareCodeResult.payloadTooLarge:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('计划数据过大'),
-            backgroundColor: colors.bgElevated,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        FitToast.error(context, '计划数据过大');
         break;
       case ShareCodeResult.decodeError:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('解析失败，分享串可能不完整'),
-            backgroundColor: colors.bgElevated,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        FitToast.error(context, '解析失败，分享串可能不完整');
         break;
     }
   }
@@ -561,49 +526,19 @@ class _ShareCodePageState extends State<ShareCodePage> {
     String content,
     VoidCallback onConfirm,
   ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: colors.bgCard,
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber, color: colors.warningColor, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: colors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          content,
-          style: TextStyle(color: colors.textSecondary, fontSize: 14, height: 1.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('取消', style: TextStyle(color: colors.textMuted)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              onConfirm();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.warningColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-            ),
-            child: const Text('确定导入'),
-          ),
-        ],
-      ),
-    );
+    ConfirmDialog.show(
+      context,
+      title: title,
+      content: content,
+      confirmText: '确定导入',
+      cancelText: '取消',
+      confirmColor: colors.warningColor,
+      icon: Icons.warning_amber_rounded,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        onConfirm();
+      }
+    });
   }
 
   void _doImport(Map<String, dynamic> planData, FitTrackColors colors) {
@@ -617,16 +552,11 @@ class _ShareCodePageState extends State<ShareCodePage> {
     final author = ShareCodeService.instance.getAuthor(planData);
     Storage.addPlan(newPlan);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          author != null
-              ? '已导入「${planData['name'] ?? '计划'}」（来自$author）'
-              : '已导入「${planData['name'] ?? '计划'}」',
-        ),
-        backgroundColor: colors.successColor,
-        behavior: SnackBarBehavior.floating,
-      ),
+    FitToast.success(
+      context,
+      author != null
+          ? '已导入「${planData['name'] ?? '计划'}」（来自$author）'
+          : '已导入「${planData['name'] ?? '计划'}」',
     );
 
     _importController.clear();

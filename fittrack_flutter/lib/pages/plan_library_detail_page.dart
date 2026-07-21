@@ -6,6 +6,7 @@ import '../data/system_plan_library.dart';
 import '../services/plan_unlock_service.dart';
 import '../services/points_service.dart';
 import '../themes/app_themes.dart';
+import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 class PlanLibraryDetailPage extends StatefulWidget {
@@ -466,27 +467,20 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
       if (!mounted) return;
       switch (result) {
         case UnlockResult.success:
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('解锁成功！90天内可使用此计划')),
-          );
+          FitToast.success(context, '解锁成功！90天内可使用此计划');
           setState(() {}); // 刷新 UI
           break;
         case UnlockResult.insufficientPoints:
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '积分不足，还差 ${plan.pointsCost - PointsService.instance.points} 积分',
-              ),
-            ),
+          FitToast.error(
+            context,
+            '积分不足，还差 ${plan.pointsCost - PointsService.instance.points} 积分',
           );
           break;
         case UnlockResult.alreadyUnlocked:
           setState(() {});
           break;
         case UnlockResult.unknownPlan:
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('计划不存在')),
-          );
+          FitToast.error(context, '计划不存在');
           break;
       }
       return;
@@ -510,9 +504,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
     Storage.dataChanged.value = !Storage.dataChanged.value;
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已采用计划：${plan.name}')),
-    );
+    FitToast.success(context, '已采用计划：${plan.name}');
     context.go('/plan');
   }
 }

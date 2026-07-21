@@ -522,27 +522,13 @@ class _TrainingPageState extends State<TrainingPage>
         for (final id in unlockedAchievements) {
           final all = AchievementService.instance.getAll();
           final ach = all.where((a) => a.id == id).first;
-          await showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('解锁新成就'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.emoji_events, size: 64,
-                      color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(height: 12),
-                  Text(ach.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(ach.description),
-                ],
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('好的')),
-              ],
-            ),
+          await InfoDialog.show(
+            context,
+            title: '解锁新成就',
+            content: '${ach.title}\n${ach.description}',
+            actionText: '好的',
+            icon: Icons.emoji_events,
+            iconColor: Theme.of(context).colorScheme.primary,
           );
         }
       }
@@ -613,9 +599,7 @@ class _TrainingPageState extends State<TrainingPage>
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('生成分享卡片失败：$e')),
-        );
+        FitToast.error(context, '生成分享卡片失败：$e');
       }
     }
   }
@@ -1252,18 +1236,11 @@ class _TrainingPageState extends State<TrainingPage>
                             if (result == AdResult.success ||
                                 result == AdResult.notAvailable) {
                               setState(() => _detailedReportUnlocked = true);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('已解锁详细数据报告')),
-                              );
+                              FitToast.success(context, '已解锁详细数据报告');
                             } else if (result == AdResult.userDismissed) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('广告未观看完成')),
-                              );
+                              FitToast.info(context, '广告未观看完成');
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('广告加载失败，请稍后重试')),
-                              );
+                              FitToast.error(context, '广告加载失败，请稍后重试');
                             }
                           },
                           icon: const Icon(Icons.play_circle_outline),

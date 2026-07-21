@@ -307,13 +307,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
   void _copyText(Tutorial t) {
     final text = _buildShareText(t);
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('已复制到剪贴板'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: colors.bgElevated,
-      ),
-    );
+    FitToast.success(context, '已复制到剪贴板');
   }
 
   /// 海报分享：通过 [Overlay] 离屏渲染 [TutorialPoster]，

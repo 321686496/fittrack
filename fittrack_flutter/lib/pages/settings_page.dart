@@ -178,49 +178,18 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showAbout() {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.bgCard,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: colors.borderColor),
-        ),
-        title: Row(
-          children: [
-            Icon(Icons.fitness_center, color: colors.accentGlow, size: 28),
-            const SizedBox(width: 10),
-            Text('FitTrack', style: TextStyle(color: colors.textPrimary, fontSize: 20)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '版本 1.0.0',
-              style: TextStyle(color: colors.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '一款简洁高效的健身训练助手，帮助你：\n\n'
-              '• 制定个性化训练计划\n'
-              '• 记录每次训练数据\n'
-              '• 追踪身体数据变化\n'
-              '• 统计训练成就\n\n'
-              '所有数据仅保存在本地设备，不会上传至任何服务器。',
-              style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.5),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('知道了', style: TextStyle(color: colors.accentGlow)),
-          ),
-        ],
-      ),
+    InfoDialog.show(
+      context,
+      title: 'FitTrack',
+      content: '版本 1.0.0\n\n'
+          '一款简洁高效的健身训练助手，帮助你：\n\n'
+          '• 制定个性化训练计划\n'
+          '• 记录每次训练数据\n'
+          '• 追踪身体数据变化\n'
+          '• 统计训练成就\n\n'
+          '所有数据仅保存在本地设备，不会上传至任何服务器。',
+      actionText: '知道了',
+      icon: Icons.fitness_center,
     );
   }
 
