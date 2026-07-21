@@ -32,6 +32,7 @@ import 'pages/redeem_page.dart';
 import 'pages/invitation_page.dart';
 import 'pages/share_code_page.dart';
 import 'pages/tutorial_list_page.dart';
+import 'pages/all_tutorials_page.dart';
 import 'pages/tutorial_detail_page.dart';
 import 'pages/course_list_page.dart';
 import 'pages/course_detail_page.dart';
@@ -344,6 +345,11 @@ GoRouter createRouter() {
           final tutorialId = state.params['tutorialId'] ?? '';
           return TutorialDetailPage(tutorialId: tutorialId);
         },
+      ),
+      GoRoute(
+        path: '/all-tutorials',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AllTutorialsPage(),
       ),
       // 系统化课程路由
       GoRoute(

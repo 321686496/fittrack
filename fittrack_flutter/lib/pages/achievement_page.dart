@@ -58,6 +58,36 @@ class _AchievementPageState extends State<AchievementPage> {
     return map[cat] ?? cat;
   }
 
+  /// 简单相对时间格式化（不引入 timeago 包）
+  /// 输入：毫秒时间戳；输出："刚刚 / X 分钟前 / X 小时前 / X 天前 / X 个月前 / X 年前"
+  String _formatRelativeTime(int ts) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final diff = now - ts;
+    if (diff < 0) return '刚刚';
+    final minutes = diff ~/ 60000;
+    if (minutes < 1) return '刚刚';
+    if (minutes < 60) return '$minutes 分钟前';
+    final hours = minutes ~/ 60;
+    if (hours < 24) return '$hours 小时前';
+    final days = hours ~/ 24;
+    if (days < 30) return '$days 天前';
+    final months = days ~/ 30;
+    if (months < 12) return '$months 个月前';
+    final years = months ~/ 12;
+    return '$years 年前';
+  }
+
+  /// 组内排序：已解锁排前（按 unlockedAt 倒序），未解锁排后（保持原始顺序）
+  void _sortItemsInPlace(List<Achievement> items) {
+    items.sort((a, b) {
+      if (a.unlocked != b.unlocked) return a.unlocked ? -1 : 1;
+      if (a.unlocked && b.unlocked) {
+        return (b.unlockedAt ?? 0).compareTo(a.unlockedAt ?? 0);
+      }
+      return 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
@@ -83,7 +113,11 @@ class _AchievementPageState extends State<AchievementPage> {
     final grouped = <String, List<Achievement>>{};
     for (final cat in categoryOrder) {
       final items = _all.where((a) => a.category == cat).toList();
-      if (items.isNotEmpty) grouped[cat] = items;
+      if (items.isNotEmpty) {
+        // 组内排序：已解锁优先（按 unlockedAt 倒序），未解锁排后
+        _sortItemsInPlace(items);
+        grouped[cat] = items;
+      }
     }
 
     return Scaffold(
@@ -195,7 +229,9 @@ class _AchievementPageState extends State<AchievementPage> {
       onTap: () => InfoDialog.show(
         context,
         title: a.title,
-        content: a.description,
+        content: a.unlocked
+            ? '${a.description}\n\n解锁于 ${a.unlockedAt != null ? _formatRelativeTime(a.unlockedAt!) : '已解锁'}'
+            : '未解锁\n\n解锁条件：${a.description}',
         icon: _iconFor(a.icon),
         iconColor: a.unlocked ? colors.accentGlow : colors.textMuted,
       ),
@@ -203,12 +239,15 @@ class _AchievementPageState extends State<AchievementPage> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: colors.bgCard,
+          // 已解锁背景 accentGlow(0.15)，未解锁保持 bgCard
+          color: a.unlocked
+              ? colors.accentGlow.withOpacity(0.15)
+              : colors.bgCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: a.unlocked
                 ? colors.accentGlow.withOpacity(0.3)
-                : colors.borderColor,
+                : colors.borderColor.withOpacity(0.3),
           ),
         ),
         child: Row(
@@ -245,7 +284,24 @@ class _AchievementPageState extends State<AchievementPage> {
                 ],
               ),
             ),
-            if (a.unlocked)
+            if (a.unlocked && a.unlockedAt != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Icon(Icons.check_circle,
+                        color: colors.successColor, size: 18),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatRelativeTime(a.unlockedAt!),
+                      style: TextStyle(
+                          color: colors.textMuted, fontSize: 10),
+                    ),
+                  ],
+                ),
+              )
+            else if (a.unlocked)
               Icon(Icons.check_circle, color: colors.successColor, size: 22)
             else
               Icon(Icons.lock_outline, color: colors.textMuted, size: 22),

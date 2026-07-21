@@ -13,14 +13,17 @@ class HonorWallPage extends StatefulWidget {
 }
 
 class _HonorWallPageState extends State<HonorWallPage> {
+  List<Achievement> _all = [];
   List<Achievement> _unlocked = [];
+  List<Achievement> _locked = [];
 
   @override
   void initState() {
     super.initState();
-    _unlocked = AchievementService.instance.getAll()
-        .where((a) => a.unlocked)
-        .toList();
+    _all = AchievementService.instance.getAll();
+    _unlocked = _all.where((a) => a.unlocked).toList()
+      ..sort((a, b) => (b.unlockedAt ?? 0).compareTo(a.unlockedAt ?? 0));
+    _locked = _all.where((a) => !a.unlocked).toList();
   }
 
   String _formatDate(int? ts) {
@@ -45,7 +48,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final total = AchievementService.instance.getAll().length;
+    final total = _all.length;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -116,7 +119,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
                   if (_unlocked.isNotEmpty) ...[
                     const SectionHeader(title: '最近解锁'),
                     const SizedBox(height: 12),
-                    _buildRecentHonor(colors, _unlocked.last),
+                    _buildRecentHonor(colors, _unlocked.first),
                     const SizedBox(height: 24),
                   ],
                   // 荣誉墙网格
@@ -186,7 +189,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
   }
 
   Widget _buildHonorGrid(FitTrackColors colors) {
-    if (_unlocked.isEmpty) {
+    if (_all.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(40),
@@ -195,13 +198,18 @@ class _HonorWallPageState extends State<HonorWallPage> {
               Icon(Icons.emoji_events_outlined,
                   size: 64, color: colors.textMuted.withOpacity(0.5)),
               const SizedBox(height: 16),
-              Text('还没有解锁任何徽章',
+              Text('暂无徽章',
                   style: TextStyle(color: colors.textMuted, fontSize: 14)),
             ],
           ),
         ),
       );
     }
+    // 排序：已解锁按 unlockedAt 倒序在前，未解锁按原始顺序在后
+    final gridItems = <Achievement>[
+      ..._unlocked,
+      ..._locked,
+    ];
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -211,47 +219,119 @@ class _HonorWallPageState extends State<HonorWallPage> {
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
-      itemCount: _unlocked.length,
+      itemCount: gridItems.length,
       itemBuilder: (ctx, i) {
-        final ach = _unlocked[i];
-        return GestureDetector(
-          onTap: () => InfoDialog.show(
-            context,
-            title: ach.title,
-            content: '${ach.description}\n\n解锁于 ${_formatDate(ach.unlockedAt)}',
-            icon: _iconFor(ach.icon),
-            iconColor: colors.accentGlow,
+        final ach = gridItems[i];
+        return _buildHonorCell(colors, ach);
+      },
+    );
+  }
+
+  Widget _buildHonorCell(FitTrackColors colors, Achievement ach) {
+    if (ach.unlocked) {
+      return GestureDetector(
+        onTap: () => InfoDialog.show(
+          context,
+          title: ach.title,
+          content: '${ach.description}\n\n解锁于 ${_formatDate(ach.unlockedAt)}',
+          icon: _iconFor(ach.icon),
+          iconColor: colors.accentGlow,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colors.bgCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
           ),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colors.bgCard,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
-            ),
-            child: Column(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      colors.accentGlow.withOpacity(0.25),
+                      colors.accentGlow.withOpacity(0.08),
+                    ],
+                  ),
+                ),
+                child: Icon(_iconFor(ach.icon),
+                    size: 32, color: colors.accentGlow),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                ach.title,
+                style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _formatDate(ach.unlockedAt),
+                style: TextStyle(color: colors.textMuted, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 未解锁：灰度显示 + lock 覆盖图标，点击弹解锁条件
+    return GestureDetector(
+      onTap: () => InfoDialog.show(
+        context,
+        title: ach.title,
+        content: '未解锁\n\n解锁条件：${ach.description}',
+        icon: Icons.lock_outline,
+        iconColor: colors.textMuted,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.bgCard.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.borderColor.withOpacity(0.5)),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        colors.accentGlow.withOpacity(0.25),
-                        colors.accentGlow.withOpacity(0.08),
-                      ],
+                ColorFiltered(
+                  colorFilter: const ColorFilter.matrix(<double>[
+                    0.2126, 0.7152, 0.0722, 0, 0,
+                    0.2126, 0.7152, 0.0722, 0, 0,
+                    0.2126, 0.7152, 0.0722, 0, 0,
+                    0,      0,      0,      0.4, 0,
+                  ]),
+                  child: Opacity(
+                    opacity: 0.4,
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colors.textMuted.withOpacity(0.2),
+                      ),
+                      child: Icon(_iconFor(ach.icon),
+                          size: 32, color: colors.textMuted),
                     ),
                   ),
-                  child: Icon(_iconFor(ach.icon),
-                      size: 32, color: colors.accentGlow),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   ach.title,
                   style: TextStyle(
-                      color: colors.textPrimary,
+                      color: colors.textMuted,
                       fontSize: 14,
                       fontWeight: FontWeight.w600),
                   textAlign: TextAlign.center,
@@ -260,14 +340,29 @@ class _HonorWallPageState extends State<HonorWallPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _formatDate(ach.unlockedAt),
+                  '未解锁',
                   style: TextStyle(color: colors.textMuted, fontSize: 11),
                 ),
               ],
             ),
-          ),
-        );
-      },
+            // 锁图标覆盖在徽章右上
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: colors.bgCard,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.borderColor),
+                ),
+                child: Icon(Icons.lock,
+                    size: 14, color: colors.textMuted),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
