@@ -43,23 +43,20 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
   @override
   Widget build(BuildContext context) {
     if (_banners.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 150,
-            child: PageView.builder(
-              controller: _controller,
-              onPageChanged: (i) => setState(() => _currentPage = i),
-              itemCount: _banners.length,
-              itemBuilder: (ctx, i) => _buildBanner(_banners[i]),
-            ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 150,
+          child: PageView.builder(
+            controller: _controller,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemCount: _banners.length,
+            itemBuilder: (ctx, i) => _buildBanner(_banners[i]),
           ),
-          const SizedBox(height: 10),
-          _buildIndicator(),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        _buildIndicator(),
+      ],
     );
   }
 
@@ -72,7 +69,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
         if (banner.route != null) context.push(banner.route!);
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+        margin: EdgeInsets.zero,
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(16),

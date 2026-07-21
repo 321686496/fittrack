@@ -176,27 +176,6 @@ class _AddPlanPageState extends State<AddPlanPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── 系统推荐 ──
-            if (!isEditing && recommendedPlans.isNotEmpty) ...[
-              Row(
-                children: [
-                  Icon(Icons.auto_awesome, size: 20, color: colors.accentGlow),
-                  const SizedBox(width: 6),
-                  Text('为你推荐', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  Text('基于你的信息', style: TextStyle(color: colors.textMuted, fontSize: 12)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ...recommendedPlans.map((rec) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _buildRecommendedCard(colors, rec),
-              )),
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 16),
-            ],
-
             // ── 自定义计划表单 ──
             Text(isEditing ? '编辑计划信息' : '或自定义计划', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
@@ -289,6 +268,27 @@ class _AddPlanPageState extends State<AddPlanPage> {
               );
             }),
             const SizedBox(height: 24),
+
+            // ── 系统推荐 ──
+            if (!isEditing && recommendedPlans.isNotEmpty) ...[
+              const Divider(),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.auto_awesome, size: 20, color: colors.accentGlow),
+                  const SizedBox(width: 6),
+                  Text('为你推荐', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  Text('基于你的信息', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ...recommendedPlans.map((rec) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildRecommendedCard(colors, rec),
+              )),
+              const SizedBox(height: 24),
+            ],
 
             // 保存按钮
             SizedBox(

@@ -601,11 +601,8 @@ class _StatsPageState extends State<StatsPage> {
     final rangeStart =
         currentWeekMonday.subtract(const Duration(days: 7 * 11));
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final availableWidth = screenWidth - 32 - 32 - 20; // page padding + card padding + weekday label + spacing
     const spacing = 4.0;
     const borderRadius = 3.0;
-    final cellSize = ((availableWidth - 11 * spacing) / 12).clamp(18.0, 28.0);
 
     // 根据训练次数返回对应颜色
     Color colorForCount(int count) {
@@ -638,9 +635,6 @@ class _StatsPageState extends State<StatsPage> {
       return '';
     }
 
-    // 网格总宽度
-    final gridWidth = 12 * cellSize + 11 * spacing;
-
     return CardWidget(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -668,105 +662,120 @@ class _StatsPageState extends State<StatsPage> {
             ],
           ),
           const SizedBox(height: 16),
-          // 热力图主体：星期标签 + 网格
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 星期标签列
-              Column(
-                children: [
-                  for (int r = 0; r < 7; r++) ...[
-                    if (r > 0) const SizedBox(height: spacing),
-                    SizedBox(
-                      width: 14,
-                      height: cellSize,
-                      child: Center(
-                        child: Text(
-                          weekdayLabel(r),
-                          style: TextStyle(
-                            color: colors.textMuted,
-                            fontSize: 9,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              const SizedBox(width: 6),
-              // 网格 + 月份标签
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 网格
-                  Row(
+          // 热力图主体：星期标签 + 网格（LayoutBuilder 自适应宽度 + 横向滚动兜底）
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // 减去星期标签列(14) + 间距(6) = 20
+              final availableWidth = constraints.maxWidth - 20;
+              final cellSize =
+                  ((availableWidth - 11 * spacing) / 12).clamp(18.0, 28.0);
+              final gridWidth = 12 * cellSize + 11 * spacing;
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: 20 + gridWidth,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (int c = 0; c < 12; c++) ...[
-                        if (c > 0) const SizedBox(width: spacing),
-                        Column(
-                          children: [
-                            for (int r = 0; r < 7; r++) ...[
-                              if (r > 0) const SizedBox(height: spacing),
-                              Builder(builder: (_) {
-                                final date = rangeStart
-                                    .add(Duration(days: c * 7 + r));
-                                // 未来日期渲染浅灰色背景
-                                if (date.isAfter(today)) {
-                                  return Container(
-                                    width: cellSize,
-                                    height: cellSize,
-                                    decoration: BoxDecoration(
-                                      color: colors.borderColor.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(borderRadius),
-                                    ),
-                                  );
-                                }
-                                final key =
-                                    '${date.year}-${date.month}-${date.day}';
-                                final count = _dailyCounts[key] ?? 0;
-                                return Container(
-                                  width: cellSize,
-                                  height: cellSize,
-                                  decoration: BoxDecoration(
-                                    color: colorForCount(count),
-                                    borderRadius:
-                                        BorderRadius.circular(borderRadius),
+                      // 星期标签列
+                      Column(
+                        children: [
+                          for (int r = 0; r < 7; r++) ...[
+                            if (r > 0) const SizedBox(height: spacing),
+                            SizedBox(
+                              width: 14,
+                              height: cellSize,
+                              child: Center(
+                                child: Text(
+                                  weekdayLabel(r),
+                                  style: TextStyle(
+                                    color: colors.textMuted,
+                                    fontSize: 9,
                                   ),
-                                );
-                              }),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  // 月份标签（Stack 精确定位）
-                  SizedBox(
-                    height: 14,
-                    width: gridWidth,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        for (int c = 0; c < 12; c++)
-                          if (monthLabel(c).isNotEmpty)
-                            Positioned(
-                              left: c * (cellSize + spacing),
-                              top: 0,
-                              child: Text(
-                                monthLabel(c),
-                                style: TextStyle(
-                                  color: colors.textMuted,
-                                  fontSize: 9,
                                 ),
                               ),
                             ),
-                      ],
-                    ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(width: 6),
+                      // 网格 + 月份标签
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 网格
+                          Row(
+                            children: [
+                              for (int c = 0; c < 12; c++) ...[
+                                if (c > 0) const SizedBox(width: spacing),
+                                Column(
+                                  children: [
+                                    for (int r = 0; r < 7; r++) ...[
+                                      if (r > 0) const SizedBox(height: spacing),
+                                      Builder(builder: (_) {
+                                        final date = rangeStart
+                                            .add(Duration(days: c * 7 + r));
+                                        // 未来日期渲染浅灰色背景
+                                        if (date.isAfter(today)) {
+                                          return Container(
+                                            width: cellSize,
+                                            height: cellSize,
+                                            decoration: BoxDecoration(
+                                              color: colors.borderColor.withOpacity(0.3),
+                                              borderRadius: BorderRadius.circular(borderRadius),
+                                            ),
+                                          );
+                                        }
+                                        final key =
+                                            '${date.year}-${date.month}-${date.day}';
+                                        final count = _dailyCounts[key] ?? 0;
+                                        return Container(
+                                          width: cellSize,
+                                          height: cellSize,
+                                          decoration: BoxDecoration(
+                                            color: colorForCount(count),
+                                            borderRadius:
+                                                BorderRadius.circular(borderRadius),
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          // 月份标签（Stack 精确定位）
+                          SizedBox(
+                            height: 14,
+                            width: gridWidth,
+                            child: Stack(
+                              clipBehavior: Clip.hardEdge,
+                              children: [
+                                for (int c = 0; c < 12; c++)
+                                  if (monthLabel(c).isNotEmpty)
+                                    Positioned(
+                                      left: c * (cellSize + spacing),
+                                      top: 0,
+                                      child: Text(
+                                        monthLabel(c),
+                                        style: TextStyle(
+                                          color: colors.textMuted,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
+                ),
+              );
+            },
           ),
           const SizedBox(height: 12),
           // 图例：少 → 多
