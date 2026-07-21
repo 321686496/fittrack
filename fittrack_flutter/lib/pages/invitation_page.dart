@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
-import '../themes/app_themes.dart';
 import '../services/invitation_service.dart';
+import '../services/poster_generator.dart';
+import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/invite_poster.dart';
 import '../widgets/page_header.dart';
+import '../widgets/poster_preview_dialog.dart';
 
 /// v1.1 邀请有礼页面（4 区段结构）
 ///
@@ -157,7 +159,7 @@ class _InvitationPageState extends State<InvitationPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _shareCode(),
+                  onPressed: _shareCode,
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text('立即分享'),
                   style: ElevatedButton.styleFrom(
@@ -188,12 +190,61 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-  void _shareCode() {
-    Share.share(
-      '$_myCode\n'
-      '来 FitTrack 一起训练！输入我的邀请码，咱俩都得福利～',
-      subject: 'FitTrack 邀请码',
+  Future<void> _shareCode() async {
+    final boundaryKey = GlobalKey();
+    final overlay = Overlay.of(context);
+    const cardWidth = InvitePoster.posterWidth;
+    const cardHeight = InvitePoster.posterHeight;
+
+    // 用 Overlay + Positioned(offscreen) 渲染海报，用户不可见
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Positioned(
+        left: -cardWidth,
+        top: -cardHeight,
+        child: Material(
+          color: Colors.transparent,
+          child: OverflowBox(
+            minWidth: cardWidth,
+            maxWidth: cardWidth,
+            minHeight: cardHeight,
+            maxHeight: cardHeight,
+            child: RepaintBoundary(
+              key: boundaryKey,
+              child: InvitePoster(
+                inviteCode: _myCode,
+                deepLink: 'fittrack://invite?code=$_myCode',
+              ),
+            ),
+          ),
+        ),
+      ),
     );
+    overlay.insert(entry);
+
+    // 等待多帧，确保 layout + paint 完成
+    await WidgetsBinding.instance.endOfFrame;
+    await Future.delayed(const Duration(milliseconds: 50));
+    await WidgetsBinding.instance.endOfFrame;
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    try {
+      final imagePath = await PosterGenerator.capture(
+        boundaryKey,
+        fileNamePrefix: 'fittrack_invite',
+      );
+      entry.remove();
+      if (!mounted) return;
+      await PosterPreviewDialog.show(
+        context,
+        imagePath: imagePath,
+        title: '邀请码海报',
+      );
+    } catch (e) {
+      entry.remove();
+      if (!mounted) return;
+      FitToast.error(context, '海报生成失败：$e');
+    }
   }
 
   // ── 2. 进度概览 ──────────────────────────────────────────────
