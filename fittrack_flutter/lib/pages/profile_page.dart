@@ -10,6 +10,7 @@ import '../services/achievement_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/custom_time_picker.dart';
+import '../widgets/max_weight_card.dart';
 import '../utils/platform_utils.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -87,6 +88,8 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildProfileHeader(colors),
+                const SizedBox(height: 12),
+                _buildPointsCard(colors),
                 const SizedBox(height: 20),
                 _buildAchievements(colors),
                 const SizedBox(height: 20),
@@ -96,6 +99,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildBodyData(colors, body)
                 else
                   _buildNoBodyDataCard(colors),
+                const SizedBox(height: 12),
+                MaxWeightCard(onTap: () => context.push('/max-weight-detail')),
                 const SizedBox(height: 20),
                 _buildMenuList(colors, context),
                 const SizedBox(height: 200),
@@ -332,9 +337,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final level = settings['fitnessLevel'] as String? ?? '';
     final avatarEmoji = settings['avatarEmoji'] as String? ?? '💪';
     final avatarBgColor = settings['avatarBgColor'] as int? ?? 0xFFFF6B35;
-    final points = PointsService.instance.points;
     final earnedTotal = settings['pointsEarnedTotal'] ?? 0;
     final spentTotal = settings['pointsSpentTotal'] ?? 0;
+    final streak = _computeCurrentStreak();
 
     // 构建副标题
     final tags = <String>[
@@ -349,85 +354,189 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              colors.accentGlow.withOpacity(0.08),
-              colors.accentGlow.withOpacity(0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: colors.bgCard,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: colors.borderColor),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            UserProfileGenerator.buildAvatarWidget(
-              {'emoji': avatarEmoji, 'bgColor': avatarBgColor},
-              size: 56,
-              borderColor: Color(avatarBgColor),
+            // 上半部分：头像 + 用户名 + 副标题
+            Row(
+              children: [
+                UserProfileGenerator.buildAvatarWidget(
+                  {'emoji': avatarEmoji, 'bgColor': avatarBgColor},
+                  size: 48,
+                  borderWidth: 0,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userName,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    userName,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: colors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '累计获得 $earnedTotal · 消耗 $spentTotal',
-                    style: TextStyle(
-                      color: colors.textMuted,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // 积分大数字（点击进入积分详情）
-            GestureDetector(
-              onTap: () => context.push('/points-detail'),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '$points',
-                    style: TextStyle(
-                      color: colors.accentGlow,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '积分 →',
-                    style: TextStyle(
-                      color: colors.textMuted,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+            // 三列数据带
+            Row(
+              children: [
+                _buildStatColumn(colors, '$earnedTotal', '累计获得'),
+                _buildVerticalDivider(colors),
+                _buildStatColumn(colors, '$spentTotal', '消耗'),
+                _buildVerticalDivider(colors),
+                _buildStatColumn(colors, '$streak', '连续打卡'),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStatColumn(FitTrackColors colors, String value, String label) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(color: colors.textMuted, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerticalDivider(FitTrackColors colors) {
+    return Container(
+      width: 1,
+      height: 28,
+      color: colors.borderColor,
+    );
+  }
+
+  /// 积分单独成卡：大数字 + 入口
+  Widget _buildPointsCard(FitTrackColors colors) {
+    final points = PointsService.instance.points;
+    return GestureDetector(
+      onTap: () => context.push('/points-detail'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: colors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.borderColor),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.stars_rounded, color: colors.accentGlow, size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '我的积分',
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$points',
+                    style: TextStyle(
+                      color: colors.accentGlow,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              '查看详情 →',
+              style: TextStyle(color: colors.accentGlow, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 计算当前连续打卡天数（与 home_page.dart 中的逻辑一致）
+  int _computeCurrentStreak() {
+    final records = Storage.getRecords();
+    if (records.isEmpty) return 0;
+
+    final dates = <String>{};
+    for (final r in records) {
+      final ts = r['date'] ?? r['createTime'] ?? r['timestamp'];
+      if (ts is int) {
+        final d = DateTime.fromMillisecondsSinceEpoch(ts);
+        dates.add(
+            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}');
+      }
+    }
+    if (dates.isEmpty) return 0;
+
+    final today = DateTime.now();
+    final todayStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    int streak = 0;
+    if (dates.contains(todayStr)) {
+      streak = 1;
+      var checkDate = today.subtract(const Duration(days: 1));
+      while (dates.contains(
+          '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}')) {
+        streak++;
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      }
+    } else {
+      final yesterday = today.subtract(const Duration(days: 1));
+      final yesterdayStr =
+          '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+      if (dates.contains(yesterdayStr)) {
+        streak = 1;
+        var checkDate = yesterday.subtract(const Duration(days: 1));
+        while (dates.contains(
+            '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}')) {
+          streak++;
+          checkDate = checkDate.subtract(const Duration(days: 1));
+        }
+      }
+    }
+    return streak;
   }
 
   void _showProfileEditor(FitTrackColors colors) {
@@ -923,39 +1032,57 @@ class _ProfilePageState extends State<ProfilePage> {
       {'key': 'restingHeartRate', 'unit': 'bpm', 'label': '静息心率'},
     ];
 
-    final items = <Map<String, String>>[];
+    // 取上一次记录作为趋势对比基线
+    final history = Storage.getBodyDataHistory();
+    final Map<String, dynamic>? prevBody =
+        history.isNotEmpty ? history.last : null;
+
+    // 收集需要展示的字段（值为 0 或 null 的字段不显示）
+    final items = <_BodyFieldItem>[];
     for (final config in fieldConfigs) {
-      final v = body[config['key']];
+      final key = config['key'] as String;
+      final v = body[key];
       final numValue = v is num
           ? v.toDouble()
           : double.tryParse(v?.toString() ?? '') ?? 0;
       if (numValue > 0) {
-        items.add({
-          'value': _formatBodyValue(numValue),
-          'unit': config['unit'] as String,
-          'label': config['label'] as String,
-        });
+        // 趋势对比
+        final prevV = prevBody?[key];
+        final prevNum = prevV is num
+            ? prevV.toDouble()
+            : double.tryParse(prevV?.toString() ?? '') ?? 0;
+        TrendDirection trend = TrendDirection.none;
+        if (prevNum > 0) {
+          if (numValue < prevNum) {
+            trend = TrendDirection.down;
+          } else if (numValue > prevNum) {
+            trend = TrendDirection.up;
+          }
+        }
+        items.add(_BodyFieldItem(
+          value: _formatBodyValue(numValue),
+          unit: config['unit'] as String,
+          label: config['label'] as String,
+          trend: trend,
+        ));
       }
     }
 
-    // 按 4 个一行分组展示
+    // 按 3 个一行分组展示
     final rows = <Widget>[];
-    for (var i = 0; i < items.length; i += 4) {
-      final end = (i + 4 > items.length) ? items.length : i + 4;
+    for (var i = 0; i < items.length; i += 3) {
+      final end = (i + 3 > items.length) ? items.length : i + 3;
       final rowItems = items.sublist(i, end);
-      // 不足 4 个时补齐占位，保持等宽
-      while (rowItems.length < 4) {
-        rowItems.add({'value': '', 'unit': '', 'label': ''});
+      // 不足 3 个时补齐占位，保持等宽
+      while (rowItems.length < 3) {
+        rowItems.add(const _BodyFieldItem(value: '', unit: '', label: '', trend: TrendDirection.none));
       }
       rows.add(Row(
-        children: rowItems.map((item) => _buildBodyItem(
-              colors,
-              item['value']!,
-              item['unit']!,
-              item['label']!,
-            )).toList(),
+        children: rowItems
+            .map((item) => _buildBodyItem(colors, item))
+            .toList(),
       ));
-      if (i + 4 < items.length) {
+      if (i + 3 < items.length) {
         rows.add(const SizedBox(height: 12));
         rows.add(const DividerWidget(indent: 0));
         rows.add(const SizedBox(height: 12));
@@ -1019,7 +1146,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return false;
   }
 
-  Widget _buildBodyItem(FitTrackColors colors, String value, String unit, String label) {
+  Widget _buildBodyItem(FitTrackColors colors, _BodyFieldItem item) {
     return Expanded(
       child: Column(
         children: [
@@ -1027,16 +1154,16 @@ class _ProfilePageState extends State<ProfilePage> {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: value,
+                  text: item.value,
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (unit.isNotEmpty)
+                if (item.unit.isNotEmpty)
                   TextSpan(
-                    text: unit,
+                    text: item.unit,
                     style: TextStyle(
                       color: colors.textMuted,
                       fontSize: 12,
@@ -1046,8 +1173,28 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: 2),
+          // 趋势箭头：下降为正向绿色 ↓、上升为负向红色 ↑
+          if (item.trend != TrendDirection.none)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    item.trend == TrendDirection.down
+                        ? Icons.arrow_downward
+                        : Icons.arrow_upward,
+                    size: 12,
+                    color: item.trend == TrendDirection.down
+                        ? colors.successColor
+                        : colors.warningColor,
+                  ),
+                ],
+              ),
+            ),
           Text(
-            label,
+            item.label,
             style: TextStyle(
               color: colors.textMuted,
               fontSize: 11,
@@ -1109,7 +1256,6 @@ class _ProfilePageState extends State<ProfilePage> {
       {'icon': Icons.history, 'label': '训练记录', 'page': 'records'},
       {'icon': Icons.card_giftcard, 'label': '邀请有礼', 'page': 'invitation'},
       {'icon': Icons.sports_gymnastics, 'label': '动作库', 'page': 'exercise'},
-      {'icon': Icons.school_outlined, 'label': '动作教学', 'page': 'tutorial'},
       {'icon': Icons.edit_note, 'label': '训练笔记', 'page': 'note'},
       {'icon': Icons.settings, 'label': '设置', 'page': 'settings'},
       {'icon': Icons.notifications_active_outlined, 'label': '提醒设置', 'page': 'reminder-settings'},
@@ -1207,4 +1353,22 @@ class _ProfilePageState extends State<ProfilePage> {
       icon: Icons.help_outline,
     );
   }
+}
+
+/// 身体数据字段趋势方向
+enum TrendDirection { none, up, down }
+
+/// 身体数据字段展示项（含趋势）
+class _BodyFieldItem {
+  final String value;
+  final String unit;
+  final String label;
+  final TrendDirection trend;
+
+  const _BodyFieldItem({
+    required this.value,
+    required this.unit,
+    required this.label,
+    required this.trend,
+  });
 }
