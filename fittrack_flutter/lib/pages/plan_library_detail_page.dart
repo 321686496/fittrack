@@ -6,6 +6,7 @@ import '../data/system_plan_library.dart';
 import '../services/plan_unlock_service.dart';
 import '../services/points_service.dart';
 import '../themes/app_themes.dart';
+import '../widgets/page_header.dart';
 
 class PlanLibraryDetailPage extends StatefulWidget {
   final String planId;
@@ -23,9 +24,19 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
 
     if (plan == null) {
       return Scaffold(
-        appBar: AppBar(),
-        body: Center(
-          child: Text('计划不存在', style: TextStyle(color: ft.textSecondary)),
+        backgroundColor: ft.bgSecondary,
+        body: Column(
+          children: [
+            PageHeader(
+              title: '计划不存在',
+              onBack: () => Navigator.of(context).pop(),
+            ),
+            Expanded(
+              child: Center(
+                child: Text('计划不存在', style: TextStyle(color: ft.textSecondary)),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -36,15 +47,12 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
 
     return Scaffold(
       backgroundColor: ft.bgSecondary,
-      appBar: AppBar(
-        title: Text(plan.name),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: Column(
         children: [
+          PageHeader(
+            title: plan.name,
+            onBack: () => Navigator.of(context).pop(),
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),

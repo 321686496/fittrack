@@ -3,53 +3,61 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/system_plan_library.dart';
 import '../themes/app_themes.dart';
+import '../widgets/page_header.dart';
 
 class PlanLibraryHomePage extends StatelessWidget {
   const PlanLibraryHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ft = Theme.of(context).extension<FitTrackColors>()!;
     return Scaffold(
-      backgroundColor: Theme.of(context).extension<FitTrackColors>()!.bgSecondary,
-      appBar: AppBar(
-        title: const Text('系统训练计划库'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                '选择你的训练目标',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+      backgroundColor: ft.bgSecondary,
+      body: Column(
+        children: [
+          PageHeader(
+            title: '系统训练计划库',
+            subtitle: '选择你的训练目标',
+            onBack: () => Navigator.of(context).pop(),
+          ),
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  sliver: SliverToBoxAdapter(
+                    child: Text(
+                      '选择你的训练目标',
+                      style: TextStyle(
+                        color: ft.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-              ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 0.85,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final goal = kPlanGoals[index];
+                        return _GoalCard(goal: goal);
+                      },
+                      childCount: kPlanGoals.length,
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.85,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final goal = kPlanGoals[index];
-                  return _GoalCard(goal: goal);
-                },
-                childCount: kPlanGoals.length,
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );
@@ -69,7 +77,7 @@ class _GoalCard extends StatelessWidget {
     final colors = _goalColors(goal);
 
     return GestureDetector(
-      onTap: () => context.go('/plan-library/$goal'),
+      onTap: () => context.push('/plan-library/$goal'),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

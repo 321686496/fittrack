@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_unlock_service.dart';
 import '../themes/app_themes.dart';
+import '../widgets/page_header.dart';
 
 class PlanLibraryCategoryPage extends StatefulWidget {
   final String goal;
@@ -34,46 +35,49 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
 
     return Scaffold(
       backgroundColor: ft.bgSecondary,
-      appBar: AppBar(
-        title: Text(kGoalLabelsZh[widget.goal] ?? widget.goal),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          // 难度筛选
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-              child: _buildDifficultyChips(ft),
+      body: Column(
+        children: [
+          PageHeader(
+            title: kGoalLabelsZh[widget.goal] ?? widget.goal,
+            onBack: () => Navigator.of(context).pop(),
+          ),
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                // 难度筛选
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                    child: _buildDifficultyChips(ft),
+                  ),
+                ),
+                // 训练类型筛选
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: _buildTrainingTypeChips(ft),
+                  ),
+                ),
+                // 计划列表
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index.isOdd) {
+                          return const SizedBox(height: 12);
+                        }
+                        return _PlanListCard(plan: filtered[index ~/ 2]);
+                      },
+                      childCount:
+                          filtered.isEmpty ? 0 : filtered.length * 2 - 1,
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
             ),
           ),
-          // 训练类型筛选
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: _buildTrainingTypeChips(ft),
-            ),
-          ),
-          // 计划列表
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  if (index.isOdd) {
-                    return const SizedBox(height: 12);
-                  }
-                  return _PlanListCard(plan: filtered[index ~/ 2]);
-                },
-                childCount:
-                    filtered.isEmpty ? 0 : filtered.length * 2 - 1,
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );
@@ -143,7 +147,7 @@ class _PlanListCard extends StatelessWidget {
         PlanUnlockService.instance.isPlanUnlocked(plan.id);
 
     return GestureDetector(
-      onTap: () => context.go('/plan-library/detail/${plan.id}'),
+      onTap: () => context.push('/plan-library/detail/${plan.id}'),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
