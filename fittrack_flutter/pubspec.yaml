@@ -57,6 +57,7 @@ dependencies:
       path: flutter_local_notifications
       ref: master
   timezone: ^0.9.4
+  image_gallery_saver: ^2.0.3
 #  permission_handler: ^11.0.1
 #  permission_handler_ohos: ^0.0.8
 
