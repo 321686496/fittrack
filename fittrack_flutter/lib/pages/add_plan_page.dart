@@ -311,7 +311,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
     final typeLabel = kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType;
     final frequencyLabel = '${plan.recommendedFrequency}天/周';
     return CardWidget(
-      onTap: () => context.go('/plan-library/detail/${plan.id}'),
+      onTap: () => context.push('/plan-library/detail/${plan.id}'),
       child: Row(
         children: [
           Container(

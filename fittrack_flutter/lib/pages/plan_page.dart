@@ -362,7 +362,7 @@ class _PlanPageState extends State<PlanPage> {
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () => context.go('/plan-library'),
+                onTap: () => context.push('/plan-library'),
                 child: Row(
                   children: [
                     Text(
@@ -382,7 +382,7 @@ class _PlanPageState extends State<PlanPage> {
           child: SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => context.go('/plan-library'),
+              onPressed: () => context.push('/plan-library'),
               icon: const Icon(Icons.library_books),
               label: const Text('浏览系统计划库'),
               style: OutlinedButton.styleFrom(
@@ -403,7 +403,7 @@ class _PlanPageState extends State<PlanPage> {
     final isUnlocked = !plan.isPremium ||
         PlanUnlockService.instance.isPlanUnlocked(plan.id);
     return GestureDetector(
-      onTap: () => context.go('/plan-library/detail/${plan.id}'),
+      onTap: () => context.push('/plan-library/detail/${plan.id}'),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(14),

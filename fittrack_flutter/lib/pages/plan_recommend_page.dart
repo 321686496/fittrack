@@ -50,7 +50,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         !PlanUnlockService.instance.isPlanUnlocked(rec.plan.id)) {
       // 跳转到详情页让用户解锁
       if (!mounted) return;
-      context.go('/plan-library/detail/${rec.plan.id}');
+      context.push('/plan-library/detail/${rec.plan.id}');
       return;
     }
 
