@@ -1,15 +1,8 @@
-import 'dart:io';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import '../data/training_note.dart';
 import '../services/invitation_service.dart';
 import '../themes/app_themes.dart';
-import '../utils/platform_utils.dart';
 
 /// v1 训练笔记海报内容组件
 ///
@@ -18,18 +11,23 @@ import '../utils/platform_utils.dart';
 /// v1.2 优化：从 BottomSheet 容器改为可嵌入全屏页面的公开内容组件。
 /// 标题栏与返回按钮由外部 NotePosterPage 的 PageHeader 提供。
 ///
+/// v1.3 优化（2026-07-21）：删除内部"立即分享"和"保存图片"按钮，
+/// 改由外层 PosterPreviewDialog 统一接管保存/分享。
+/// [posterKey] 由外层传入，用于 PosterGenerator 截图。
+///
 /// 自动排版：
 /// - 日期 + 训练数据（绑定时）+ 心得 + 感受 + 最满意动作
 /// - 底部含 APP 名称 + logo + 邀请码 FIT-INV-XXXXXX
-/// - 支持保存图片 / 分享海报
 class NotePosterContent extends StatefulWidget {
   final TrainingNote note;
   final Map<String, dynamic>? boundRecord;
+  final GlobalKey? posterKey;
 
   const NotePosterContent({
     super.key,
     required this.note,
     this.boundRecord,
+    this.posterKey,
   });
 
   @override
@@ -37,7 +35,6 @@ class NotePosterContent extends StatefulWidget {
 }
 
 class _NotePosterContentState extends State<NotePosterContent> {
-  final _posterKey = GlobalKey();
   late String _inviteCode;
 
   @override
@@ -51,50 +48,7 @@ class _NotePosterContentState extends State<NotePosterContent> {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
     final note = widget.note;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 海报预览
-        _buildPoster(colors, note),
-        const SizedBox(height: 16),
-        // 操作按钮
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _savePoster,
-                icon: const Icon(Icons.save_alt, size: 16),
-                label: const Text('保存图片'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colors.accentGlow,
-                  side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _sharePoster,
-                icon: const Icon(Icons.share, size: 16),
-                label: const Text('立即分享'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50)),
-                  elevation: 0,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+    return _buildPoster(colors, note);
   }
 
   // ── 海报预览 ───────────────────────────────────────────────
@@ -103,7 +57,7 @@ class _NotePosterContentState extends State<NotePosterContent> {
     final hasRecord = widget.boundRecord != null;
 
     return RepaintBoundary(
-      key: _posterKey,
+      key: widget.posterKey,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
@@ -371,66 +325,5 @@ class _NotePosterContentState extends State<NotePosterContent> {
       margin: const EdgeInsets.symmetric(horizontal: 4),
       color: colors.borderColor,
     );
-  }
-
-  // ── 图片截图与分享 ─────────────────────────────────────────
-
-  Future<File?> _capturePoster() async {
-    try {
-      final boundary = _posterKey.currentContext!.findRenderObject()
-          as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-      if (byteData == null) return null;
-      final tempDir = await getTemporaryDirectory();
-      final file = File(
-          '${tempDir.path}/fittrack_note_${DateTime.now().millisecondsSinceEpoch}.png');
-      await file.writeAsBytes(byteData.buffer.asUint8List());
-      return file;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<void> _sharePoster() async {
-    final file = await _capturePoster();
-    if (file == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('海报生成失败，请重试')),
-        );
-      }
-      return;
-    }
-    if (isOhos) {
-      // OHOS 不支持 Share.shareXFiles，降级为保存 + SnackBar 提示
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('海报已保存到：${file.path}')),
-        );
-      }
-      return;
-    }
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: '我的训练笔记 - FitTrack 燃力',
-    );
-  }
-
-  Future<void> _savePoster() async {
-    final file = await _capturePoster();
-    if (file == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('海报生成失败，请重试')),
-        );
-      }
-      return;
-    }
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('海报已保存到：${file.path}')),
-      );
-    }
   }
 }
