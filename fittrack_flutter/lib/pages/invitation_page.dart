@@ -25,6 +25,7 @@ class InvitationPage extends StatefulWidget {
 class _InvitationPageState extends State<InvitationPage> {
   final _activateController = TextEditingController();
   bool _activating = false;
+  bool _sharing = false;
   late String _myCode;
   Map<String, dynamic> _progress = {};
 
@@ -159,7 +160,7 @@ class _InvitationPageState extends State<InvitationPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _shareCode,
+                  onPressed: _sharing ? null : _shareCode,
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text('立即分享'),
                   style: ElevatedButton.styleFrom(
@@ -191,59 +192,67 @@ class _InvitationPageState extends State<InvitationPage> {
   }
 
   Future<void> _shareCode() async {
-    final boundaryKey = GlobalKey();
-    final overlay = Overlay.of(context);
-    const cardWidth = InvitePoster.posterWidth;
-    const cardHeight = InvitePoster.posterHeight;
+    if (_sharing) return;
+    setState(() => _sharing = true);
+    try {
+      final boundaryKey = GlobalKey();
+      final overlay = Overlay.of(context);
+      const cardWidth = InvitePoster.posterWidth;
+      const cardHeight = InvitePoster.posterHeight;
 
-    // 用 Overlay + Positioned(offscreen) 渲染海报，用户不可见
-    late OverlayEntry entry;
-    entry = OverlayEntry(
-      builder: (_) => Positioned(
-        left: -cardWidth,
-        top: -cardHeight,
-        child: Material(
-          color: Colors.transparent,
-          child: OverflowBox(
-            minWidth: cardWidth,
-            maxWidth: cardWidth,
-            minHeight: cardHeight,
-            maxHeight: cardHeight,
-            child: RepaintBoundary(
-              key: boundaryKey,
-              child: InvitePoster(
-                inviteCode: _myCode,
-                deepLink: 'fittrack://invite?code=$_myCode',
+      // 用 Overlay + Positioned(offscreen) 渲染海报，用户不可见
+      late OverlayEntry entry;
+      entry = OverlayEntry(
+        builder: (_) => Positioned(
+          left: -cardWidth,
+          top: -cardHeight,
+          child: Material(
+            color: Colors.transparent,
+            child: OverflowBox(
+              minWidth: cardWidth,
+              maxWidth: cardWidth,
+              minHeight: cardHeight,
+              maxHeight: cardHeight,
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: InvitePoster(
+                  inviteCode: _myCode,
+                  deepLink: 'fittrack://invite?code=$_myCode',
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
-    overlay.insert(entry);
-
-    // 等待多帧，确保 layout + paint 完成
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 50));
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    try {
-      final imagePath = await PosterGenerator.capture(
-        boundaryKey,
-        fileNamePrefix: 'fittrack_invite',
       );
-      entry.remove();
-      if (!mounted) return;
-      await PosterPreviewDialog.show(
-        context,
-        imagePath: imagePath,
-        title: '邀请码海报',
-      );
-    } catch (e) {
-      entry.remove();
-      if (!mounted) return;
-      FitToast.error(context, '海报生成失败：$e');
+      overlay.insert(entry);
+
+      // 等待多帧，确保 layout + paint 完成
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 50));
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      try {
+        final imagePath = await PosterGenerator.capture(
+          boundaryKey,
+          fileNamePrefix: 'fittrack_invite',
+        );
+        entry.remove();
+        if (!mounted) return;
+        await PosterPreviewDialog.show(
+          context,
+          imagePath: imagePath,
+          title: '邀请码海报',
+        );
+      } catch (e) {
+        entry.remove();
+        if (!mounted) return;
+        FitToast.error(context, '海报生成失败：$e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _sharing = false);
+      }
     }
   }
 
