@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import '../themes/app_themes.dart';
 import '../data/tutorial_content.dart';
 import '../services/invitation_service.dart';
-import '../utils/platform_utils.dart';
+import '../services/poster_generator.dart';
+import 'common_widgets.dart';
+import 'poster_preview_dialog.dart';
+import 'tutorial_poster.dart';
 
 /// v1 教学分享卡片 —— 底部弹层
 ///
@@ -25,6 +27,7 @@ class TutorialShareCardSheet extends StatefulWidget {
 
 class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
   late String _inviteCode;
+  bool _sharing = false;
 
   @override
   void initState() {
@@ -104,7 +107,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _shareText(t),
+                  onPressed: _sharing ? null : () => _sharePoster(t),
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text('立即分享'),
                   style: ElevatedButton.styleFrom(
@@ -313,21 +316,76 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
     );
   }
 
-  void _shareText(Tutorial t) {
-    final text = _buildShareText(t);
-    if (isOhos) {
-      // OHOS: share_plus 无实现，降级为复制
-      Clipboard.setData(ClipboardData(text: text));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('已复制，请粘贴到聊天窗口分享'),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: colors.bgElevated,
+  /// 海报分享：通过 [Overlay] 离屏渲染 [TutorialPoster]，
+  /// 用 [PosterGenerator.capture] 截图，最后弹出 [PosterPreviewDialog]。
+  ///
+  /// 参考 Task 2 invitation_page._shareCode 的实现模式：
+  /// - [OverlayEntry] + [Positioned] 移出可视区
+  /// - [OverflowBox] 固定 1080×1920 海报尺寸
+  /// - [RepaintBoundary] 包裹海报供截图
+  /// - 多帧等待确保 layout + paint 完成
+  Future<void> _sharePoster(Tutorial t) async {
+    if (_sharing) return;
+    setState(() => _sharing = true);
+    try {
+      final boundaryKey = GlobalKey();
+      final overlay = Overlay.of(context);
+      const posterWidth = TutorialPoster.posterWidth;
+      const posterHeight = TutorialPoster.posterHeight;
+
+      late OverlayEntry entry;
+      entry = OverlayEntry(
+        builder: (_) => Positioned(
+          left: -posterWidth,
+          top: -posterHeight,
+          child: Material(
+            color: Colors.transparent,
+            child: OverflowBox(
+              minWidth: posterWidth,
+              maxWidth: posterWidth,
+              minHeight: posterHeight,
+              maxHeight: posterHeight,
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: TutorialPoster(
+                  tutorial: t,
+                  qrData: 'fittrack://tutorial?id=${t.id}',
+                ),
+              ),
+            ),
+          ),
         ),
       );
-      return;
+      overlay.insert(entry);
+
+      // 等待多帧，确保 layout + paint 完成
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 50));
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      try {
+        final imagePath = await PosterGenerator.capture(
+          boundaryKey,
+          fileNamePrefix: 'fittrack_tutorial',
+        );
+        entry.remove();
+        if (!mounted) return;
+        await PosterPreviewDialog.show(
+          context,
+          imagePath: imagePath,
+          title: '动作分享海报',
+        );
+      } catch (e) {
+        entry.remove();
+        if (!mounted) return;
+        FitToast.error(context, '海报生成失败：$e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _sharing = false);
+      }
     }
-    Share.share(text, subject: 'FitTrack · ${t.name}');
   }
 
   FitTrackColors get colors => Theme.of(context).extension<FitTrackColors>()!;

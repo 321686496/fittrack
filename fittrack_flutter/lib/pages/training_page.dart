@@ -18,6 +18,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/celebration_overlay.dart';
 import '../widgets/celebration_dialog.dart';
+import '../widgets/poster_preview_dialog.dart';
 import '../widgets/rating_prompt_sheet.dart';
 import '../utils/platform_utils.dart';
 
@@ -605,13 +606,11 @@ class _TrainingPageState extends State<TrainingPage>
     try {
       final path = await ShareCardService.generateShareCard(record, context);
       if (!mounted) return;
-      if (isOhos) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('训练卡片已生成，分享功能即将上线')),
-        );
-      } else {
-        await ShareCardService.shareImage(path);
-      }
+      await PosterPreviewDialog.show(
+        context,
+        imagePath: path,
+        title: '训练记录海报',
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
