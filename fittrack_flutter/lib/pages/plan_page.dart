@@ -349,7 +349,7 @@ class _PlanPageState extends State<PlanPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+          padding: const EdgeInsets.fromLTRB(0, 24, 0, 12),
           child: Row(
             children: [
               Text(
@@ -378,7 +378,7 @@ class _PlanPageState extends State<PlanPage> {
         ),
         ...recommendations.map((r) => _buildRecommendationCard(r, ft)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -405,7 +405,7 @@ class _PlanPageState extends State<PlanPage> {
     return GestureDetector(
       onTap: () => context.push('/plan-library/detail/${plan.id}'),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: ft.bgCard,
