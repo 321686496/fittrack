@@ -647,6 +647,8 @@ class _GymCardPageState extends State<GymCardPage> {
         builder: (_) => Positioned(
           left: -posterWidth,
           top: -posterHeight,
+          width: posterWidth,
+          height: posterHeight,
           child: Material(
             color: Colors.transparent,
             child: OverflowBox(

@@ -200,6 +200,8 @@ class _InvitationPageState extends State<InvitationPage> {
         builder: (_) => Positioned(
           left: -cardWidth,
           top: -cardHeight,
+          width: cardWidth,
+          height: cardHeight,
           child: Material(
             color: Colors.transparent,
             child: OverflowBox(

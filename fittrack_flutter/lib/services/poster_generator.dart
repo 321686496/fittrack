@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../utils/platform_utils.dart';
+
 /// 海报截图通用服务
 ///
 /// 通过 [RepaintBoundary] 的 [GlobalKey] 捕获 widget 为 PNG 图片，
@@ -36,7 +38,18 @@ class PosterGenerator {
       throw StateError('PosterGenerator: toByteData returned null');
     }
     final pngBytes = byteData.buffer.asUint8List();
-    final dir = await getTemporaryDirectory();
+    // OHOS: getTemporaryDirectory() throws MissingPluginException.
+    // Fall back to system temp dir (same pattern as share_card_service.dart).
+    Directory dir;
+    if (isOhos) {
+      try {
+        dir = await getTemporaryDirectory();
+      } catch (_) {
+        dir = Directory(Directory.systemTemp.path);
+      }
+    } else {
+      dir = await getTemporaryDirectory();
+    }
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final file = File('${dir.path}/${fileNamePrefix}_$timestamp.png');
     await file.writeAsBytes(pngBytes);
