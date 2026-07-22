@@ -31,6 +31,8 @@ class ShareCardService {
       builder: (_) => Positioned(
         left: -cardSize.width, // 移出屏幕左侧，用户不可见
         top: -cardSize.height,
+        width: cardSize.width,
+        height: cardSize.height,
         child: Material(
           color: Colors.transparent,
           child: OverflowBox(

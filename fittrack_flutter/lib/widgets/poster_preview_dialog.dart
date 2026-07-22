@@ -132,7 +132,14 @@ class PosterPreviewDialog {
   ) async {
     try {
       if (isOhos) {
-        final dir = await getTemporaryDirectory();
+        // OHOS: getTemporaryDirectory() may throw MissingPluginException.
+        // Fall back to system temp dir (same pattern as share_card_service.dart).
+        Directory dir;
+        try {
+          dir = await getTemporaryDirectory();
+        } catch (_) {
+          dir = Directory(Directory.systemTemp.path);
+        }
         final saved = await File(imagePath).copy(
           '${dir.path}/fittrack_saved_${DateTime.now().millisecondsSinceEpoch}.png',
         );
