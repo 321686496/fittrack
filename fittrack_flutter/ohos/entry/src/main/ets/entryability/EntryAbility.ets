@@ -7,15 +7,18 @@ import StandardMethodCodec from '@ohos/flutter_ohos/src/main/ets/plugin/common/S
 import { formProvider } from '@kit.FormKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
-import { Want, AbilityConstant, wantAgent, WantAgent, bundleManager } from '@kit.AbilityKit';
+import { Want, AbilityConstant, wantAgent, WantAgent, bundleManager, common } from '@kit.AbilityKit';
 import { reminderAgentManager } from '@kit.BackgroundTasksKit';
 import { liveViewManager } from '@kit.LiveViewKit';
 import { notificationManager } from '@kit.NotificationKit';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import fs from '@ohos.file.fs';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
 const KEY_FORM_DATA: string = 'form_data';
 const FORM_CHANNEL_NAME: string = 'com.fp.fitplan/form';
 const REMINDER_CHANNEL_NAME: string = 'com.fp.fitplan/reminder';
+const POSTER_CHANNEL_NAME: string = 'com.fp.fitplan/poster';
 const REST_LIVE_VIEW_ID: number = 30001;
 
 const CAPSULE_ICON: string = 'liveview_icon.png';
@@ -40,9 +43,103 @@ class FormDataCallHandler implements MethodCallHandler {
   }
 }
 
+/// 海报保存/分享 MethodChannel handler
+/// 在 OHOS 平台实现：
+/// - saveToGallery: 通过 photoAccessHelper 保存 PNG 到系统相册
+/// - share: 通过系统 Want 拉起分享面板
+class PosterShareHandler implements MethodCallHandler {
+  private ability: EntryAbility;
+
+  constructor(ability: EntryAbility) {
+    this.ability = ability;
+  }
+
+  onMethodCall(call: MethodCall, result: MethodResult): void {
+    if (call.method === 'saveToGallery') {
+      const srcPath: string = call.args as string;
+      this.saveToGallery(srcPath, result);
+    } else if (call.method === 'share') {
+      const srcPath: string = call.args as string;
+      this.share(srcPath, result);
+    } else {
+      result.notImplemented();
+    }
+  }
+
+  /// 保存图片到系统相册
+  private async saveToGallery(srcPath: string, result: MethodResult): Promise<void> {
+    try {
+      console.info('[FitTrack] saveToGallery start, srcPath=' + srcPath);
+
+      // 1. 检查源文件是否存在
+      if (!fs.accessSync(srcPath)) {
+        result.error('FILE_NOT_FOUND', '源文件不存在: ' + srcPath, null);
+        return;
+      }
+
+      // 2. 通过 photoAccessHelper 创建媒体资产（返回 URI）
+      const helper: photoAccessHelper.PhotoAccessHelper =
+        photoAccessHelper.getPhotoAccessHelper(this.ability.context);
+      const assetUri: string = await helper.createAsset(
+        photoAccessHelper.PhotoType.IMAGE, 'png'
+      );
+      console.info('[FitTrack] saveToGallery createAsset uri=' + assetUri);
+
+      // 3. 打开源文件和目标文件，复制数据
+      const srcFile = fs.openSync(srcPath, fs.OpenMode.READ_ONLY);
+      const dstFile = fs.openSync(assetUri, fs.OpenMode.WRITE_ONLY);
+      try {
+        await fs.copyFile(srcFile.fd, dstFile.fd);
+        console.info('[FitTrack] saveToGallery copyFile success');
+      } finally {
+        fs.closeSync(srcFile);
+        fs.closeSync(dstFile);
+      }
+
+      result.success(assetUri);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] saveToGallery failed: code=${err.code}, msg=${err.message}`);
+      result.error('SAVE_FAILED', `保存失败: ${err.message}`, null);
+    }
+  }
+
+  /// 拉起系统分享面板
+  private async share(srcPath: string, result: MethodResult): Promise<void> {
+    try {
+      console.info('[FitTrack] share start, srcPath=' + srcPath);
+
+      // 检查源文件是否存在
+      if (!fs.accessSync(srcPath)) {
+        result.error('FILE_NOT_FOUND', '源文件不存在: ' + srcPath, null);
+        return;
+      }
+
+      // 通过 Want 拉起系统分享
+      const context = this.ability.context as common.UIAbilityContext;
+      const want: Want = {
+        action: 'ohos.want.action.select',
+        type: 'image/png',
+        parameters: {
+          'ability.params.stream': [srcPath]
+        }
+      };
+
+      await context.startAbility(want);
+      console.info('[FitTrack] share startAbility success');
+      result.success(null);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] share failed: code=${err.code}, msg=${err.message}`);
+      result.error('SHARE_FAILED', `分享失败: ${err.message}`, null);
+    }
+  }
+}
+
 export default class EntryAbility extends FlutterAbility {
   private formChannel: MethodChannel | null = null;
   private reminderChannel: MethodChannel | null = null;
+  private posterChannel: MethodChannel | null = null;
 
   private restEndTime: number = 0;
   private totalRestSeconds: number = 0;
@@ -68,6 +165,13 @@ export default class EntryAbility extends FlutterAbility {
       REMINDER_CHANNEL_NAME,
       StandardMethodCodec.INSTANCE
     );
+
+    this.posterChannel = new MethodChannel(
+      flutterEngine.getDartExecutor().getBinaryMessenger(),
+      POSTER_CHANNEL_NAME,
+      StandardMethodCodec.INSTANCE
+    );
+    this.posterChannel.setMethodCallHandler(new PosterShareHandler(this));
   }
 
   onNewWant(want: Want, launchParams: AbilityConstant.LaunchParam): void {
@@ -155,12 +259,26 @@ export default class EntryAbility extends FlutterAbility {
         const restSeconds: number = Math.max(1, Math.round((restEndTime - Date.now()) / 1000));
         this.scheduleRestReminder(restSeconds);
       } else {
-        // 休息结束（或非休息状态）：停止实况窗 + 取消尚未触发的代理提醒
-        // 修复：跳过休息 / 休息自然结束时，必须显式取消已发布的 reminderAgentManager 代理提醒，
-        // 否则提醒会一直保留到设定时间触发，弹出"休息时间到"的过期通知。
-        // 震动仅在训练结束时由 Flutter 侧 HapticFeedback 触发
+        // 休息结束（或非休息状态）：停止实况窗
         this.stopRestLiveView();
-        this.cancelRestReminder();
+
+        // 仅在用户主动跳过休息时取消代理提醒；
+        // 休息自然结束（Dart Timer 触发，restSkipped 未传或为 false）时不取消，
+        // 让 reminderAgentManager 代理提醒按预定时间触发，向用户发送"休息结束"通知。
+        //
+        // 注意：不能用 Date.now() < restEndTime 判断"是否跳过"，
+        // 因为 Dart Timer 会比 restEndTime 早约 1 秒触发（Timer 精度问题），
+        // 导致自然结束时也被误判为跳过而取消通知。
+        const restSkipped: boolean = (parsed['restSkipped'] as boolean) ?? false;
+        if (restSkipped) {
+          console.info('[FitTrack] 休息被跳过，取消尚未触发的代理提醒');
+          this.cancelRestReminder();
+        } else {
+          console.info('[FitTrack] 休息自然结束，保留代理提醒等待触发');
+        }
+
+        // 重置 restEndTime，避免跨训练周期误用
+        this.restEndTime = 0;
       }
     } catch (e) {
       const err: BusinessError = e as BusinessError;

@@ -51,9 +51,9 @@ class ShareCardService {
     overlay.insert(entry);
     // 等待多帧，确保 widget 完成 layout + paint
     await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future.delayed(const Duration(milliseconds: 30));
     await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 30));
 
     final boundary = _boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;

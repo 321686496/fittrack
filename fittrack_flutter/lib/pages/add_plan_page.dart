@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
+import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/exercise_picker_sheet.dart';
 
 const List<String> _planTypes = ['三分化', '四分化', '五分化', '全身训练', '自定义'];
 const List<String> _difficulties = ['入门', '初级', '进阶', '高级'];
@@ -55,6 +57,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
   List<Map<String, dynamic>> _days = [];
   Map<String, dynamic>? _editingPlan;
 
+  // 缓存每个训练日的 label 控制器，避免在 build 中重复创建
+  final Map<int, TextEditingController> _labelControllers = {};
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +67,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
     if (widget.editPlanId != null) {
       _loadExistingPlan(widget.editPlanId!);
     }
+    _syncLabelControllers();
   }
 
   @override
@@ -69,7 +75,25 @@ class _AddPlanPageState extends State<AddPlanPage> {
     _nameController.dispose();
     _totalWeeksController.dispose();
     _restTimeController.dispose();
+    for (final ctrl in _labelControllers.values) {
+      ctrl.dispose();
+    }
     super.dispose();
+  }
+
+  void _syncLabelControllers() {
+    for (int i = 0; i < _days.length; i++) {
+      if (!_labelControllers.containsKey(i)) {
+        _labelControllers[i] = TextEditingController(
+          text: '${_days[i]['label'] ?? ''}',
+        );
+      }
+    }
+    final keysToRemove = _labelControllers.keys.where((k) => k >= _days.length).toList();
+    for (final k in keysToRemove) {
+      _labelControllers[k]!.dispose();
+      _labelControllers.remove(k);
+    }
   }
 
   void _loadExistingPlan(String planId) {
@@ -93,15 +117,156 @@ class _AddPlanPageState extends State<AddPlanPage> {
   }
 
   void _applyQuickSetup(String type) {
-    final template = _quickSetup[type];
-    if (template != null) {
-      _days = template.map((d) => Map<String, dynamic>.from(d)).toList();
-    } else {
+    if (type == '自定义') {
       _days = [
-        {'day': 1, 'label': '训练日 1', 'muscle': '', 'exercises': <Map<String, dynamic>>[]},
+        {'day': 1, 'label': '训练日1', 'muscle': '', 'exercises': <Map<String, dynamic>>[]},
       ];
+    } else {
+      final template = _quickSetup[type];
+      if (template != null) {
+        // 深拷贝，避免修改到常量模板
+        _days = template.map((d) {
+          final map = Map<String, dynamic>.from(d);
+          final exs = map['exercises'];
+          if (exs is List) {
+            map['exercises'] = exs
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
+          }
+          return map;
+        }).toList();
+      }
     }
+    _syncLabelControllers();
     setState(() {});
+  }
+
+  // ── 训练日/动作编辑方法（与 _PlanEditorSheet 一致） ──────────
+
+  void _addDay() {
+    _days.add({
+      'day': _days.length + 1,
+      'label': '训练日${_days.length + 1}',
+      'muscle': '',
+      'exercises': <Map<String, dynamic>>[],
+    });
+    _syncLabelControllers();
+    setState(() {});
+  }
+
+  void _removeDay(int index) {
+    _days.removeAt(index);
+    for (int i = 0; i < _days.length; i++) {
+      _days[i]['day'] = i + 1;
+    }
+    _syncLabelControllers();
+    setState(() {});
+  }
+
+  void _addExercise(int dayIndex) {
+    final settings = Storage.getSettings();
+    final defaultSets = (settings['defaultSets'] as num?)?.toInt() ?? 3;
+    final defaultReps = (settings['defaultReps'] as num?)?.toInt() ?? 10;
+    final defaultWeight = (settings['defaultWeight'] as num?)?.toDouble() ?? 20.0;
+    final defaultRestTime = (settings['defaultRestTime'] as num?)?.toInt() ?? 90;
+
+    FitBottomSheet.show(
+      context: context,
+      maxHeightRatio: 0.7,
+      builder: (ctx) => ExercisePickerSheet(
+        defaultSets: defaultSets,
+        defaultReps: defaultReps,
+        defaultWeight: defaultWeight,
+        defaultRestTime: defaultRestTime,
+        onPick: (exercise, sets, reps, weight, restTime, setConfig) {
+          final existing = _days[dayIndex]['exercises'];
+          final exercises = (existing is List)
+              ? List<Map<String, dynamic>>.from(
+                  existing.map((e) => Map<String, dynamic>.from(e as Map)))
+              : <Map<String, dynamic>>[];
+          final newEx = {
+            'id': exercise['id'],
+            'name': exercise['name'],
+            'sets': sets,
+            'reps': reps,
+            'weight': weight,
+            'restTime': restTime,
+          };
+          if (setConfig != null) {
+            newEx['setConfig'] = setConfig;
+          }
+          exercises.add(newEx);
+          _days[dayIndex]['exercises'] = exercises;
+          setState(() {});
+          Navigator.of(ctx).pop();
+        },
+      ),
+    );
+  }
+
+  void _removeExercise(int dayIndex, int exIndex) {
+    final existing = _days[dayIndex]['exercises'];
+    final exercises = (existing is List)
+        ? List<Map<String, dynamic>>.from(
+            existing.map((e) => Map<String, dynamic>.from(e as Map)))
+        : <Map<String, dynamic>>[];
+    if (exIndex < exercises.length) {
+      exercises.removeAt(exIndex);
+      _days[dayIndex]['exercises'] = exercises;
+      setState(() {});
+    }
+  }
+
+  void _editExercise(int dayIndex, int exIndex) {
+    final exercises = _days[dayIndex]['exercises'] as List? ?? [];
+    if (exIndex >= exercises.length) return;
+    final ex = Map<String, dynamic>.from(exercises[exIndex] as Map);
+
+    final setConfigRaw = ex['setConfig'] as List?;
+    final initialSetConfig = setConfigRaw
+        ?.map((e) => Map<String, dynamic>.from(e as Map))
+        .toList()
+        .cast<Map<String, dynamic>>();
+
+    FitBottomSheet.show(
+      context: context,
+      maxHeightRatio: 0.7,
+      builder: (ctx) => ExercisePickerSheet(
+        defaultSets: (ex['sets'] as num?)?.toInt() ?? 3,
+        defaultReps: int.tryParse(ex['reps']?.toString() ?? '10') ?? 10,
+        defaultWeight: (ex['weight'] as num?)?.toDouble() ?? 20.0,
+        defaultRestTime: (ex['restTime'] as num?)?.toInt() ?? 90,
+        initialExercise: MockData.exercises.firstWhere(
+          (e) => e['id'] == ex['id'],
+          orElse: () => {'id': ex['id'], 'name': ex['name'], 'category': '', 'equip': ''},
+        ),
+        initialSetConfig: initialSetConfig,
+        onPick: (exercise, sets, reps, weight, restTime, setConfig) {
+          final existing = _days[dayIndex]['exercises'];
+          final exList = (existing is List)
+              ? List<Map<String, dynamic>>.from(
+                  existing.map((e) => Map<String, dynamic>.from(e as Map)))
+              : <Map<String, dynamic>>[];
+          if (exIndex < exList.length) {
+            final updated = {
+              'id': exercise['id'],
+              'name': exercise['name'],
+              'sets': sets,
+              'reps': reps,
+              'weight': weight,
+              'restTime': restTime,
+            };
+            if (setConfig != null) {
+              updated['setConfig'] = setConfig;
+            }
+            exList[exIndex] = updated;
+          }
+          _days[dayIndex]['exercises'] = exList;
+          setState(() {});
+          Navigator.of(ctx).pop();
+        },
+      ),
+    );
   }
 
   List<PlanRecommendation> _generateRecommendedPlans() {
@@ -109,7 +274,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
     return PlanRecommendationService.instance.recommend(limit: 3);
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
       FitToast.info(context, '请输入计划名称');
       return;
@@ -119,23 +284,23 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
     String frequency;
     switch (_selectedType) {
-      case '三分化': frequency = '6天/周'; break;
-      case '四分化': frequency = '4天/周'; break;
-      case '五分化': frequency = '5天/周'; break;
-      case '全身训练': frequency = '3天/周'; break;
-      default: frequency = '${_days.length}天/周';
+      case '三分化':
+        frequency = '6天/周';
+        break;
+      case '四分化':
+        frequency = '4天/周';
+        break;
+      case '五分化':
+        frequency = '5天/周';
+        break;
+      case '全身训练':
+        frequency = '3天/周';
+        break;
+      default:
+        frequency = '${_days.length}天/周';
     }
 
-    if (_editingPlan == null) {
-      final existingPlans = Storage.getPlans();
-      for (final p in existingPlans) {
-        if (p['status'] == 'active') {
-          Storage.updatePlan(p['id'] as String, {...p, 'status': 'pending', 'badge': '待开始'});
-        }
-      }
-    }
-
-    final planData = {
+    final planData = <String, dynamic>{
       'name': _nameController.text.trim(),
       'type': _selectedType,
       'frequency': frequency,
@@ -143,19 +308,38 @@ class _AddPlanPageState extends State<AddPlanPage> {
       'totalWeeks': totalWeeks,
       'defaultRestTime': restTime,
       'days': _days,
+      'currentDayIndex': _editingPlan?['currentDayIndex'] ?? 0,
       'week': _editingPlan?['week'] ?? 0,
       'progress': _editingPlan?['progress'] ?? 0,
       'status': _editingPlan?['status'] ?? 'active',
       'badge': _editingPlan?['badge'] ?? '进行中',
     };
 
-    if (_editingPlan != null) {
-      Storage.updatePlan(_editingPlan!['id'] as String, planData);
-    } else {
-      Storage.addPlan(planData);
+    try {
+      if (_editingPlan == null) {
+        // 新建计划：先暂停其他活跃计划，再写入新计划（await 确保持久化完成）
+        final existingPlans = Storage.getPlans();
+        for (final p in existingPlans) {
+          if (p['status'] == 'active') {
+            await Storage.updatePlanAsync(
+                p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+          }
+        }
+        await Storage.addPlanAsync(planData);
+      } else {
+        await Storage.updatePlanAsync(
+            _editingPlan!['id'] as String, planData);
+      }
+      // 保存成功后跳转首页并提示用户可以开始训练
+      if (mounted) {
+        FitToast.success(context, _editingPlan == null ? '计划已创建，开始训练吧！' : '计划已更新，开始训练吧！');
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        FitToast.error(context, '保存失败，请重试');
+      }
     }
-
-    context.go('/plan');
   }
 
   @override
@@ -246,26 +430,27 @@ class _AddPlanPageState extends State<AddPlanPage> {
             ),
             const SizedBox(height: 20),
 
-            // 训练日预览
-            _buildLabel(colors, '训练日预览 (${_days.length}天)'),
+            // 训练日编辑器（可添加/删除训练日与动作）
+            Row(
+              children: [
+                _buildLabel(colors, '训练日 (${_days.length}天)'),
+                const Spacer(),
+                GestureDetector(
+                  onTap: _addDay,
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, size: 18, color: colors.accentGlow),
+                      Text('添加训练日', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             ..._days.asMap().entries.map((entry) {
               final idx = entry.key;
               final day = entry.value;
-              final exCount = (day['exercises'] as List?)?.length ?? 0;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: colors.bgCard, borderRadius: BorderRadius.circular(8), border: Border.all(color: colors.borderColor)),
-                child: Row(
-                  children: [
-                    Container(width: 24, height: 24, decoration: BoxDecoration(color: colors.accentGlow.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: Center(child: Text('${idx + 1}', style: TextStyle(color: colors.accentGlow, fontSize: 12, fontWeight: FontWeight.w600)))),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text('${day['label'] ?? '训练日 ${idx + 1}'}', style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500))),
-                    Text('$exCount 个动作', style: TextStyle(color: colors.textMuted, fontSize: 12)),
-                  ],
-                ),
-              );
+              return _buildDayEditor(colors, idx, day);
             }),
             const SizedBox(height: 24),
 
@@ -355,5 +540,147 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   Widget _buildLabel(FitTrackColors colors, String text) {
     return Text(text, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500));
+  }
+
+  // 训练动作的小标签：用于展示组数/次数/重量/休息时间
+  Widget _buildMiniTag(FitTrackColors colors, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.bgSecondary,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(color: colors.textSecondary, fontSize: 10),
+      ),
+    );
+  }
+
+  // 训练日编辑器卡片 —— 可编辑训练日名称、添加/删除/编辑动作
+  Widget _buildDayEditor(FitTrackColors colors, int dayIndex, Map<String, dynamic> day) {
+    final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final labelController = _labelControllers[dayIndex] ?? TextEditingController(text: '${day['label'] ?? ''}');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: colors.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(
+                  child: Text(
+                    '${dayIndex + 1}',
+                    style: TextStyle(color: colors.accentGlow, fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: labelController,
+                  style: TextStyle(color: colors.textPrimary, fontSize: 14),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    hintText: '训练日名称',
+                  ),
+                  onChanged: (val) => _days[dayIndex]['label'] = val,
+                ),
+              ),
+              if (_days.length > 1)
+                GestureDetector(
+                  onTap: () => _removeDay(dayIndex),
+                  child: Icon(Icons.close, size: 18, color: colors.textMuted),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Exercise list
+          ...exercises.asMap().entries.map((exEntry) {
+            final exIdx = exEntry.key;
+            final ex = exEntry.value;
+            final weightVal = ex['weight'];
+            String weightStr;
+            if (weightVal == null) {
+              weightStr = '-';
+            } else if (weightVal is num && weightVal == weightVal.toInt()) {
+              weightStr = '${weightVal.toInt()}';
+            } else {
+              weightStr = '$weightVal';
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: GestureDetector(
+                onTap: () => _editExercise(dayIndex, exIdx),
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${ex['name']}',
+                      style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _buildMiniTag(colors, '${ex['sets']}组'),
+                        const SizedBox(width: 6),
+                        _buildMiniTag(colors, '${ex['reps']}次'),
+                        const SizedBox(width: 6),
+                        _buildMiniTag(colors, '${weightStr}kg'),
+                        const SizedBox(width: 6),
+                        _buildMiniTag(colors, '${ex['restTime']}秒'),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => _removeExercise(dayIndex, exIdx),
+                          child: Icon(Icons.close, size: 14, color: colors.textMuted),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: () => _addExercise(dayIndex),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: colors.borderColor, style: BorderStyle.solid),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, size: 16, color: colors.textMuted),
+                    const SizedBox(width: 4),
+                    Text('添加动作', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

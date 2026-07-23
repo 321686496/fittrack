@@ -469,5 +469,57 @@
         ]
       }
     ]
+  },
+  {
+    "id": "keep_recovery_beginner_1",
+    "name": "恢复期训练计划",
+    "goal": "keep",
+    "difficulty": "beginner",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 4,
+    "defaultRestTime": 120,
+    "description": "专为伤病恢复、长期停训后重启训练的人群设计的低强度恢复计划。每周三次轻量全身训练，动作以自重与轻哑铃为主，组间休息充足，强度温和可控。帮助你逐步唤醒肌肉记忆、重建关节稳定性与心肺基础，为重返正式训练打好过渡基础。",
+    "coverEmoji": "🌿",
+    "coverColors": ["#A8D5BA", "#7AB593"],
+    "tags": ["恢复期", "低强度", "全身训练", "新手友好"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 18-28，体脂率 18-30%，伤病恢复或停训3个月以上人群",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身激活A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_recover_001", "name": "自重深蹲", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_recover_002", "name": "跪姿俯卧撑", "sets": 3, "reps": 10, "restTime": 120},
+          {"id": "ex_recover_003", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_recover_004", "name": "平板支撑", "sets": 3, "reps": 30, "restTime": 90}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "全身激活B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_recover_010", "name": "臀桥", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_recover_011", "name": "哑铃推举", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_recover_012", "name": "坐姿划船", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_recover_013", "name": "卷腹", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "全身激活C",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_recover_020", "name": "箭步蹲", "sets": 3, "reps": 10, "restTime": 120},
+          {"id": "ex_recover_021", "name": "哑铃飞鸟", "sets": 3, "reps": 12, "restTime": 120},
+          {"id": "ex_recover_022", "name": "面拉", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_recover_023", "name": "俄罗斯转体", "sets": 3, "reps": 20, "restTime": 90}
+        ]
+      }
+    ]
   }
 ]

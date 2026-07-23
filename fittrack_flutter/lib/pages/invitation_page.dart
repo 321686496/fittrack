@@ -161,8 +161,18 @@ class _InvitationPageState extends State<InvitationPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: _sharing ? null : _shareCode,
-                  icon: const Icon(Icons.share, size: 18),
-                  label: const Text('立即分享'),
+                  icon: _sharing
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(Icons.share, size: 18),
+                  label: Text(_sharing ? '生成中...' : '立即分享'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     foregroundColor: Colors.white,
@@ -224,9 +234,9 @@ class _InvitationPageState extends State<InvitationPage> {
 
       // 等待多帧，确保 layout + paint 完成
       await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future.delayed(const Duration(milliseconds: 30));
       await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 30));
 
       try {
         final imagePath = await PosterGenerator.capture(

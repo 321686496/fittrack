@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import '../themes/app_themes.dart';
+import 'poster_theme.dart';
 
 /// 邀请码海报内容组件（1080×1920 竖版）
 ///
 /// 纯渲染组件，外层需用 [RepaintBoundary]（带 [GlobalKey]）包裹以便截图。
-///
-/// 结构：
-/// - 品牌区：FitTrack 燃力 + 副标题"扫码加入，一起训练"
-/// - 邀请码大字高亮（紫色背景圆角容器）
-/// - 二维码（编码 `fittrack://invite?code=XXX`）
-/// - 渐变背景：accentGlow.withOpacity(0.08) → bgSecondary
+/// 使用 [PosterBackground] 跟随用户当前 App 主题。
 class InvitePoster extends StatelessWidget {
   final String inviteCode;
   final String deepLink;
+
+  /// 海报主题 ID；为 null 时从全局 Settings 读取当前主题
+  final String? themeId;
 
   const InvitePoster({
     super.key,
     required this.inviteCode,
     required this.deepLink,
+    this.themeId,
   });
 
   static const double posterWidth = 1080.0;
@@ -26,134 +24,139 @@ class InvitePoster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
-    return Container(
-      width: posterWidth,
-      height: posterHeight,
-      padding: const EdgeInsets.all(60),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            ft.accentGlow.withOpacity(0.08),
-            ft.bgSecondary,
+    final colors = PosterColors.fromThemeId(themeId);
+    return PosterBackground(
+      colors: colors,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 80),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── 顶部品牌区 ────────────────────────────
+            PosterBrandHeader(colors: colors),
+            const Spacer(flex: 3),
+            // ── 邀请码卡片（核心视觉焦点）──────────────
+            Center(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 56, vertical: 48),
+                decoration: BoxDecoration(
+                  color: colors.cardBg,
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(color: colors.cardBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.brand.withOpacity(0.1),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // 装饰光点
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [colors.brand, colors.brandSecondary],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.brand.withOpacity(0.4),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.card_giftcard,
+                        color: Colors.white,
+                        size: 36,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Text(
+                      '我的邀请码',
+                      style: TextStyle(
+                        color: colors.textSecondary,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // 邀请码大字
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: colors.brand.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: colors.brand.withOpacity(0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        inviteCode,
+                        style: TextStyle(
+                          color: colors.brand,
+                          fontSize: 72,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 10,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      '双方均可获得积分奖励',
+                      style: TextStyle(
+                        color: colors.textMuted,
+                        fontSize: 22,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Spacer(flex: 2),
+            // ── 副标题 ───────────────────────────────
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    '扫码加入',
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '一起开启燃力训练之旅',
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: 24,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(flex: 2),
+            // ── 底部二维码 ───────────────────────────
+            PosterQrFooter(
+              colors: colors,
+              qrData: deepLink,
+              hint: '扫码加入 FitTrack',
+            ),
           ],
         ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(flex: 2),
-          // 品牌图标
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: ft.purpleColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Icon(
-              Icons.fitness_center,
-              size: 56,
-              color: ft.purpleColor,
-            ),
-          ),
-          const SizedBox(height: 20),
-          // 品牌区
-          Text(
-            'FitTrack 燃力',
-            style: TextStyle(
-              color: ft.textPrimary,
-              fontSize: 56,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '扫码加入，一起训练',
-            style: TextStyle(
-              color: ft.textSecondary,
-              fontSize: 28,
-            ),
-          ),
-          const Spacer(),
-          // 邀请码（大字高亮）
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
-            decoration: BoxDecoration(
-              color: ft.purpleColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: ft.purpleColor.withOpacity(0.3),
-                width: 2,
-              ),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  '我的邀请码',
-                  style: TextStyle(
-                    color: ft.textSecondary,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  inviteCode,
-                  style: TextStyle(
-                    color: ft.purpleColor,
-                    fontSize: 64,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 8,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          // 二维码
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: ft.purpleColor.withOpacity(0.15),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: QrImageView(
-              data: deepLink,
-              version: QrVersions.auto,
-              size: 280,
-              gapless: true,
-              backgroundColor: Colors.white,
-              eyeStyle: QrEyeStyle(
-                eyeShape: QrEyeShape.square,
-                color: ft.textPrimary,
-              ),
-              dataModuleStyle: QrDataModuleStyle(
-                dataModuleShape: QrDataModuleShape.square,
-                color: ft.textPrimary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '使用 FitTrack 扫码加入',
-            style: TextStyle(
-              color: ft.textMuted,
-              fontSize: 22,
-            ),
-          ),
-          const Spacer(flex: 2),
-        ],
       ),
     );
   }

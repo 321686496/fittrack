@@ -19,6 +19,10 @@
     {
       "name": "FormExtension_label",
       "value": "训练概览"
+    },
+    {
+      "name": "writeimagevideo",
+      "value": "用于保存用户生成的训练海报到系统相册"
     }
   ]
 }

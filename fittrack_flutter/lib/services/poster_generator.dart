@@ -27,7 +27,7 @@ class PosterGenerator {
   /// 返回 PNG 文件绝对路径。失败时抛出原始异常。
   static Future<String> capture(
     GlobalKey boundaryKey, {
-    double pixelRatio = 3.0,
+    double pixelRatio = 2.0,
     String fileNamePrefix = 'fittrack_poster',
   }) async {
     final boundary = boundaryKey.currentContext!.findRenderObject()
