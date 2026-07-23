@@ -1,6 +1,7 @@
 import 'dart:convert';
 import '../data/storage.dart';
 import 'ad_service.dart';
+import 'sound_service.dart';
 
 enum PointsSource { checkIn, ad, invite, training, note, other }
 enum PointsReason { unlockReport, unlockFeature, unlockCourse, other }
@@ -27,6 +28,9 @@ class PointsService {
     Storage.saveSettings(settings);
     _logTransaction(amount, source, current + amount);
     Storage.dataChanged.value = !Storage.dataChanged.value;
+    if (amount > 0) {
+      SoundService.instance.play(SoundType.points);
+    }
   }
 
   Future<bool> spendPoints(int amount, String reason) async {

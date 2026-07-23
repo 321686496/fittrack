@@ -50,6 +50,7 @@ dependencies:
   share_plus: ^7.0.0
   crypto: ^3.0.3
   qr_flutter: ^4.0.0
+  mobile_scanner: ^3.5.5
   in_app_purchase: ^3.1.0
   flutter_local_notifications:
     git:
@@ -58,6 +59,7 @@ dependencies:
       ref: master
   timezone: ^0.9.4
   image_gallery_saver: ^2.0.3
+  audioplayers: ^4.0.0
 #  permission_handler: ^11.0.1
 #  permission_handler_ohos: ^0.0.8
 
@@ -96,6 +98,7 @@ flutter:
   assets:
     - assets/images/exercises/
     - assets/data/system_plans/
+    - assets/sounds/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

@@ -12,6 +12,7 @@ import '../widgets/page_header.dart';
 import '../widgets/custom_time_picker.dart';
 import '../widgets/max_weight_card.dart';
 import '../utils/platform_utils.dart';
+import '../widgets/tab_refresh_mixin.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,7 +21,21 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfilePage> {
+  @override
+  int get tabIndex => 4;
+
+  @override
+  void onTabBecameActive() {
+    // 切换到"我的"时刷新积分、成就等数据
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _onRefresh() async {
+    await _evaluateAchievements();
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -82,29 +97,35 @@ class _ProfilePageState extends State<ProfilePage> {
           onCalendarTap: () => _showCalendar(context),
         ),
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildProfileHeader(colors),
-                const SizedBox(height: 12),
-                _buildPointsCard(colors),
-                const SizedBox(height: 20),
-                _buildAchievements(colors),
-                const SizedBox(height: 20),
-                const SectionHeader(title: '身体数据'),
-                const SizedBox(height: 10),
-                if (_hasMeaningfulBodyData(body))
-                  _buildBodyData(colors, body)
-                else
-                  _buildNoBodyDataCard(colors),
-                const SizedBox(height: 12),
-                MaxWeightCard(onTap: () => context.push('/max-weight-detail')),
-                const SizedBox(height: 20),
-                _buildMenuList(colors, context),
-                const SizedBox(height: 200),
-              ],
+          child: RefreshIndicator(
+            color: colors.accentGlow,
+            backgroundColor: colors.bgCard,
+            onRefresh: _onRefresh,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileHeader(colors),
+                  const SizedBox(height: 12),
+                  _buildPointsCard(colors),
+                  const SizedBox(height: 20),
+                  _buildAchievements(colors),
+                  const SizedBox(height: 20),
+                  const SectionHeader(title: '身体数据'),
+                  const SizedBox(height: 10),
+                  if (_hasMeaningfulBodyData(body))
+                    _buildBodyData(colors, body)
+                  else
+                    _buildNoBodyDataCard(colors),
+                  const SizedBox(height: 12),
+                  MaxWeightCard(onTap: () => context.push('/max-weight-detail')),
+                  const SizedBox(height: 20),
+                  _buildMenuList(colors, context),
+                  const SizedBox(height: 200),
+                ],
+              ),
             ),
           ),
         ),

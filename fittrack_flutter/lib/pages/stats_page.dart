@@ -5,6 +5,7 @@ import '../data/storage.dart';
 import '../data/mock_data.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
+import '../widgets/tab_refresh_mixin.dart';
 
 class StatsPage extends StatefulWidget {
   const StatsPage({super.key});
@@ -13,7 +14,7 @@ class StatsPage extends StatefulWidget {
   State<StatsPage> createState() => _StatsPageState();
 }
 
-class _StatsPageState extends State<StatsPage> {
+class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   // ── Data ─────────────────────────────────────────────────────
   Map<String, dynamic> _stats = {};
   List<Map<String, dynamic>> _records = [];
@@ -49,6 +50,20 @@ class _StatsPageState extends State<StatsPage> {
   };
 
   // ── Lifecycle ────────────────────────────────────────────────
+
+  @override
+  int get tabIndex => 3;
+
+  @override
+  void onTabBecameActive() {
+    _loadAndCompute();
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _onRefresh() async {
+    _loadAndCompute();
+    if (mounted) setState(() {});
+  }
 
   @override
   void initState() {
@@ -364,88 +379,94 @@ class _StatsPageState extends State<StatsPage> {
               isTabPage: true,
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    // ── 详细统计（值为0）───────────────────────
-                    const SectionHeader(title: '详细统计'),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(child: StatCard(icon: Icons.fitness_center, value: '0', label: '总训练次数', color: colors.accentGlow)),
-                        const SizedBox(width: 12),
-                        Expanded(child: StatCard(icon: Icons.timer_outlined, value: '0分钟', label: '总训练时长', color: colors.infoColor)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: '0kg', label: '累计重量', color: colors.warningColor)),
-                        const SizedBox(width: 12),
-                        Expanded(child: StatCard(icon: Icons.local_fire_department, value: '0', label: '消耗卡路里', color: colors.successColor)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(child: StatCard(icon: Icons.trending_up, value: '0分钟', label: '平均时长', color: colors.purpleColor)),
-                        const SizedBox(width: 12),
-                        Expanded(child: StatCard(icon: Icons.scale_outlined, value: '0kg', label: '平均重量', color: colors.accentSecondary)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(child: StatCard(icon: Icons.repeat, value: '0', label: '总训练组数', color: colors.infoColor)),
-                        const SizedBox(width: 12),
-                        Expanded(child: StatCard(icon: Icons.calendar_today_outlined, value: '0', label: '本月训练', color: colors.successColor)),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    // ── 热力图（空数据也显示）────────────────────
-                    _buildHeatmap(colors),
-                    const SizedBox(height: 24),
-                    // ── 引导卡片 ──────────────────────────────
-                    CardWidget(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+              child: RefreshIndicator(
+                color: colors.accentGlow,
+                backgroundColor: colors.bgCard,
+                onRefresh: _onRefresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      // ── 详细统计（值为0）───────────────────────
+                      const SectionHeader(title: '详细统计'),
+                      const SizedBox(height: 8),
+                      Row(
                         children: [
-                          Icon(Icons.analytics_outlined,
-                              size: 48, color: colors.accentGlow),
-                          const SizedBox(height: 16),
-                          Text(
-                            '暂无训练数据',
-                            style: TextStyle(
-                              color: colors.textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '完成你的第一次训练，开始记录健身历程',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: colors.textSecondary,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () => context.push('/plan'),
-                              child: const Text('去训练'),
-                            ),
-                          ),
+                          Expanded(child: StatCard(icon: Icons.fitness_center, value: '0', label: '总训练次数', color: colors.accentGlow)),
+                          const SizedBox(width: 12),
+                          Expanded(child: StatCard(icon: Icons.timer_outlined, value: '0分钟', label: '总训练时长', color: colors.infoColor)),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 200),
-                  ],
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: '0kg', label: '累计重量', color: colors.warningColor)),
+                          const SizedBox(width: 12),
+                          Expanded(child: StatCard(icon: Icons.local_fire_department, value: '0', label: '消耗卡路里', color: colors.successColor)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(child: StatCard(icon: Icons.trending_up, value: '0分钟', label: '平均时长', color: colors.purpleColor)),
+                          const SizedBox(width: 12),
+                          Expanded(child: StatCard(icon: Icons.scale_outlined, value: '0kg', label: '平均重量', color: colors.accentSecondary)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(child: StatCard(icon: Icons.repeat, value: '0', label: '总训练组数', color: colors.infoColor)),
+                          const SizedBox(width: 12),
+                          Expanded(child: StatCard(icon: Icons.calendar_today_outlined, value: '0', label: '本月训练', color: colors.successColor)),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      // ── 热力图（空数据也显示）────────────────────
+                      _buildHeatmap(colors),
+                      const SizedBox(height: 24),
+                      // ── 引导卡片 ──────────────────────────────
+                      CardWidget(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.analytics_outlined,
+                                size: 48, color: colors.accentGlow),
+                            const SizedBox(height: 16),
+                            Text(
+                              '暂无训练数据',
+                              style: TextStyle(
+                                color: colors.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '完成你的第一次训练，开始记录健身历程',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: colors.textSecondary,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () => context.push('/plan'),
+                                child: const Text('去训练'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 200),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -467,120 +488,126 @@ class _StatsPageState extends State<StatsPage> {
             isTabPage: true,
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  // ── 详细统计 ────────────────────────────────
-                  const SectionHeader(title: '详细统计'),
-                  const SizedBox(height: 8),
-                  // 第一行：基础统计
-                  Row(
-                    children: [
-                      Expanded(child: StatCard(icon: Icons.fitness_center, value: '$totalTrainings', label: '总训练次数', color: colors.accentGlow)),
-                      const SizedBox(width: 12),
-                      Expanded(child: StatCard(icon: Icons.timer_outlined, value: _formatDuration(totalDuration.toInt()), label: '总训练时长', color: colors.infoColor)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // 第二行：重量与热量
-                  Row(
-                    children: [
-                      Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: _formatWeight(totalWeight.toInt()), label: '累计重量', color: colors.warningColor)),
-                      const SizedBox(width: 12),
-                      Expanded(child: StatCard(icon: Icons.local_fire_department, value: '$calories', label: '消耗卡路里', color: colors.successColor)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // 第三行：详细统计 - 平均时长与平均重量
-                  Row(
-                    children: [
-                      Expanded(child: StatCard(
-                        icon: Icons.trending_up,
-                        value: totalTrainings > 0 ? _formatDuration((totalDuration / totalTrainings).round()) : '0分钟',
-                        label: '平均时长',
-                        color: colors.purpleColor,
-                      )),
-                      const SizedBox(width: 12),
-                      Expanded(child: StatCard(
-                        icon: Icons.scale_outlined,
-                        value: totalTrainings > 0 ? _formatWeight((totalWeight / totalTrainings).round()) : '0kg',
-                        label: '平均重量',
-                        color: colors.accentSecondary,
-                      )),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // 第四行：总组数与完成率
-                  Row(
-                    children: [
-                      Expanded(child: StatCard(
-                        icon: Icons.repeat,
-                        value: '${_records.fold<int>(0, (sum, r) => sum + ((r['setRecords'] as Map?)?.length ?? 0))}',
-                        label: '总训练组数',
-                        color: colors.infoColor,
-                      )),
-                      const SizedBox(width: 12),
-                      Expanded(child: StatCard(
-                        icon: Icons.calendar_today_outlined,
-                        value: '${_records.where((r) {
-                          final date = r['date'] as int? ?? 0;
-                          final now = DateTime.now();
-                          final recordDate = DateTime.fromMillisecondsSinceEpoch(date);
-                          return recordDate.month == now.month && recordDate.year == now.year;
-                        }).length}',
-                        label: '本月训练',
-                        color: colors.successColor,
-                      )),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // ── 训练活跃度热力图 ──────────────────────────
-                  _buildHeatmap(colors),
-                  const SizedBox(height: 24),
-
-                  // ── Training frequency chart ─────────────────
-                  const SectionHeader(title: '训练频率'),
-                  const SizedBox(height: 12),
-                  _buildFrequencyChart(colors),
-                  const SizedBox(height: 24),
-
-                  // ── 训练容量趋势（新增）─────────────────────────
-                  _buildVolumeChart(colors),
-                  const SizedBox(height: 24),
-
-                  // ── 动作热度榜（新增）─────────────────────────
-                  _buildExercisePopularityChart(colors),
-                  const SizedBox(height: 24),
-
-                  // ── 训练时长趋势（新增）─────────────────────────
-                  _buildDurationTrendChart(colors),
-                  const SizedBox(height: 24),
-
-                  // ── PR 进度追踪（新增）─────────────────────────
-                  _buildPrProgressionChart(colors),
-                  const SizedBox(height: 24),
-
-                  // ── Muscle distribution ──────────────────────
-                  if (_muscleData.isNotEmpty) ...[
-                    const SectionHeader(title: '肌群分布'),
+            child: RefreshIndicator(
+              color: colors.accentGlow,
+              backgroundColor: colors.bgCard,
+              onRefresh: _onRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    // ── 详细统计 ────────────────────────────────
+                    const SectionHeader(title: '详细统计'),
+                    const SizedBox(height: 8),
+                    // 第一行：基础统计
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(icon: Icons.fitness_center, value: '$totalTrainings', label: '总训练次数', color: colors.accentGlow)),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(icon: Icons.timer_outlined, value: _formatDuration(totalDuration.toInt()), label: '总训练时长', color: colors.infoColor)),
+                      ],
+                    ),
                     const SizedBox(height: 12),
-                    _buildMuscleDistribution(colors),
-                    const SizedBox(height: 24),
-                  ],
-
-                  // ── Personal records ─────────────────────────
-                  if (_personalRecords.isNotEmpty) ...[
-                    const SectionHeader(title: '个人记录'),
+                    // 第二行：重量与热量
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: _formatWeight(totalWeight.toInt()), label: '累计重量', color: colors.warningColor)),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(icon: Icons.local_fire_department, value: '$calories', label: '消耗卡路里', color: colors.successColor)),
+                      ],
+                    ),
                     const SizedBox(height: 12),
-                    _buildPersonalRecords(colors),
+                    // 第三行：详细统计 - 平均时长与平均重量
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(
+                          icon: Icons.trending_up,
+                          value: totalTrainings > 0 ? _formatDuration((totalDuration / totalTrainings).round()) : '0分钟',
+                          label: '平均时长',
+                          color: colors.purpleColor,
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(
+                          icon: Icons.scale_outlined,
+                          value: totalTrainings > 0 ? _formatWeight((totalWeight / totalTrainings).round()) : '0kg',
+                          label: '平均重量',
+                          color: colors.accentSecondary,
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // 第四行：总组数与完成率
+                    Row(
+                      children: [
+                        Expanded(child: StatCard(
+                          icon: Icons.repeat,
+                          value: '${_records.fold<int>(0, (sum, r) => sum + ((r['setRecords'] as Map?)?.length ?? 0))}',
+                          label: '总训练组数',
+                          color: colors.infoColor,
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(child: StatCard(
+                          icon: Icons.calendar_today_outlined,
+                          value: '${_records.where((r) {
+                            final date = r['date'] as int? ?? 0;
+                            final now = DateTime.now();
+                            final recordDate = DateTime.fromMillisecondsSinceEpoch(date);
+                            return recordDate.month == now.month && recordDate.year == now.year;
+                          }).length}',
+                          label: '本月训练',
+                          color: colors.successColor,
+                        )),
+                      ],
+                    ),
                     const SizedBox(height: 24),
+
+                    // ── 训练活跃度热力图 ──────────────────────────
+                    _buildHeatmap(colors),
+                    const SizedBox(height: 24),
+
+                    // ── Training frequency chart ─────────────────
+                    const SectionHeader(title: '训练频率'),
+                    const SizedBox(height: 12),
+                    _buildFrequencyChart(colors),
+                    const SizedBox(height: 24),
+
+                    // ── 训练容量趋势（新增）─────────────────────────
+                    _buildVolumeChart(colors),
+                    const SizedBox(height: 24),
+
+                    // ── 动作热度榜（新增）─────────────────────────
+                    _buildExercisePopularityChart(colors),
+                    const SizedBox(height: 24),
+
+                    // ── 训练时长趋势（新增）─────────────────────────
+                    _buildDurationTrendChart(colors),
+                    const SizedBox(height: 24),
+
+                    // ── PR 进度追踪（新增）─────────────────────────
+                    _buildPrProgressionChart(colors),
+                    const SizedBox(height: 24),
+
+                    // ── Muscle distribution ──────────────────────
+                    if (_muscleData.isNotEmpty) ...[
+                      const SectionHeader(title: '肌群分布'),
+                      const SizedBox(height: 12),
+                      _buildMuscleDistribution(colors),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // ── Personal records ─────────────────────────
+                    if (_personalRecords.isNotEmpty) ...[
+                      const SectionHeader(title: '个人记录'),
+                      const SizedBox(height: 12),
+                      _buildPersonalRecords(colors),
+                      const SizedBox(height: 24),
+                    ],
+                    const SizedBox(height: 200),
                   ],
-                  const SizedBox(height: 200),
-                ],
+                ),
               ),
             ),
           ),

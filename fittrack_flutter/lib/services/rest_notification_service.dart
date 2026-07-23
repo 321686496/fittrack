@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'ohos_reminder_service.dart';
 import 'android_alarm_service.dart';
+import 'sound_service.dart';
 import '../utils/platform_utils.dart';
 
 /// 休息结束提醒服务
@@ -214,6 +215,7 @@ class RestNotificationService {
   /// 立即显示休息结束通知
   Future<void> showRestEndNotification({required String exerciseName}) async {
     if (!_initialized || _plugin == null) return;
+    SoundService.instance.play(SoundType.restEnd);
     try {
       const androidDetails = AndroidNotificationDetails(
         _channelId,

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../data/storage.dart';
 import '../data/database_helper.dart';
+import 'sound_service.dart';
 
 class Achievement {
   final String id;
@@ -178,6 +179,9 @@ class AchievementService {
       });
       _unlocked.add(id);
       _unlockedAtMap[id] = now;
+    }
+    if (toAdd.isNotEmpty) {
+      SoundService.instance.play(SoundType.achievement);
     }
     Storage.unlockedAchievementsNotifier.value = _unlocked.toList();
     return toAdd;

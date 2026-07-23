@@ -31,8 +31,12 @@ import 'pages/achievement_page.dart';
 import 'pages/redeem_page.dart';
 import 'pages/invitation_page.dart';
 import 'pages/share_code_page.dart';
+import 'pages/plan_qr_code_page.dart';
+import 'pages/scan_import_page.dart';
+import 'pages/plan_poster_page.dart';
 import 'pages/tutorial_list_page.dart';
 import 'pages/all_tutorials_page.dart';
+import 'pages/tutorial_category_page.dart';
 import 'pages/tutorial_detail_page.dart';
 import 'pages/course_list_page.dart';
 import 'pages/course_detail_page.dart';
@@ -339,6 +343,25 @@ GoRouter createRouter() {
         builder: (context, state) => const ShareCodePage(),
       ),
       GoRoute(
+        path: '/plan-qr/:planId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => PlanQrCodePage(
+          planId: state.params['planId'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/scan-import',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ScanImportPage(),
+      ),
+      GoRoute(
+        path: '/plan-poster/:planId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => PlanPosterPage(
+          planId: state.params['planId'] ?? '',
+        ),
+      ),
+      GoRoute(
         path: '/tutorial/:tutorialId',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
@@ -350,6 +373,14 @@ GoRouter createRouter() {
         path: '/all-tutorials',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AllTutorialsPage(),
+      ),
+      // 教学分类详情页（v1.3 新增：瀑布流分类点击进入）
+      GoRoute(
+        path: '/tutorials/:category',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => TutorialCategoryPage(
+          categoryKey: state.params['category'] ?? '',
+        ),
       ),
       // 系统化课程路由
       GoRoute(

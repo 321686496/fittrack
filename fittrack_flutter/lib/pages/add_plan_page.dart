@@ -154,6 +154,18 @@ class _AddPlanPageState extends State<AddPlanPage> {
     setState(() {});
   }
 
+  void _addRestDay() {
+    _days.add({
+      'day': _days.length + 1,
+      'label': '休息日',
+      'muscle': '',
+      'isRest': true,
+      'exercises': <Map<String, dynamic>>[],
+    });
+    _syncLabelControllers();
+    setState(() {});
+  }
+
   void _removeDay(int index) {
     _days.removeAt(index);
     for (int i = 0; i < _days.length; i++) {
@@ -236,7 +248,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
         defaultReps: int.tryParse(ex['reps']?.toString() ?? '10') ?? 10,
         defaultWeight: (ex['weight'] as num?)?.toDouble() ?? 20.0,
         defaultRestTime: (ex['restTime'] as num?)?.toInt() ?? 90,
-        initialExercise: MockData.exercises.firstWhere(
+        initialExercise: Storage.getAllExercises().firstWhere(
           (e) => e['id'] == ex['id'],
           orElse: () => {'id': ex['id'], 'name': ex['name'], 'category': '', 'equip': ''},
         ),
@@ -440,7 +452,17 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   child: Row(
                     children: [
                       Icon(Icons.add, size: 18, color: colors.accentGlow),
-                      Text('添加训练日', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                      Text('训练日', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _addRestDay,
+                  child: Row(
+                    children: [
+                      Icon(Icons.bedtime_outlined, size: 18, color: colors.infoColor),
+                      Text('休息日', style: TextStyle(color: colors.infoColor, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -559,6 +581,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   // 训练日编辑器卡片 —— 可编辑训练日名称、添加/删除/编辑动作
   Widget _buildDayEditor(FitTrackColors colors, int dayIndex, Map<String, dynamic> day) {
+    final isRest = day['isRest'] == true;
     final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final labelController = _labelControllers[dayIndex] ?? TextEditingController(text: '${day['label'] ?? ''}');
 
@@ -566,9 +589,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.bgCard,
+        color: isRest ? colors.infoColor.withOpacity(0.06) : colors.bgCard,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: colors.borderColor),
+        border: Border.all(color: isRest ? colors.infoColor.withOpacity(0.3) : colors.borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -579,13 +602,14 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: colors.accentGlow.withOpacity(0.15),
+                  color: isRest ? colors.infoColor.withOpacity(0.15) : colors.accentGlow.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(
-                  child: Text(
-                    '${dayIndex + 1}',
-                    style: TextStyle(color: colors.accentGlow, fontSize: 12, fontWeight: FontWeight.w600),
+                  child: Icon(
+                    isRest ? Icons.bedtime_outlined : Icons.fitness_center,
+                    size: 14,
+                    color: isRest ? colors.infoColor : colors.accentGlow,
                   ),
                 ),
               ),
@@ -594,10 +618,10 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 child: TextField(
                   controller: labelController,
                   style: TextStyle(color: colors.textPrimary, fontSize: 14),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    hintText: '训练日名称',
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    hintText: isRest ? '休息日名称' : '训练日名称',
                   ),
                   onChanged: (val) => _days[dayIndex]['label'] = val,
                 ),
@@ -609,6 +633,29 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 ),
             ],
           ),
+          if (isRest) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              decoration: BoxDecoration(
+                color: colors.infoColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.self_improvement, size: 16, color: colors.infoColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '休息日 — 充分恢复，准备下一次训练',
+                      style: TextStyle(color: colors.infoColor, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
           const SizedBox(height: 8),
           // Exercise list
           ...exercises.asMap().entries.map((exEntry) {
@@ -679,6 +726,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               ),
             ),
           ),
+          ],
         ],
       ),
     );

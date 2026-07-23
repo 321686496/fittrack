@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
@@ -242,13 +243,14 @@ class _ShareCodePageState extends State<ShareCodePage> {
     shareData.remove('progress');
     shareData.remove('createTime');
     shareData.remove('updateTime');
+    shareData.remove('currentDayIndex');
 
     // 添加作者署名
     final settings = Storage.getSettings();
     final author = settings['nickname'] as String? ?? '匿名用户';
-    ShareCodeService.instance.attachAuthorSignature(shareData, author);
+    final withAuthor = ShareCodeService.instance.attachAuthorSignature(shareData, author);
 
-    final shareString = ShareCodeService.instance.generateShareableString(shareData);
+    final shareString = ShareCodeService.instance.generateShareableString(withAuthor);
     final code = shareString.split('|').first;
 
     setState(() {
@@ -424,6 +426,15 @@ class _ShareCodePageState extends State<ShareCodePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
               ),
+              TextButton.icon(
+                onPressed: () => context.push('/scan-import'),
+                icon: const Icon(Icons.qr_code_scanner, size: 16),
+                label: const Text('扫码导入'),
+                style: TextButton.styleFrom(
+                  foregroundColor: colors.accentGlow,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -542,12 +553,14 @@ class _ShareCodePageState extends State<ShareCodePage> {
   }
 
   void _doImport(Map<String, dynamic> planData, FitTrackColors colors) {
-    // 清理分享方字段，生成本地新计划
-    final newPlan = Map<String, dynamic>.from(planData);
+    // 清理分享方字段，生成本地新计划（深拷贝 + 类型归一化）
+    final newPlan = ShareCodeService.deepNormalizePlan(planData);
     newPlan.remove('author');
     newPlan.remove('sharedAt');
     newPlan['status'] = 'active';
     newPlan['progress'] = 0;
+    newPlan['currentDayIndex'] = 0;
+    ShareCodeService.normalizeWeightFieldsPublic(newPlan);
 
     final author = ShareCodeService.instance.getAuthor(planData);
     Storage.addPlan(newPlan);

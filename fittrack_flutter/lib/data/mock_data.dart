@@ -190,6 +190,7 @@ class MockData {
     '肩部',
     '手臂',
     '核心',
+    '跑步',
   ];
 
   // ============================================================
@@ -212,6 +213,11 @@ class MockData {
     {'id': 'e14', 'name': '锤式弯举', 'category': '手臂', 'equip': '哑铃', 'image': 'assets/images/exercises/e14_hammer_curl.png'},
     {'id': 'e15', 'name': '平板支撑', 'category': '核心', 'equip': '自重', 'image': 'assets/images/exercises/e15_plank.png'},
     {'id': 'e16', 'name': '卷腹', 'category': '核心', 'equip': '自重', 'image': 'assets/images/exercises/e16_crunch.png'},
+    {'id': 'e17', 'name': '慢跑', 'category': '跑步', 'equip': '自重', 'image': 'assets/images/exercises/e17_jogging.png'},
+    {'id': 'e18', 'name': '间歇跑', 'category': '跑步', 'equip': '自重', 'image': 'assets/images/exercises/e18_interval_run.png'},
+    {'id': 'e19', 'name': '长距离跑', 'category': '跑步', 'equip': '自重', 'image': 'assets/images/exercises/e19_long_run.png'},
+    {'id': 'e20', 'name': '冲刺跑', 'category': '跑步', 'equip': '自重', 'image': 'assets/images/exercises/e20_sprint.png'},
+    {'id': 'e21', 'name': '坡度跑', 'category': '跑步', 'equip': '跑步机', 'image': 'assets/images/exercises/e21_incline_run.png'},
   ];
 
   // ============================================================
@@ -234,6 +240,11 @@ class MockData {
     'e14': '锤式弯举同时锻炼肱二头肌和肱桡肌，增加手臂整体围度。',
     'e15': '平板支撑是核心训练的基础动作，锻炼腹横肌和深层稳定肌群。',
     'e16': '卷腹重点刺激腹直肌上部，是腹部训练的最基本动作。',
+    'e17': '慢跑是低强度有氧运动，适合热身、恢复和燃脂，能有效提升心肺功能。',
+    'e18': '间歇跑通过高低强度交替，提升心肺耐力和燃脂效率，适合进阶训练者。',
+    'e19': '长距离跑培养持久耐力，锻炼心肺功能和下肢肌肉耐力，适合马拉松备战。',
+    'e20': '冲刺跑发展爆发力和速度，全面刺激快肌纤维，提升无氧能力。',
+    'e21': '坡度跑模拟上坡跑步，强化臀部和股四头肌，同时提升心肺负荷。',
   };
 
   // ============================================================
@@ -256,6 +267,11 @@ class MockData {
     'e14': ['肱二头肌', '肱桡肌', '前臂'],
     'e15': ['腹横肌', '深层稳定肌群', '竖脊肌'],
     'e16': ['腹直肌', '腹斜肌'],
+    'e17': ['股四头肌', '小腿肌群', '心肺'],
+    'e18': ['股四头肌', '臀大肌', '心肺'],
+    'e19': ['股四头肌', '小腿肌群', '心肺'],
+    'e20': ['股四头肌', '臀大肌', '心肺'],
+    'e21': ['臀大肌', '股四头肌', '小腿肌群'],
   };
 
   // ============================================================
@@ -331,6 +347,31 @@ class MockData {
     'e16': [
       {'title': '准备姿势', 'desc': '仰卧于垫上，双手轻放耳侧，双腿屈膝脚掌着地。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=crunch%20exercise%20setup%20abs%20core&image_size=landscape_4_3'},
       {'title': '卷腹', 'desc': '腹肌发力将肩胛骨抬离地面，顶峰收缩1秒，缓慢下放。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=crunch%20exercise%20curling%20up%20abs&image_size=landscape_4_3'},
+    ],
+    'e17': [
+      {'title': '热身准备', 'desc': '先进行5分钟快走热身，活动脚踝和膝关节，逐渐过渡到慢跑。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=jogging%20warm%20up%20running%20outdoor&image_size=landscape_4_3'},
+      {'title': '保持节奏', 'desc': '保持均匀呼吸和步伐，速度以能正常说话为宜，身体微微前倾。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=jogging%20steady%20pace%20running%20form&image_size=landscape_4_3'},
+      {'title': '放松收尾', 'desc': '结束前逐步减速至快走，最后做拉伸放松腿部肌肉。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=jogging%20cool%20down%20stretching%20legs&image_size=landscape_4_3'},
+    ],
+    'e18': [
+      {'title': '热身准备', 'desc': '先慢跑5-10分钟热身，充分活动关节。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=interval%20running%20warm%20up%20track&image_size=landscape_4_3'},
+      {'title': '高强度冲刺', 'desc': '以接近全力的速度跑30-60秒，心率提升至最大心率的85%以上。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=interval%20sprint%20running%20fast%20track&image_size=landscape_4_3'},
+      {'title': '低强度恢复', 'desc': '慢跑或快走1-2分钟恢复，然后重复冲刺-恢复循环6-8组。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=interval%20recovery%20jogging%20slow%20pace&image_size=landscape_4_3'},
+    ],
+    'e19': [
+      {'title': '充分热身', 'desc': '进行10分钟动态热身，重点活动髋关节、膝关节和踝关节。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=long%20distance%20running%20warm%20up%20stretching&image_size=landscape_4_3'},
+      {'title': '匀速跑', 'desc': '保持稳定的中等配速，注意呼吸节奏（三步一吸两步一呼），保持核心稳定。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=long%20distance%20running%20steady%20pace%20endurance&image_size=landscape_4_3'},
+      {'title': '补充水分', 'desc': '每15-20分钟适量补水，长距离跑中可补充能量胶，结束后充分拉伸。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=long%20distance%20running%20hydration%20water%20break&image_size=landscape_4_3'},
+    ],
+    'e20': [
+      {'title': '充分热身', 'desc': '进行充分热身，包括慢跑和动态拉伸，避免肌肉拉伤。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sprint%20running%20warm%20up%20dynamic%20stretch&image_size=landscape_4_3'},
+      {'title': '全力冲刺', 'desc': '起跑后迅速加速至最大速度，保持正确跑姿，摆臂有力，前脚掌着地。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sprint%20running%20full%20speed%20explosive&image_size=landscape_4_3'},
+      {'title': '完全恢复', 'desc': '每组冲刺间充分休息2-3分钟，进行4-6组，确保每组都能保持最大速度。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sprint%20running%20recovery%20rest%20between%20sets&image_size=landscape_4_3'},
+    ],
+    'e21': [
+      {'title': '调整坡度', 'desc': '将跑步机坡度调整至5-8%，先慢走2分钟适应坡度。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=incline%20treadmill%20running%20setup%20hill&image_size=landscape_4_3'},
+      {'title': '坡度跑', 'desc': '身体微前倾，步伐缩小，前脚掌着地，臀部发力蹬地，保持稳定节奏。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=incline%20treadmill%20running%20form%20posture&image_size=landscape_4_3'},
+      {'title': '平坡恢复', 'desc': '坡度跑1-2分钟后，降低坡度慢跑恢复，交替进行5-6组。', 'image': 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=incline%20treadmill%20recovery%20flat%20running&image_size=landscape_4_3'},
     ],
   };
 

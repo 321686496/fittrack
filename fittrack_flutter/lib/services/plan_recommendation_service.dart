@@ -228,13 +228,17 @@ class PlanRecommendationService {
     if (recentRecords.isEmpty) return const ScoreResult(8.0);
 
     // 统计用户近期训练肌群分布
+    // 注意：record['setRecords'] 的结构是 Map<String(exId), List<{set,weight,reps}>>
+    // 没有 muscle 字段；肌肉信息应从 record['muscles'] 取出。
     final muscleCount = <String, int>{};
     for (final r in recentRecords) {
-      final setRecords = r['setRecords'] as List? ?? [];
-      for (final sr in setRecords) {
-        final muscle = (sr as Map<String, dynamic>)['muscle'] as String? ?? '';
-        if (muscle.isNotEmpty) {
-          muscleCount[muscle] = (muscleCount[muscle] ?? 0) + 1;
+      final muscles = r['muscles'];
+      if (muscles is List) {
+        for (final m in muscles) {
+          final muscle = m.toString();
+          if (muscle.isNotEmpty) {
+            muscleCount[muscle] = (muscleCount[muscle] ?? 0) + 1;
+          }
         }
       }
     }
