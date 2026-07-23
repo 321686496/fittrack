@@ -3,3 +3,6 @@
 
 # Superpowers SDD scratch (progress ledger, task briefs)
 .superpowers/
+
+# Backup/duplicate flutter project folder
+fittrack_flutter2/

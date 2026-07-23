@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'database_helper.dart';
+import 'mock_data.dart';
 
 /// Storage with hybrid persistence:
 /// - Plans & Records: SQLite (via DatabaseHelper) — 结构化大数据
@@ -232,6 +233,8 @@ class Storage {
     // 同步更新缓存，保证后续 getPlans() 立即拿到新计划
     _plansCache.add(newPlan);
     _plansCacheDirty = true;
+    // 通知数据变更（修复：原 async 版本未通知，导致计划页看不到新增计划）
+    dataChanged.value = !dataChanged.value;
     return newPlan;
   }
 
@@ -270,6 +273,8 @@ class Storage {
       }
     }
     _plansCacheDirty = true;
+    // 通知数据变更（修复：原 async 版本未通知）
+    dataChanged.value = !dataChanged.value;
     return result;
   }
 
@@ -288,6 +293,8 @@ class Storage {
   static Future<bool> deletePlanAsync(String planId) async {
     await _db.deletePlan(planId);
     _plansCacheDirty = true;
+    // 通知数据变更（修复：原 async 版本未通知）
+    dataChanged.value = !dataChanged.value;
     return true;
   }
 
@@ -895,6 +902,54 @@ class Storage {
 
   static bool hasData() {
     return _plansCache.isNotEmpty || _recordsCache.isNotEmpty;
+  }
+
+  // ============================================================
+  // Custom Exercises (SharedPreferences)
+  // ============================================================
+
+  static const String _keyCustomExercises = 'fittrack_customExercises';
+
+  /// 获取所有自定义动作
+  static List<Map<String, dynamic>> getCustomExercises() {
+    final result = _safeGet(_keyCustomExercises, <Map<String, dynamic>>[]);
+    if (result is List) {
+      return result.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
+    return [];
+  }
+
+  /// 添加自定义动作
+  static Map<String, dynamic> addCustomExercise(Map<String, dynamic> exercise) {
+    final exercises = getCustomExercises();
+    final newExercise = <String, dynamic>{
+      ...exercise,
+      'id': exercise['id'] ?? generateId('customex'),
+      'isCustom': true,
+      'createTime': DateTime.now().millisecondsSinceEpoch,
+    };
+    exercises.add(newExercise);
+    _store[_keyCustomExercises] = exercises;
+    _persistKeyAsync(_keyCustomExercises);
+    return newExercise;
+  }
+
+  /// 删除自定义动作
+  static bool deleteCustomExercise(String exerciseId) {
+    final exercises = getCustomExercises();
+    exercises.removeWhere((e) => e['id'] == exerciseId);
+    _store[_keyCustomExercises] = exercises;
+    _persistKeyAsync(_keyCustomExercises);
+    return true;
+  }
+
+  /// 获取所有可用动作（内置 + 自定义）
+  static List<Map<String, dynamic>> getAllExercises() {
+    final builtIn = MockData.exercises
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+    final custom = getCustomExercises();
+    return [...builtIn, ...custom];
   }
 
   // ============================================================

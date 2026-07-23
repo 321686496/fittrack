@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
+import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 
@@ -111,7 +112,14 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     final muscles = (record['muscles'] as List?)?.cast<String>() ?? [];
     final setRecords = record['setRecords'] as Map? ?? {};
     final restLog = record['restLog'] as List? ?? [];
-    final exerciseNames = setRecords.keys.toList();
+    // setRecords 的 key 是动作 id，需要解析成动作名展示
+    final exLookup = <String, String>{};
+    for (final ex in MockData.exercises) {
+      exLookup[ex['id'] as String] = ex['name'] as String;
+    }
+    final exerciseNames = setRecords.keys
+        .map((k) => exLookup[k.toString()] ?? k.toString())
+        .toList();
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -198,9 +206,10 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               const SizedBox(height: 20),
               SectionHeader(title: '训练动作'),
               const SizedBox(height: 12),
-              ...exerciseNames.map((exName) {
-                final sets = setRecords[exName];
-                return _buildExerciseDetailCard(colors, exName.toString(), sets);
+              ...setRecords.entries.map((entry) {
+                final exId = entry.key.toString();
+                final exName = exLookup[exId] ?? exId;
+                return _buildExerciseDetailCard(colors, exName, entry.value);
               }),
             ],
 

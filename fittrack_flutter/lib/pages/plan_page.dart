@@ -9,6 +9,7 @@ import '../services/plan_unlock_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/exercise_picker_sheet.dart';
 import '../widgets/page_header.dart';
+import '../widgets/tab_refresh_mixin.dart';
 
 // ============================================================
 // Quick setup templates for auto-generating plan days
@@ -172,8 +173,16 @@ class PlanPage extends StatefulWidget {
   State<PlanPage> createState() => _PlanPageState();
 }
 
-class _PlanPageState extends State<PlanPage> {
+class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
   List<Map<String, dynamic>> _plans = [];
+
+  @override
+  int get tabIndex => 1;
+
+  @override
+  void onTabBecameActive() {
+    _loadPlans();
+  }
 
   @override
   void initState() {
@@ -194,7 +203,7 @@ class _PlanPageState extends State<PlanPage> {
 
   void _loadPlans() {
     _plans = Storage.getPlans();
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   List<Map<String, dynamic>> get _activePlans =>
@@ -275,44 +284,54 @@ class _PlanPageState extends State<PlanPage> {
     final customSorted = _sortCustomPlans(_plans);
     final top3 = customSorted.take(3).toList();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 200),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── 第一段：当前训练计划 ─────────────────────────────
-          if (_activePlans.isNotEmpty) ...[
-            const SectionHeader(title: '进行中的计划'),
-            const SizedBox(height: 12),
-            ..._activePlans.map((plan) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildPlanCard(colors, plan),
-                )),
-            const SizedBox(height: 8),
+    return RefreshIndicator(
+      color: colors.accentGlow,
+      backgroundColor: colors.bgCard,
+      onRefresh: () async {
+        _loadPlans();
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 200),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── 第一段：当前训练计划 ─────────────────────────────
+            if (_activePlans.isNotEmpty) ...[
+              const SectionHeader(title: '进行中的计划'),
+              const SizedBox(height: 12),
+              ..._activePlans.map((plan) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildPlanCard(colors, plan),
+                  )),
+              const SizedBox(height: 8),
+            ],
+            // ── 第二段：自定义计划 Top 3 ─────────────────────────
+            if (top3.isNotEmpty) ...[
+              SectionHeader(
+                title: _activePlans.isNotEmpty ? '我的计划' : '自定义计划',
+              ),
+              const SizedBox(height: 12),
+              ...top3.map((plan) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildPlanCard(colors, plan),
+                  )),
+            ],
+            // ── 第三段：推荐计划（始终展示）─────────────────────
+            _buildRecommendedSection(),
+            const SizedBox(height: 200),
           ],
-          // ── 第二段：自定义计划 Top 3 ─────────────────────────
-          if (top3.isNotEmpty) ...[
-            SectionHeader(
-              title: _activePlans.isNotEmpty ? '我的计划' : '自定义计划',
-            ),
-            const SizedBox(height: 12),
-            ...top3.map((plan) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildPlanCard(colors, plan),
-                )),
-          ],
-          // ── 第三段：推荐计划（始终展示）─────────────────────
-          _buildRecommendedSection(),
-          const SizedBox(height: 200),
-        ],
+        ),
       ),
     );
   }
 
   /// 自定义计划排序：创建时间 30% + 使用次数 70%
+  /// 排除已在"进行中的计划"展示的活跃计划，避免重复显示
   List<Map<String, dynamic>> _sortCustomPlans(List<Map<String, dynamic>> plans) {
-    // 排除来自系统库的计划（有 sourcePlanId 的）
-    final customPlans = plans.where((p) => p['sourcePlanId'] == null).toList();
+    // 排除来自系统库的计划（有 sourcePlanId 的）和活跃计划（已在上方展示）
+    final customPlans = plans.where((p) =>
+        p['sourcePlanId'] == null && p['status'] != 'active').toList();
     final records = Storage.getRecords();
 
     // 计算每个计划的使用次数
@@ -491,6 +510,7 @@ class _PlanPageState extends State<PlanPage> {
     final progress = ((plan['progress'] as num? ?? 0) / 100.0).clamp(0.0, 1.0);
     final status = plan['status'] as String? ?? 'pending';
     final badgeText = plan['badge'] as String? ?? _statusLabel(status);
+    final planId = plan['id'] as String;
 
     BadgeVariant badgeVariant;
     switch (status) {
@@ -546,11 +566,172 @@ class _PlanPageState extends State<PlanPage> {
             '${(progress * 100).toInt()}%',
             style: TextStyle(color: colors.textMuted, fontSize: 12),
           ),
-          const SizedBox(height: 10),
-
+          const SizedBox(height: 12),
+          // ── 操作按钮行：暂停/切换/删除 ──────────────────────
+          Row(
+            children: [
+              if (status == 'active') ...[
+                _buildPlanActionButton(
+                  colors,
+                  icon: Icons.pause_circle_outline,
+                  label: '暂停',
+                  onTap: () => _pausePlan(planId),
+                ),
+                const SizedBox(width: 8),
+              ] else if (status == 'paused' || status == 'pending') ...[
+                _buildPlanActionButton(
+                  colors,
+                  icon: Icons.play_circle_outline,
+                  label: '切换为此计划',
+                  primary: true,
+                  onTap: () => _switchToPlan(planId),
+                ),
+                const SizedBox(width: 8),
+              ],
+              const Spacer(),
+              _buildPlanActionButton(
+                colors,
+                icon: Icons.delete_outline,
+                label: '删除',
+                danger: true,
+                onTap: () => _deletePlan(planId),
+              ),
+              const SizedBox(width: 8),
+              _buildPlanActionButton(
+                colors,
+                icon: Icons.share_outlined,
+                label: '分享',
+                onTap: () => _showShareMenu(colors, plan),
+              ),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  void _showShareMenu(FitTrackColors colors, Map<String, dynamic> plan) {
+    final planId = plan['id'] as String?;
+    if (planId == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                '分享「${plan['name'] ?? '计划'}」',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.qr_code_2, color: colors.accentGlow),
+              title: Text('生成分享码', style: TextStyle(color: colors.textPrimary, fontSize: 14)),
+              trailing: Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
+              onTap: () { Navigator.pop(ctx); context.push('/share-code'); },
+            ),
+            ListTile(
+              leading: Icon(Icons.qr_code, color: colors.accentGlow),
+              title: Text('生成二维码', style: TextStyle(color: colors.textPrimary, fontSize: 14)),
+              trailing: Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
+              onTap: () { Navigator.pop(ctx); context.push('/plan-qr/$planId'); },
+            ),
+            ListTile(
+              leading: Icon(Icons.image_outlined, color: colors.accentGlow),
+              title: Text('生成海报', style: TextStyle(color: colors.textPrimary, fontSize: 14)),
+              trailing: Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
+              onTap: () { Navigator.pop(ctx); context.push('/plan-poster/$planId'); },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建计划操作按钮
+  Widget _buildPlanActionButton(
+    FitTrackColors colors, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool primary = false,
+    bool danger = false,
+  }) {
+    Color btnColor;
+    Color bgColor;
+    if (danger) {
+      btnColor = Colors.redAccent;
+      bgColor = Colors.redAccent.withOpacity(0.1);
+    } else if (primary) {
+      btnColor = colors.accentGlow;
+      bgColor = colors.accentGlow.withOpacity(0.12);
+    } else {
+      btnColor = colors.textSecondary;
+      bgColor = colors.bgSecondary;
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: btnColor.withOpacity(0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: btnColor),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: btnColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 暂停计划
+  void _pausePlan(String planId) async {
+    await Storage.updatePlanAsync(planId, {'status': 'paused', 'badge': '已暂停'});
+    _loadPlans();
+    if (mounted) FitToast.success(context, '计划已暂停');
+  }
+
+  /// 切换到指定计划（暂停其他活跃计划，激活该计划）
+  void _switchToPlan(String planId) async {
+    // 先暂停其他活跃计划
+    for (final p in _plans) {
+      if (p['id'] != planId && p['status'] == 'active') {
+        await Storage.updatePlanAsync(
+            p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+      }
+    }
+    // 激活目标计划
+    await Storage.updatePlanAsync(planId, {'status': 'active', 'badge': '进行中'});
+    _loadPlans();
+    if (mounted) FitToast.success(context, '已切换训练计划');
   }
 
   String _statusLabel(String status) {
@@ -687,6 +868,18 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     setState(() {});
   }
 
+  void _addRestDay() {
+    _days.add({
+      'day': _days.length + 1,
+      'label': '休息日',
+      'muscle': '',
+      'isRest': true,
+      'exercises': <Map<String, dynamic>>[],
+    });
+    _syncLabelControllers();
+    setState(() {});
+  }
+
   void _removeDay(int index) {
     _days.removeAt(index);
     for (int i = 0; i < _days.length; i++) {
@@ -770,7 +963,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
         defaultReps: int.tryParse(ex['reps']?.toString() ?? '10') ?? 10,
         defaultWeight: (ex['weight'] as num?)?.toDouble() ?? 20.0,
         defaultRestTime: (ex['restTime'] as num?)?.toInt() ?? 90,
-        initialExercise: MockData.exercises.firstWhere(
+        initialExercise: Storage.getAllExercises().firstWhere(
           (e) => e['id'] == ex['id'],
           orElse: () => {'id': ex['id'], 'name': ex['name'], 'category': '', 'equip': ''},
         ),
@@ -859,7 +1052,6 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
       constraints: BoxConstraints(
@@ -904,7 +1096,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
           // Scrollable content
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomInset + 16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1035,7 +1227,17 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                         child: Row(
                           children: [
                             Icon(Icons.add, size: 18, color: colors.accentGlow),
-                            Text('添加', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                            Text('训练日', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: _addRestDay,
+                        child: Row(
+                          children: [
+                            Icon(Icons.bedtime_outlined, size: 18, color: colors.infoColor),
+                            Text('休息日', style: TextStyle(color: colors.infoColor, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -1097,6 +1299,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   }
 
   Widget _buildDayEditor(FitTrackColors colors, int dayIndex, Map<String, dynamic> day) {
+    final isRest = day['isRest'] == true;
     final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final labelController = _labelControllers[dayIndex] ?? TextEditingController(text: '${day['label'] ?? ''}');
 
@@ -1104,9 +1307,9 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.bgCard,
+        color: isRest ? colors.infoColor.withOpacity(0.06) : colors.bgCard,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: colors.borderColor),
+        border: Border.all(color: isRest ? colors.infoColor.withOpacity(0.3) : colors.borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1117,13 +1320,14 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: colors.accentGlow.withOpacity(0.15),
+                  color: isRest ? colors.infoColor.withOpacity(0.15) : colors.accentGlow.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(
-                  child: Text(
-                    '${dayIndex + 1}',
-                    style: TextStyle(color: colors.accentGlow, fontSize: 12, fontWeight: FontWeight.w600),
+                  child: Icon(
+                    isRest ? Icons.bedtime_outlined : Icons.fitness_center,
+                    size: 14,
+                    color: isRest ? colors.infoColor : colors.accentGlow,
                   ),
                 ),
               ),
@@ -1132,10 +1336,10 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                 child: TextField(
                   controller: labelController,
                   style: TextStyle(color: colors.textPrimary, fontSize: 14),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    hintText: '训练日名称',
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    hintText: isRest ? '休息日名称' : '训练日名称',
                   ),
                   onChanged: (val) => _days[dayIndex]['label'] = val,
                 ),
@@ -1147,6 +1351,29 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                 ),
             ],
           ),
+          if (isRest) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              decoration: BoxDecoration(
+                color: colors.infoColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.self_improvement, size: 16, color: colors.infoColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '休息日 — 充分恢复，准备下一次训练',
+                      style: TextStyle(color: colors.infoColor, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
           const SizedBox(height: 8),
           // Exercise list
           ...exercises.asMap().entries.map((exEntry) {
@@ -1220,6 +1447,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
               ),
             ),
           ),
+          ],
         ],
       ),
     );

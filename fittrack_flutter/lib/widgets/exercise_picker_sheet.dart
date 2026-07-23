@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
+import '../data/storage.dart';
+import 'common_widgets.dart';
 
 /// 训练动作选择器 —— 共享组件
 ///
@@ -140,9 +142,6 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
 
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.65,
-      ),
       decoration: BoxDecoration(
         color: colors.bgSecondary,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -187,64 +186,251 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   }
 
   Widget _buildExerciseList(FitTrackColors colors) {
-    const exercises = MockData.exercises;
+    // 合并内置动作和自定义动作
+    final allExercises = Storage.getAllExercises();
+    final customExercises = Storage.getCustomExercises();
     const categories = MockData.categories;
 
     return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: categories.map((category) {
-          final filtered = category == '全部'
-              ? exercises
-              : exercises.where((e) => e['category'] == category).toList();
-          if (filtered.isEmpty) return const SizedBox.shrink();
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (category != '全部')
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8, top: 8),
-                  child: Text(
-                    category,
-                    style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
+        children: [
+          // 自定义动作添加入口
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8, top: 4),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _showCustomExerciseDialog(colors),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: colors.accentGlow.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_circle_outline, size: 20, color: colors.accentGlow),
+                    const SizedBox(width: 10),
+                    Text('自定义动作', style: TextStyle(color: colors.accentGlow, fontSize: 14, fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    Text('创建', style: TextStyle(color: colors.accentGlow, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // 自定义动作列表
+          if (customExercises.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8, top: 8),
+              child: Text('我的自定义', style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+            ),
+            ...customExercises.map((ex) => _buildExerciseItem(colors, ex, isCustom: true)),
+          ],
+          // 内置动作按分类展示
+          ...categories.map((category) {
+            final filtered = category == '全部'
+                ? allExercises.where((e) => e['isCustom'] != true).toList()
+                : allExercises.where((e) => e['category'] == category && e['isCustom'] != true).toList();
+            if (filtered.isEmpty) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (category != '全部')
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8, top: 8),
+                    child: Text(
+                      category,
+                      style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ...filtered.map((ex) => _buildExerciseItem(colors, ex)),
+              ],
+            );
+          }).toList(),
+        ],
+    );
+  }
+
+  Widget _buildExerciseItem(FitTrackColors colors, Map<String, dynamic> ex, {bool isCustom = false}) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        setState(() {
+          _selectedExercise = ex;
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        child: Row(
+          children: [
+            Icon(isCustom ? Icons.star_outline : Icons.fitness_center, size: 18, color: colors.accentGlow),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '${ex['name']}',
+                        style: TextStyle(color: colors.textPrimary, fontSize: 14),
+                      ),
+                      if (isCustom) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: colors.accentGlow.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Text('自定义', style: TextStyle(color: colors.accentGlow, fontSize: 9, fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${ex['category']} · ${ex['equip']}',
+                    style: TextStyle(color: colors.textMuted, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            if (isCustom)
+              GestureDetector(
+                onTap: () {
+                  Storage.deleteCustomExercise(ex['id'] as String);
+                  setState(() {});
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Icon(Icons.delete_outline, size: 18, color: colors.textMuted),
+                ),
+              ),
+            Icon(Icons.add, size: 20, color: colors.accentGlow),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCustomExerciseDialog(FitTrackColors colors) {
+    final nameCtrl = TextEditingController();
+    final categoryCtrl = TextEditingController(text: '自定义');
+    final equipCtrl = TextEditingController(text: '自重');
+
+    FitBottomSheet.show(
+      context: context,
+      maxHeightRatio: 0.6,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text('创建自定义动作', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () => Navigator.of(ctx).pop(),
+                      child: Icon(Icons.close, color: colors.textMuted),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text('动作名称', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: nameCtrl,
+                  style: TextStyle(color: colors.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: '如：波比跳',
+                    hintStyle: TextStyle(color: colors.textMuted),
+                    filled: true,
+                    fillColor: colors.bgCard,
                   ),
                 ),
-              ...filtered.map((ex) => GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      setState(() {
-                        _selectedExercise = ex;
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-                      child: Row(
-                        children: [
-                          Icon(Icons.fitness_center, size: 18, color: colors.accentGlow),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${ex['name']}',
-                                  style: TextStyle(color: colors.textPrimary, fontSize: 14),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${ex['category']} · ${ex['equip']}',
-                                  style: TextStyle(color: colors.textMuted, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(Icons.add, size: 20, color: colors.accentGlow),
-                        ],
+                const SizedBox(height: 12),
+                Text('分类', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ['自定义', '胸部', '背部', '腿部', '肩部', '手臂', '核心', '跑步'].map((cat) {
+                    final isSelected = categoryCtrl.text == cat;
+                    return GestureDetector(
+                      onTap: () => setSheetState(() => categoryCtrl.text = cat),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isSelected ? colors.accentGlow.withOpacity(0.15) : colors.bgCard,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: isSelected ? colors.accentGlow : colors.borderColor),
+                        ),
+                        child: Text(cat, style: TextStyle(color: isSelected ? colors.accentGlow : colors.textSecondary, fontSize: 12)),
                       ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 12),
+                Text('器械', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ['自重', '哑铃', '杠铃', '器械', '跑步机'].map((eq) {
+                    final isSelected = equipCtrl.text == eq;
+                    return GestureDetector(
+                      onTap: () => setSheetState(() => equipCtrl.text = eq),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isSelected ? colors.accentGlow.withOpacity(0.15) : colors.bgCard,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: isSelected ? colors.accentGlow : colors.borderColor),
+                        ),
+                        child: Text(eq, style: TextStyle(color: isSelected ? colors.accentGlow : colors.textSecondary, fontSize: 12)),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (nameCtrl.text.trim().isEmpty) {
+                        FitToast.warning(context, '请输入动作名称');
+                        return;
+                      }
+                      Storage.addCustomExercise({
+                        'name': nameCtrl.text.trim(),
+                        'category': categoryCtrl.text,
+                        'equip': equipCtrl.text,
+                      });
+                      Navigator.of(ctx).pop();
+                      setState(() {});
+                      FitToast.success(context, '自定义动作已创建');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.accentGlow,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                  )),
-            ],
+                    child: const Text('创建', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
           );
-        }).toList(),
+        },
+      ),
     );
   }
 
@@ -253,7 +439,8 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     final sets = int.tryParse(_setsCtrl.text) ?? widget.defaultSets;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      // 底部留出足够空间，确保确认按钮不被键盘遮挡
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -7,7 +7,14 @@ import '../services/recommendation_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
+import '../widgets/tab_refresh_mixin.dart';
 
+/// 教学中心 Tab 页（v1.3 改版）
+///
+/// 设计原则（依据 Issue 6）：
+/// - 只展示推荐数据，不再放目标筛选 tab 栏
+/// - 推荐数据：系统横滑 banner + 精选系统化课程 + 精选基础/进阶/专题/高手教学
+/// - 底部"查看全部教学"入口跳转 AllTutorialsPage，那里用卡片瀑布流分类
 class TutorialListPage extends StatefulWidget {
   const TutorialListPage({super.key});
 
@@ -15,8 +22,20 @@ class TutorialListPage extends StatefulWidget {
   State<TutorialListPage> createState() => _TutorialListPageState();
 }
 
-class _TutorialListPageState extends State<TutorialListPage> {
-  FitnessGoal? _filterGoal;
+class _TutorialListPageState extends State<TutorialListPage>
+    with TabRefreshMixin<TutorialListPage> {
+  @override
+  int get tabIndex => 2;
+
+  @override
+  void onTabBecameActive() {
+    // 切换到教学中心时刷新解锁状态与推荐数据
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +43,9 @@ class _TutorialListPageState extends State<TutorialListPage> {
     final banners = RecommendationService.generateBanners()
         .where((b) => b.type == 'teaching' || b.type == 'premium')
         .toList();
-    final courses = _filterGoal == null
-        ? CourseLibrary.courses
-        : CourseLibrary.getByGoal(_filterGoal!);
+    const allCourses = CourseLibrary.courses;
+    // 推荐精选课程：取前 2 个作为推荐
+    final recommendedCourses = allCourses.take(2).toList();
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -34,51 +53,55 @@ class _TutorialListPageState extends State<TutorialListPage> {
         children: [
           const PageHeader(title: '教学中心', isTabPage: true),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  // ── 为你推荐横滑区段 ──────────────────────
-                  if (banners.isNotEmpty) ...[
-                    const SectionHeader(title: '为你推荐'),
+            child: RefreshIndicator(
+              color: colors.accentGlow,
+              backgroundColor: colors.bgCard,
+              onRefresh: _onRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    // ── 为你推荐横滑区段 ──────────────────────
+                    if (banners.isNotEmpty) ...[
+                      const SectionHeader(title: '为你推荐'),
+                      const SizedBox(height: 12),
+                      _buildRecommendRow(colors, banners, recommendedCourses),
+                      const SizedBox(height: 24),
+                    ],
+                    // ── 精选系统化课程 ─────────────────────────
+                    const SectionHeader(title: '精选系统化课程'),
                     const SizedBox(height: 12),
-                    _buildRecommendRow(colors, banners, courses),
+                    _buildRecommendedCourses(colors, recommendedCourses),
+                    const SizedBox(height: 20),
+                    // ── 推荐教学 ──────────────────────────────
+                    const SectionHeader(title: '推荐教学'),
+                    const SizedBox(height: 12),
+                    _buildRecommendedTutorials(colors),
                     const SizedBox(height: 24),
-                  ],
-                  // ── 目标筛选 ──────────────────────────────
-                  _buildGoalFilter(colors),
-                  const SizedBox(height: 20),
-                  // ── 系统化课程（响应筛选）────────────────────
-                  const SectionHeader(title: '系统化课程'),
-                  const SizedBox(height: 12),
-                  _buildCourseSection(colors, courses),
-                  const SizedBox(height: 20),
-                  // ── 动作教学（按类型多级分类） ───────────────
-                  const SectionHeader(title: '动作教学'),
-                  const SizedBox(height: 12),
-                  _buildTutorialSection(colors),
-                  const SizedBox(height: 24),
-                  // ── 查看全部教学入口 ─────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => context.push('/all-tutorials'),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: colors.accentGlow),
-                        foregroundColor: colors.accentGlow,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    // ── 查看全部教学入口 ─────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => context.push('/all-tutorials'),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: colors.accentGlow),
+                          foregroundColor: colors.accentGlow,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
+                        child: const Text('查看全部教学',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 15)),
                       ),
-                      child: const Text('查看全部教学',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                     ),
-                  ),
-                  const SizedBox(height: 200),
-                ],
+                    const SizedBox(height: 200),
+                  ],
+                ),
               ),
             ),
           ),
@@ -87,12 +110,14 @@ class _TutorialListPageState extends State<TutorialListPage> {
     );
   }
 
-  Widget _buildRecommendRow(FitTrackColors colors, List<dynamic> banners, List<Course> courses) {
+  /// 横滑推荐卡片（banner + 精选课程封面）
+  Widget _buildRecommendRow(
+      FitTrackColors colors, List<dynamic> banners, List<Course> courses) {
     return SizedBox(
       height: 100,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: (banners.length + courses.length).clamp(0, 3),
+        itemCount: (banners.length + courses.length).clamp(0, 4),
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (ctx, i) {
           if (i < banners.length) {
@@ -192,60 +217,14 @@ class _TutorialListPageState extends State<TutorialListPage> {
     );
   }
 
-  Widget _buildGoalFilter(FitTrackColors colors) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildFilterChip(colors, '全部', _filterGoal == null, () {
-            setState(() => _filterGoal = null);
-          }),
-          const SizedBox(width: 8),
-          ...FitnessGoal.values.map((g) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: _buildFilterChip(colors, g.label, _filterGoal == g, () {
-                  setState(() => _filterGoal = g);
-                }),
-              )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(
-      FitTrackColors colors, String label, bool active, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: active ? colors.accentGlow : Colors.transparent,
-          borderRadius: BorderRadius.circular(50),
-          border: Border.all(
-            color: active ? colors.accentGlow : colors.borderColor,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: active ? Colors.white : colors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 系统化课程列表 —— 响应目标筛选，无内容时显示空状态
-  Widget _buildCourseSection(FitTrackColors colors, List<Course> courses) {
+  /// 精选系统化课程列表（只展示推荐的 2 个，无筛选）
+  Widget _buildRecommendedCourses(
+      FitTrackColors colors, List<Course> courses) {
     if (courses.isEmpty) {
-      return _buildEmpty(colors, '该筛选下暂无系统化课程');
+      return _buildEmpty(colors, '暂无推荐课程');
     }
-    // 教学中心首页只展示前 2 个，完整列表请进入"查看全部教学"
-    final display = courses.take(2).toList();
     return Column(
-      children: display.map((c) {
+      children: courses.map((c) {
         return GestureDetector(
           onTap: () => context.push('/course/${c.id}'),
           child: Container(
@@ -295,8 +274,8 @@ class _TutorialListPageState extends State<TutorialListPage> {
     );
   }
 
-  /// 动作教学区段 —— 按 TutorialType 多级分类展示，每类均响应目标筛选
-  Widget _buildTutorialSection(FitTrackColors colors) {
+  /// 推荐教学：从 4 个类型各取前 N 个作为推荐展示
+  Widget _buildRecommendedTutorials(FitTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -305,7 +284,7 @@ class _TutorialListPageState extends State<TutorialListPage> {
           type: TutorialType.basic,
           title: '基础教学',
           subtitle: '免费开放 · 覆盖全肌群的基础动作',
-          take: 4,
+          take: 3,
         ),
         const SizedBox(height: 16),
         _buildTypeSubsection(
@@ -313,7 +292,7 @@ class _TutorialListPageState extends State<TutorialListPage> {
           type: TutorialType.advanced,
           title: '进阶教学',
           subtitle: '邀请 1 人激活解锁 3 个进阶动作',
-          take: 3,
+          take: 2,
         ),
         const SizedBox(height: 16),
         _buildTypeSubsection(
@@ -321,7 +300,7 @@ class _TutorialListPageState extends State<TutorialListPage> {
           type: TutorialType.topic,
           title: '专题教学包',
           subtitle: '累计邀请 3 人激活解锁完整分化指南',
-          take: 3,
+          take: 2,
         ),
         const SizedBox(height: 16),
         _buildTypeSubsection(
@@ -329,13 +308,13 @@ class _TutorialListPageState extends State<TutorialListPage> {
           type: TutorialType.master,
           title: '高手教学',
           subtitle: '累计邀请 5 人激活解锁高手级课程',
-          take: 2,
+          take: 1,
         ),
       ],
     );
   }
 
-  /// 单个教学类型子区段
+  /// 单个教学类型子区段（推荐展示，限制数量，无筛选）
   Widget _buildTypeSubsection(
     FitTrackColors colors, {
     required TutorialType type,
@@ -343,7 +322,7 @@ class _TutorialListPageState extends State<TutorialListPage> {
     required String subtitle,
     required int take,
   }) {
-    final tutorials = TutorialLibrary.getByGoalAndType(_filterGoal, type);
+    final tutorials = TutorialLibrary.getByType(type);
     final unlocked = _isTypeUnlocked(type);
     final display = tutorials.take(take).toList();
 
@@ -384,7 +363,7 @@ class _TutorialListPageState extends State<TutorialListPage> {
             style: TextStyle(color: colors.textMuted, fontSize: 11)),
         const SizedBox(height: 10),
         if (display.isEmpty)
-          _buildEmpty(colors, '该筛选下暂无$title')
+          _buildEmpty(colors, '暂无推荐$title')
         else
           Column(
             children: display
@@ -412,7 +391,9 @@ class _TutorialListPageState extends State<TutorialListPage> {
           color: unlocked ? colors.bgCard : colors.bgCard.withOpacity(0.6),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: unlocked ? colors.borderColor : colors.borderColor.withOpacity(0.5),
+            color: unlocked
+                ? colors.borderColor
+                : colors.borderColor.withOpacity(0.5),
           ),
         ),
         child: Row(
@@ -466,7 +447,8 @@ class _TutorialListPageState extends State<TutorialListPage> {
       case TutorialType.basic:
         return true;
       case TutorialType.advanced:
-        final n = (settings['unlockedAdvancedTutorials'] as num?)?.toInt() ?? 0;
+        final n =
+            (settings['unlockedAdvancedTutorials'] as num?)?.toInt() ?? 0;
         return n > 0;
       case TutorialType.topic:
         // 专题包需要累计邀请 3 人激活

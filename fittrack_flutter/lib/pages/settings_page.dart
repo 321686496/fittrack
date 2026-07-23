@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../services/sound_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
@@ -348,6 +349,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 10),
                   _buildTrainingSettings(colors),
                   const SizedBox(height: 20),
+                  const SectionHeader(title: '音效设置'),
+                  const SizedBox(height: 10),
+                  _buildSoundSettings(colors),
+                  const SizedBox(height: 20),
                   const SectionHeader(title: '数据管理'),
                   const SizedBox(height: 10),
                   _buildDataMenu(colors),
@@ -535,6 +540,25 @@ class _SettingsPageState extends State<SettingsPage> {
         const SizedBox(width: 6),
         Text(unit, style: TextStyle(color: colors.textMuted, fontSize: 13)),
       ],
+    );
+  }
+
+  Widget _buildSoundSettings(FitTrackColors colors) {
+    return CardWidget(
+      child: SwitchListTile(
+        title: Text('音效', style: TextStyle(color: colors.textPrimary)),
+        subtitle: Text('训练反馈与提示音效',
+            style: TextStyle(color: colors.textMuted, fontSize: 12)),
+        value: SoundService.instance.isEnabled,
+        activeColor: colors.accentGlow,
+        onChanged: (val) {
+          SoundService.instance.setEnabled(val);
+          setState(() {});
+          if (val) {
+            SoundService.instance.play(SoundType.buttonTap);
+          }
+        },
+      ),
     );
   }
 

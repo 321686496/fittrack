@@ -960,38 +960,47 @@ class _BottomSheetWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final mediaQuery = MediaQuery.of(context);
+    // 键盘高度：当输入框获得焦点时，键盘会遮挡底部内容
+    final keyboardHeight = mediaQuery.viewInsets.bottom;
+    final bottomPadding = mediaQuery.padding.bottom;
 
     return Material(
       color: Colors.transparent,
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * maxHeightRatio,
-        ),
-        decoration: BoxDecoration(
-          color: colors.bgSecondary,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border.all(color: colors.borderColor),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 拖拽指示条
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.textMuted.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(2),
+      child: AnimatedPadding(
+        // 键盘弹出时，底部留出键盘高度，确保内容不被遮挡
+        padding: EdgeInsets.only(bottom: keyboardHeight),
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          constraints: BoxConstraints(
+            // 键盘弹出时，限制最大高度为屏幕剩余可用高度
+            maxHeight: mediaQuery.size.height * maxHeightRatio,
+          ),
+          decoration: BoxDecoration(
+            color: colors.bgSecondary,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(color: colors.borderColor),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 拖拽指示条
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.textMuted.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            // 内容区域
-            Flexible(child: child),
-            // 底部安全区域
-            if (bottomPadding > 0)
-              SizedBox(height: bottomPadding),
-          ],
+              // 内容区域
+              Flexible(child: child),
+              // 底部安全区域（键盘未弹出时）
+              if (keyboardHeight == 0 && bottomPadding > 0)
+                SizedBox(height: bottomPadding),
+            ],
+          ),
         ),
       ),
     );

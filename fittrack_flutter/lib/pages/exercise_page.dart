@@ -19,7 +19,7 @@ class _ExercisePageState extends State<ExercisePage> {
   Map<String, dynamic>? _selectedExercise;
 
   List<Map<String, dynamic>> get _filteredExercises {
-    var list = MockData.exercises;
+    var list = Storage.getAllExercises();
     if (_selectedCategory != '全部') {
       list = list.where((e) => e['category'] == _selectedCategory).toList();
     }
@@ -48,6 +48,8 @@ class _ExercisePageState extends State<ExercisePage> {
         return Icons.sports_martial_arts;
       case '核心':
         return Icons.self_improvement;
+      case '跑步':
+        return Icons.directions_run;
       default:
         return Icons.sports_gymnastics;
     }

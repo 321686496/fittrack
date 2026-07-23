@@ -12,6 +12,7 @@ import '../widgets/recommendation_banner.dart';
 import '../widgets/virtual_opponent_card.dart';
 import '../widgets/invite_activation_banner.dart';
 import '../widgets/retention_weekly_report_dialog.dart';
+import '../widgets/tab_refresh_mixin.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,7 +21,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   List<Map<String, dynamic>> _plans = [];
   List<Map<String, dynamic>> _records = [];
   Map<String, dynamic> _stats = {};
@@ -28,6 +29,14 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> _personalRecords = [];
   bool _coachShown = false;
   String? _detectedInviteCode;
+
+  @override
+  int get tabIndex => 0;
+
+  @override
+  void onTabBecameActive() {
+    _loadData();
+  }
 
   @override
   void initState() {
@@ -222,8 +231,8 @@ class _HomePageState extends State<HomePage> {
         final dayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
         final dayData = days[dayIndex.clamp(0, days.length - 1)] as Map<String, dynamic>;
         final exercises = (dayData['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        // 当天没有训练动作，返回 null 显示"今日休息"
-        if (exercises.isEmpty) {
+        // 当天是休息日或没有训练动作，返回 null 显示"今日休息"
+        if (dayData['isRest'] == true || exercises.isEmpty) {
           return null;
         }
         return {
@@ -299,8 +308,8 @@ class _HomePageState extends State<HomePage> {
       final isDone = trainedDays.contains(i);
       final planDay = planDays[i];
       final exercises = (planDay?['exercises'] as List?) ?? [];
-      // 没有计划或当天没有训练动作，标记为休息日
-      final isRest = exercises.isEmpty;
+      // 没有计划、当天是休息日或没有训练动作，标记为休息日
+      final isRest = planDay?['isRest'] == true || exercises.isEmpty;
 
       return {
         'day': dayLabels[i],

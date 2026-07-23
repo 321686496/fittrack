@@ -169,7 +169,9 @@ class ShareCodeService {
       try {
         final jsonBytes = base64Url.decode(base64Data);
         final jsonStr = utf8.decode(jsonBytes);
-        final planData = jsonDecode(jsonStr) as Map<String, dynamic>;
+        final rawPlanData = jsonDecode(jsonStr) as Map<String, dynamic>;
+        final planData = deepNormalizePlan(rawPlanData);
+        normalizeWeightFieldsPublic(planData);
         final warning = _validatePlan(planData);
         return ShareCodeImportResult(
           result: ShareCodeResult.success,
@@ -252,5 +254,62 @@ class ShareCodeService {
     final normalized = code.toUpperCase().trim();
     if (!_pattern.hasMatch(normalized)) return false;
     return _verifySignature(normalized);
+  }
+
+  /// 深拷贝并归一化计划数据
+  ///
+  /// 修复 JSON 反序列化后的类型问题：
+  /// - Map → Map<String, dynamic>（递归）
+  /// - List → List（递归归一化每个元素）
+  static Map<String, dynamic> deepNormalizePlan(Map<String, dynamic> input) {
+    final result = <String, dynamic>{};
+    for (final entry in input.entries) {
+      result[entry.key] = _normalizeValue(entry.value);
+    }
+    return result;
+  }
+
+  static dynamic _normalizeValue(dynamic value) {
+    if (value is Map) {
+      final normalized = <String, dynamic>{};
+      for (final entry in value.entries) {
+        if (entry.key is String) {
+          normalized[entry.key as String] = _normalizeValue(entry.value);
+        }
+      }
+      return normalized;
+    }
+    if (value is List) {
+      return value.map(_normalizeValue).toList();
+    }
+    return value;
+  }
+
+  /// 归一化计划中的 weight 字段为 double
+  static void normalizeWeightFieldsPublic(Map<String, dynamic> planData) {
+    final days = planData['days'] as List?;
+    if (days == null) return;
+    for (final day in days) {
+      if (day is! Map) continue;
+      final exercises = day['exercises'] as List?;
+      if (exercises == null) continue;
+      for (final ex in exercises) {
+        if (ex is! Map) continue;
+        final w = ex['weight'];
+        if (w is int) {
+          ex['weight'] = w.toDouble();
+        }
+        final setConfig = ex['setConfig'] as List?;
+        if (setConfig != null) {
+          for (final cfg in setConfig) {
+            if (cfg is! Map) continue;
+            final cw = cfg['weight'];
+            if (cw is int) {
+              cfg['weight'] = cw.toDouble();
+            }
+          }
+        }
+      }
+    }
   }
 }

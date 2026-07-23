@@ -16,6 +16,7 @@ import 'services/android_alarm_service.dart';
 import 'services/rom_adaptation_service.dart';
 import 'services/retention_chain_service.dart';
 import 'services/points_service.dart';
+import 'services/sound_service.dart';
 import 'widgets/rom_guidance_sheet.dart';
 import 'router.dart' as app_router;
 import 'utils/platform_utils.dart';
@@ -50,6 +51,8 @@ void main() {
       debugPrint('Storage.init() failed: $e');
       debugPrint('Stack: $stack');
     }
+    // 初始化音效服务（读取设置中的开关状态）
+    await SoundService.instance.init();
     // 启动后异步请求核心权限（不阻塞启动）
     PermissionService.requestCorePermissions();
     // 初始化休息通知服务（内部会配置时区并 await 完成）

@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 6;
+  static const int _dbVersion = 7;
 
   Database? _database;
 
@@ -66,7 +66,9 @@ class DatabaseHelper {
         muscles TEXT NOT NULL DEFAULT '[]',
         setRecords TEXT NOT NULL DEFAULT '{}',
         restLog TEXT NOT NULL DEFAULT '[]',
-        createTime INTEGER NOT NULL
+        createTime INTEGER NOT NULL,
+        planId TEXT,
+        planName TEXT NOT NULL DEFAULT ''
       )
     ''');
 
@@ -238,6 +240,16 @@ class DatabaseHelper {
           'ALTER TABLE plans ADD COLUMN sourcePlanId TEXT');
       await db.execute(
           'ALTER TABLE plans ADD COLUMN isFromSystemLibrary INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 7) {
+      // records 表新增 planId / planName 列
+      // 修复：training_page.dart 保存记录时写入这两个字段，但 schema 缺失导致
+      // _db.insertRecord() 异步抛 no such column 异常且被静默吞掉，
+      // 表象是「训练记录在缓存中能短暂看到但重启后丢失」。
+      await db.execute(
+          'ALTER TABLE records ADD COLUMN planId TEXT');
+      await db.execute(
+          "ALTER TABLE records ADD COLUMN planName TEXT NOT NULL DEFAULT ''");
     }
   }
 

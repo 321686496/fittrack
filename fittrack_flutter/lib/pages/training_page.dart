@@ -13,6 +13,7 @@ import '../services/share_card_service.dart';
 import '../services/achievement_service.dart';
 import '../services/ad_service.dart';
 import '../services/retention_chain_service.dart';
+import '../services/sound_service.dart';
 import '../data/virtual_opponent.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
@@ -258,9 +259,16 @@ class _TrainingPageState extends State<TrainingPage>
       _totalSets > 0 ? _completedSets / _totalSets : 0.0;
 
   /// 获取当前动作的组间休息时间
-  /// 优先级：动作 restTime > 计划 defaultRestTime > 设置 defaultRestTime > 90秒
+  /// 优先级：逐组配置 setConfig[currentSet] > 动作 restTime > 计划 defaultRestTime > 设置 defaultRestTime > 90秒
   int _getRestTimeForCurrentExercise() {
     final currentEx = _exercises[_currentExIdx];
+    // 0. 逐组配置中当前组的休息时间（最高优先级，确保逐组设置生效）
+    final setConfig = currentEx['setConfig'] as List?;
+    if (setConfig != null && _currentSetIdx < setConfig.length) {
+      final cfg = Map<String, dynamic>.from(setConfig[_currentSetIdx] as Map);
+      final perSetRest = (cfg['restTime'] as num?)?.toInt();
+      if (perSetRest != null && perSetRest > 0) return perSetRest;
+    }
     // 1. 动作自身的休息时间
     final exRest = currentEx['restTime'] as int?;
     if (exRest != null && exRest > 0) return exRest;
@@ -273,6 +281,20 @@ class _TrainingPageState extends State<TrainingPage>
     if (settingsRest != null && settingsRest > 0) return settingsRest;
     // 4. 兜底
     return 90;
+  }
+
+  /// 获取当前组的目标次数（用于 UI 显示）
+  /// 优先使用逐组配置，否则回退到动作统一参数
+  String _targetRepsForCurrentSet() {
+    if (_currentExIdx >= _exercises.length) return '';
+    final currentEx = _exercises[_currentExIdx];
+    final setConfig = currentEx['setConfig'] as List?;
+    if (setConfig != null && _currentSetIdx < setConfig.length) {
+      final cfg = Map<String, dynamic>.from(setConfig[_currentSetIdx] as Map);
+      final perSetReps = cfg['reps']?.toString();
+      if (perSetReps != null && perSetReps.isNotEmpty) return perSetReps;
+    }
+    return currentEx['reps']?.toString() ?? '';
   }
 
   // ── Actions ──────────────────────────────────────────────────
@@ -308,15 +330,18 @@ class _TrainingPageState extends State<TrainingPage>
       setState(() {
         _trainingDone = true;
       });
+      SoundService.instance.play(SoundType.completeTraining);
       // 自动保存训练记录并触发成就检查/庆祝动画（修复 Issue 1b — 无需用户点击即可保存）
       _autoSaveTraining();
     } else {
+      SoundService.instance.play(SoundType.completeSet);
       final restTime = _getRestTimeForCurrentExercise();
       _startRest(restTime, isLastSet);
     }
   }
 
   void _startRest(int seconds, bool isLastSetOfExercise) {
+    SoundService.instance.play(SoundType.restStart);
     _restEndTime = DateTime.now().add(Duration(seconds: seconds));
     _restEndNotified = false;
 
@@ -376,6 +401,10 @@ class _TrainingPageState extends State<TrainingPage>
       setState(() {
         _restSeconds = remaining > 0 ? remaining : 0;
       });
+
+      if (remaining <= 3 && remaining > 0) {
+        SoundService.instance.play(SoundType.tick);
+      }
 
       if (remaining <= 0) {
         timer.cancel();
@@ -462,9 +491,21 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   /// 根据计划数据预填重量和次数
+  /// 优先使用逐组配置 setConfig[currentSet]，否则回退到动作统一参数
   void _prefillWeightReps() {
     if (_currentExIdx < _exercises.length) {
       final nextEx = _exercises[_currentExIdx];
+      // 优先：逐组配置中当前组的参数
+      final setConfig = nextEx['setConfig'] as List?;
+      if (setConfig != null && _currentSetIdx < setConfig.length) {
+        final cfg = Map<String, dynamic>.from(setConfig[_currentSetIdx] as Map);
+        final perSetWeight = (cfg['weight'] as num?)?.toDouble() ?? 0;
+        final perSetReps = int.tryParse(cfg['reps']?.toString() ?? '') ?? 0;
+        _weightController.text = perSetWeight > 0 ? '$perSetWeight' : '';
+        _repsController.text = perSetReps > 0 ? '$perSetReps' : '';
+        return;
+      }
+      // 回退：动作统一参数
       final planWeight = (nextEx['weight'] as num?)?.toDouble() ?? 0;
       final planReps = int.tryParse(nextEx['reps']?.toString() ?? '') ?? 0;
       _weightController.text = planWeight > 0 ? '$planWeight' : '';
@@ -513,14 +554,21 @@ class _TrainingPageState extends State<TrainingPage>
     // v1 V1-11: 保存记录ID，用于训练完成页"写笔记"入口
     _savedRecordId = savedRecord['id'] as String?;
 
-    // 循环训练日：训练完成后，将计划的 currentDayIndex 推进到下一个训练日
+    // 循环训练日：训练完成后，将计划的 currentDayIndex 推进到下一个训练日（跳过休息日）
     if (_plan != null) {
       final planId = _plan!['id'] as String?;
       final days = _plan!['days'] as List?;
       if (planId != null && days != null && days.isNotEmpty) {
         final currentDayIndex = (_plan!['currentDayIndex'] as num?)?.toInt() ?? 0;
-        // 循环递增到下一天（取模实现循环）
-        final nextDayIndex = (currentDayIndex + 1) % days.length;
+        // 循环递增到下一个训练日（跳过 isRest 的休息日）
+        int nextDayIndex = (currentDayIndex + 1) % days.length;
+        int attempts = 0;
+        while (attempts < days.length) {
+          final dayData = days[nextDayIndex] as Map<String, dynamic>?;
+          if (dayData == null || dayData['isRest'] != true) break;
+          nextDayIndex = (nextDayIndex + 1) % days.length;
+          attempts++;
+        }
         await Storage.updatePlanAsync(planId, {'currentDayIndex': nextDayIndex});
         // 更新本地缓存，避免下次进入训练页读到旧值
         _plan!['currentDayIndex'] = nextDayIndex;
@@ -807,7 +855,7 @@ class _TrainingPageState extends State<TrainingPage>
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          '目标: ${currentEx['reps']}次',
+                          '目标: ${_targetRepsForCurrentSet()}次',
                           style: TextStyle(
                             color: colors.textSecondary,
                             fontSize: 14,
