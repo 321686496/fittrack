@@ -66,6 +66,8 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
         return '已完成';
       case 'pending':
         return '待开始';
+      case 'paused':
+        return '已暂停';
       default:
         return status;
     }
@@ -119,7 +121,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
       appBar: AppBar(
         backgroundColor: colors.bgSecondary,
         title: Text(
-          plan['name'] as String ?? '训练计划',
+          plan['name'] as String? ?? '训练计划',
           style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -171,6 +173,10 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
             ),
             const SizedBox(height: 20),
 
+            // 当前训练日选择器（循环训练日，用户可手动调整当前处于第几天）
+            _buildCurrentDaySelector(colors, plan, days),
+            const SizedBox(height: 20),
+
             // Days list
             const SectionHeader(title: '训练日'),
             const SizedBox(height: 12),
@@ -214,6 +220,76 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 当前训练日选择器 —— 允许用户手动调整当前处于循环训练的第几天
+  Widget _buildCurrentDaySelector(
+      FitTrackColors colors, Map<String, dynamic> plan, List days) {
+    if (days.isEmpty) return const SizedBox.shrink();
+    final currentDayIndex = (plan['currentDayIndex'] as num?)?.toInt() ?? 0;
+    final activeDayIdx = currentDayIndex.clamp(0, days.length - 1);
+
+    return CardWidget(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.today, size: 18, color: colors.accentGlow),
+              const SizedBox(width: 6),
+              Text('当前训练日',
+                  style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              const Spacer(),
+              Text('点击切换',
+                  style: TextStyle(color: colors.textMuted, fontSize: 11)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: days.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final day = entry.value;
+              final isSelected = idx == activeDayIdx;
+              return GestureDetector(
+                onTap: () {
+                  Storage.updatePlan(
+                      plan['id'] as String, {'currentDayIndex': idx});
+                  setState(() {});
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? colors.accentGlow.withOpacity(0.15)
+                        : colors.bgSecondary,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: isSelected
+                            ? colors.accentGlow
+                            : colors.borderColor),
+                  ),
+                  child: Text(
+                    '第${idx + 1}天 ${day['label'] ?? ''}',
+                    style: TextStyle(
+                      color: isSelected ? colors.accentGlow : colors.textSecondary,
+                      fontSize: 12,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

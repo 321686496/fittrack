@@ -390,11 +390,11 @@ class _TrainingPageState extends State<TrainingPage>
   void _skipRest() {
     _restTimer?.cancel();
     // 跳过休息时才取消预约通知
-    // OHOS 平台：代理提醒由 EntryAbility 自动管理（收到 mode=training/idle 时取消），无需 Flutter 侧取消
+    // OHOS 平台：通过 restSkipped 标记告知 EntryAbility 取消尚未触发的代理提醒
     if (!isOhos) {
       RestNotificationService.instance.cancelScheduledNotification();
     }
-    _advanceAfterRest();
+    _advanceAfterRest(restSkipped: true);
   }
 
   /// 休息结束时提醒
@@ -420,7 +420,7 @@ class _TrainingPageState extends State<TrainingPage>
     // 后台时无法主动触发通知（OHOS 限制），等待用户回到应用时补发
   }
 
-  void _advanceAfterRest() {
+  void _advanceAfterRest({bool restSkipped = false}) {
     _restLog.add({
       'exercise': _exercises[_currentExIdx]['name'],
       'restTime': _totalRestSeconds,
@@ -440,12 +440,12 @@ class _TrainingPageState extends State<TrainingPage>
       // 预填下一个动作/组的计划值
       _prefillWeightReps();
     });
-    // 推送训练状态到卡片
-    _pushTrainingToWidget();
+    // 推送训练状态到卡片（restSkipped 标记区分跳过 vs 自然结束）
+    _pushTrainingToWidget(restSkipped: restSkipped);
   }
 
   /// 推送训练状态到桌面卡片
-  void _pushTrainingToWidget() {
+  void _pushTrainingToWidget({bool restSkipped = false}) {
     if (!isOhos) return;
     if (_currentExIdx >= _exercises.length) return;
     final currentEx = _exercises[_currentExIdx];
@@ -457,6 +457,7 @@ class _TrainingPageState extends State<TrainingPage>
       totalExercises: _exercises.length,
       completedSets: _completedSets,
       totalPlanSets: _totalSets,
+      restSkipped: restSkipped,
     );
   }
 
@@ -511,6 +512,20 @@ class _TrainingPageState extends State<TrainingPage>
     });
     // v1 V1-11: 保存记录ID，用于训练完成页"写笔记"入口
     _savedRecordId = savedRecord['id'] as String?;
+
+    // 循环训练日：训练完成后，将计划的 currentDayIndex 推进到下一个训练日
+    if (_plan != null) {
+      final planId = _plan!['id'] as String?;
+      final days = _plan!['days'] as List?;
+      if (planId != null && days != null && days.isNotEmpty) {
+        final currentDayIndex = (_plan!['currentDayIndex'] as num?)?.toInt() ?? 0;
+        // 循环递增到下一天（取模实现循环）
+        final nextDayIndex = (currentDayIndex + 1) % days.length;
+        await Storage.updatePlanAsync(planId, {'currentDayIndex': nextDayIndex});
+        // 更新本地缓存，避免下次进入训练页读到旧值
+        _plan!['currentDayIndex'] = nextDayIndex;
+      }
+    }
 
     // B4: 成就检查（训练完成后自动计算并弹出 — 修复 Issue 1d）
     if (mounted) {

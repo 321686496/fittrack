@@ -97,6 +97,10 @@ class FormKitService {
   }
 
   /// 训练状态更新（set变化等）
+  ///
+  /// [restSkipped] 仅在用户主动跳过休息时传 true，由 OHOS 原生侧用于区分
+  /// "休息被跳过"（需取消尚未触发的代理提醒）与"休息自然结束"（不取消，
+  /// 让代理提醒按预定时间触发发送通知）。默认 false。
   void updateTrainingState({
     required String exerciseName,
     required int currentSet,
@@ -105,6 +109,7 @@ class FormKitService {
     required int totalExercises,
     required int completedSets,
     required int totalPlanSets,
+    bool restSkipped = false,
   }) {
     _trainingState = {
       'mode': 'training',
@@ -115,6 +120,7 @@ class FormKitService {
       'totalExercises': totalExercises,
       'completedSets': completedSets,
       'totalPlanSets': totalPlanSets,
+      if (restSkipped) 'restSkipped': true,
     };
     pushFormData();
   }

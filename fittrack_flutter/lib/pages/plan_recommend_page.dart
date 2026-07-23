@@ -38,29 +38,36 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
   }
 
   Future<void> _selectPlan(PlanRecommendation rec) async {
-    // 暂停现有 active 计划
-    final existingPlans = Storage.getPlans();
-    for (final p in existingPlans) {
-      if (p['status'] == 'active') {
-        Storage.updatePlan(p['id'] as String, {'status': 'paused'});
+    try {
+      // 暂停现有 active 计划（await 确保持久化完成）
+      final existingPlans = Storage.getPlans();
+      for (final p in existingPlans) {
+        if (p['status'] == 'active') {
+          await Storage.updatePlanAsync(
+              p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+        }
       }
-    }
 
-    // 检查是否为精品计划且未解锁
-    if (rec.plan.isPremium &&
-        !PlanUnlockService.instance.isPlanUnlocked(rec.plan.id)) {
-      // 跳转到详情页让用户解锁
+      // 检查是否为精品计划且未解锁
+      if (rec.plan.isPremium &&
+          !PlanUnlockService.instance.isPlanUnlocked(rec.plan.id)) {
+        // 跳转到详情页让用户解锁
+        if (!mounted) return;
+        context.push('/plan-library/detail/${rec.plan.id}');
+        return;
+      }
+
+      // 添加新计划
+      final newPlan = rec.plan.toStoragePlan();
+      await Storage.addPlanAsync(newPlan);
+      Storage.dataChanged.value = !Storage.dataChanged.value;
+
+      widget.onComplete();
+    } catch (e) {
+      debugPrint('采用推荐计划失败: $e');
       if (!mounted) return;
-      context.push('/plan-library/detail/${rec.plan.id}');
-      return;
+      FitToast.error(context, '采用计划失败，请重试');
     }
-
-    // 添加新计划
-    final newPlan = rec.plan.toStoragePlan();
-    Storage.addPlan(newPlan);
-    Storage.dataChanged.value = !Storage.dataChanged.value;
-
-    widget.onComplete();
   }
 
   /// v1 新手引导末尾：邀请码激活弹层

@@ -218,11 +218,11 @@ class _HomePageState extends State<HomePage> {
     if (active != null) {
       final days = active['days'] as List? ?? [];
       if (days.isNotEmpty) {
-        final weekday = DateTime.now().weekday;
-        final dayIndex = weekday <= days.length ? weekday - 1 : 0;
-        final dayData = days[dayIndex] as Map<String, dynamic>;
+        // 使用持久化的 currentDayIndex 实现循环训练日（不再按星期映射）
+        final dayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
+        final dayData = days[dayIndex.clamp(0, days.length - 1)] as Map<String, dynamic>;
         final exercises = (dayData['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        // 当天没有训练动作或超出计划天数，返回 null 显示"今日休息"
+        // 当天没有训练动作，返回 null 显示"今日休息"
         if (exercises.isEmpty) {
           return null;
         }
@@ -278,13 +278,19 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    // 从活跃计划获取每日安排
+    // 从活跃计划获取每日安排 —— 循环训练日序列（基于 currentDayIndex）
     final active = _activePlan;
     final planDays = <int, Map<String, dynamic>>{};
     if (active != null) {
       final days = active['days'] as List? ?? [];
-      for (int i = 0; i < days.length && i < 7; i++) {
-        planDays[i] = days[i] as Map<String, dynamic>;
+      if (days.isNotEmpty) {
+        final currentDayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
+        // 以本周一为起点，按循环序列映射训练日
+        // 周一 = currentDayIndex，周二 = currentDayIndex+1（取模），以此类推
+        for (int i = 0; i < 7; i++) {
+          final cyclicIdx = (currentDayIndex + i) % days.length;
+          planDays[i] = days[cyclicIdx] as Map<String, dynamic>;
+        }
       }
     }
 

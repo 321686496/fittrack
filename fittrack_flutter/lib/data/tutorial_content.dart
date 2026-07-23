@@ -966,27 +966,308 @@ class TutorialLibrary {
       coachName: defaultCoach,
       unlockRequirement: '累计邀请3人激活解锁',
     ),
+    Tutorial(
+      id: 'tut_topic_3day_split_guide',
+      name: '三分化训练完全指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.intermediate,
+      primaryMuscle: MuscleGroup.chest,
+      equipment: '多种器械',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '推拉腿（PPL）分化：推日（胸/肩/三头）、拉日（背/二头）、腿日（腿/核心），每肌群每周训练2次',
+        '每周6天（PPL×2）或3天（单循环），单肌群周容量10-20组符合Schoenfeld肌肥大meta分析区间',
+        '主项动作（卧推/引体/深蹲）取5×5末组AMRAP，辅助动作3×8-12次，组间休息复合3-5分钟、孤立1.5-2分钟',
+        '进阶规则：主项AMRAP组完成规定次数则下次+2.5kg（上肢）/+5kg（下肢），辅助达区间上限则加重',
+        'RPE控制：主项保留RPE 7-9（2-3 RIR），孤立动作可至RPE 9-10，复合动作避免绝对力竭降低神经疲劳',
+        '优势：每肌群48-72小时恢复窗口，训练频率高，符合频率meta分析每周2次优于1次的肌肥大结论',
+      ],
+      commonMistakes: [
+        '推日训练量过大（>12组胸/肩）导致肩部疲劳累积影响拉日表现',
+        '腿日训练后24小时内进行高冲击有氧（跑步）影响恢复，应改用骑行或坡度走',
+        '忽视核心训练，仅安排在腿日末尾草草了事，应每周独立2次8-12分钟核心训练',
+        '每次训练使用相同重量，缺乏渐进超负荷，应记录AMRAP次数驱动下次加重决策',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_topic_4day_split_guide',
+      name: '四分化训练完全指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.intermediate,
+      primaryMuscle: MuscleGroup.chest,
+      equipment: '多种器械',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '胸/背/腿/肩四分化，每肌群每周训练1次，单肌群周容量12-16组覆盖Pelland 2024 meta分析的递减回报区间',
+        '适合训练经验3-12个月的中级训练者，5×5主项+3×10-15辅助的"力量+肌肥大"双轨结构',
+        '主项5×6-8次取RPE 8（2 RIR），辅助3×10-15次取RPE 9（1 RIR），复合动作组间3分钟、孤立2分钟',
+        '腿部日可拆分为股四头肌主导（后蹲5×5+前蹲3×8+腿屈伸3×12）与腘绳肌主导（RDL 4×6+腿弯举3×12+提踵4×15）',
+        '肩部日应包含面拉3×15-20维护肩关节健康，激活斜方肌中下束与菱形肌',
+        '优势：每肌群获得充分训练容量同时保留48-72小时恢复，避免高频率下的累积疲劳',
+      ],
+      commonMistakes: [
+        '肩部日安排在胸部日后第二天，推力肌群（前束/三头）过度疲劳影响肩推表现',
+        '背部日只做垂直拉（下拉/引体）忽视水平拉（划船），导致背部宽度有余而厚度不足，建议垂直拉:水平拉=4:6',
+        '腿部日只做深蹲忽视硬拉，导致前后链肌力不平衡',
+        '训练日之间缺乏主动恢复（拉伸/泡沫轴放松）',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_topic_5day_split_guide',
+      name: '五分化训练完全指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.advanced,
+      primaryMuscle: MuscleGroup.chest,
+      equipment: '多种器械',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '胸/背/腿/肩/臂五分化，每肌群每周专注训练1次，单肌群周容量16-20组处于Schoenfeld肌肥大上限区间',
+        '适合训练经验1-2年的中高级训练者，5-7个动作覆盖主项+辅助+孤立三层结构',
+        '次数区间无效论（Schoenfeld 2017 meta效应量0.03）：6-25次均可肌肥大，但负荷需≥30% 1RM且接近力竭',
+        '手臂日采用二头+三头超级组（如杠铃弯举+绳索下压），延长TUT至40-60秒制造代谢压力',
+        '动作节奏采用2-1-2-1（离心2秒-底部停1秒-向心2秒-顶峰1秒），强化离心收缩肌肉损伤机制',
+        '优势：单次容量最大可专项强化薄弱肌群，配合FST-7（7组×10-12次组间拉伸30秒）作为收尾',
+      ],
+      commonMistakes: [
+        '训练频率过低（每周仅1次）使肌蛋白合成窗口未被充分利用，可考虑将手臂拆分到推拉日',
+        '肩部日与手臂日相邻，三头在肩推中已疲劳影响手臂日表现，应间隔至少48小时',
+        '每个动作组数>6组产生"垃圾容量"（junk volume）降低训练质量，单动作4组即可',
+        '忽视离心控制（下放过快<1秒），失去50%以上的肌肉机械张力刺激',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_topic_arm_specialization',
+      name: '手臂专项突破指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.advanced,
+      primaryMuscle: MuscleGroup.arm,
+      equipment: '杠铃/哑铃/绳索',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '手臂专项周期：每周2-3次（Schoenfeld频率meta分析优于每周1次），二头与三头每周各10-20组',
+        '肱三头肌占上臂体积2/3，臂围突破应优先三头：先过头位（仰卧臂屈伸/绳索过头上拉）激活长头',
+        '肱二头肌长头：上斜哑铃弯举（肩伸位拉伸长头）+ 集中弯举（短头峰收缩）；牧师凳弯举强调短头',
+        '三头训练必须含过头上举动作（长头跨肩关节，仅下压会忽略长头激活）',
+        '21响训练法：7下半程+7上半程+7全程，TUT延长至40-60秒，负重取10RM的50-60%，限孤立动作',
+        '超级组搭配：杠铃弯举+绳索下压、哑铃锤式+仰卧臂屈伸，组间60-75秒维持代谢压力',
+      ],
+      commonMistakes: [
+        '借力甩动身体靠惯性完成弯举，肘部前后移动使二头失去稳定发力',
+        '三头训练只做下压类动作，忽视过顶动作对长头的拉伸刺激，导致三头发育不均衡',
+        '训练频率过高（>3次/周）或单次容量过大（>10组/肌群）导致恢复不足反而影响生长',
+        '忽视肱肌训练（锤式弯举/反握弯举），肱肌位于肱二头肌下方，增厚可推高二头视觉围度',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_topic_back_specialization',
+      name: '背部专项突破指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.advanced,
+      primaryMuscle: MuscleGroup.back,
+      equipment: '杠铃/哑铃/绳索/单杠',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '背部专项周期：每周2次，每次16-24组拉类容量，符合StrongerByScience背阔肌频率建议',
+        '垂直拉与水平拉比例4:6：水平拉（划船类）对背部厚度（中斜方/菱形/背阔中部）贡献更大应略多',
+        '背阔肌宽度vs厚度分化：宽握正手引体/下拉强调背阔上外侧与大圆肌（宽度），对握/反手强调下内侧（厚度）',
+        '肩胛控制：所有拉类起始阶段先"沉肩+肩胛后缩"再拉，避免斜方上束代偿导致耸肩',
+        '面拉3-4组×15-20次作为收尾：综合激活斜方中下束、菱形肌、三角肌后束与肩袖，维护肩关节健康',
+        '直臂下压3-4组×12-15次：背阔肌孤立动作剔除二头借力，适合垂直拉后做"榨干组"',
+      ],
+      commonMistakes: [
+        '只做下拉类动作忽视划船，背部宽度有余而厚度不足，划船类应占总拉类容量60%',
+        '划船时手臂主导发力（二头/前臂代偿），背阔肌参与度不足，应先沉肩后缩再拉',
+        '引体向上借力摆动（kipping），未做到肩胛骨先下沉后收缩，降低背阔激活',
+        '忽视下背部（竖脊肌）训练，只练背阔肌导致上背发达下背薄弱，应加山羊挺身/硬拉变式',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_topic_leg_specialization',
+      name: '腿部专项突破指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.advanced,
+      primaryMuscle: MuscleGroup.leg,
+      equipment: '杠铃/哑铃/器械',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '腿部专项周期：每周2次，股四头肌日与腘绳肌日分离，单肌群周容量12-16组',
+        '股四头肌三层结构：后蹲5×5（力量主导）+ 前蹲3×8-12（股直肌激活更高15-20%）+ 腿屈伸3×12-15（孤立力竭）',
+        '腘绳肌髋主导vs膝主导分离：RDL 4×6-8（半腱肌/半膜肌+臀大肌）+ 腿弯举3×10-15（股二头肌短头）',
+        '小腿分化：站姿提踵4×12-15（腓肠肌，伸膝位）+ 坐姿提踵3×15-20（比目鱼肌，屈膝位）',
+        '小腿频率每周4-6次、每次8-12组（慢肌比例高），底端停1秒拉伸、顶端停1秒收缩杜绝弹震',
+        '深蹲髋膝力矩分配：高杠位膝矩大（股四头主导），低杠位髋矩大（臀大肌/腘绳肌主导）',
+      ],
+      commonMistakes: [
+        '深蹲深度不足（大腿未平行地面）使股四头肌刺激不充分，髋膝伸肌总需求不变只改变分配',
+        '只练深蹲忽视硬拉，腘绳肌（双关节肌）深蹲中EMG激活有限，必须用RDL独立训练',
+        '膝盖内扣（膝外翻）增加前交叉韧带损伤风险，需弹力带外展激活臀中肌纠正',
+        '小腿训练被忽视或只做站姿，应区分站姿（腓肠肌）与坐姿（比目鱼肌）',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_topic_fat_loss_guide',
+      name: '高效减脂训练指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.intermediate,
+      primaryMuscle: MuscleGroup.core,
+      equipment: '多种器械',
+      contentType: ContentType.plan,
+      goal: FitnessGoal.cut,
+      keyPoints: [
+        '减脂核心原理：热量缺口（饮食占70%）+ 力量训练（保留肌肉，容量保留至赤字前60-80%）+ 有氧（增加消耗）',
+        '蛋白质提升至2.2-2.6 g/kg/天（Nunes 2022 meta：≥1.6 g/kg组FFM增量效应量g=0.30 vs 1.2-1.59组g=0.17）',
+        '力量训练优先：保留赤字前训练强度（%1RM）+ 60-80%训练量，优先削减辅助量而非主项',
+        '有氧选择：低冲击（骑行/坡度走）优于高冲击（跑步），Wilson 2012 meta高冲击使肌肥大效益降31%、力量降18%',
+        '顺序与间隔：力量与有氧间隔≥6小时或分日进行，先力量后有氧，单次有氧≤45分钟避免干扰效应',
+        'RPE自调节：减脂期能量不足神经驱动下降，维持RPE 7-9范围，避免盲目追求PR',
+      ],
+      commonMistakes: [
+        '只做有氧忽视力量训练，导致肌肉流失、基础代谢下降，应力量为主（3-4次/周）+ 有氧为辅（2次/周LISS）',
+        '减脂期重量过轻（<60% 1RM）无法给肌肉足够保留信号，应维持训练强度',
+        '热量缺口过大（>500大卡/天）导致训练表现下降与肌肉流失，建议300-500大卡赤字',
+        '空腹有氧时间过长（>60分钟）可能分解肌肉蛋白供能，应在力量训练后或进食后进行',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_topic_abs_sculpting',
+      name: '腹肌雕刻完全指南',
+      type: TutorialType.topic,
+      difficulty: TutorialDifficulty.intermediate,
+      primaryMuscle: MuscleGroup.core,
+      equipment: '自重/器械',
+      contentType: ContentType.plan,
+      goal: FitnessGoal.cut,
+      keyPoints: [
+        '腹肌显现三要素：体脂率（男<15%/女<22%）+ 腹肌厚度训练 + 饮食控制（不可局部减脂）',
+        '上腹部：卷腹类动作（标准卷腹/反向卷腹/绳索卷腹），每组15-25次，下腰部贴地肩胛离地即可',
+        '下腹部：仰卧举腿/悬垂举腿/反向卷腹，每组12-20次，重点感受下腹收缩避免利用惯性',
+        '腹斜肌：俄罗斯转体/侧平板/单车卷腹，每组20-30次，避免过大重量防止腹斜肌过度肥大粗腰',
+        '腹横肌（深层核心）：平板支撑/死虫式/鸟狗式，每组30-60秒，提升核心稳定性维持腹内压',
+        '训练频率：每周2-3次（腹直肌需48小时恢复），每次8-12分钟复合训练，DOMS属正常适应',
+      ],
+      commonMistakes: [
+        '体脂率过高时过度训练腹肌，腹肌被脂肪覆盖无法显现，应优先热量赤字降体脂',
+        '双手抱头用力拉颈部完成卷腹导致颈椎损伤，应轻扶头侧或交叉胸前',
+        '只做卷腹忽视下腹与腹斜肌，腹肌发展不均衡，应分区训练上腹/下腹/腹斜/腹横',
+        '每天练腹（>5次/周）忽视48小时恢复期，反而影响肌肥大与神经适应',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请3人激活解锁',
+    ),
   ];
 
   /// 高手教学（累计邀请5人解锁）
   static const List<Tutorial> masterTutorials = [
     Tutorial(
       id: 'tut_master_overload',
-      name: '渐进超负荷实操',
+      name: '渐进超负荷与RPE自调节',
       type: TutorialType.master,
       difficulty: TutorialDifficulty.advanced,
       primaryMuscle: MuscleGroup.leg,
       equipment: '杠铃',
+      contentType: ContentType.plan,
       keyPoints: [
-        '线性递增：每周加2.5kg',
-        '周期化：积累/强度/减载',
-        'RPE/RIR 量化强度',
-        '训练日记记录与复盘',
+        '渐进超负荷四要素：重量×组数×次数×RPE，优先加重量→再加组数→最后调RPE',
+        'RIR量表锚定RPE：RPE 10=力竭、RPE 9=还能1次、RPE 8=还能2次，预测偏差约±1次倾向低估',
+        '主项力量训练：取RPE 7-9（保留1-3次）累积高质量组数；肌肥大辅助可至RPE 9-10',
+        '复合动作停在技术力竭而非绝对力竭，避免神经系统过度疲劳影响下次训练',
+        'RPE Stop自调节法：首组目标RPE后继续同重量做组，某组RPE比首组高2分即停止',
+        '线性进阶（LP）→ 周期化（5/3/1）→ 自调节（RPE/DUP）三阶段切换时机：连续3次同重量失败',
       ],
       commonMistakes: [
-        '盲目加重量导致受伤',
-        '忽视恢复',
-        '缺乏数据记录',
+        '盲目加重量（每次+5kg）超过神经适应速度导致技术变形与受伤',
+        '忽视恢复（睡眠<7小时/蛋白质<1.6g/kg）使RPE虚高，误判为力量平台',
+        '缺乏训练日记记录，无法识别停滞模式与制定减重决策',
+        '所有组都做到绝对力竭（RPE 10），导致累积疲劳无法维持周训练频率',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请5人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_master_big_three_biomechanics',
+      name: '三大项生物力学深度解析',
+      type: TutorialType.master,
+      difficulty: TutorialDifficulty.advanced,
+      primaryMuscle: MuscleGroup.leg,
+      equipment: '杠铃',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '深蹲伸肌需求守恒：膝+髋伸肌力矩=负荷×股骨长度×cos(股骨角度)，杠位/站距/举重鞋只改变髋膝分配不变总需求',
+        '低杠位（躯干前倾）髋矩大、膝矩小，适合髋强；高杠位反之，应根据个体强项选择',
+        '腘绳肌在深蹲中EMG激活有限（双关节肌，髋膝同步伸展使其长度变化小），必须用RDL独立训练',
+        '卧推握距1.5-2×肩宽，触胸位置在乳头至胸骨下端之间，触胸过高（锁骨位）增加肩峰下撞击风险',
+        '硬拉起始髋位置决定背部需求：传统硬拉躯干前倾大→脊柱伸肌需求高；相扑硬拉髋外展使躯干直立→背部需求降',
+        '脊柱中立位：维持腰椎自然前凸+胸椎微后凸，瓦式呼吸+腹内压加压稳定脊柱，屈曲使剪切力转移至椎间盘',
+      ],
+      commonMistakes: [
+        '深蹲"膝盖不过脚尖"误区（源自1970s单一研究）：低杠/踝背屈受限者需适度过脚尖，应关注重心落足中',
+        '卧推过度起桥（腰椎超伸）增加小关节负荷，应保持臀触凳、双脚踩地的合规起桥幅度',
+        '硬拉起把时膝盖过杠铃前方导致髋后移、瞬时增加髋伸需求，应保持杠铃贴近胫骨',
+        '深蹲底部"骨盆眨眼"（腰椎屈曲+骨盆后倾）增加椎间剪切力，需评估踝背屈与髋活动度',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请5人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_master_periodization_systems',
+      name: '经典周期化训练体系对比',
+      type: TutorialType.master,
+      difficulty: TutorialDifficulty.advanced,
+      primaryMuscle: MuscleGroup.leg,
+      equipment: '杠铃',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '线性进阶（LP）：Starting Strength 3×5/StrongLifts 5×5，每次+2.5-5kg，连续3次失败减重10%重爬，适合零基础',
+        '周期化（5/3/1）：4周一循环（5/3/1+deload），FSL 5×5或BBB 5×10辅助，每周期TM+2.5-5kg，适合中级',
+        '德州法（Texas Method）：周一5×5容量日/周三2×5恢复日/周五1×5新PR强度日，每周一次PR适合中级力量',
+        'GZCLP三层结构：T1主项3×5+（力量）/T2辅助3×10（肌肥大）/T3孤立3×15+（弱项），失败后渐进降次（5→3→2→1）',
+        '西岸交叉法（Westside）：ME日冲1-3RM变式+DE日速度训练12×2@50-60%组间60秒，每1-2周轮换主项变式',
+        '体系切换时机：LP连续3次失败→5/3/1或Texas Method；GZCLP失败后重启T1测新5RM取85%重新爬升',
+      ],
+      commonMistakes: [
+        '新手过早使用高级周期化（如Westside）导致技术未巩固即频繁更换动作变式',
+        '中级训练者仍固守线性进阶（5×5）无法突破平台，应切换至周期化（5/3/1/Texas Method）',
+        '忽视deload周设计，持续高强度训练导致过度训练综合征（睡眠差/表现退步/免疫力降）',
+        '5/3/1 BBB辅助量过大（5×10取60% 1RM）与主项冲突，应取50-60% 1RM并保留2-3 RIR',
+      ],
+      coachName: defaultCoach,
+      unlockRequirement: '累计邀请5人激活解锁',
+    ),
+    Tutorial(
+      id: 'tut_master_6day_split_guide',
+      name: '六分化训练完全指南',
+      type: TutorialType.master,
+      difficulty: TutorialDifficulty.advanced,
+      primaryMuscle: MuscleGroup.chest,
+      equipment: '多种器械',
+      contentType: ContentType.plan,
+      keyPoints: [
+        '胸/背/腿/肩/臂/弱项六分化，每周6天训练1天休息，适合高级训练者追求极致发展',
+        '第6天为"弱项强化日"，针对个人薄弱肌群进行专项突破（如小腿/前臂/腹肌/上胸）',
+        '每个训练日5-7个动作，总组数18-25组，主项以6-10次为主，孤立动作12-15次',
+        '周期化安排：每4周为一个微周期，第4周减量50%进行主动恢复',
+        '高频率恢复管理：每日睡眠7-9小时，蛋白质摄入1.8-2.2g/kg体重，训练后及时补充碳水+蛋白',
+        '优势：训练频率与容量最大化，可针对每个肌群进行深度精雕，适合备赛或极限突破',
+      ],
+      commonMistakes: [
+        '训练频率过高导致中枢神经系统疲劳，表现为睡眠质量下降与训练表现退步',
+        '弱项日安排与主项日相邻，影响大肌群恢复（如弱项手臂日紧接胸部日）',
+        '忽视减量周（Deload），持续高强度训练导致过度训练综合征',
+        '营养与睡眠跟不上训练频率，反而导致肌肉分解与免疫力下降',
       ],
       coachName: defaultCoach,
       unlockRequirement: '累计邀请5人激活解锁',
@@ -1011,6 +1292,33 @@ class TutorialLibrary {
   /// 是否解锁高手教学
   static List<Tutorial> getMaster(bool unlocked) =>
       unlocked ? masterTutorials : [];
+
+  /// 按训练目标筛选所有教学（含锁定的，调用方自行处理解锁状态）
+  static List<Tutorial> getByGoal(FitnessGoal goal) {
+    final all = [...basicTutorials, ...advancedTutorials, ...topicTutorials, ...masterTutorials];
+    return all.where((t) => t.goal == goal).toList();
+  }
+
+  /// 按教学类型查询（包含锁定项，调用方根据解锁状态渲染锁标识）
+  static List<Tutorial> getByType(TutorialType type) {
+    switch (type) {
+      case TutorialType.basic:
+        return basicTutorials;
+      case TutorialType.advanced:
+        return advancedTutorials;
+      case TutorialType.topic:
+        return topicTutorials;
+      case TutorialType.master:
+        return masterTutorials;
+    }
+  }
+
+  /// 按"目标 + 类型"组合筛选（包含锁定项）
+  static List<Tutorial> getByGoalAndType(FitnessGoal? goal, TutorialType type) {
+    final list = getByType(type);
+    if (goal == null) return list;
+    return list.where((t) => t.goal == goal).toList();
+  }
 
   /// 根据 ID 查询
   static Tutorial? getById(String id) {

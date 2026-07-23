@@ -21,6 +21,7 @@ const List<String> kPlanTrainingTypes = [
   '3day_split',
   '4day_split',
   '5day_split',
+  '6day_split',
   'full_body',
   'hiit',
 ];
@@ -44,6 +45,7 @@ const Map<String, String> kTrainingTypeLabelsZh = {
   '3day_split': '三分化',
   '4day_split': '四分化',
   '5day_split': '五分化',
+  '6day_split': '六分化',
   'full_body': '全身训练',
   'hiit': 'HIIT',
 };
@@ -217,7 +219,8 @@ class SystemPlan {
       'progress': 0,
       'status': 'active',
       'sourcePlanId': id,
-      'isFromSystemLibrary': true,
+      // SQLite 不支持 bool 类型，仅接受 num/String/Uint8List，存为 int (0/1)
+      'isFromSystemLibrary': 1,
       'createTime': DateTime.now().millisecondsSinceEpoch,
       'updateTime': DateTime.now().millisecondsSinceEpoch,
     };

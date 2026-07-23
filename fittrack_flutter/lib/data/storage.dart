@@ -226,8 +226,11 @@ class Storage {
       'updateTime': DateTime.now().millisecondsSinceEpoch,
       'status': plan['status'] ?? 'active',
       'progress': plan['progress'] ?? 0,
+      'currentDayIndex': plan['currentDayIndex'] ?? 0,
     };
     await _db.insertPlan(newPlan);
+    // 同步更新缓存，保证后续 getPlans() 立即拿到新计划
+    _plansCache.add(newPlan);
     _plansCacheDirty = true;
     return newPlan;
   }
@@ -241,6 +244,7 @@ class Storage {
       'updateTime': DateTime.now().millisecondsSinceEpoch,
       'status': plan['status'] ?? 'active',
       'progress': plan['progress'] ?? 0,
+      'currentDayIndex': plan['currentDayIndex'] ?? 0,
     };
     _plansCache.add(newPlan);
     _plansCacheDirty = true;
@@ -251,6 +255,20 @@ class Storage {
 
   static Future<Map<String, dynamic>?> updatePlanAsync(String planId, Map<String, dynamic> updates) async {
     final result = await _db.updatePlan(planId, updates);
+    // 同步更新缓存，保证后续 getPlans()/getPlanById() 立即拿到最新值
+    if (result != null) {
+      final idx = _plansCache.indexWhere((p) => p['id'] == planId);
+      if (idx != -1) {
+        _plansCache[idx] = {
+          ..._plansCache[idx],
+          ...updates,
+          'updateTime': DateTime.now().millisecondsSinceEpoch,
+        };
+      } else {
+        // 缓存中不存在（例如刚 addPlanAsync 后未刷新），补一条
+        _plansCache.add(result);
+      }
+    }
     _plansCacheDirty = true;
     return result;
   }

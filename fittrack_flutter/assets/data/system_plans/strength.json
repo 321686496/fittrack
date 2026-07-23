@@ -409,63 +409,282 @@
   },
   {
     "id": "strength_4day_split_advanced_1",
-    "name": "高级力量四分化",
+    "name": "5/3/1 BBB周期化精品",
     "goal": "strength",
     "difficulty": "advanced",
     "trainingType": "4day_split",
-    "isPremium": false,
-    "pointsCost": 0,
+    "isPremium": true,
+    "pointsCost": 800,
     "totalWeeks": 16,
     "defaultRestTime": 180,
-    "description": "面向高级训练者的力量四分化计划，融合 5/3/1 BBB 辅助训练法。主项动作采用 5/3/1 周期化，辅助动作采用 5x10 高容量训练。详细的周期化安排与 deload 周设计，让高级训练者持续突破力量平台期，挑战极限。",
-    "coverEmoji": "⚡",
-    "coverColors": ["#C5B0D8", "#9C82B8"],
-    "tags": ["高级", "5/3/1 BBB", "周期化"],
+    "description": "Jim Wendler 5/3/1 BBB 真版精品计划。主项采用 4 周周期化（5/3/1+deload），辅助采用 BBB（Boring But Big）5×10@50-60%1RM 高容量训练。第 1 周 65/75/85%×5+，第 2 周 70/80/90%×3+，第 3 周 75/85/95%（5/3/1），第 4 周减量 40/50/60%。每周期结束 TM+2.5kg（上肢）/+5kg（下肢）。BBB 辅助取 50-60% 1RM 保留 2-3 RIR 避免与主项冲突，适合中级训练者长期可持续进阶。",
+    "coverEmoji": "💯",
+    "coverColors": ["#D8B0C0", "#B882A0"],
+    "tags": ["精品", "5/3/1 BBB", "Wendler周期"],
     "recommendedFrequency": 4,
-    "suitableFor": "BMI 21-28，体脂率 10-20%，健身经验 2 年以上",
+    "suitableFor": "BMI 20-27，体脂率 12-22%，健身经验 1-2 年，已耗尽线性进阶",
     "days": [
       {
         "day": 1,
-        "label": "深蹲日",
+        "label": "深蹲日（5/3/1+BBB）",
         "muscle": "腿部",
         "exercises": [
-          {"id": "ex_str_240", "name": "深蹲", "sets": 5, "reps": 3, "restTime": 180},
-          {"id": "ex_str_241", "name": "深蹲", "sets": 5, "reps": 10, "restTime": 120},
+          {"id": "ex_str_240", "name": "深蹲（5/3/1主项）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_241", "name": "深蹲（BBB 5×10@50-60%）", "sets": 5, "reps": 10, "restTime": 90},
           {"id": "ex_str_242", "name": "罗马尼亚硬拉", "sets": 3, "reps": 10, "restTime": 90},
           {"id": "ex_str_243", "name": "腿弯举", "sets": 3, "reps": 12, "restTime": 75}
         ]
       },
       {
         "day": 2,
-        "label": "卧推日",
+        "label": "卧推日（5/3/1+BBB）",
         "muscle": "胸部",
         "exercises": [
-          {"id": "ex_str_250", "name": "杠铃卧推", "sets": 5, "reps": 3, "restTime": 180},
-          {"id": "ex_str_251", "name": "杠铃卧推", "sets": 5, "reps": 10, "restTime": 120},
-          {"id": "ex_str_252", "name": "上斜哑铃卧推", "sets": 3, "reps": 10, "restTime": 90},
+          {"id": "ex_str_250", "name": "杠铃卧推（5/3/1主项）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_251", "name": "杠铃卧推（BBB 5×10@50-60%）", "sets": 5, "reps": 10, "restTime": 90},
+          {"id": "ex_str_252", "name": "面拉", "sets": 3, "reps": 15, "restTime": 75},
           {"id": "ex_str_253", "name": "三头肌下压", "sets": 3, "reps": 12, "restTime": 75}
         ]
       },
       {
         "day": 3,
-        "label": "推举日",
+        "label": "推举日（5/3/1+BBB）",
         "muscle": "肩部",
         "exercises": [
-          {"id": "ex_str_260", "name": "哑铃推举", "sets": 5, "reps": 3, "restTime": 180},
-          {"id": "ex_str_261", "name": "哑铃推举", "sets": 5, "reps": 10, "restTime": 120},
+          {"id": "ex_str_260", "name": "哑铃推举（5/3/1主项）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_261", "name": "哑铃推举（BBB 5×10@50-60%）", "sets": 5, "reps": 10, "restTime": 90},
           {"id": "ex_str_262", "name": "侧平举", "sets": 3, "reps": 12, "restTime": 75},
           {"id": "ex_str_263", "name": "面拉", "sets": 3, "reps": 15, "restTime": 75}
         ]
       },
       {
         "day": 4,
-        "label": "硬拉日",
+        "label": "硬拉日（5/3/1+BBB）",
         "muscle": "背部",
         "exercises": [
-          {"id": "ex_str_270", "name": "硬拉", "sets": 3, "reps": 3, "restTime": 180},
-          {"id": "ex_str_271", "name": "罗马尼亚硬拉", "sets": 5, "reps": 10, "restTime": 120},
+          {"id": "ex_str_270", "name": "硬拉（5/3/1主项）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_271", "name": "硬拉（BBB 5×10@50-60%）", "sets": 5, "reps": 10, "restTime": 120},
           {"id": "ex_str_272", "name": "引体向上", "sets": 3, "reps": 10, "restTime": 90},
           {"id": "ex_str_273", "name": "杠铃弯举", "sets": 3, "reps": 12, "restTime": 75}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strength_3day_split_beginner_2",
+    "name": "Starting Strength 3×5 入门精品",
+    "goal": "strength",
+    "difficulty": "beginner",
+    "trainingType": "3day_split",
+    "isPremium": true,
+    "pointsCost": 100,
+    "totalWeeks": 12,
+    "defaultRestTime": 180,
+    "description": "Mark Rippetoe Starting Strength 经典 3×5 真版精品计划。每周 3 天 A/B 交替（A→B→A→B），深蹲每次都做（3×5），卧推/推举交替，硬拉 1×5（A日）/力量翻 5×3（B日）。线性进阶每次+2.5kg（硬拉+5kg），连续 3 次同重量失败减重 10% 重爬。详细的技术要点与起把重量设置（深蹲空杆+5kg、卧推空杆+5kg、硬拉 60kg 起把），适合零基础力量训练者建立力量基础。",
+    "coverEmoji": "⚡",
+    "coverColors": ["#C5B0D8", "#9C82B8"],
+    "tags": ["精品", "Starting Strength", "3×5线性进阶"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 18-26，体脂率 16-26%，零基础力量新手",
+    "days": [
+      {
+        "day": 1,
+        "label": "Workout A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_400", "name": "深蹲（3×5线性+2.5kg/次）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_401", "name": "杠铃卧推（3×5线性+2.5kg/次）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_402", "name": "硬拉（1×5线性+5kg/次）", "sets": 1, "reps": 5, "restTime": 180}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "Workout B",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_410", "name": "深蹲（3×5线性+2.5kg/次）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_411", "name": "推举（3×5线性+2.5kg/次）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_412", "name": "力量翻（5×3线性+2.5kg/次）", "sets": 5, "reps": 3, "restTime": 150}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "Workout A",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_420", "name": "深蹲（3×5线性+2.5kg/次）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_421", "name": "杠铃卧推（3×5线性+2.5kg/次）", "sets": 3, "reps": 5, "restTime": 180},
+          {"id": "ex_str_422", "name": "硬拉（1×5线性+5kg/次）", "sets": 1, "reps": 5, "restTime": 180}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strength_3day_split_intermediate_2",
+    "name": "Texas Method 德州法精品",
+    "goal": "strength",
+    "difficulty": "intermediate",
+    "trainingType": "3day_split",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 12,
+    "defaultRestTime": 180,
+    "description": "Glenn Pendlay 经典 Texas Method 真版精品计划。每周 3 天容量-恢复-强度结构：周一 5×5 容量日（90% 周五重量）、周三 2×5 恢复日（80% 周一重量）、周五 1×5 强度日（新 PR）。深蹲/卧推/推举/硬拉四大主项，每周一次新 PR。进阶规则：周五成功后下周一/周五+2.5kg（上肢）/+5kg（下肢）。失败后降次 5→3→2→单次直至减重重启。适合已耗尽线性进阶的中级力量训练者突破平台。",
+    "coverEmoji": "💯",
+    "coverColors": ["#D8B0C0", "#B882A0"],
+    "tags": ["精品", "Texas Method", "容量-恢复-强度"],
+    "recommendedFrequency": 3,
+    "suitableFor": "BMI 20-27，体脂率 12-22%，健身经验 1-2 年，已耗尽 5×5 线性进阶",
+    "days": [
+      {
+        "day": 1,
+        "label": "容量日（5×5 Volume）",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_430", "name": "深蹲（5×5@90%周五重量）", "sets": 5, "reps": 5, "restTime": 180},
+          {"id": "ex_str_431", "name": "杠铃卧推（5×5）", "sets": 5, "reps": 5, "restTime": 180},
+          {"id": "ex_str_432", "name": "杠铃划船（5×5）", "sets": 5, "reps": 5, "restTime": 150}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "恢复日（2×5 Recovery）",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_440", "name": "深蹲（2×5@80%周一重量）", "sets": 2, "reps": 5, "restTime": 180},
+          {"id": "ex_str_441", "name": "推举（2×5轻量）", "sets": 2, "reps": 5, "restTime": 150},
+          {"id": "ex_str_442", "name": "引体向上（3组力竭）", "sets": 3, "reps": 8, "restTime": 120}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "强度日（1×5 PR）",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_450", "name": "深蹲（1×5新PR）", "sets": 1, "reps": 5, "restTime": 240},
+          {"id": "ex_str_451", "name": "杠铃卧推（1×5新PR）", "sets": 1, "reps": 5, "restTime": 240},
+          {"id": "ex_str_452", "name": "硬拉（1×5）", "sets": 1, "reps": 5, "restTime": 240}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strength_4day_split_intermediate_3",
+    "name": "GZCLP 三层结构精品",
+    "goal": "strength",
+    "difficulty": "intermediate",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 12,
+    "defaultRestTime": 180,
+    "description": "GZCLP 线性进阶精品计划，T1/T2/T3 三层结构。T1 主项力量（深蹲/卧推/硬拉/推举）3×5+ AMRAP，失败后渐进降次 5→3→2→1；T2 辅助（高位下拉/腿举/上斜卧推/罗马尼亚硬拉）3×10，失败后降次 10→8→6；T3 孤立（弯举/臂屈伸/提踵）3×15+ AMRAP。每次训练上肢+2.5kg、下肢+5kg。组间休息 T1 3-5 分钟、T2 2-3 分钟、T3 1-1.5 分钟。适合追求力量+肌肥大+弱项补强的中级训练者。",
+    "coverEmoji": "💯",
+    "coverColors": ["#D8B0C0", "#B882A0"],
+    "tags": ["精品", "GZCLP", "三层结构"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 19-26，体脂率 14-22%，健身经验 6-18 个月",
+    "days": [
+      {
+        "day": 1,
+        "label": "D1 深蹲+卧推",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_460", "name": "深蹲 T1（3×5+AMRAP）", "sets": 3, "reps": 5, "restTime": 240},
+          {"id": "ex_str_461", "name": "卧推 T2（3×10）", "sets": 3, "reps": 10, "restTime": 150},
+          {"id": "ex_str_462", "name": "高位下拉 T3（3×15+AMRAP）", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "D2 推举+硬拉",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_470", "name": "推举 T1（3×5+AMRAP）", "sets": 3, "reps": 5, "restTime": 240},
+          {"id": "ex_str_471", "name": "罗马尼亚硬拉 T2（3×10）", "sets": 3, "reps": 10, "restTime": 150},
+          {"id": "ex_str_472", "name": "哑铃划船 T3（3×15+AMRAP）", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "D3 卧推+深蹲",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_480", "name": "卧推 T1（3×5+AMRAP）", "sets": 3, "reps": 5, "restTime": 240},
+          {"id": "ex_str_481", "name": "前蹲 T2（3×10）", "sets": 3, "reps": 10, "restTime": 150},
+          {"id": "ex_str_482", "name": "三头肌下压 T3（3×15+AMRAP）", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "D4 硬拉+推举",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_str_490", "name": "硬拉 T1（3×5+AMRAP）", "sets": 3, "reps": 5, "restTime": 240},
+          {"id": "ex_str_491", "name": "上斜哑铃卧推 T2（3×10）", "sets": 3, "reps": 10, "restTime": 150},
+          {"id": "ex_str_492", "name": "杠铃弯举 T3（3×15+AMRAP）", "sets": 3, "reps": 15, "restTime": 90}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strength_4day_split_advanced_3",
+    "name": "Westside Conjugate 西岸交叉法精品",
+    "goal": "strength",
+    "difficulty": "advanced",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 800,
+    "totalWeeks": 16,
+    "defaultRestTime": 180,
+    "description": "Louis Simmons Westside Barbell 经典 Conjugate Method 真版精品计划。每周 4 天分离强度与速度：ME 日（最大努力日）冲主项变式 1-3RM，每 1-2 周轮换变式（箱式蹲/地板卧推/暂停卧推等）防适应；DE 日（动态努力日）速度训练 12×2@50-60% 1RM 组间 60 秒，配弹力带/铁链增加末端负荷。详细的主项变式轮换表与辅助动作搭配，适合高级力量训练者突破 PR 瓶颈。",
+    "coverEmoji": "💯",
+    "coverColors": ["#D8B0C0", "#B882A0"],
+    "tags": ["精品", "Westside Conjugate", "ME/DE分离"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 21-28，体脂率 10-20%，健身经验 2 年以上，技术扎实",
+    "days": [
+      {
+        "day": 1,
+        "label": "ME 下肢日（最大努力）",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_str_500", "name": "箱式深蹲变式（冲1-3RM）", "sets": 5, "reps": 3, "restTime": 180},
+          {"id": "ex_str_501", "name": "罗马尼亚硬拉", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_str_502", "name": "腿弯举", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_str_503", "name": "山羊挺身", "sets": 3, "reps": 15, "restTime": 75}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "ME 上肢日（最大努力）",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_str_510", "name": "地板卧推变式（冲1-3RM）", "sets": 5, "reps": 3, "restTime": 180},
+          {"id": "ex_str_511", "name": "哑铃推举", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_str_512", "name": "杠铃划船", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_str_513", "name": "面拉", "sets": 3, "reps": 15, "restTime": 75}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "DE 下肢日（动态努力）",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_str_520", "name": "速度深蹲（12×2@50-60%组间60秒）", "sets": 12, "reps": 2, "restTime": 60},
+          {"id": "ex_str_521", "name": "腿举", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_str_522", "name": "保加利亚分腿蹲", "sets": 3, "reps": 10, "restTime": 90}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "DE 上肢日（动态努力）",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_str_530", "name": "速度卧推（9×3@50-60%组间60秒）", "sets": 9, "reps": 3, "restTime": 60},
+          {"id": "ex_str_531", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 120},
+          {"id": "ex_str_532", "name": "三头肌下压", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_str_533", "name": "哑铃弯举", "sets": 3, "reps": 12, "restTime": 75}
         ]
       }
     ]

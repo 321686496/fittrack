@@ -668,9 +668,9 @@ class _GymCardPageState extends State<GymCardPage> {
 
       // 等待多帧，确保 layout + paint 完成
       await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future.delayed(const Duration(milliseconds: 30));
       await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 30));
 
       try {
         final imagePath = await PosterGenerator.capture(

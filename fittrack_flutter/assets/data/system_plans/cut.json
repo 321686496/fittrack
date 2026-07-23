@@ -606,5 +606,81 @@
         ]
       }
     ]
+  },
+  {
+    "id": "cut_fat_loss_focus_intermediate_1",
+    "name": "极限减脂突破精品",
+    "goal": "cut",
+    "difficulty": "intermediate",
+    "trainingType": "hiit",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 10,
+    "defaultRestTime": 30,
+    "description": "精品极限减脂突破计划，融合力量训练、HIIT与LISS有氧三位一体训练法。力量训练保留肌肉量，HIIT最大化EPOC效应，LISS持续燃脂。每周5天训练包含3天力量+HIIT与2天纯有氧，针对顽固脂肪区域设计，帮助你突破减脂平台期，达到理想体脂率。",
+    "coverEmoji": "🔥",
+    "coverColors": ["#A8D5BA", "#7AB593"],
+    "tags": ["精品", "极限减脂", "力量+有氧"],
+    "recommendedFrequency": 5,
+    "suitableFor": "BMI 22-28，体脂率 20-28%，健身经验 1-2 年，减脂平台期",
+    "days": [
+      {
+        "day": 1,
+        "label": "上肢力量+HIIT",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_120", "name": "杠铃卧推", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_chest_121", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_back_130", "name": "杠铃划船", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_back_131", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_hiit_090", "name": "波比跳", "sets": 5, "reps": 12, "restTime": 30},
+          {"id": "ex_hiit_091", "name": "战绳", "sets": 5, "reps": 30, "restTime": 30}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "LISS有氧",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_cardio_001", "name": "慢跑", "sets": 1, "reps": 40, "restTime": 0},
+          {"id": "ex_cardio_002", "name": "椭圆机", "sets": 1, "reps": 20, "restTime": 0}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "下肢力量+HIIT",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_140", "name": "深蹲", "sets": 4, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_141", "name": "罗马尼亚硬拉", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_leg_142", "name": "箭步蹲", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_leg_143", "name": "腿举", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_hiit_092", "name": "深蹲跳", "sets": 5, "reps": 15, "restTime": 30},
+          {"id": "ex_hiit_093", "name": "登山跑", "sets": 5, "reps": 30, "restTime": 30}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "LISS有氧",
+        "muscle": "有氧",
+        "exercises": [
+          {"id": "ex_cardio_003", "name": "游泳", "sets": 1, "reps": 40, "restTime": 0},
+          {"id": "ex_cardio_004", "name": "动感单车", "sets": 1, "reps": 20, "restTime": 0}
+        ]
+      },
+      {
+        "day": 5,
+        "label": "全身力量+Tabata",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_full_170", "name": "硬拉", "sets": 4, "reps": 10, "restTime": 75},
+          {"id": "ex_full_171", "name": "哑铃推举", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_full_172", "name": "引体向上", "sets": 3, "reps": 8, "restTime": 60},
+          {"id": "ex_full_173", "name": "双杠臂屈伸", "sets": 3, "reps": 12, "restTime": 45},
+          {"id": "ex_hiit_094", "name": "波比跳", "sets": 8, "reps": 15, "restTime": 20},
+          {"id": "ex_hiit_095", "name": "开合跳", "sets": 8, "reps": 40, "restTime": 20}
+        ]
+      }
+    ]
   }
 ]

@@ -491,20 +491,28 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
   }
 
   Future<void> _adoptPlan(SystemPlan plan) async {
-    // 暂停现有 active 计划
-    final existingPlans = Storage.getPlans();
-    for (final p in existingPlans) {
-      if (p['status'] == 'active') {
-        Storage.updatePlan(p['id'] as String, {'status': 'paused'});
+    try {
+      // 暂停现有 active 计划（await 确保持久化完成）
+      final existingPlans = Storage.getPlans();
+      for (final p in existingPlans) {
+        if (p['status'] == 'active') {
+          await Storage.updatePlanAsync(
+              p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+        }
       }
-    }
-    // 添加新计划
-    final newPlan = plan.toStoragePlan();
-    Storage.addPlan(newPlan);
-    Storage.dataChanged.value = !Storage.dataChanged.value;
+      // 添加新计划
+      final newPlan = plan.toStoragePlan();
+      await Storage.addPlanAsync(newPlan);
+      Storage.dataChanged.value = !Storage.dataChanged.value;
 
-    if (!mounted) return;
-    FitToast.success(context, '已采用计划：${plan.name}');
-    context.go('/plan');
+      if (!mounted) return;
+      // 保存成功后跳转首页并提示用户可以开始训练
+      FitToast.success(context, '已采用计划：${plan.name}，开始训练吧！');
+      context.go('/home');
+    } catch (e) {
+      debugPrint('采用计划失败: $e');
+      if (!mounted) return;
+      FitToast.error(context, '采用计划失败，请重试');
+    }
   }
 }

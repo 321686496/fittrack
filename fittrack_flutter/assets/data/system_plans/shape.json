@@ -628,5 +628,159 @@
         ]
       }
     ]
+  },
+  {
+    "id": "shape_abs_focus_intermediate_1",
+    "name": "腹肌雕刻塑形精品",
+    "goal": "shape",
+    "difficulty": "intermediate",
+    "trainingType": "4day_split",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 10,
+    "defaultRestTime": 60,
+    "description": "精品腹肌雕刻塑形计划，每周4天训练包含2天核心专项日。上腹、下腹、腹斜肌、腹横肌全方位刺激，配合低体脂饮食策略，帮助你打造清晰分明的六块腹肌。包含递减组与超级组技巧，最大化腹肌厚度与线条分离度。",
+    "coverEmoji": "💯",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["精品", "腹肌雕刻", "核心专项"],
+    "recommendedFrequency": 4,
+    "suitableFor": "BMI 18-24，体脂率 16-24%，追求清晰腹肌线条",
+    "days": [
+      {
+        "day": 1,
+        "label": "上肢塑形+上腹",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_190", "name": "哑铃卧推", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_191", "name": "哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_back_190", "name": "高位下拉", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_core_120", "name": "绳索卷腹", "sets": 4, "reps": 20, "restTime": 45},
+          {"id": "ex_core_121", "name": "卷腹", "sets": 4, "reps": 25, "restTime": 45}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "下肢塑形+下腹",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_210", "name": "深蹲", "sets": 3, "reps": 15, "restTime": 75},
+          {"id": "ex_leg_211", "name": "臀桥", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_leg_212", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_core_122", "name": "悬垂举腿", "sets": 4, "reps": 15, "restTime": 45},
+          {"id": "ex_core_123", "name": "仰卧举腿", "sets": 4, "reps": 20, "restTime": 45}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "核心专项A",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_core_124", "name": "平板支撑", "sets": 4, "reps": 60, "restTime": 45},
+          {"id": "ex_core_125", "name": "侧平板支撑", "sets": 3, "reps": 45, "restTime": 45},
+          {"id": "ex_core_126", "name": "俄罗斯转体", "sets": 4, "reps": 25, "restTime": 45},
+          {"id": "ex_core_127", "name": "反向卷腹", "sets": 4, "reps": 20, "restTime": 45},
+          {"id": "ex_core_128", "name": "死虫式", "sets": 3, "reps": 15, "restTime": 45}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "核心专项B+有氧",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_core_129", "name": "悬垂举腿", "sets": 4, "reps": 15, "restTime": 45},
+          {"id": "ex_core_130", "name": "绳索卷腹", "sets": 4, "reps": 20, "restTime": 45},
+          {"id": "ex_core_131", "name": "单车卷腹", "sets": 4, "reps": 20, "restTime": 45},
+          {"id": "ex_core_132", "name": "鸟狗式", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_hiit_096", "name": "登山跑", "sets": 4, "reps": 30, "restTime": 30},
+          {"id": "ex_hiit_097", "name": "高抬腿", "sets": 4, "reps": 30, "restTime": 30}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shape_6day_split_intermediate_1",
+    "name": "六分化塑形精品",
+    "goal": "shape",
+    "difficulty": "intermediate",
+    "trainingType": "6day_split",
+    "isPremium": true,
+    "pointsCost": 400,
+    "totalWeeks": 12,
+    "defaultRestTime": 60,
+    "description": "精品六分化塑形计划，胸背腿肩臂加核心专项日，每个肌群获得精雕细琢。融合高次数肌耐力训练与孤立塑形动作，特别强化肩部、臀部、背部与腹肌等关键线条肌群。第6天为核心专项日，全方位雕刻腹肌线条，帮助你达到完美身材比例。",
+    "coverEmoji": "✨",
+    "coverColors": ["#D5B5E0", "#B083C7"],
+    "tags": ["精品", "六分化塑形", "线条雕刻"],
+    "recommendedFrequency": 6,
+    "suitableFor": "BMI 18-24，体脂率 16-22%，健身经验 1-2 年",
+    "days": [
+      {
+        "day": 1,
+        "label": "胸部塑形",
+        "muscle": "胸部",
+        "exercises": [
+          {"id": "ex_chest_200", "name": "哑铃卧推", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_chest_201", "name": "上斜哑铃飞鸟", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_202", "name": "绳索夹胸", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_chest_203", "name": "俯卧撑", "sets": 3, "reps": 15, "restTime": 45}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "背部塑形",
+        "muscle": "背部",
+        "exercises": [
+          {"id": "ex_back_200", "name": "引体向上", "sets": 4, "reps": 8, "restTime": 75},
+          {"id": "ex_back_201", "name": "高位下拉", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_back_202", "name": "坐姿划船", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_back_203", "name": "直臂下压", "sets": 3, "reps": 15, "restTime": 45}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "臀腿塑形",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_leg_220", "name": "臀桥", "sets": 4, "reps": 20, "restTime": 60},
+          {"id": "ex_leg_221", "name": "深蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_leg_222", "name": "罗马尼亚硬拉", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_leg_223", "name": "保加利亚分腿蹲", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      },
+      {
+        "day": 4,
+        "label": "肩部塑形",
+        "muscle": "肩部",
+        "exercises": [
+          {"id": "ex_shoulder_140", "name": "哑铃推举", "sets": 4, "reps": 12, "restTime": 60},
+          {"id": "ex_shoulder_141", "name": "侧平举", "sets": 4, "reps": 15, "restTime": 45},
+          {"id": "ex_shoulder_142", "name": "前平举", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_shoulder_143", "name": "俯身飞鸟", "sets": 3, "reps": 15, "restTime": 45}
+        ]
+      },
+      {
+        "day": 5,
+        "label": "手臂塑形",
+        "muscle": "手臂",
+        "exercises": [
+          {"id": "ex_arm_130", "name": "哑铃弯举", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_arm_131", "name": "锤式弯举", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_arm_132", "name": "三头肌下压", "sets": 3, "reps": 15, "restTime": 45},
+          {"id": "ex_arm_133", "name": "法式推举", "sets": 3, "reps": 15, "restTime": 45}
+        ]
+      },
+      {
+        "day": 6,
+        "label": "核心专项日",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_core_140", "name": "悬垂举腿", "sets": 4, "reps": 15, "restTime": 45},
+          {"id": "ex_core_141", "name": "绳索卷腹", "sets": 4, "reps": 20, "restTime": 45},
+          {"id": "ex_core_142", "name": "俄罗斯转体", "sets": 4, "reps": 25, "restTime": 45},
+          {"id": "ex_core_143", "name": "平板支撑", "sets": 4, "reps": 60, "restTime": 45},
+          {"id": "ex_core_144", "name": "反向卷腹", "sets": 4, "reps": 20, "restTime": 45}
+        ]
+      }
+    ]
   }
 ]

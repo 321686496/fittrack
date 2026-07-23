@@ -1,31 +1,27 @@
 import 'package:flutter/material.dart';
-import '../themes/app_themes.dart';
+import 'poster_theme.dart';
 
 /// 健身卡分享海报（1080×1920 竖版）
 ///
-/// 用于 [GymCardPage] 卡片分享：
-/// 调用方通过 [Overlay] + [OverflowBox] 离屏渲染本组件，
-/// 用 [PosterGenerator.capture] 截图为 PNG 后弹出 [PosterPreviewDialog]。
-///
-/// 卡片数据字段（与 [Storage.getGymCards] 一致）：
-/// - `gymName` (String?) 健身房名称
-/// - `cardType` (String?) 卡类型（年卡/季卡/月卡/次卡/其他）
-/// - `startDate` (int?) 开卡时间戳（毫秒）
-/// - `endDate` (int?) 到期时间戳（毫秒）
-///
-/// 设计依据：docs/superpowers/plans/2026-07-21-app-optimization-batch.md Task 3b
+/// 使用 [PosterBackground] 跟随用户当前 App 主题。
 class GymCardPoster extends StatelessWidget {
   final Map<String, dynamic> card;
 
-  const GymCardPoster({super.key, required this.card});
+  /// 海报主题 ID；为 null 时从全局 Settings 读取当前主题
+  final String? themeId;
 
-  /// 海报尺寸常量，供调用方 [OverflowBox] 使用
+  const GymCardPoster({
+    super.key,
+    required this.card,
+    this.themeId,
+  });
+
   static const double posterWidth = 1080.0;
   static const double posterHeight = 1920.0;
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = PosterColors.fromThemeId(themeId);
     final gymName = (card['gymName'] as String?) ?? '健身房';
     final cardType = (card['cardType'] as String?) ?? '';
     final cardName = (card['name'] as String?) ?? '';
@@ -51,56 +47,22 @@ class GymCardPoster extends StatelessWidget {
     final remainingLabel =
         remainingDays > 0 ? '剩余 $remainingDays 天' : '已到期';
 
-    return RepaintBoundary(
-      child: Container(
-        width: posterWidth,
-        height: posterHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 80),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              ft.accentGlow.withOpacity(0.12),
-              ft.bgCard,
-            ],
-          ),
-        ),
+    return PosterBackground(
+      colors: colors,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 80),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── 顶部品牌区 ────────────────────────────
-            Row(
-              children: [
-                Icon(Icons.fitness_center, size: 28, color: ft.accentGlow),
-                const SizedBox(width: 10),
-                Text(
-                  'FitTrack 燃力',
-                  style: TextStyle(
-                    color: ft.accentGlow,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: 64,
-              height: 3,
-              decoration: BoxDecoration(
-                color: ft.accentGlow,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+            PosterBrandHeader(colors: colors),
             const Spacer(flex: 2),
-            // ── 标题"我在 X 健身房坚持训练" ──────────
+            // ── 标题 ─────────────────────────────────
             Text(
               '我在 $gymName',
               style: TextStyle(
-                color: ft.textPrimary,
-                fontSize: 40,
+                color: colors.textPrimary,
+                fontSize: 44,
                 fontWeight: FontWeight.bold,
                 height: 1.3,
               ),
@@ -109,14 +71,14 @@ class GymCardPoster extends StatelessWidget {
             Text(
               '坚持训练',
               style: TextStyle(
-                color: ft.textPrimary,
-                fontSize: 40,
+                color: colors.textPrimary,
+                fontSize: 44,
                 fontWeight: FontWeight.bold,
                 height: 1.3,
               ),
             ),
-            const Spacer(),
-            // ── 大数字（坚持天数）+ "天" ──────────────
+            const Spacer(flex: 2),
+            // ── 大数字（坚持天数）──────────────────────
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -126,9 +88,14 @@ class GymCardPoster extends StatelessWidget {
                   Text(
                     '$usedDays',
                     style: TextStyle(
-                      fontSize: 144,
+                      fontSize: 160,
                       fontWeight: FontWeight.bold,
-                      color: ft.accentGlow,
+                      foreground: Paint()
+                        ..shader = LinearGradient(
+                          colors: [colors.brand, colors.brandSecondary],
+                        ).createShader(
+                          const Rect.fromLTWH(0, 0, 400, 160),
+                        ),
                       height: 1.0,
                     ),
                   ),
@@ -136,96 +103,121 @@ class GymCardPoster extends StatelessWidget {
                   Text(
                     '天',
                     style: TextStyle(
-                      fontSize: 36,
-                      color: ft.textSecondary,
+                      fontSize: 40,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
-            // ── 进度条 ───────────────────────────────
-            SizedBox(
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                '累计坚持',
+                style: TextStyle(
+                  color: colors.textMuted,
+                  fontSize: 24,
+                  letterSpacing: 4,
+                ),
+              ),
+            ),
+            const Spacer(flex: 2),
+            // ── 进度卡片 ─────────────────────────────
+            Container(
               width: double.infinity,
-              height: 20,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Stack(
-                  children: [
-                    Container(color: ft.borderColor.withOpacity(0.4)),
-                    FractionallySizedBox(
-                      widthFactor: progress,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [ft.purpleColor, ft.accentGlow],
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: colors.cardBg,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: colors.cardBorder),
+              ),
+              child: Column(
+                children: [
+                  // 进度条
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      height: 16,
+                      child: Stack(
+                        children: [
+                          Container(color: Colors.white.withOpacity(0.08)),
+                          FractionallySizedBox(
+                            widthFactor: progress,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    colors.brand,
+                                    colors.brandSecondary,
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${(progress * 100).toStringAsFixed(0)}% 完成',
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w600,
                         ),
+                      ),
+                      Text(
+                        remainingLabel,
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: remainingDays > 0
+                              ? colors.textSecondary
+                              : colors.warning,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(flex: 2),
+            // ── 健身房信息 ───────────────────────────
+            Center(
+              child: Column(
+                children: [
+                  if (cardType.isNotEmpty)
+                    Text(
+                      cardType,
+                      style: TextStyle(
+                        fontSize: 28,
+                        color: colors.brand,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  if (cardName.isNotEmpty && cardName != gymName) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      cardName,
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: colors.textMuted,
                       ),
                     ),
                   ],
-                ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${(progress * 100).toStringAsFixed(0)}% 完成',
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: ft.textSecondary,
-                  ),
-                ),
-                Text(
-                  remainingLabel,
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: remainingDays > 0
-                        ? ft.textSecondary
-                        : ft.warningColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(flex: 2),
-            // ── 卡类型·健身房名 ─────────────────────
-            Center(
-              child: Text(
-                cardType.isEmpty ? gymName : '$cardType · $gymName',
-                style: TextStyle(
-                  fontSize: 26,
-                  color: ft.textSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            if (cardName.isNotEmpty && cardName != gymName) ...[
-              const SizedBox(height: 8),
-              Center(
-                child: Text(
-                  cardName,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: ft.textMuted,
-                  ),
-                ),
-              ),
-            ],
             const Spacer(),
-            // ── 底部品牌 ─────────────────────────────
-            Center(
-              child: Text(
-                'FitTrack 燃力',
-                style: TextStyle(
-                  fontSize: 22,
-                  color: ft.textMuted,
-                  letterSpacing: 2,
-                ),
-              ),
+            // ── 底部二维码 ───────────────────────────
+            PosterQrFooter(
+              colors: colors,
+              qrData: 'fittrack://gym',
+              hint: 'FitTrack 燃力训练',
             ),
           ],
         ),

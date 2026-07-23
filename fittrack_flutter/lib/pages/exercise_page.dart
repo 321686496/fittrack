@@ -734,7 +734,13 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
       children: widget.plans.map((plan) {
         final days = (plan['days'] as List?) ?? [];
         final status = plan['status'] ?? 'active';
-        final statusLabel = status == 'active' ? '进行中' : status == 'pending' ? '待开始' : '已完成';
+        final statusLabel = status == 'active'
+            ? '进行中'
+            : status == 'pending'
+                ? '待开始'
+                : status == 'paused'
+                    ? '已暂停'
+                    : '已完成';
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: GestureDetector(

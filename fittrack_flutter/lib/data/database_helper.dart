@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 5;
+  static const int _dbVersion = 6;
 
   Database? _database;
 
@@ -47,7 +47,10 @@ class DatabaseHelper {
         badge TEXT NOT NULL DEFAULT '',
         days TEXT NOT NULL DEFAULT '[]',
         createTime INTEGER NOT NULL,
-        updateTime INTEGER NOT NULL
+        updateTime INTEGER NOT NULL,
+        currentDayIndex INTEGER NOT NULL DEFAULT 0,
+        sourcePlanId TEXT,
+        isFromSystemLibrary INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -224,6 +227,17 @@ class DatabaseHelper {
           progress INTEGER NOT NULL DEFAULT 0
         )
       ''');
+    }
+    if (oldVersion < 6) {
+      // plans 表新增 currentDayIndex / sourcePlanId / isFromSystemLibrary 列
+      // 修复：toStoragePlan() 与 addPlanAsync 一直写入这些字段，但 schema 缺失导致
+      // INSERT/UPDATE 抛 no such column 异常，采用系统训练计划时静默失败。
+      await db.execute(
+          'ALTER TABLE plans ADD COLUMN currentDayIndex INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+          'ALTER TABLE plans ADD COLUMN sourcePlanId TEXT');
+      await db.execute(
+          'ALTER TABLE plans ADD COLUMN isFromSystemLibrary INTEGER NOT NULL DEFAULT 0');
     }
   }
 
