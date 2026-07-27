@@ -269,21 +269,31 @@ class VirtualOpponentEngine {
         _random.nextInt(trainingRange.max - trainingRange.min + 1) + trainingRange.min;
     opponent.weeklyTrainings = sessionCount;
 
+    // 皮肤训练偏好影响 weight 范围
+    final skin = OpponentSkinConfig.byId(opponent.appliedSkinId);
+    final bias = skin.trainBias;
+    double weightMultiplier = 1.0;
+    if (bias.cardioWeight > 0.4) weightMultiplier = 0.5;
+    else if (bias.compoundWeight > 0.5) weightMultiplier = 1.3;
+    else if (bias.isolationWeight > 0.4) weightMultiplier = 0.7;
+
     int totalWeight = 0;
     int totalDuration = 0;
     for (int i = 0; i < sessionCount; i++) {
       final duration = _random.nextInt(durationRange.max - durationRange.min + 1) +
           durationRange.min;
-      final weight = _random.nextInt(weightRange.max - weightRange.min + 1) +
+      final baseWeight = _random.nextInt(weightRange.max - weightRange.min + 1) +
           weightRange.min;
+      final weight = (baseWeight * weightMultiplier).round();
       totalDuration += duration;
       totalWeight += weight;
     }
     opponent.weeklyWeight = totalWeight;
     opponent.weeklyDuration = totalDuration;
 
-    // 偶尔动态（10%概率发布非null动态）
-    opponent.currentStatus = _statusTemplates[_random.nextInt(_statusTemplates.length)];
+    // 偶尔动态：从皮肤 DialogStyle.trainingTaunts 取（10%概率发布非null动态）
+    final taunts = skin.dialogStyle.trainingTaunts;
+    opponent.currentStatus = taunts[_random.nextInt(taunts.length)];
   }
 
   /// 每日推进对手训练状态（不再每周才推进）
