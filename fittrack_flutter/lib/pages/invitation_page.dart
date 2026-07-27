@@ -438,10 +438,10 @@ class _InvitationPageState extends State<InvitationPage> {
 
   Widget _buildRewardRulesCard(FitTrackColors colors) {
     final rules = [
-      _RewardRule(1, '首次激活', '解锁 3 个进阶教学 + 引路人徽章', '7 天高级统计体验'),
-      _RewardRule(3, '累计 3 人', '永久免广告看训练报告 + 布道者徽章', '7 天高级统计体验'),
-      _RewardRule(5, '累计 5 人', '解锁高手教学专题 + 对手皮肤', '7 天高级统计体验'),
-      _RewardRule(10, '累计 10 人', '燃力大使永久称号', '7 天高级统计体验'),
+      _RewardRule(1, '首次激活', '100 积分 + 引路人徽章', '50 积分'),
+      _RewardRule(3, '累计 3 人', '300 积分 + 布道者徽章', '50 积分'),
+      _RewardRule(5, '累计 5 人', '600 积分 + 传道者徽章 + 限定对手皮肤', '50 积分'),
+      _RewardRule(10, '累计 10 人', '1200 积分 + 燃力大使称号', '50 积分'),
     ];
 
     return CardWidget(
@@ -479,7 +479,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '好友输入你的邀请码激活后，双方均获得对应奖励。好友奖励为 7 天高级统计全开放体验。',
+                    '好友输入你的邀请码激活后，双方均获得对应积分奖励。好友奖励为 50 积分，可立即用于解锁教学章节或购买皮肤。',
                     style: TextStyle(color: colors.textSecondary, fontSize: 12, height: 1.5),
                   ),
                 ),

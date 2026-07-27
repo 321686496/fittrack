@@ -12,14 +12,13 @@ import 'points_service.dart';
 /// - 一码一绑：激活后不可更改
 /// - 单机版无法防多设备刷量，接受损耗（联网版用设备指纹根治）
 ///
-/// 激励分层（V1-08-03 ~ V1-08-08）：
-/// | 被邀请人行为 | 邀请人获得 | 被邀请人获得 |
+/// 激励分层（v1.3 积分化重构）：
+/// | 累计邀请人数 | 邀请人获得 | 被邀请人获得 |
 /// |---|---|---|
-/// | 激活（输入邀请码+首次训练） | 解锁3个进阶动作教学 + "引路人"徽章 | 7天高级统计全开放体验 |
-/// | 7日留存 | 解锁1个专题教学包 | — |
-/// | 累计邀请3人激活 | 永久免广告看训练报告 + "布道者"徽章 | — |
-/// | 累计邀请5人激活 | 解锁高手教学专题 + 专属虚拟对手皮肤 | — |
-/// | 累计邀请10人激活 | "燃力大使"永久称号 | — |
+/// | 1 人 | 100 积分 + "引路人"徽章 | 50 积分 |
+/// | 3 人 | 300 积分 + "布道者"徽章 | 50 积分 |
+/// | 5 人 | 600 积分 + "传道者"徽章 + 限定对手皮肤 skin_ambassador | 50 积分 |
+/// | 10 人 | 1200 积分 + "燃力大使"称号 | 50 积分 |
 enum InvitationResult {
   success,
   invalidFormat,
@@ -140,10 +139,10 @@ class InvitationService {
     settings['activatedInvitationCode'] = normalized;
     settings['invitationActivatedAt'] = DateTime.now().millisecondsSinceEpoch;
     settings['inviterIdentity'] = inviterIdentity;
-    // 被邀请人激励：7天高级统计全开放体验
-    settings['advancedStatsTrialUntil'] =
-        DateTime.now().add(const Duration(days: 7)).millisecondsSinceEpoch;
     Storage.saveSettings(settings);
+
+    // 被邀请人激励：50 积分（替代旧的 7 天高级统计体验）
+    await PointsService.instance.addPoints(50, 'invited');
 
     return InvitationResult.success;
   }
@@ -194,16 +193,47 @@ class InvitationService {
     settings['myReferralCodes'] = myList;
     Storage.saveSettings(settings);
 
-    // v1 积分体系：邀请奖励改为积分
-    await PointsService.instance.addPoints(PointsService.invitePoints, 'invite');
-
     final count = myList.length;
+    // 按里程碑发放积分（每达成新档位发放对应积分，不累加同档位）
+    // 1 人 → +100, 3 人 → +300, 5 人 → +600, 10 人 → +1200
+    int reward = 0;
+    if (count == 1) {
+      reward = 100;
+    } else if (count == 3) {
+      reward = 300;
+    } else if (count == 5) {
+      reward = 600;
+    } else if (count == 10) {
+      reward = 1200;
+    }
+    if (reward > 0) {
+      await PointsService.instance.addPoints(reward, 'invite_milestone_$count');
+    }
+
     if (count >= 1) _unlockBadge('referral_first');
     if (count >= 3) _unlockBadge('referral_three');
-    if (count >= 5) _unlockBadge('referral_five');
+    if (count >= 5) {
+      _unlockBadge('referral_five');
+      _unlockOpponentSkin(); // 新增：累计5人解锁限定皮肤
+    }
     if (count >= 10) _unlockBadge('referral_ten');
 
     return _currentMilestone(count);
+  }
+
+  /// 累计邀请 5 人时解锁限定对手皮肤 skin_ambassador
+  void _unlockOpponentSkin() {
+    final settings = Storage.getSettings();
+    // 写入 unlockedOpponentSkin 标记（兼容旧字段）
+    settings['unlockedOpponentSkin'] = true;
+    // 写入 unlockedFeatures：good_skin_ambassador
+    final raw = settings['unlockedFeatures'] as String? ?? '[]';
+    final list = (jsonDecode(raw) as List).cast<String>();
+    if (!list.contains('good_skin_ambassador')) {
+      list.add('good_skin_ambassador');
+      settings['unlockedFeatures'] = jsonEncode(list);
+    }
+    Storage.saveSettings(settings);
   }
 
   void _unlockBadge(String badgeId) {
