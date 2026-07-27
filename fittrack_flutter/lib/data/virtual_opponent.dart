@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'storage.dart';
+import '../widgets/opponent/opponent_skin_config.dart';
 
 /// v1 虚拟对手系统 —— 数据模型与生成引擎
 ///
@@ -290,7 +291,7 @@ class VirtualOpponentEngine {
   /// 职责：仅负责"本周内"的增量推进（训练次数/重量/时长/偶尔动态）
   /// 周一首次推进时调用 advanceWeekly 重置本周数据
   /// 防重复：通过 settings['opponentLastAdvanceDate'] 严格按日期去重
-  void dailyAdvance() {
+  Future<void> dailyAdvance() async {
     final settings = Storage.getSettings();
     final opponentJson = settings['virtualOpponentData'] as Map<String, dynamic>?;
     if (opponentJson == null) return; // 冷启动尚未匹配对手
@@ -329,15 +330,27 @@ class VirtualOpponentEngine {
       final durationRange = opponent.tier.sessionDurationRange;
       final weightRange = opponent.tier.sessionWeightRange;
       final duration = _random.nextInt(durationRange.max - durationRange.min + 1) + durationRange.min;
-      final weight = _random.nextInt(weightRange.max - weightRange.min + 1) + weightRange.min;
+      final baseWeight = _random.nextInt(weightRange.max - weightRange.min + 1) + weightRange.min;
+
+      // 皮肤训练偏好影响 weight
+      final skin = OpponentSkinConfig.byId(opponent.appliedSkinId);
+      final bias = skin.trainBias;
+      double weightMultiplier = 1.0;
+      if (bias.cardioWeight > 0.4) weightMultiplier = 0.5;
+      else if (bias.compoundWeight > 0.5) weightMultiplier = 1.3;
+      else if (bias.isolationWeight > 0.4) weightMultiplier = 0.7;
+      final weight = (baseWeight * weightMultiplier).round();
+
       opponent.weeklyTrainings += 1;
       opponent.weeklyWeight += weight;
       opponent.weeklyDuration += duration;
     }
 
-    // 10% 概率发布偶尔动态
+    // 10% 概率发布偶尔动态（从皮肤 dialogStyle.trainingTaunts 取）
     if (_random.nextDouble() < 0.10) {
-      opponent.currentStatus = _statusTemplates[_random.nextInt(_statusTemplates.length)];
+      final skin = OpponentSkinConfig.byId(opponent.appliedSkinId);
+      final taunts = skin.dialogStyle.trainingTaunts;
+      opponent.currentStatus = taunts[_random.nextInt(taunts.length)];
     }
 
     // 持久化
