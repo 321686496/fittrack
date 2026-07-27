@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/simulated_ad_page.dart';
 import 'points_service.dart';
 import '../router.dart';
+import '../data/storage.dart';
 
 enum AdPosition { rewarded, nativeBanner, splash }
 enum AdResult { success, notAvailable, userDismissed, error }
@@ -23,6 +24,7 @@ class SimulatedAdService implements AdService {
   @override
   bool shouldShowRewarded() {
     if (!AdService.adsEnabled) return false;
+    if (Storage.isPremiumNotifier.value) return false; // Pro 用户不看广告
     return true;
   }
 

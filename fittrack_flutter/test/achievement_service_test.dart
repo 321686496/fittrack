@@ -6,6 +6,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   setUpAll(() {
+    // Initialize flutter test binding for platform channels (SoundService/AudioPlayer)
+    TestWidgetsFlutterBinding.ensureInitialized();
     // Initialize sqflite ffi for desktop/test environment
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;

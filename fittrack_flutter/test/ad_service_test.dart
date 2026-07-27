@@ -4,14 +4,19 @@ import 'package:fittrack_flutter/services/ad_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
+
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     await Storage.init();
   });
 
-  test('returns notAvailable in no-op implementation', () async {
+  test('returns error when navigator unavailable', () async {
+    // AdService.adsEnabled 为 true，但没有 runApp/Navigator，应返回 error
     final result = await AdService.instance.showRewardedVideo();
-    expect(result, AdResult.notAvailable);
+    expect(result, AdResult.error);
   });
 
   test('Pro users never see ads', () async {
