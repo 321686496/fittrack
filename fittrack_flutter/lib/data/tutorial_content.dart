@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'content_block.dart';
+import 'course_content.dart'; // 复用 Chapter 类
+import '../services/points_service.dart';
 
 /// v1 教学信息系统 —— 数据模型与基础内容
 ///
@@ -177,6 +179,40 @@ class Tutorial {
     this.blocks = const [],
   });
 
+  /// 章节列表（getter，运行时由 TutorialLibrary.chaptersFor 生成）
+  /// 章节内容来自现有 keyPoints/commonMistakes/breathingTip 字段
+  List<Chapter> get chapters => TutorialLibrary.chaptersFor(this);
+
+  /// 按章节积分解锁价格（basic=0，advanced=50，topic=80，master=120）
+  int get chapterPointsCost {
+    switch (type) {
+      case TutorialType.basic:
+        return 0;
+      case TutorialType.advanced:
+        return 50;
+      case TutorialType.topic:
+        return 80;
+      case TutorialType.master:
+        return 120;
+    }
+  }
+
+  /// 单章 featureId
+  String chapterFeatureId(String chapterId) {
+    return 'tutorial_${id}_chapter_$chapterId';
+  }
+
+  /// 整套 featureId
+  String get allChaptersFeatureId => 'tutorial_${id}_all';
+
+  /// 章节是否已解锁
+  bool isChapterUnlocked(String chapterId) {
+    if (type == TutorialType.basic) return true;
+    // 整套已解锁 → 所有章节免费
+    if (PointsService.instance.isFeatureUnlocked(allChaptersFeatureId)) return true;
+    return PointsService.instance.isFeatureUnlocked(chapterFeatureId(chapterId));
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
@@ -209,6 +245,46 @@ class TutorialLibrary {
 
   /// 虚拟教练署名（统一品牌）
   static const String defaultCoach = '教练·凯文';
+
+  /// 把现有 Tutorial 字段转换为 3 章节
+  /// 第1章：动作要领（keyPoints）
+  /// 第2章：常见错误（commonMistakes）
+  /// 第3章：呼吸与变式（breathingTip + alternatives）
+  static List<Chapter> chaptersFor(Tutorial t) {
+    return [
+      Chapter(
+        id: 'keypoints',
+        title: '动作要领',
+        content: t.keyPoints.join('\n'),
+        blocks: t.keyPoints.map((p) => ContentBlock.bulletList(p)).toList(),
+      ),
+      Chapter(
+        id: 'mistakes',
+        title: '常见错误',
+        content: t.commonMistakes.join('\n'),
+        blocks: t.commonMistakes.map((p) => ContentBlock.callout(p, 'warning')).toList(),
+      ),
+      Chapter(
+        id: 'breathing',
+        title: '呼吸与变式',
+        content: t.breathingTip ?? '保持自然呼吸，发力时呼气，还原时吸气',
+        blocks: [
+          if (t.breathingTip != null)
+            ContentBlock.paragraph(t.breathingTip!),
+          if (t.alternativeExerciseIds.isNotEmpty)
+            ContentBlock.paragraph('替代动作：${t.alternativeExerciseIds.join(", ")}'),
+        ],
+      ),
+    ];
+  }
+
+  /// 所有教学合集
+  static List<Tutorial> get allTutorials => [
+    ...basicTutorials,
+    ...advancedTutorials,
+    ...topicTutorials,
+    ...masterTutorials,
+  ];
 
   /// 基础教学（免费开放，覆盖全肌群）
   static const List<Tutorial> basicTutorials = [
