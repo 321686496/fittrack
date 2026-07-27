@@ -197,12 +197,31 @@ class _GymCardPageState extends State<GymCardPage> {
     final priceCtrl = TextEditingController(text: existingCard?['price']?.toString() ?? '');
     final phoneCtrl = TextEditingController(text: existingCard?['phone']?.toString() ?? '');
     final remarkCtrl = TextEditingController(text: existingCard?['remark']?.toString() ?? '');
+    // 次卡总次数/剩余次数 controller（避免在 StatefulBuilder.builder 中重复创建，丢失焦点）
+    final _tc = existingCard?['totalCount'] as int?;
+    final _rc = existingCard?['remainingCount'] as int?;
+    final totalCountCtrl = TextEditingController(
+      text: (_tc != null && _tc > 0) ? _tc.toString() : '',
+    );
+    final remainingCountCtrl = TextEditingController(
+      text: (_rc != null && _rc >= 0) ? _rc.toString() : '',
+    );
 
     String cardType = existingCard?['cardType'] as String? ?? '年卡';
     int startDate = existingCard?['startDate'] as int? ?? 0;
     int endDate = existingCard?['endDate'] as int? ?? 0;
     int remainingCount = existingCard?['remainingCount'] as int? ?? -1;
     int totalCount = existingCard?['totalCount'] as int? ?? -1;
+
+    void disposeControllers() {
+      nameCtrl.dispose();
+      gymNameCtrl.dispose();
+      priceCtrl.dispose();
+      phoneCtrl.dispose();
+      remarkCtrl.dispose();
+      totalCountCtrl.dispose();
+      remainingCountCtrl.dispose();
+    }
 
     FitBottomSheet.show(
       context: context,
@@ -329,7 +348,7 @@ class _GymCardPageState extends State<GymCardPage> {
                               Text('总次数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                               const SizedBox(height: 6),
                               TextField(
-                                controller: TextEditingController(text: totalCount > 0 ? totalCount.toString() : ''),
+                                controller: totalCountCtrl,
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                                 decoration: InputDecoration(
@@ -365,7 +384,7 @@ class _GymCardPageState extends State<GymCardPage> {
                               Text('剩余次数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                               const SizedBox(height: 6),
                               TextField(
-                                controller: TextEditingController(text: remainingCount >= 0 ? remainingCount.toString() : ''),
+                                controller: remainingCountCtrl,
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                                 decoration: InputDecoration(
@@ -455,7 +474,7 @@ class _GymCardPageState extends State<GymCardPage> {
           },
         );
       },
-    );
+    ).whenComplete(disposeControllers);
   }
 
   void _showCardDetail(Map<String, dynamic> card) {

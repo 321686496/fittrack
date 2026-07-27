@@ -175,6 +175,9 @@ class PlanPage extends StatefulWidget {
 
 class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
   List<Map<String, dynamic>> _plans = [];
+  // build 内重计算缓存（在 _loadPlans 中预计算）
+  List<Map<String, dynamic>> _activePlansCache = const [];
+  List<Map<String, dynamic>> _customSortedCache = const [];
 
   @override
   int get tabIndex => 1;
@@ -203,11 +206,12 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
 
   void _loadPlans() {
     _plans = Storage.getPlans();
+    _activePlansCache = _plans.where((p) => p['status'] == 'active').toList();
+    _customSortedCache = _sortCustomPlans(_plans);
     if (mounted) setState(() {});
   }
 
-  List<Map<String, dynamic>> get _activePlans =>
-      _plans.where((p) => p['status'] == 'active').toList();
+  List<Map<String, dynamic>> get _activePlans => _activePlansCache;
 
   void _deletePlan(String planId) async {
     final confirmed = await ConfirmDialog.show(
@@ -280,8 +284,8 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
   // ── Plan List View ─────────────────────────────────────────
 
   Widget _buildPlanList(FitTrackColors colors) {
-    // 自定义计划 Top 3：排除来自系统库的计划（有 sourcePlanId 的）
-    final customSorted = _sortCustomPlans(_plans);
+    // 使用 _loadPlans 中预计算的缓存，避免 build 内深拷贝 records
+    final customSorted = _customSortedCache;
     final top3 = customSorted.take(3).toList();
 
     return RefreshIndicator(

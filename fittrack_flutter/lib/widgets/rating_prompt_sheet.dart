@@ -23,11 +23,13 @@ class RatingPromptSheet {
     settings['ratingPromptLastShown'] =
         DateTime.now().millisecondsSinceEpoch;
     Storage.saveSettings(settings);
+    final total = (Storage.getStats()['totalTrainings'] as int?) ?? 0;
 
     if (!context.mounted) return;
     await FitBottomSheet.show(
       context: context,
       builder: (ctx) => _RatingSheet(
+        totalTrainings: total,
         onRate: () => _openStore(ctx),
         onLater: () => Navigator.pop(ctx),
         onNeverAsk: () async {
@@ -48,11 +50,13 @@ class RatingPromptSheet {
 }
 
 class _RatingSheet extends StatelessWidget {
+  final int totalTrainings;
   final VoidCallback onRate;
   final VoidCallback onLater;
   final VoidCallback onNeverAsk;
 
   const _RatingSheet({
+    required this.totalTrainings,
     required this.onRate,
     required this.onLater,
     required this.onNeverAsk,
@@ -61,8 +65,7 @@ class _RatingSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final stats = Storage.getStats();
-    final total = stats['totalTrainings'] as int? ?? 0;
+    final total = totalTrainings;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(

@@ -22,7 +22,9 @@ class PageHeader extends StatelessWidget {
     this.isTabPage = false,
   });
 
-  static bool get _supportsBackdropFilter {
+  // 缓存平台检查结果，避免每次 build 都执行 try-catch
+  static final bool _supportsBackdropFilter = _detectBackdropFilterSupport();
+  static bool _detectBackdropFilterSupport() {
     if (kIsWeb) return true;
     try {
       return !Platform.isFuchsia;
@@ -35,7 +37,6 @@ class PageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
     final showBack = onBack != null;
-    final showTitle = title != null;
     final isLogo = !showBack && !isTabPage && title == null;
 
     Widget content = SafeArea(

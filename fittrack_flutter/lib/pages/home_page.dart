@@ -31,6 +31,14 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   bool _coachShown = false;
   String? _detectedInviteCode;
 
+  // build 内重计算缓存（在 _loadData 中预计算，避免每次 build 重复遍历）
+  Map<String, dynamic>? _activePlanCache;
+  Map<String, dynamic>? _todayPlanCache;
+  Map<String, dynamic> _weeklyStatsCache = const {};
+  List<Map<String, dynamic>> _weeklyCalendarDataCache = const [];
+  String _userNameCache = '用户';
+  late final String _todayDateStrCache;
+
   @override
   int get tabIndex => 0;
 
@@ -42,6 +50,8 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   @override
   void initState() {
     super.initState();
+    // 日期字符串不依赖数据，仅计算一次
+    _todayDateStrCache = _formatTodayDate();
     // v1.3 每日推进对手数据
     VirtualOpponentEngine.instance.dailyAdvance();
     _loadData();
@@ -50,6 +60,12 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardInvite());
     // v1 V1-04：启动时检查7天留存链触发（Day2/4 推送 / Day7 周报弹窗）
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkRetentionChain());
+  }
+
+  static String _formatTodayDate() {
+    final now = DateTime.now();
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    return '${now.year}年${now.month}月${now.day}日 星期${weekdays[now.weekday % 7]}';
   }
 
   Future<void> _checkRetentionChain() async {
@@ -109,7 +125,120 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     _stats = Storage.getStats();
     _streak = _computeStreak();
     _personalRecords = _computePersonalRecords();
+    // 预计算 build 内所需派生数据，避免每次 build 重复遍历
+    _activePlanCache = _computeActivePlan();
+    _todayPlanCache = _computeTodayPlan();
+    _weeklyStatsCache = _computeWeeklyStats();
+    _weeklyCalendarDataCache = _computeWeeklyCalendarData();
+    _userNameCache = Storage.getSettings()['userName'] as String? ?? '用户';
     setState(() {});
+  }
+
+  Map<String, dynamic>? _computeActivePlan() {
+    try {
+      return _plans.firstWhere((p) => p['status'] == 'active');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Map<String, dynamic>? _computeTodayPlan() {
+    final active = _activePlanCache;
+    if (active != null) {
+      final days = active['days'] as List? ?? [];
+      if (days.isNotEmpty) {
+        // 使用持久化的 currentDayIndex 实现循环训练日（不再按星期映射）
+        final dayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
+        final dayData = days[dayIndex.clamp(0, days.length - 1)] as Map<String, dynamic>;
+        final exercises = (dayData['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        // 当天是休息日或没有训练动作，返回 null 显示"今日休息"
+        if (dayData['isRest'] == true || exercises.isEmpty) {
+          return null;
+        }
+        return {
+          'name': dayData['label'] ?? '今日训练',
+          'muscle': dayData['muscle'] ?? '',
+          'duration': 60,
+          'exerciseCount': exercises.length,
+          'completed': 0,
+          'planId': active['id'],
+          'dayIndex': dayIndex,
+        };
+      }
+    }
+    return null;
+  }
+
+  Map<String, dynamic> _computeWeeklyStats() {
+    if (_stats['weeklyData'] is List && (_stats['weeklyData'] as List).isNotEmpty) {
+      final weeklyData = _stats['weeklyData'] as List;
+      final latest = weeklyData.last as Map<String, dynamic>;
+      return {
+        'trainings': latest['trainings'] ?? 0,
+        'duration': '${((latest['duration'] ?? 0 as num) / 60).toStringAsFixed(1)}h',
+        'weight': '${((latest['weight'] ?? 0 as num) / 1000).toStringAsFixed(1)}t',
+        'calories': (((latest['trainings'] ?? 0) as int) * 420).toString(),
+      };
+    }
+    return {
+      'trainings': 0,
+      'duration': '0h',
+      'weight': '0t',
+      'calories': '0',
+    };
+  }
+
+  List<Map<String, dynamic>> _computeWeeklyCalendarData() {
+    final now = DateTime.now();
+    final weekday = now.weekday; // 1=Mon..7=Sun
+    final weekStart = now.subtract(Duration(days: weekday - 1));
+    const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+
+    // 统计本周每天是否有训练记录
+    final trainedDays = <int>{};
+    for (final r in _records) {
+      final ts = r['date'] ?? r['createTime'];
+      if (ts is int) {
+        final d = DateTime.fromMillisecondsSinceEpoch(ts);
+        final diff = d.difference(weekStart).inDays;
+        if (diff >= 0 && diff < 7) {
+          trainedDays.add(diff);
+        }
+      }
+    }
+
+    // 从活跃计划获取每日安排 —— 循环训练日序列（基于 currentDayIndex）
+    final active = _activePlanCache;
+    final planDays = <int, Map<String, dynamic>>{};
+    if (active != null) {
+      final days = active['days'] as List? ?? [];
+      if (days.isNotEmpty) {
+        final currentDayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
+        // 以本周一为起点，按循环序列映射训练日
+        // 周一 = currentDayIndex，周二 = currentDayIndex+1（取模），以此类推
+        for (int i = 0; i < 7; i++) {
+          final cyclicIdx = (currentDayIndex + i) % days.length;
+          planDays[i] = days[cyclicIdx] as Map<String, dynamic>;
+        }
+      }
+    }
+
+    return List.generate(7, (i) {
+      final isToday = i == weekday - 1;
+      final isDone = trainedDays.contains(i);
+      final planDay = planDays[i];
+      final exercises = (planDay?['exercises'] as List?) ?? [];
+      // 没有计划、当天是休息日或没有训练动作，标记为休息日
+      final isRest = planDay?['isRest'] == true || exercises.isEmpty;
+
+      return {
+        'day': dayLabels[i],
+        'label': isRest ? '休息' : (planDay?['label'] ?? '休息'),
+        'done': isDone,
+        'today': isToday,
+        'rest': isRest,
+      };
+    });
   }
 
   Map<String, dynamic> _computeStreak() {
@@ -206,140 +335,24 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     return result.take(3).map((e) => {'name': e['name'], 'weight': '${(e['weight'] as double).toInt()}kg'}).toList();
   }
 
-  Map<String, dynamic>? get _activePlan {
-    try {
-      return _plans.firstWhere((p) => p['status'] == 'active');
-    } catch (_) {
-      return null;
-    }
-  }
-
-  String get _userName {
-    final settings = Storage.getSettings();
-    return settings['userName'] as String? ?? '用户';
-  }
-
-  String get _todayDateStr {
-    final now = DateTime.now();
-    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-    return '${now.year}年${now.month}月${now.day}日 星期${weekdays[now.weekday % 7]}';
-  }
-
-  Map<String, dynamic>? get _todayPlan {
-    final active = _activePlan;
-    if (active != null) {
-      final days = active['days'] as List? ?? [];
-      if (days.isNotEmpty) {
-        // 使用持久化的 currentDayIndex 实现循环训练日（不再按星期映射）
-        final dayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
-        final dayData = days[dayIndex.clamp(0, days.length - 1)] as Map<String, dynamic>;
-        final exercises = (dayData['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        // 当天是休息日或没有训练动作，返回 null 显示"今日休息"
-        if (dayData['isRest'] == true || exercises.isEmpty) {
-          return null;
-        }
-        return {
-          'name': dayData['label'] ?? '今日训练',
-          'muscle': dayData['muscle'] ?? '',
-          'duration': 60,
-          'exerciseCount': exercises.length,
-          'completed': 0,
-          'planId': active['id'],
-          'dayIndex': dayIndex,
-        };
-      }
-    }
-    return null;
-  }
-
-  Map<String, dynamic> get _weeklyStats {
-    if (_stats['weeklyData'] is List && (_stats['weeklyData'] as List).isNotEmpty) {
-      final weeklyData = _stats['weeklyData'] as List;
-      final latest = weeklyData.last as Map<String, dynamic>;
-      return {
-        'trainings': latest['trainings'] ?? 0,
-        'duration': '${((latest['duration'] ?? 0 as num) / 60).toStringAsFixed(1)}h',
-        'weight': '${((latest['weight'] ?? 0 as num) / 1000).toStringAsFixed(1)}t',
-        'calories': (((latest['trainings'] ?? 0) as int) * 420).toString(),
-      };
-    }
-    return {
-      'trainings': 0,
-      'duration': '0h',
-      'weight': '0t',
-      'calories': '0',
-    };
-  }
-
-  List<Map<String, dynamic>> get _weeklyCalendarData {
-    final now = DateTime.now();
-    final weekday = now.weekday; // 1=Mon..7=Sun
-    final weekStart = now.subtract(Duration(days: weekday - 1));
-    const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
-
-    // 统计本周每天是否有训练记录
-    final trainedDays = <int>{};
-    for (final r in _records) {
-      final ts = r['date'] ?? r['createTime'];
-      if (ts is int) {
-        final d = DateTime.fromMillisecondsSinceEpoch(ts);
-        final diff = d.difference(weekStart).inDays;
-        if (diff >= 0 && diff < 7) {
-          trainedDays.add(diff);
-        }
-      }
-    }
-
-    // 从活跃计划获取每日安排 —— 循环训练日序列（基于 currentDayIndex）
-    final active = _activePlan;
-    final planDays = <int, Map<String, dynamic>>{};
-    if (active != null) {
-      final days = active['days'] as List? ?? [];
-      if (days.isNotEmpty) {
-        final currentDayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
-        // 以本周一为起点，按循环序列映射训练日
-        // 周一 = currentDayIndex，周二 = currentDayIndex+1（取模），以此类推
-        for (int i = 0; i < 7; i++) {
-          final cyclicIdx = (currentDayIndex + i) % days.length;
-          planDays[i] = days[cyclicIdx] as Map<String, dynamic>;
-        }
-      }
-    }
-
-    return List.generate(7, (i) {
-      final isToday = i == weekday - 1;
-      final isDone = trainedDays.contains(i);
-      final planDay = planDays[i];
-      final exercises = (planDay?['exercises'] as List?) ?? [];
-      // 没有计划、当天是休息日或没有训练动作，标记为休息日
-      final isRest = planDay?['isRest'] == true || exercises.isEmpty;
-
-      return {
-        'day': dayLabels[i],
-        'label': isRest ? '休息' : (planDay?['label'] ?? '休息'),
-        'done': isDone,
-        'today': isToday,
-        'rest': isRest,
-      };
-    });
-  }
+  Map<String, dynamic>? get _activePlan => _activePlanCache;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final todayPlan = _todayPlan;
-    final weeklyStats = _weeklyStats;
+    final todayPlan = _todayPlanCache;
+    final weeklyStats = _weeklyStatsCache;
     final streakData = _streak;
     final prData = _personalRecords;
-    final activePlan = _activePlan;
+    final activePlan = _activePlanCache;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
           PageHeader(
-            title: '你好, $_userName',
-            subtitle: _todayDateStr,
+            title: '你好, $_userNameCache',
+            subtitle: _todayDateStrCache,
             isTabPage: true,
             onBellTap: () => _showNotifications(context),
             onCalendarTap: () => _showCalendar(context),
@@ -569,7 +582,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   }
 
   Widget _buildWeeklyCalendar(FitTrackColors colors) {
-    final calendarData = _weeklyCalendarData;
+    final calendarData = _weeklyCalendarDataCache;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
