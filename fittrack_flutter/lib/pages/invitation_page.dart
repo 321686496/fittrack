@@ -563,12 +563,14 @@ class _InvitationPageState extends State<InvitationPage> {
           ),
           const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: steps.asMap().entries.map((entry) {
               final idx = entry.key;
               final s = entry.value;
               final isLast = idx == steps.length - 1;
               return Expanded(
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Column(
@@ -593,7 +595,12 @@ class _InvitationPageState extends State<InvitationPage> {
                       ),
                     ),
                     if (!isLast)
-                      Icon(Icons.chevron_right, color: colors.textMuted, size: 18),
+                      SizedBox(
+                        height: 44,
+                        child: Center(
+                          child: Icon(Icons.chevron_right, color: colors.textMuted, size: 18),
+                        ),
+                      ),
                   ],
                 ),
               );
