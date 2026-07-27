@@ -6,6 +6,8 @@ import '../data/virtual_opponent.dart';
 import '../data/virtual_goods.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
+import '../widgets/opponent/opponent_renderer.dart';
+import '../widgets/opponent/opponent_skin_config.dart';
 
 /// 对手详情页 —— P0 最小可用版
 class OpponentDetailPage extends StatelessWidget {
@@ -37,8 +39,6 @@ class OpponentDetailPage extends StatelessWidget {
 
     final opponent = VirtualOpponent.fromJson(Map<String, dynamic>.from(opponentJson));
     final skinId = opponent.appliedSkinId;
-    final skin = skinId.isNotEmpty ? VirtualGoodsStore.byId(skinId) : null;
-    final emoji = skin?.emoji ?? '🤖';
 
     return Scaffold(
       body: Column(
@@ -53,7 +53,7 @@ class OpponentDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeaderCard(colors, opponent, emoji),
+                  _buildHeaderCard(colors, opponent),
                   const SizedBox(height: 16),
                   _buildWeeklyStatsCard(colors, opponent),
                   const SizedBox(height: 16),
@@ -72,51 +72,48 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCard(FitTrackColors colors, VirtualOpponent opp, String emoji) {
+  Widget _buildHeaderCard(FitTrackColors colors, VirtualOpponent opp) {
     return CardWidget(
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 64, height: 64,
-            decoration: BoxDecoration(
-              color: colors.accentGlow.withOpacity(0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 32)),
+          // 240×240 人物图（Row 改 Column，避免溢出）
+          Center(
+            child: SizedBox(
+              width: 240,
+              height: 240,
+              child: OpponentRenderer(
+                skinId: opp.appliedSkinId,
+                size: const Size(240, 240),
+                autoTrain: true,
+                showAura: true,
+              ),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(opp.nickname, style: TextStyle(
-                  color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700,
-                )),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: colors.accentGlow.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(opp.tier.label, style: TextStyle(
-                        color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w600,
-                      )),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(opp.persona, style: TextStyle(
-                        color: colors.textMuted, fontSize: 12,
-                      ), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ),
-                  ],
+          const SizedBox(height: 16),
+          Text(opp.nickname, style: TextStyle(
+            color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700,
+          )),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-              ],
-            ),
+                child: Text(opp.tier.label, style: TextStyle(
+                  color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w600,
+                )),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(opp.persona, style: TextStyle(
+                  color: colors.textMuted, fontSize: 12,
+                ), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
           ),
         ],
       ),
@@ -203,7 +200,15 @@ class OpponentDetailPage extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Text(skin?.emoji ?? '🤖', style: const TextStyle(fontSize: 28)),
+                SizedBox(
+                  width: 96, height: 96,
+                  child: OpponentRenderer(
+                    skinId: skinId,
+                    size: const Size(96, 96),
+                    autoTrain: false,
+                    showAura: true,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -212,10 +217,15 @@ class OpponentDetailPage extends StatelessWidget {
                       Text(skin?.name ?? '默认皮肤', style: TextStyle(
                         color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
                       )),
-                      if (skin != null)
+                      if (skin != null) ...[
+                        const SizedBox(height: 4),
+                        Text('招式：${OpponentSkinConfig.byId(skinId).signatureMove}', style: TextStyle(
+                          color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w600,
+                        )),
                         Text(skin.isLimited ? '限定款 · 邀请解锁' : '${skin.pointsCost} 积分', style: TextStyle(
                           color: colors.textMuted, fontSize: 11,
                         )),
+                      ],
                     ],
                   ),
                 ),

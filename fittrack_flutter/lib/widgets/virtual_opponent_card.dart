@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../data/virtual_opponent.dart';
-import '../data/virtual_goods.dart';
 import 'common_widgets.dart';
+import 'opponent/opponent_renderer.dart';
 
 /// v1 首页 PK 卡片 — 虚拟对手本周对比
 ///
@@ -183,9 +183,15 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
             // 标题行
             Row(
               children: [
-                Text(
-                  VirtualGoodsStore.byId(_opponent!.appliedSkinId)?.emoji ?? '🤖',
-                  style: const TextStyle(fontSize: 18),
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: OpponentRenderer(
+                    skinId: _opponent!.appliedSkinId,
+                    size: const Size(48, 48),
+                    autoTrain: false,
+                    showAura: false,
+                  ),
                 ),
                 const SizedBox(width: 6),
                 Text(
