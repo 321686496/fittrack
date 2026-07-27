@@ -9,7 +9,7 @@ enum AdResult { success, notAvailable, userDismissed, error }
 
 abstract class AdService {
   /// 开发者控制：是否启用广告功能（发布时设为 true，开发时可设为 false）
-  static const bool adsEnabled = true;
+  static const bool adsEnabled = false;
 
   static final AdService instance = SimulatedAdService();
 
