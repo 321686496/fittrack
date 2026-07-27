@@ -48,6 +48,7 @@ import 'pages/plan_library_home_page.dart';
 import 'pages/plan_library_category_page.dart';
 import 'pages/plan_library_detail_page.dart';
 import 'pages/max_weight_detail_page.dart';
+import 'pages/opponent_detail_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -410,6 +411,11 @@ GoRouter createRouter() {
         path: '/max-weight-detail',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const MaxWeightDetailPage(),
+      ),
+      GoRoute(
+        path: '/opponent-detail',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const OpponentDetailPage(),
       ),
       // v1 V1-11: 训练笔记路由
       GoRoute(

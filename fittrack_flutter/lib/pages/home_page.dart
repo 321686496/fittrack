@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
+import '../data/virtual_opponent.dart';
 import '../services/clipboard_invite_service.dart';
 import '../services/retention_chain_service.dart';
 import '../widgets/common_widgets.dart';
@@ -41,6 +42,8 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   @override
   void initState() {
     super.initState();
+    // v1.3 每日推进对手数据
+    VirtualOpponentEngine.instance.dailyAdvance();
     _loadData();
     Storage.dataChanged.addListener(_loadData);
     // v1 一键裂变：启动时检测剪贴板邀请码

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../data/virtual_opponent.dart';
+import '../data/virtual_goods.dart';
 import 'common_widgets.dart';
 
 /// v1 首页 PK 卡片 — 虚拟对手本周对比
@@ -173,7 +175,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
         .clamp(1, 7); // 每周最多7次
 
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: widget.onTap ?? () => context.push('/opponent-detail'),
       child: CardWidget(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +183,10 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
             // 标题行
             Row(
               children: [
-                Icon(Icons.sports_kabaddi, size: 18, color: colors.accentGlow),
+                Text(
+                  VirtualGoodsStore.byId(_opponent!.appliedSkinId)?.emoji ?? '🤖',
+                  style: const TextStyle(fontSize: 18),
+                ),
                 const SizedBox(width: 6),
                 Text(
                   '本周 PK',
