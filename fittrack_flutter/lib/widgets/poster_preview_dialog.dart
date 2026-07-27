@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../services/permission_service.dart';
 import '../services/poster_share_service.dart';
 import '../themes/app_themes.dart';
 import '../utils/platform_utils.dart';
@@ -169,23 +171,53 @@ class PosterPreviewDialog {
 
   /// 保存海报到相册
   ///
-  /// - Android/iOS: 使用 image_gallery_saver
-  /// - OHOS: 使用 MethodChannel 调用原生 photoAccessHelper
+  /// 权限策略：
+  /// - OHOS: 首次保存时通过 MethodChannel 请求 WRITE_IMAGEVIDEO 权限；
+  ///   用户拒绝则提示去「设置」开启，不再重复弹窗。
+  /// - Android (API < 29): 需 REQUEST_EXTERNAL_STORAGE 权限。
+  /// - Android (API >= 29) / iOS: 系统自动处理，无需运行时申请。
   static Future<void> _saveToGallery(
     BuildContext ctx,
     String imagePath,
   ) async {
     try {
       if (isOhos) {
-        // OHOS: 通过 MethodChannel 调用原生 photoAccessHelper 保存到系统相册
+        // 1. 检查权限
+        final hasPermission = await PosterShareService.checkWritePermission();
+        if (!hasPermission) {
+          // 2. 首次：请求权限
+          final granted = await PosterShareService.requestWritePermission();
+          if (!granted) {
+            // 3. 用户拒绝：提示去设置开启
+            if (!ctx.mounted) return;
+            await PermissionService.showPermissionDeniedDialog(
+              ctx,
+              permissionName: '存储',
+              reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > FitTrack > 权限管理」中开启「媒体和文件」权限后重试。',
+            );
+            return;
+          }
+        }
+        // 4. 已授权，执行保存
         await PosterShareService.saveToGallery(imagePath);
         if (!ctx.mounted) return;
         FitToast.success(ctx, '已保存到相册');
+      } else if (Platform.isAndroid) {
+        // Android: API < 29 需运行时申请存储权限
+        if (await _requestAndroidStoragePermission(ctx)) {
+          final result = await ImageGallerySaver.saveFile(imagePath);
+          if (!ctx.mounted) return;
+          if (result is Map && result['isSuccess'] == true) {
+            FitToast.success(ctx, '已保存到相册');
+          } else {
+            FitToast.error(ctx, '保存失败，请重试');
+          }
+        }
       } else {
+        // iOS 及其他平台：系统自动处理权限
         final result = await ImageGallerySaver.saveFile(imagePath);
         if (!ctx.mounted) return;
-        if (result is Map &&
-            result['isSuccess'] == true) {
+        if (result is Map && result['isSuccess'] == true) {
           FitToast.success(ctx, '已保存到相册');
         } else {
           FitToast.error(ctx, '保存失败，请重试');
@@ -194,9 +226,46 @@ class PosterPreviewDialog {
     } on PlatformException catch (e) {
       if (!ctx.mounted) return;
       final msg = e.message ?? e.code;
+      // OHOS 原生返回 PERMISSION_DENIED 时，引导用户去设置
+      if (e.code == 'PERMISSION_DENIED') {
+        await PermissionService.showPermissionDeniedDialog(
+          ctx,
+          permissionName: '存储',
+          reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > FitTrack > 权限管理」中开启「媒体和文件」权限后重试。',
+        );
+        return;
+      }
       FitToast.error(ctx, '保存失败：$msg');
     } catch (e) {
       if (ctx.mounted) FitToast.error(ctx, '保存失败：$e');
+    }
+  }
+
+  /// Android 存储权限请求（仅 API < 29 需要）
+  ///
+  /// 返回 true 表示已授权可继续保存；false 表示用户拒绝，
+  /// 此时已弹出引导去设置的对话框。
+  static Future<bool> _requestAndroidStoragePermission(
+    BuildContext ctx,
+  ) async {
+    try {
+      final status = await Permission.storage.status;
+      if (status.isGranted) return true;
+      final result = await Permission.storage.request();
+      if (result.isGranted) return true;
+      if (!ctx.mounted) return false;
+      // 用户拒绝（含永久拒绝）：引导去设置
+      await PermissionService.showPermissionDeniedDialog(
+        ctx,
+        permissionName: '存储',
+        reason: '保存海报到相册需要存储权限，请在系统设置中开启存储权限后重试。',
+      );
+      return false;
+    } catch (_) {
+      if (ctx.mounted) {
+        FitToast.error(ctx, '获取存储权限失败');
+      }
+      return false;
     }
   }
 

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
-import '../services/poster_generator.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/gym_card_poster.dart';
 import '../widgets/page_header.dart';
-import '../widgets/poster_preview_dialog.dart';
+import '../widgets/poster_capture_helper.dart';
 
 class GymCardPage extends StatefulWidget {
   const GymCardPage({super.key});
@@ -648,66 +647,19 @@ class _GymCardPageState extends State<GymCardPage> {
     _loadCards();
   }
 
-  /// 海报分享：通过 [Overlay] 离屏渲染 [GymCardPoster]，
-  /// 用 [PosterGenerator.capture] 截图，最后弹出 [PosterPreviewDialog]。
-  ///
-  /// 参考 Task 2 invitation_page._shareCode 的实现模式。
+  /// 海报分享：通过 [PosterCaptureHelper] 离屏渲染 [GymCardPoster]，
+  /// 截图后弹出 [PosterPreviewDialog]，不再做页面跳转。
   Future<void> _shareCardPoster(Map<String, dynamic> card) async {
     if (_sharing) return;
     setState(() => _sharing = true);
     try {
-      final boundaryKey = GlobalKey();
-      final overlay = Overlay.of(context);
-      const posterWidth = GymCardPoster.posterWidth;
-      const posterHeight = GymCardPoster.posterHeight;
-
-      late OverlayEntry entry;
-      entry = OverlayEntry(
-        builder: (_) => Positioned(
-          left: -posterWidth,
-          top: -posterHeight,
-          width: posterWidth,
-          height: posterHeight,
-          child: Material(
-            color: Colors.transparent,
-            child: OverflowBox(
-              minWidth: posterWidth,
-              maxWidth: posterWidth,
-              minHeight: posterHeight,
-              maxHeight: posterHeight,
-              child: RepaintBoundary(
-                key: boundaryKey,
-                child: GymCardPoster(card: card),
-              ),
-            ),
-          ),
-        ),
+      await PosterCaptureHelper.captureAndPreview(
+        context,
+        posterWidget: GymCardPoster(card: card),
+        posterWidth: GymCardPoster.posterWidth,
+        title: '健身卡海报',
+        fileNamePrefix: 'fittrack_gym_card',
       );
-      overlay.insert(entry);
-
-      // 等待多帧，确保 layout + paint 完成
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 30));
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 30));
-
-      try {
-        final imagePath = await PosterGenerator.capture(
-          boundaryKey,
-          fileNamePrefix: 'fittrack_gym_card',
-        );
-        entry.remove();
-        if (!mounted) return;
-        await PosterPreviewDialog.show(
-          context,
-          imagePath: imagePath,
-          title: '健身卡海报',
-        );
-      } catch (e) {
-        entry.remove();
-        if (!mounted) return;
-        FitToast.error(context, '海报生成失败：$e');
-      }
     } finally {
       if (mounted) {
         setState(() => _sharing = false);

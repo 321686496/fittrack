@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'poster_theme.dart';
 
-/// 邀请码海报内容组件（1080×1920 竖版）
+/// 邀请码海报内容组件（宽度固定 1080，高度随内容自适应）
 ///
 /// 纯渲染组件，外层需用 [RepaintBoundary]（带 [GlobalKey]）包裹以便截图。
 /// 使用 [PosterBackground] 跟随用户当前 App 主题。
@@ -20,7 +20,6 @@ class InvitePoster extends StatelessWidget {
   });
 
   static const double posterWidth = 1080.0;
-  static const double posterHeight = 1920.0;
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +27,14 @@ class InvitePoster extends StatelessWidget {
     return PosterBackground(
       colors: colors,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 72),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // ── 顶部品牌区 ────────────────────────────
             PosterBrandHeader(colors: colors),
-            const Spacer(flex: 3),
+            const SizedBox(height: 72),
             // ── 邀请码卡片（核心视觉焦点）──────────────
             Center(
               child: Container(
@@ -124,7 +124,7 @@ class InvitePoster extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 副标题 ───────────────────────────────
             Center(
               child: Column(
@@ -148,7 +148,7 @@ class InvitePoster extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 底部二维码 ───────────────────────────
             PosterQrFooter(
               colors: colors,

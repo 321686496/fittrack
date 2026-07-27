@@ -403,7 +403,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                     ],
                     const SizedBox(height: 14),
                     _buildDailyTip(colors),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 120),
                   ],
                 ),
               ),

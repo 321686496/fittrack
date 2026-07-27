@@ -9,7 +9,6 @@ import '../services/smart_push_service.dart';
 import '../services/ohos_reminder_service.dart';
 import '../services/android_alarm_service.dart';
 import '../services/form_kit_service.dart';
-import '../services/share_card_service.dart';
 import '../services/achievement_service.dart';
 import '../services/ad_service.dart';
 import '../services/retention_chain_service.dart';
@@ -19,8 +18,9 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/celebration_overlay.dart';
 import '../widgets/celebration_dialog.dart';
-import '../widgets/poster_preview_dialog.dart';
+import '../widgets/poster_capture_helper.dart';
 import '../widgets/rating_prompt_sheet.dart';
+import '../widgets/share_card_frame.dart';
 import '../widgets/opponent/opponent_renderer.dart';
 import '../widgets/opponent/opponent_skin_config.dart';
 import '../utils/platform_utils.dart';
@@ -655,12 +655,12 @@ class _TrainingPageState extends State<TrainingPage>
       'date': DateTime.now().millisecondsSinceEpoch,
     };
     try {
-      final path = await ShareCardService.generateShareCard(record, context);
-      if (!mounted) return;
-      await PosterPreviewDialog.show(
+      await PosterCaptureHelper.captureAndPreview(
         context,
-        imagePath: path,
+        posterWidget: ShareCardFrame(record: record),
+        posterWidth: ShareCardFrame.posterWidth,
         title: '训练记录海报',
+        fileNamePrefix: 'fittrack_training',
       );
     } catch (e) {
       if (mounted) {

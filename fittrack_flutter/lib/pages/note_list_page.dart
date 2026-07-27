@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
-import '../pages/note_poster_page.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
+import '../widgets/poster_capture_helper.dart';
 
 /// v1 训练笔记列表页
 ///
@@ -279,11 +280,12 @@ class _NoteListPageState extends State<NoteListPage> {
                   padding: EdgeInsets.zero,
                   constraints:
                       const BoxConstraints(minWidth: 28, minHeight: 28),
-                  onPressed: () => Navigator.push(
+                  onPressed: () => PosterCaptureHelper.captureAndPreview(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => NotePosterPage(note: note),
-                    ),
+                    posterWidget: NotePosterContent(note: note),
+                    posterWidth: NotePosterContent.posterWidth,
+                    title: '训练笔记海报',
+                    fileNamePrefix: 'fittrack_note',
                   ),
                 ),
                 if (note.isFeatured) ...[

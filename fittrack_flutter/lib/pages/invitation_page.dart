@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/invitation_service.dart';
-import '../services/poster_generator.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/invite_poster.dart';
 import '../widgets/page_header.dart';
-import '../widgets/poster_preview_dialog.dart';
+import '../widgets/poster_capture_helper.dart';
 
 /// v1.1 邀请有礼页面（4 区段结构）
 ///
@@ -199,62 +198,16 @@ class _InvitationPageState extends State<InvitationPage> {
     if (_sharing) return;
     setState(() => _sharing = true);
     try {
-      final boundaryKey = GlobalKey();
-      final overlay = Overlay.of(context);
-      const cardWidth = InvitePoster.posterWidth;
-      const cardHeight = InvitePoster.posterHeight;
-
-      // 用 Overlay + Positioned(offscreen) 渲染海报，用户不可见
-      late OverlayEntry entry;
-      entry = OverlayEntry(
-        builder: (_) => Positioned(
-          left: -cardWidth,
-          top: -cardHeight,
-          width: cardWidth,
-          height: cardHeight,
-          child: Material(
-            color: Colors.transparent,
-            child: OverflowBox(
-              minWidth: cardWidth,
-              maxWidth: cardWidth,
-              minHeight: cardHeight,
-              maxHeight: cardHeight,
-              child: RepaintBoundary(
-                key: boundaryKey,
-                child: InvitePoster(
-                  inviteCode: _myCode,
-                  deepLink: 'fittrack://invite?code=$_myCode',
-                ),
-              ),
-            ),
-          ),
+      await PosterCaptureHelper.captureAndPreview(
+        context,
+        posterWidget: InvitePoster(
+          inviteCode: _myCode,
+          deepLink: 'fittrack://invite?code=$_myCode',
         ),
+        posterWidth: InvitePoster.posterWidth,
+        title: '邀请码海报',
+        fileNamePrefix: 'fittrack_invite',
       );
-      overlay.insert(entry);
-
-      // 等待多帧，确保 layout + paint 完成
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 30));
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 30));
-
-      try {
-        final imagePath = await PosterGenerator.capture(
-          boundaryKey,
-          fileNamePrefix: 'fittrack_invite',
-        );
-        entry.remove();
-        if (!mounted) return;
-        await PosterPreviewDialog.show(
-          context,
-          imagePath: imagePath,
-          title: '邀请码海报',
-        );
-      } catch (e) {
-        entry.remove();
-        if (!mounted) return;
-        FitToast.error(context, '海报生成失败：$e');
-      }
     } finally {
       if (mounted) {
         setState(() => _sharing = false);

@@ -3,8 +3,9 @@ import '../data/training_note.dart';
 import '../services/invitation_service.dart';
 import 'poster_theme.dart';
 
-/// 训练笔记海报内容组件（1080×1920 竖版）
+/// 训练笔记海报内容组件
 ///
+/// 宽度固定 1080，高度随内容自适应。
 /// 使用 [PosterBackground] 跟随用户当前 App 主题。
 /// 调用方通过 [Overlay] + [OverflowBox] 离屏渲染本组件，
 /// 用 [PosterGenerator.capture] 截图为 PNG 后弹出 [PosterPreviewDialog]。
@@ -26,9 +27,8 @@ class NotePosterContent extends StatefulWidget {
     this.posterKey,
   });
 
-  /// 海报尺寸常量
+  /// 海报宽度常量（高度随内容自适应）
   static const double posterWidth = 1080.0;
-  static const double posterHeight = 1920.0;
 
   @override
   State<NotePosterContent> createState() => _NotePosterContentState();
@@ -53,9 +53,10 @@ class _NotePosterContentState extends State<NotePosterContent> {
     return PosterBackground(
       colors: _colors,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 72),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // ── 顶部品牌区 ────────────────────────────
             Row(
@@ -83,7 +84,7 @@ class _NotePosterContentState extends State<NotePosterContent> {
                   ),
               ],
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 日期 + 感受 ──────────────────────────
             Row(
               children: [
@@ -129,7 +130,7 @@ class _NotePosterContentState extends State<NotePosterContent> {
                   height: 1.5,
                 ),
               ),
-            const Spacer(),
+            const SizedBox(height: 36),
             // ── 训练数据卡片 ─────────────────────────
             if (hasRecord) ...[
               _buildTrainingData(),
@@ -179,7 +180,7 @@ class _NotePosterContentState extends State<NotePosterContent> {
                 }).toList(),
               ),
             ],
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 底部二维码 + 邀请码 ──────────────────
             PosterQrFooter(
               colors: _colors,

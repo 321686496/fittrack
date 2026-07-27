@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
-import '../pages/note_poster_page.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
+import '../widgets/poster_capture_helper.dart';
 
 /// v1 训练笔记编写页
 ///
@@ -687,14 +688,12 @@ class _NoteEditPageState extends State<NoteEditPage> {
         final notes = Storage.getNotes();
         if (notes.isNotEmpty) {
           final note = TrainingNote.fromMap(notes.first);
-          await Navigator.push(
+          await PosterCaptureHelper.captureAndPreview(
             context,
-            MaterialPageRoute(
-              builder: (_) => NotePosterPage(
-                note: note,
-                boundRecord: _boundRecord,
-              ),
-            ),
+            posterWidget: NotePosterContent(note: note, boundRecord: _boundRecord),
+            posterWidth: NotePosterContent.posterWidth,
+            title: '训练笔记海报',
+            fileNamePrefix: 'fittrack_note',
           );
         }
       }

@@ -13,11 +13,13 @@ class PlanPosterWidget extends StatelessWidget {
     required this.shareString,
   });
 
+  /// 海报宽度常量（高度随内容自适应）
+  static const double posterWidth = 1080.0;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 1080,
-      height: 1920,
+      width: posterWidth,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -30,12 +32,13 @@ class PlanPosterWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 50),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               _buildHeader(),
               const SizedBox(height: 40),
               _buildPlanInfo(),
               const SizedBox(height: 30),
-              Expanded(child: _buildDaysList()),
+              _buildDaysList(),
               const SizedBox(height: 20),
               _buildFooter(),
             ],
@@ -107,10 +110,8 @@ class PlanPosterWidget extends StatelessWidget {
 
   Widget _buildDaysList() {
     final days = plan['days'] as List? ?? [];
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: days.length,
-      itemBuilder: (ctx, i) {
+    return Column(
+      children: List.generate(days.length, (i) {
         final day = days[i] as Map<String, dynamic>;
         final isRest = day['isRest'] == true;
         final label = day['label'] as String? ?? '第${i + 1}天';
@@ -152,7 +153,7 @@ class PlanPosterWidget extends StatelessWidget {
             ],
           ),
         );
-      },
+      }),
     );
   }
 
