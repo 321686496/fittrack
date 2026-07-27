@@ -35,10 +35,13 @@ void main() {
 
     final updated = Storage.getSettings()['virtualOpponentData'] as Map;
     final newOpp = VirtualOpponent.fromJson(Map<String, dynamic>.from(updated));
-    // 如果今天训练了，weight 应小于 hardcore tier 上限 15000 的 0.6 倍（15000*0.5=7500）
+    // 验证平均每次训练 weight 被 0.5x 减半（hardcore tier 单次 7000-15000，减半后 3500-7500）
     if (newOpp.weeklyTrainings > 0) {
-      expect(newOpp.weeklyWeight < 9000, true,
-          reason: 'ninja weight should be halved, got ${newOpp.weeklyWeight}');
+      final avgWeight = newOpp.weeklyWeight / newOpp.weeklyTrainings;
+      expect(avgWeight < 8000, true,
+          reason: 'ninja avg weight/session should be halved (<8000), got $avgWeight');
+      expect(avgWeight > 3000, true,
+          reason: 'ninja avg weight/session should be > 3000, got $avgWeight');
     }
   });
 
@@ -64,10 +67,11 @@ void main() {
 
     final updated = Storage.getSettings()['virtualOpponentData'] as Map;
     final newOpp = VirtualOpponent.fromJson(Map<String, dynamic>.from(updated));
+    // 验证平均每次训练 weight 被 1.3x 放大（hardcore tier 单次 7000-15000，放大后 9100-19500）
     if (newOpp.weeklyTrainings > 0) {
-      // iron_warrior weight 应大于 base weight 最小值 7000*1.3=9100
-      expect(newOpp.weeklyWeight > 9000, true,
-          reason: 'iron_warrior weight should be 1.3x, got ${newOpp.weeklyWeight}');
+      final avgWeight = newOpp.weeklyWeight / newOpp.weeklyTrainings;
+      expect(avgWeight > 8500, true,
+          reason: 'iron_warrior avg weight/session should be 1.3x (>8500), got $avgWeight');
     }
   });
 
