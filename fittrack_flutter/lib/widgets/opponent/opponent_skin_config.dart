@@ -1,6 +1,7 @@
 // lib/widgets/opponent/opponent_skin_config.dart
 import 'dart:ui';
 import 'package:flutter/animation.dart'; // Curve, Curves
+import 'motion/motion_player.dart';
 
 /// 皮肤配色方案
 class SkinPalette {
@@ -62,7 +63,7 @@ class MotionSpec {
   /// 按 progress (0-1) 插值出当前帧参数
   /// 实现见 motion_player.dart（Task 3）
   MotionFrame interpolate(double progress) {
-    throw UnimplementedError('interpolate implemented in motion_player.dart');
+    return interpolateMotion(this, progress);
   }
 }
 
