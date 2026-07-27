@@ -21,6 +21,8 @@ import '../widgets/celebration_overlay.dart';
 import '../widgets/celebration_dialog.dart';
 import '../widgets/poster_preview_dialog.dart';
 import '../widgets/rating_prompt_sheet.dart';
+import '../widgets/opponent/opponent_renderer.dart';
+import '../widgets/opponent/opponent_skin_config.dart';
 import '../utils/platform_utils.dart';
 
 class TrainingPage extends StatefulWidget {
@@ -1436,6 +1438,33 @@ class _TrainingPageState extends State<TrainingPage>
                     style: TextStyle(
                       color: userWon ? colors.successColor : colors.warningColor,
                       fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // 对手人物图 + 招式
+            Row(
+              children: [
+                SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: OpponentRenderer(
+                    skinId: opponent.appliedSkinId,
+                    size: const Size(64, 64),
+                    autoTrain: false,
+                    showAura: false,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '招式：${OpponentSkinConfig.byId(opponent.appliedSkinId).signatureMove}',
+                    style: TextStyle(
+                      color: colors.accentGlow,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
