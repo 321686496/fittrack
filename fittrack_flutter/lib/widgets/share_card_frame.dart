@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'poster_theme.dart';
 
-/// 训练记录分享海报（1080×1920 竖版）
+/// 训练记录分享海报（宽度固定 1080，高度随内容自适应）
 ///
 /// 使用 [PosterBackground] 跟随用户当前 App 主题。
 class ShareCardFrame extends StatelessWidget {
@@ -17,6 +17,9 @@ class ShareCardFrame extends StatelessWidget {
     this.themeId,
     super.key,
   });
+
+  /// 海报宽度常量（高度随内容自适应）
+  static const double posterWidth = 1080.0;
 
   @override
   Widget build(BuildContext context) {
@@ -36,16 +39,17 @@ class ShareCardFrame extends StatelessWidget {
     return PosterBackground(
       colors: colors,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 72),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // ── 顶部品牌区 ────────────────────────────
             PosterBrandHeader(
               colors: colors,
               subtitle: '今日训练完成',
             ),
-            const Spacer(flex: 3),
+            const SizedBox(height: 72),
             // ── 训练名称（核心标题）──────────────────────
             Text(
               name,
@@ -72,7 +76,7 @@ class ShareCardFrame extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 核心数据：总重量（大数字）──────────────
             Center(
               child: Column(
@@ -103,7 +107,7 @@ class ShareCardFrame extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 数据卡片网格（组数 + 时长）──────────────
             Row(
               children: [
@@ -122,7 +126,7 @@ class ShareCardFrame extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── slogan ──────────────────────────────
             Center(
               child: Text(
@@ -134,7 +138,7 @@ class ShareCardFrame extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 底部二维码 ───────────────────────────
             PosterQrFooter(
               colors: colors,

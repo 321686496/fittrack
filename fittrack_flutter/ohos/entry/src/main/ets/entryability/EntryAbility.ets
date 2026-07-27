@@ -7,11 +7,12 @@ import StandardMethodCodec from '@ohos/flutter_ohos/src/main/ets/plugin/common/S
 import { formProvider } from '@kit.FormKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { preferences } from '@kit.ArkData';
-import { Want, AbilityConstant, wantAgent, WantAgent, bundleManager, common } from '@kit.AbilityKit';
+import { Want, AbilityConstant, wantAgent, WantAgent, bundleManager, common, abilityAccessCtrl } from '@kit.AbilityKit';
 import { reminderAgentManager } from '@kit.BackgroundTasksKit';
 import { liveViewManager } from '@kit.LiveViewKit';
 import { notificationManager } from '@kit.NotificationKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { fileUri } from '@kit.CoreFileKit';
 import fs from '@ohos.file.fs';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
@@ -45,6 +46,8 @@ class FormDataCallHandler implements MethodCallHandler {
 
 /// 海报保存/分享 MethodChannel handler
 /// 在 OHOS 平台实现：
+/// - requestWritePermission: 请求 WRITE_IMAGEVIDEO 权限
+/// - checkWritePermission: 检查 WRITE_IMAGEVIDEO 权限
 /// - saveToGallery: 通过 photoAccessHelper 保存 PNG 到系统相册
 /// - share: 通过系统 Want 拉起分享面板
 class PosterShareHandler implements MethodCallHandler {
@@ -61,8 +64,55 @@ class PosterShareHandler implements MethodCallHandler {
     } else if (call.method === 'share') {
       const srcPath: string = call.args as string;
       this.share(srcPath, result);
+    } else if (call.method === 'requestWritePermission') {
+      this.requestWritePermission(result);
+    } else if (call.method === 'checkWritePermission') {
+      this.checkWritePermission(result);
     } else {
       result.notImplemented();
+    }
+  }
+
+  /// 请求写入图片/视频权限
+  private async requestWritePermission(result: MethodResult): Promise<void> {
+    try {
+      const atManager = abilityAccessCtrl.createAtManager();
+      const tokenId: number = this.ability.context.applicationInfo.accessTokenId;
+      const status = await atManager.checkAccessToken(tokenId, 'ohos.permission.WRITE_IMAGEVIDEO');
+      console.info('[FitTrack] WRITE_IMAGEVIDEO status=' + status);
+
+      if (status === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+        result.success(true);
+        return;
+      }
+
+      // 请求权限
+      const context = this.ability.context as common.UIAbilityContext;
+      const grantStatus = await atManager.requestPermissionsFromUser(context, ['ohos.permission.WRITE_IMAGEVIDEO']);
+      const granted = grantStatus.authResults.length > 0 &&
+        grantStatus.authResults[0] === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
+      console.info('[FitTrack] requestWritePermission result=' + granted);
+      result.success(granted);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error('[FitTrack] requestWritePermission failed: code=' + err.code + ', msg=' + err.message);
+      result.success(false);
+    }
+  }
+
+  /// 检查写入图片/视频权限
+  private async checkWritePermission(result: MethodResult): Promise<void> {
+    try {
+      const atManager = abilityAccessCtrl.createAtManager();
+      const tokenId: number = this.ability.context.applicationInfo.accessTokenId;
+      const status = await atManager.checkAccessToken(tokenId, 'ohos.permission.WRITE_IMAGEVIDEO');
+      const granted = status === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
+      console.info('[FitTrack] checkWritePermission=' + granted);
+      result.success(granted);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error('[FitTrack] checkWritePermission failed: code=' + err.code + ', msg=' + err.message);
+      result.success(false);
     }
   }
 
@@ -77,7 +127,16 @@ class PosterShareHandler implements MethodCallHandler {
         return;
       }
 
-      // 2. 通过 photoAccessHelper 创建媒体资产（返回 URI）
+      // 2. 检查权限
+      const atManager = abilityAccessCtrl.createAtManager();
+      const tokenId: number = this.ability.context.applicationInfo.accessTokenId;
+      const permStatus = await atManager.checkAccessToken(tokenId, 'ohos.permission.WRITE_IMAGEVIDEO');
+      if (permStatus !== abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+        result.error('PERMISSION_DENIED', '未授予保存图片权限，请在设置中开启', null);
+        return;
+      }
+
+      // 3. 通过 photoAccessHelper 创建媒体资产（返回 URI）
       const helper: photoAccessHelper.PhotoAccessHelper =
         photoAccessHelper.getPhotoAccessHelper(this.ability.context);
       const assetUri: string = await helper.createAsset(
@@ -85,7 +144,7 @@ class PosterShareHandler implements MethodCallHandler {
       );
       console.info('[FitTrack] saveToGallery createAsset uri=' + assetUri);
 
-      // 3. 打开源文件和目标文件，复制数据
+      // 4. 打开源文件和目标文件，复制数据
       const srcFile = fs.openSync(srcPath, fs.OpenMode.READ_ONLY);
       const dstFile = fs.openSync(assetUri, fs.OpenMode.WRITE_ONLY);
       try {
@@ -105,6 +164,15 @@ class PosterShareHandler implements MethodCallHandler {
   }
 
   /// 拉起系统分享面板
+  ///
+  /// 使用 ohos.want.action.sendData + entity.system.share 实体：
+  /// - action: 'ohos.want.action.sendData' 表示向其他应用发送数据
+  /// - entities: ['entity.system.share'] 表示目标是系统分享面板
+  /// - type: 'image/png' 限定可接收的应用为支持 PNG 图片的应用
+  /// - 'ability.params.stream': [fileUri] 以文件流形式传递图片 URI
+  ///
+  /// 之前未指定 entities 导致系统找不到对应的分享 ability，
+  /// 报错 "the specified ability does not exist"。
   private async share(srcPath: string, result: MethodResult): Promise<void> {
     try {
       console.info('[FitTrack] share start, srcPath=' + srcPath);
@@ -115,13 +183,19 @@ class PosterShareHandler implements MethodCallHandler {
         return;
       }
 
-      // 通过 Want 拉起系统分享
+      // 将文件路径转换为 file URI，供其他应用访问
+      const fileUriStr: string = fileUri.getUriFromPath(srcPath);
+      console.info('[FitTrack] share fileUri=' + fileUriStr);
+
+      // 通过 Want 拉起系统分享面板
+      // 关键：必须包含 entities: ['entity.system.share'] 才能匹配系统分享面板
       const context = this.ability.context as common.UIAbilityContext;
       const want: Want = {
-        action: 'ohos.want.action.select',
+        action: 'ohos.want.action.sendData',
+        entities: ['entity.system.share'],
         type: 'image/png',
         parameters: {
-          'ability.params.stream': [srcPath]
+          'ability.params.stream': [fileUriStr]
         }
       };
 

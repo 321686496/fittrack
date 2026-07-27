@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'poster_theme.dart';
 
-/// 健身卡分享海报（1080×1920 竖版）
+/// 健身卡分享海报（宽度固定 1080，高度随内容自适应）
 ///
 /// 使用 [PosterBackground] 跟随用户当前 App 主题。
 class GymCardPoster extends StatelessWidget {
@@ -17,7 +17,6 @@ class GymCardPoster extends StatelessWidget {
   });
 
   static const double posterWidth = 1080.0;
-  static const double posterHeight = 1920.0;
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +49,14 @@ class GymCardPoster extends StatelessWidget {
     return PosterBackground(
       colors: colors,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 72),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // ── 顶部品牌区 ────────────────────────────
             PosterBrandHeader(colors: colors),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 标题 ─────────────────────────────────
             Text(
               '我在 $gymName',
@@ -77,7 +77,7 @@ class GymCardPoster extends StatelessWidget {
                 height: 1.3,
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 大数字（坚持天数）──────────────────────
             Center(
               child: Row(
@@ -121,7 +121,7 @@ class GymCardPoster extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 进度卡片 ─────────────────────────────
             Container(
               width: double.infinity,
@@ -185,7 +185,7 @@ class GymCardPoster extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(flex: 2),
+            const SizedBox(height: 48),
             // ── 健身房信息 ───────────────────────────
             Center(
               child: Column(
@@ -212,7 +212,7 @@ class GymCardPoster extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 48),
             // ── 底部二维码 ───────────────────────────
             PosterQrFooter(
               colors: colors,
