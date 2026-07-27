@@ -22,23 +22,37 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfilePage> {
+  // build 内同步 IO 缓存（在 _refreshCache 中预计算）
+  Map<String, dynamic> _bodyDataCache = const {};
+  Map<String, dynamic> _settingsCache = const {};
+  int _streakCache = 0;
+
   @override
   int get tabIndex => 4;
 
   @override
   void onTabBecameActive() {
     // 切换到"我的"时刷新积分、成就等数据
+    _refreshCache();
+    _evaluateAchievements();
+  }
+
+  void _refreshCache() {
+    _bodyDataCache = Storage.getBodyData();
+    _settingsCache = Storage.getSettings();
+    _streakCache = _computeCurrentStreak();
     if (mounted) setState(() {});
   }
 
   Future<void> _onRefresh() async {
     await _evaluateAchievements();
-    if (mounted) setState(() {});
+    _refreshCache();
   }
 
   @override
   void initState() {
     super.initState();
+    _refreshCache();
     _evaluateAchievements();
   }
 
@@ -85,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final body = Storage.getBodyData();
+    final body = _bodyDataCache;
 
     return Column(
       children: [
@@ -351,7 +365,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
   }
 
   Widget _buildProfileHeader(FitTrackColors colors) {
-    final settings = Storage.getSettings();
+    final settings = _settingsCache;
     final userName = settings['userName'] as String? ?? '用户';
     final gender = settings['gender'] as String? ?? '';
     final goal = settings['fitnessGoal'] as String? ?? '';
@@ -360,7 +374,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     final avatarBgColor = settings['avatarBgColor'] as int? ?? 0xFFFF6B35;
     final earnedTotal = settings['pointsEarnedTotal'] ?? 0;
     final spentTotal = settings['pointsSpentTotal'] ?? 0;
-    final streak = _computeCurrentStreak();
+    final streak = _streakCache;
 
     // 构建副标题
     final tags = <String>[
@@ -837,7 +851,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                         s['trainingTime'] = trainingTime;
                         Storage.saveSettings(s);
                         Navigator.of(ctx).pop();
-                        setState(() {});
+                        _refreshCache();
                         // 更新卡片数据（训练时间变更）
                         if (isOhos) {
                           FormKitService.instance.pushFormData();

@@ -37,32 +37,32 @@ void main() {
 
     try {
       await Storage.init();
-      // 加载系统训练计划库（assets/data/system_plans/*.json）
-      await SystemPlanLibrary.instance.load();
-      // 预加载 SQLite 中的 Plans/Records 到内存缓存
-      await Storage.getPlansAsync();
-      await Storage.getRecordsAsync();
-      await Storage.getGymCardsAsync();
-      // v1 V1-11: 预加载训练笔记缓存
-      await Storage.getNotesAsync();
+      // 加载系统训练计划库 + 预加载 SQLite 缓存：并行执行（无相互依赖）
+      await Future.wait([
+        SystemPlanLibrary.instance.load(),
+        Storage.getPlansAsync(),
+        Storage.getRecordsAsync(),
+        Storage.getGymCardsAsync(),
+        Storage.getNotesAsync(),
+      ]);
       // v1 积分体系：预加载积分日志
       PointsService.instance.getPointsLog();
     } catch (e, stack) {
       debugPrint('Storage.init() failed: $e');
       debugPrint('Stack: $stack');
     }
-    // 初始化音效服务（读取设置中的开关状态）
-    await SoundService.instance.init();
+    // 音效服务初始化（与下方通知/推送服务无依赖，可并行）
+    final soundFuture = SoundService.instance.init();
     // 启动后异步请求核心权限（不阻塞启动）
     PermissionService.requestCorePermissions();
-    // 初始化休息通知服务（内部会配置时区并 await 完成）
-    await RestNotificationService.instance.init();
-    // 初始化智能推送服务
-    await SmartPushService.instance.init();
-    // v1 V1-04: 初始化新手7天留存链服务
-    await RetentionChainService.instance.init();
-    // 初始化 IAP 服务（Android/iOS only, OHOS 使用兑换码路径）
-    await IapService.instance.init();
+    // 通知/推送/留存/IAP 服务之间无依赖，并行初始化
+    await Future.wait([
+      soundFuture,
+      RestNotificationService.instance.init(),
+      SmartPushService.instance.init(),
+      RetentionChainService.instance.init(),
+      IapService.instance.init(),
+    ]);
     // 初始化桌面卡片服务（OHOS）
     if (isOhos) {
       FormKitService.instance.init();

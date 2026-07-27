@@ -14,6 +14,9 @@ class OpponentRenderer extends StatefulWidget {
   final Size size;
   final bool autoTrain;
   final bool showAura;
+  /// 是否启动 idle 循环动画。默认 true 保持原视觉行为。
+  /// 在不可见区域（如 IndexedStack 中非当前 tab）可传 false 节省 CPU。
+  final bool animate;
 
   const OpponentRenderer({
     super.key,
@@ -21,6 +24,7 @@ class OpponentRenderer extends StatefulWidget {
     required this.size,
     this.autoTrain = false,
     this.showAura = false,
+    this.animate = true,
   });
 
   @override
@@ -47,7 +51,13 @@ class _OpponentRendererState extends State<OpponentRenderer>
     _idleController = AnimationController(
       vsync: this,
       duration: skin.idleMotion.duration,
-    )..repeat();
+    );
+    // 仅在显式请求动画时启动循环；缩略图保持静态首帧，避免每帧重绘
+    if (widget.animate) {
+      _idleController.repeat();
+    } else {
+      _idleController.value = 0.0;
+    }
     _trainController = AnimationController(
       vsync: this,
       duration: skin.trainingMotion.duration,
@@ -65,20 +75,22 @@ class _OpponentRendererState extends State<OpponentRenderer>
   }
 
   Future<void> _preloadImages(OpponentSkinConfig skin) async {
-    final futures = <Future<ui.Image?>>[];
-    if (skin.faceAsset != null) futures.add(_loadImage(skin.faceAsset!));
-    if (skin.outfitAsset != null) futures.add(_loadImage(skin.outfitAsset!));
-    if (skin.propAsset != null) futures.add(_loadImage(skin.propAsset!));
-    if (futures.isEmpty) {
-      setState(() => _imagesLoaded = true);
-      return;
-    }
-    final results = await Future.wait(futures);
+    ui.Image? face, outfit, prop;
+    final results = await Future.wait([
+      if (skin.faceAsset != null) _loadImage(skin.faceAsset!),
+      if (skin.outfitAsset != null) _loadImage(skin.outfitAsset!),
+      if (skin.propAsset != null) _loadImage(skin.propAsset!),
+    ]);
     if (!mounted) return;
+    // 按顺序赋值，避免索引越界（旧代码 results[1]/[2] 在缺资源时 RangeError）
+    int idx = 0;
+    if (skin.faceAsset != null) face = results[idx++];
+    if (skin.outfitAsset != null) outfit = results[idx++];
+    if (skin.propAsset != null) prop = results[idx++];
     setState(() {
-      _faceImage = results[0];
-      _outfitImage = results[1];
-      _propImage = results[2];
+      _faceImage = face;
+      _outfitImage = outfit;
+      _propImage = prop;
       _imagesLoaded = true;
     });
   }

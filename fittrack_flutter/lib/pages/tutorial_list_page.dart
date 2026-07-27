@@ -24,28 +24,42 @@ class TutorialListPage extends StatefulWidget {
 
 class _TutorialListPageState extends State<TutorialListPage>
     with TabRefreshMixin<TutorialListPage> {
+  // build 内重计算缓存（在 _refreshCache 中预计算）
+  List<BannerItem> _bannersCache = const [];
+  List<Course> _recommendedCoursesCache = const [];
+
   @override
   int get tabIndex => 2;
 
   @override
   void onTabBecameActive() {
     // 切换到教学中心时刷新解锁状态与推荐数据
+    _refreshCache();
+  }
+
+  void _refreshCache() {
+    _bannersCache = RecommendationService.generateBanners()
+        .where((b) => b.type == 'teaching' || b.type == 'premium')
+        .toList();
+    _recommendedCoursesCache = CourseLibrary.courses.take(2).toList();
     if (mounted) setState(() {});
   }
 
   Future<void> _onRefresh() async {
-    setState(() {});
+    _refreshCache();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshCache();
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final banners = RecommendationService.generateBanners()
-        .where((b) => b.type == 'teaching' || b.type == 'premium')
-        .toList();
-    const allCourses = CourseLibrary.courses;
-    // 推荐精选课程：取前 2 个作为推荐
-    final recommendedCourses = allCourses.take(2).toList();
+    final banners = _bannersCache;
+    final recommendedCourses = _recommendedCoursesCache;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
