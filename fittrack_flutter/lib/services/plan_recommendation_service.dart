@@ -78,8 +78,28 @@ class PlanRecommendationService {
     }).toList();
 
     // 3. 排序+截断
-    scored.sort((a, b) => b.score.compareTo(a.score));
-    return scored.take(limit).toList();
+    final sorted = sortWithFreePriority(scored);
+    return sorted.take(limit).toList();
+  }
+
+  /// 排序：同段内免费优先
+  /// 同段判定：score 差 ≤ 5 视为同段
+  static List<PlanRecommendation> sortWithFreePriority(
+    List<PlanRecommendation> scored,
+  ) {
+    final list = List<PlanRecommendation>.from(scored);
+    list.sort((a, b) {
+      final scoreDiff = b.score.compareTo(a.score);
+      // 不同段：按 score 降序
+      if ((b.score - a.score).abs() > 5) return scoreDiff;
+      // 同段：免费（isPremium=false）排前
+      final aPremium = a.plan.isPremium ? 1 : 0;
+      final bPremium = b.plan.isPremium ? 1 : 0;
+      if (aPremium != bPremium) return aPremium.compareTo(bPremium);
+      // 同段同付费状态：按 score 降序
+      return scoreDiff;
+    });
+    return list;
   }
 
   // ── 评分核心 ──────────────────────────────────────────────────
