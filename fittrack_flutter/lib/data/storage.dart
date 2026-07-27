@@ -434,6 +434,7 @@ class Storage {
       'virtualOpponentMatched': false, // 是否已完成冷启动匹配
       'virtualOpponentTier': '', // 匹配层（休闲/规律/活跃/硬核）
       'virtualOpponentLastAdvance': 0, // 上次对手数据推进时间戳
+      'opponentLastAdvanceDate': '', // 每日推进防重复日期字符串（YYYY-MM-DD）
       // ── v1 获客留存版 — 新手7天留存链（V1-04）──
       'retentionChainStage': 0, // 留存链当前阶段（0=未开始,1=D1,2=D2...）
       'retentionChainLastShown': 0, // 上次留存链弹窗时间戳

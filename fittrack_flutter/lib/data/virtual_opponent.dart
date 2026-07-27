@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:math';
+import 'storage.dart';
 
 /// v1 虚拟对手系统 —— 数据模型与生成引擎
 ///
@@ -154,6 +156,24 @@ class VirtualOpponent {
       currentStatus: json['currentStatus'] as String?,
     );
   }
+
+  /// 当前应用的皮肤 id（运行时计算，不持久化）
+  /// 返回空串表示无皮肤（使用默认 Icon）
+  String get appliedSkinId {
+    final settings = Storage.getSettings();
+    // 优先：邀请里程碑解锁的限定皮肤
+    if (settings['unlockedOpponentSkin'] == true) return 'skin_ambassador';
+    // 其次：从 unlockedFeatures 中查找已购皮肤（精品 → 标准 → 入门 顺序）
+    final raw = settings['unlockedFeatures'] as String? ?? '[]';
+    try {
+      final unlocked = (jsonDecode(raw) as List).cast<String>();
+      // 按价值降序遍历，优先应用最贵的皮肤
+      for (final id in ['skin_cyber_ninja', 'skin_iron_warrior', 'skin_beginner']) {
+        if (unlocked.contains('good_$id')) return id;
+      }
+    } catch (_) {}
+    return '';
+  }
 }
 
 /// 虚拟对手生成与推进引擎
@@ -263,6 +283,73 @@ class VirtualOpponentEngine {
 
     // 偶尔动态（10%概率发布非null动态）
     opponent.currentStatus = _statusTemplates[_random.nextInt(_statusTemplates.length)];
+  }
+
+  /// 每日推进对手训练状态（不再每周才推进）
+  ///
+  /// 职责：仅负责"本周内"的增量推进（训练次数/重量/时长/偶尔动态）
+  /// 周一首次推进时调用 advanceWeekly 重置本周数据
+  /// 防重复：通过 settings['opponentLastAdvanceDate'] 严格按日期去重
+  void dailyAdvance() {
+    final settings = Storage.getSettings();
+    final opponentJson = settings['virtualOpponentData'] as Map<String, dynamic>?;
+    if (opponentJson == null) return; // 冷启动尚未匹配对手
+
+    final opponent = VirtualOpponent.fromJson(Map<String, dynamic>.from(opponentJson));
+    final today = _todayString();
+    final lastAdvanceDate = settings['opponentLastAdvanceDate'] as String? ?? '';
+
+    // 防重复：同一天不重复推进
+    if (lastAdvanceDate == today) return;
+
+    // 周一：先调用 advanceWeekly 把上周数据快照并重置本周
+    if (DateTime.now().weekday == DateTime.monday && lastAdvanceDate != today) {
+      advanceWeekly(opponent);
+    }
+
+    // 按 tier 调整今日训练概率
+    double trainProbability;
+    switch (opponent.tier) {
+      case OpponentTier.hardcore:
+        trainProbability = 0.60;
+        break;
+      case OpponentTier.active:
+        trainProbability = 0.40;
+        break;
+      case OpponentTier.regular:
+        trainProbability = 0.25;
+        break;
+      case OpponentTier.casual:
+        trainProbability = 0.15;
+        break;
+    }
+
+    if (_random.nextDouble() < trainProbability) {
+      // 对手今天训练
+      final durationRange = opponent.tier.sessionDurationRange;
+      final weightRange = opponent.tier.sessionWeightRange;
+      final duration = _random.nextInt(durationRange.max - durationRange.min + 1) + durationRange.min;
+      final weight = _random.nextInt(weightRange.max - weightRange.min + 1) + weightRange.min;
+      opponent.weeklyTrainings += 1;
+      opponent.weeklyWeight += weight;
+      opponent.weeklyDuration += duration;
+    }
+
+    // 10% 概率发布偶尔动态
+    if (_random.nextDouble() < 0.10) {
+      opponent.currentStatus = _statusTemplates[_random.nextInt(_statusTemplates.length)];
+    }
+
+    // 持久化
+    settings['virtualOpponentData'] = opponent.toJson();
+    settings['opponentLastAdvanceDate'] = today;
+    settings['virtualOpponentLastAdvance'] = DateTime.now().millisecondsSinceEpoch;
+    Storage.saveSettings(settings);
+  }
+
+  String _todayString() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
   /// 胜负分布算法（真实化）
