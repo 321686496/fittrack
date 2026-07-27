@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/tutorial_content.dart';
+import '../data/content_block.dart';
+import '../data/course_content.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tutorial_share_card.dart';
+import '../widgets/unlock_panel.dart';
 
 /// v1 教学详情页
 ///
@@ -66,25 +69,11 @@ class TutorialDetailPage extends StatelessWidget {
                 children: [
                   _buildMetaCard(colors, tutorial),
                   const SizedBox(height: 16),
-                  _buildKeyPointsCard(colors, tutorial),
+                  // 按章节渲染（替代旧的 keyPoints/mistakes/breathing 卡片）
+                  ...tutorial.chapters.map((ch) => _buildChapterCard(colors, tutorial, ch, context)),
                   const SizedBox(height: 16),
-                  _buildMistakesCard(colors, tutorial),
-                  const SizedBox(height: 16),
-                  if (tutorial.breathingTip != null) ...[
-                    _buildBreathingCard(colors, tutorial),
-                    const SizedBox(height: 16),
-                  ],
-                  if (tutorial.alternativeExerciseIds.isNotEmpty) ...[
-                    _buildAlternativesCard(colors, tutorial, context),
-                    const SizedBox(height: 16),
-                  ],
                   if (tutorial.recommendedExerciseIds.isNotEmpty) ...[
                     _buildRecommendedExercisesCard(colors, tutorial, context),
-                    const SizedBox(height: 16),
-                  ],
-                  if (tutorial.type != TutorialType.basic &&
-                      tutorial.unlockRequirement != null) ...[
-                    _buildUnlockCard(colors, tutorial),
                     const SizedBox(height: 16),
                   ],
                   const SizedBox(height: 80),
@@ -186,218 +175,185 @@ class TutorialDetailPage extends StatelessWidget {
     );
   }
 
-  // ── 图文要点 ──────────────────────────────────────────────
+  // ── 章节卡（按章节渲染 + 单章积分解锁） ──────────────────────
 
-  Widget _buildKeyPointsCard(FitTrackColors colors, Tutorial t) {
-    return CardWidget(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.check_circle_outline,
-                  size: 18, color: colors.accentGlow),
-              const SizedBox(width: 6),
-              Text(
-                '动作要点',
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...t.keyPoints.asMap().entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: colors.accentGlow.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${entry.key + 1}',
-                      style: TextStyle(
-                        color: colors.accentGlow,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      entry.value,
-                      style: TextStyle(
-                        color: colors.textPrimary,
-                        fontSize: 14,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
+  Widget _buildChapterCard(
+    FitTrackColors colors,
+    Tutorial tutorial,
+    Chapter chapter,
+    BuildContext context,
+  ) {
+    final isUnlocked = tutorial.isChapterUnlocked(chapter.id);
 
-  // ── 常见错误 ──────────────────────────────────────────────
-
-  Widget _buildMistakesCard(FitTrackColors colors, Tutorial t) {
-    return CardWidget(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.warning_amber_outlined,
-                  size: 18, color: colors.warningColor),
-              const SizedBox(width: 6),
-              Text(
-                '常见错误',
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...t.commonMistakes.map((m) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.close, size: 16, color: colors.warningColor),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      m,
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: 13,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // ── 呼吸方法 ──────────────────────────────────────────────
-
-  Widget _buildBreathingCard(FitTrackColors colors, Tutorial t) {
-    return CardWidget(
-      child: Row(
-        children: [
-          Icon(Icons.air_outlined, size: 20, color: colors.accentGlow),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: CardWidget(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  '呼吸方法',
-                  style: TextStyle(
-                    color: colors.textMuted,
-                    fontSize: 12,
-                  ),
+                Icon(
+                  isUnlocked ? Icons.menu_book : Icons.lock_outline,
+                  size: 18,
+                  color: isUnlocked ? colors.accentGlow : colors.textMuted,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  t.breathingTip!,
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── 替代动作 ──────────────────────────────────────────────
-
-  Widget _buildAlternativesCard(
-      FitTrackColors colors, Tutorial t, BuildContext context) {
-    return CardWidget(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.swap_horiz, size: 18, color: colors.accentGlow),
-              const SizedBox(width: 6),
-              Text(
-                '替代动作',
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: t.alternativeExerciseIds.map((id) {
-              final alt = TutorialLibrary.getById(id);
-              final name = alt?.name ?? id;
-              return GestureDetector(
-                onTap: () {
-                  if (alt != null) {
-                    context.pushReplacement('/tutorial/${alt.id}');
-                  }
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: colors.accentGlow.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: colors.accentGlow.withOpacity(0.2),
-                    ),
-                  ),
+                const SizedBox(width: 8),
+                Expanded(
                   child: Text(
-                    name,
+                    chapter.title,
                     style: TextStyle(
-                      color: colors.accentGlow,
-                      fontSize: 13,
+                      color: colors.textPrimary,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-        ],
+                if (!isUnlocked)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colors.accentGlow.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${tutorial.chapterPointsCost} 积分',
+                      style: TextStyle(
+                        color: colors.accentGlow,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (isUnlocked) ...[
+              // 已解锁：渲染 blocks
+              ...chapter.blocks.map((b) => _buildContentBlock(colors, b, context)),
+            ] else ...[
+              // 未解锁：显示提示文案 + 解锁按钮
+              Text(
+                '本章内容已锁定，观看广告或消耗积分即可解锁',
+                style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.5),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final ok = await UnlockPanel.show(
+                      context: context,
+                      title: '解锁《${chapter.title}》',
+                      description: '该章节属于「${tutorial.type.label}」教学',
+                      pointsCost: tutorial.chapterPointsCost,
+                      featureId: tutorial.chapterFeatureId(chapter.id),
+                    );
+                    if (ok && context.mounted) {
+                      // 触发重建
+                      (context as Element).markNeedsBuild();
+                    }
+                  },
+                  icon: const Icon(Icons.lock_open, size: 16),
+                  label: const Text('解锁本章'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.accentGlow,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildContentBlock(
+    FitTrackColors colors,
+    ContentBlock block,
+    BuildContext context,
+  ) {
+    // 复用 course_detail_page 已有的 ContentBlock 渲染逻辑
+    // 简化版本：
+    switch (block.type) {
+      case BlockType.heading:
+        return Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 6),
+          child: Text(
+            block.text ?? '',
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      case BlockType.paragraph:
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            block.text ?? '',
+            style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
+          ),
+        );
+      case BlockType.bulletList:
+        return Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('• ', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+              Expanded(
+                child: Text(
+                  block.text ?? '',
+                  style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
+                ),
+              ),
+            ],
+          ),
+        );
+      case BlockType.callout:
+        final isWarning = block.calloutType == 'warning';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: (isWarning ? colors.warningColor : colors.accentGlow).withOpacity(0.08),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: (isWarning ? colors.warningColor : colors.accentGlow).withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                isWarning ? Icons.warning_amber : Icons.info_outline,
+                size: 16,
+                color: isWarning ? colors.warningColor : colors.accentGlow,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  block.text ?? '',
+                  style: TextStyle(
+                    color: isWarning ? colors.warningColor : colors.textSecondary,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   // ── 推荐训练动作 ──────────────────────────────────────────
@@ -455,36 +411,6 @@ class TutorialDetailPage extends StatelessWidget {
     );
   }
 
-  // ── 解锁提示 ──────────────────────────────────────────────
-
-  Widget _buildUnlockCard(FitTrackColors colors, Tutorial t) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colors.warningColor.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.warningColor.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.lock_outline, size: 20, color: colors.warningColor),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              t.unlockRequirement!,
-              style: TextStyle(
-                color: colors.warningColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ── 底部分享栏 ────────────────────────────────────────────
 
   Widget _buildBottomBar(
@@ -519,7 +445,7 @@ class TutorialDetailPage extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () => context.push('/invitation'),
                 icon: const Icon(Icons.card_giftcard, size: 18),
-                label: const Text('邀请解锁'),
+                label: const Text('邀请加速解锁'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   foregroundColor: Colors.white,
