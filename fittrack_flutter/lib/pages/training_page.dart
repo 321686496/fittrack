@@ -1403,66 +1403,70 @@ class _TrainingPageState extends State<TrainingPage>
       opponent.tier,
     );
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.bgCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: userWon ? colors.successColor.withOpacity(0.4) : colors.borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.emoji_events, size: 18, color: colors.accentGlow),
-              const SizedBox(width: 6),
-              Text(
-                '本周PK · vs ${opponent.nickname}',
-                style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: (userWon ? colors.successColor : colors.warningColor).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6),
+    return InkWell(
+      onTap: () => context.push('/opponent-detail'),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: userWon ? colors.successColor.withOpacity(0.4) : colors.borderColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.emoji_events, size: 18, color: colors.accentGlow),
+                const SizedBox(width: 6),
+                Text(
+                  '本周PK · vs ${opponent.nickname}',
+                  style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                child: Text(
-                  userWon ? '领先' : '追赶中',
-                  style: TextStyle(
-                    color: userWon ? colors.successColor : colors.warningColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: (userWon ? colors.successColor : colors.warningColor).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    userWon ? '领先' : '追赶中',
+                    style: TextStyle(
+                      color: userWon ? colors.successColor : colors.warningColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 双方进度条对比
-          _buildPKBar(colors, '我', userWeeklyTrainings, outcome.userScore, colors.accentGlow),
-          const SizedBox(height: 8),
-          _buildPKBar(colors, opponent.nickname, opponent.weeklyTrainings, outcome.opponentScore, colors.textMuted),
-          const SizedBox(height: 12),
-          // 超越百分比
-          Row(
-            children: [
-              Text(
-                '超越同水平 $percentile% 用户',
-                style: TextStyle(color: colors.textSecondary, fontSize: 12),
-              ),
-              const Spacer(),
-              if (opponent.currentStatus != null)
+              ],
+            ),
+            const SizedBox(height: 12),
+            // 双方进度条对比
+            _buildPKBar(colors, '我', userWeeklyTrainings, outcome.userScore, colors.accentGlow),
+            const SizedBox(height: 8),
+            _buildPKBar(colors, opponent.nickname, opponent.weeklyTrainings, outcome.opponentScore, colors.textMuted),
+            const SizedBox(height: 12),
+            // 超越百分比
+            Row(
+              children: [
                 Text(
-                  '${opponent.nickname}：${opponent.currentStatus}',
-                  style: TextStyle(color: colors.textMuted, fontSize: 11, fontStyle: FontStyle.italic),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  '超越同水平 $percentile% 用户',
+                  style: TextStyle(color: colors.textSecondary, fontSize: 12),
                 ),
-            ],
-          ),
-        ],
+                const Spacer(),
+                if (opponent.currentStatus != null)
+                  Text(
+                    '${opponent.nickname}：${opponent.currentStatus}',
+                    style: TextStyle(color: colors.textMuted, fontSize: 11, fontStyle: FontStyle.italic),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
