@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fittrack_flutter/pages/data_privacy_page.dart';
 import 'package:fittrack_flutter/data/storage.dart';
+import 'package:fittrack_flutter/themes/app_themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -12,7 +13,10 @@ void main() {
 
   testWidgets('DataPrivacyPage shows clear-data confirmation twice',
       (WidgetTester tester) async {
-    await tester.pumpWidget(const MaterialApp(home: DataPrivacyPage()));
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.getTheme('vitality-sport'),
+      home: const DataPrivacyPage(),
+    ));
     await tester.pump();
 
     // Tap clear data
