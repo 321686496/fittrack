@@ -13,10 +13,10 @@ void main() {
     await Storage.init();
   });
 
-  test('returns error when navigator unavailable', () async {
-    // AdService.adsEnabled 为 true，但没有 runApp/Navigator，应返回 error
+  test('returns notAvailable when ads disabled', () async {
+    // AdService.adsEnabled 为 false（开发者常量），showRewardedVideo 直接返回 notAvailable
     final result = await AdService.instance.showRewardedVideo();
-    expect(result, AdResult.error);
+    expect(result, AdResult.notAvailable);
   });
 
   test('Pro users never see ads', () async {
