@@ -11,6 +11,11 @@ class IosLiveViewService implements LiveViewService {
   final StreamController<LiveViewEvent> _actionController =
       StreamController<LiveViewEvent>.broadcast();
 
+  /// I2：补齐 PAL 契约。iOS Live Activity 的"结束休息"按钮通过 URL scheme
+  /// 路由到 reminderChannel，不走 liveview channel，此处保留空实现以满足接口契约。
+  @override
+  Future<void> init() async {}
+
   @override
   Future<void> startRestLiveView({
     required String exerciseName,

@@ -8,6 +8,11 @@ class OhosLiveViewService implements LiveViewService {
   final StreamController<LiveViewEvent> _actionController =
       StreamController<LiveViewEvent>.broadcast();
 
+  /// I2：补齐 PAL 契约。OHOS Live View 事件由 main.dart 通过
+  /// handleCardClick 外部注入，不需要在 init() 中注册 MethodChannel。
+  @override
+  Future<void> init() async {}
+
   @override
   Future<void> startRestLiveView({
     required String exerciseName,

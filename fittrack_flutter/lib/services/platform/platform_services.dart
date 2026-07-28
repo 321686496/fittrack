@@ -53,6 +53,8 @@ class PlatformServices {
 
     await restReminder.init();
     await widgetCard.init();
+    // I2 修复：补齐 LiveViewService.init() 钩子调用（与 PAL 其他服务保持一致）。
+    await liveView.init();
 
     _initialized = true;
   }

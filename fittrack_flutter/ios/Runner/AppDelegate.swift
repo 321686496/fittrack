@@ -257,6 +257,23 @@ import WidgetKit
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
+    // I3 修复：路由 fittrack:// URL。
+    // - fittrack://action?cardAction=skipRest → reminderChannel.onCardClick
+    //   （iOS Live Activity "结束休息"按钮通过 Link 触发）
+    // - fittrack://invite/... → inviteChannel.onInviteUrl（既有逻辑）
+    if url.scheme == "fittrack" && url.host == "action" {
+      let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+      let cardAction = components?.queryItems?.first(where: { $0.name == "cardAction" })?.value
+      if cardAction == "skipRest" {
+        let params: [String: Any] = [
+          "targetPage": "training",
+          "cardAction": "skipRest"
+        ]
+        reminderChannel?.invokeMethod("onCardClick", arguments: params)
+      }
+      return true
+    }
+
     // 处理 fittrack://invite/... URL
     inviteChannel?.invokeMethod("onInviteUrl", arguments: url.absoluteString)
     return true

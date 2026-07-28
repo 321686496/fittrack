@@ -7,6 +7,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
+import com.fp.fitplan.MainActivity
 
 class RestOngoingService : Service() {
 
@@ -58,14 +59,16 @@ class RestOngoingService : Service() {
                 stopSelf()
             }
             ACTION_SKIP_REST -> {
-                // 通过 broadcast 通知 Flutter 侧 skipRest
-                // MainActivity 的 alarm channel 会接收到 onCardClick
-                val skipIntent = Intent("com.fp.fitplan.REST_ALARM").apply {
+                // C2 修复：原实现 sendBroadcast("com.fp.fitplan.REST_ALARM") 会被 AlarmReceiver
+                // 误判为闹钟到期，弹出"休息结束"通知，且 cardAction="skipRest" 永远到不了 Flutter。
+                // 改用 startActivity 拉起 MainActivity，由 handleNotificationIntent → alarmChannel
+                // .invokeMethod("onCardClick", {cardAction:"skipRest"}) 走通 PAL 链路。
+                val intent = Intent(this, MainActivity::class.java).apply {
                     putExtra("targetPage", "training")
                     putExtra("cardAction", "skipRest")
-                    setPackage(packageName)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 }
-                sendBroadcast(skipIntent)
+                startActivity(intent)
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 NotificationManagerCompat.from(this)
                     .cancel(RestNotificationBuilder.NOTIFICATION_ID)

@@ -53,7 +53,8 @@ class RestNotificationService {
 
       // OHOS 平台：不初始化 flutter_local_notifications，避免插件自动创建带进度条的通知
       // OHOS 的通知由 EntryAbility 原生侧的 LiveView 和 reminderAgentManager 处理
-      final initSettings = InitializationSettings(
+      // I4 修复：androidSettings/darwinSettings 均为 const，InitializationSettings 构造器可声明为 const。
+      const initSettings = InitializationSettings(
         android: androidSettings,
         iOS: darwinSettings,
         macOS: darwinSettings,
@@ -160,7 +161,8 @@ class RestNotificationService {
     try {
       await cancelScheduledNotification();
 
-      final title = '休息结束';
+      // I4 修复：'休息结束' 为字面量，使用 const 代替 final（prefer_const_declarations）。
+      const title = '休息结束';
       final content = '$exerciseName 的休息时间已结束，开始下一组训练吧！';
 
       // 所有平台：Dart Timer 保底（前台有效）

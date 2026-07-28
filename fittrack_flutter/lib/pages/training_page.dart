@@ -121,8 +121,16 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   /// 通知点击回调：回到训练页并处理休息结束
+  ///
+  /// C2 修复：Android "结束休息"按钮（RestOngoingService.ACTION_SKIP_REST）和 iOS Live Activity
+  /// 的 Link 按钮都通过 cardAction="skipRest" 路由到这里。优先处理 skipRest，避免走到下方的
+  /// "休息到点"分支（该分支只在 now >= restEndTime 时才动作）。
   void _onNotificationClicked(RestReminderEvent event) {
     if (!mounted) return;
+    if (event.cardAction == 'skipRest') {
+      _skipRest();
+      return;
+    }
     if (_isResting && _restEndTime != null) {
       final now = DateTime.now();
       if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
