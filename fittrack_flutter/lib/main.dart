@@ -70,6 +70,16 @@ void main() {
     GymCardReminderService.instance.checkAndPush();
     // 初始化平台抽象层（PAL）—— 根据当前平台注入对应实现
     await PlatformServices.init();
+    // 注册邀请链接处理器（解析 fittrack://invite?code=XXX）
+    PlatformServices.inviteUrl.registerHandler((uri) async {
+      debugPrint('[Invite] Received URL: $uri');
+      if (uri.host == 'invite') {
+        final code = uri.queryParameters['code'];
+        if (code != null && code.isNotEmpty) {
+          _globalRouter?.go('/home?inviteCode=$code');
+        }
+      }
+    });
     // OHOS: 注册原生卡片点击回调，统一转发到 PAL 事件流
     // （Android/iOS 的点击事件由各自 PAL 实现内部通过 MethodChannel 监听）
     final ohosLiveView = PlatformServices.ohosLiveView;
