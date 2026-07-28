@@ -62,7 +62,7 @@ fun IdleView(
     Column(
         modifier = GlanceModifier.fillMaxSize(),
         verticalAlignment = Alignment.Top,
-        horizontalAlignment = HorizontalAlignment.Start
+        horizontalAlignment = Alignment.Start
     ) {
         Text(
             text = "今日训练",
@@ -165,8 +165,8 @@ fun RestView(
 ) {
     Column(
         modifier = GlanceModifier.fillMaxSize(),
-        verticalAlignment = Alignment.Center,
-        horizontalAlignment = HorizontalAlignment.CenterHorizontally
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "休息中",
