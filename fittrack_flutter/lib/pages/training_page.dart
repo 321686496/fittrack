@@ -75,6 +75,10 @@ class _TrainingPageState extends State<TrainingPage>
   Timer? _restTimer;
   late DateTime _startTime;
 
+  // ── PAL stream subscriptions ─────────────────────────────────
+  StreamSubscription<RestReminderEvent>? _restReminderSub;
+  StreamSubscription<LiveViewEvent>? _liveViewSub;
+
   // ── Save state ───────────────────────────────────────────────
   /// 防止自动保存重复触发
   bool _isSaved = false;
@@ -95,9 +99,9 @@ class _TrainingPageState extends State<TrainingPage>
     _loadData();
 
     // 监听通知点击（通过 PAL 统一处理）
-    PlatformServices.restReminder.onNotificationClick.listen(_onNotificationClicked);
+    _restReminderSub = PlatformServices.restReminder.onNotificationClick.listen(_onNotificationClicked);
     // 监听实况窗用户操作（skipRest / resume）
-    PlatformServices.liveView.onUserAction.listen((event) {
+    _liveViewSub = PlatformServices.liveView.onUserAction.listen((event) {
       if (!mounted) return;
       if (event.action == LiveViewAction.skipRest && _isResting) {
         _skipRest();
@@ -109,6 +113,8 @@ class _TrainingPageState extends State<TrainingPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _restTimer?.cancel();
+    _restReminderSub?.cancel();
+    _liveViewSub?.cancel();
     _weightController.dispose();
     _repsController.dispose();
     super.dispose();
