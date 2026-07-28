@@ -1,6 +1,8 @@
 import UIKit
 import Flutter
 import UserNotifications
+import ActivityKit
+import WidgetKit
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate, UNUserNotificationCenterDelegate {
@@ -130,15 +132,39 @@ import UserNotifications
     result(true)
   }
 
-  // MARK: - LiveView Channel (占位，Batch 3 实现)
+  // MARK: - LiveView Channel (ActivityKit)
 
   private func setupLiveViewChannel() {
-    liveViewChannel?.setMethodCallHandler { call, result in
+    liveViewChannel?.setMethodCallHandler { [weak self] call, result in
       switch call.method {
       case "startRestLiveView":
-        // Batch 3 实现 ActivityKit
-        result(FlutterError(code: "NOT_IMPLEMENTED", message: "Live Activities in Batch 3", details: nil))
+        guard let args = call.arguments as? [String: Any],
+              let exerciseName = args["exerciseName"] as? String,
+              let restSeconds = args["restSeconds"] as? Int,
+              let restEndTimeMs = args["restEndTimeMs"] as? Int else {
+          result(FlutterError(code: "INVALID_ARGS", message: "Invalid arguments", details: nil))
+          return
+        }
+
+        if #available(iOS 16.1, *) {
+          self?.startRestLiveView(
+            exerciseName: exerciseName,
+            restSeconds: restSeconds,
+            restEndTimeMs: restEndTimeMs,
+            result: result
+          )
+        } else {
+          // 低于 16.1 降级为普通通知
+          result(FlutterError(code: "UNAVAILABLE", message: "Live Activities requires iOS 16.1+", details: nil))
+        }
       case "stopRestLiveView":
+        if #available(iOS 16.1, *) {
+          for activity in Activity<RestLiveActivityAttributes>.activities {
+            Task {
+              await activity.end(dismissalPolicy: .immediate)
+            }
+          }
+        }
         result(true)
       default:
         result(FlutterMethodNotImplemented)
@@ -146,16 +172,47 @@ import UserNotifications
     }
   }
 
-  // MARK: - Widget Channel (占位，Batch 3 实现)
+  @available(iOS 16.1, *)
+  private func startRestLiveView(
+    exerciseName: String,
+    restSeconds: Int,
+    restEndTimeMs: Int,
+    result: @escaping FlutterResult
+  ) {
+    let attributes = RestLiveActivityAttributes(exerciseName: exerciseName)
+    let restEndTime = Date(timeIntervalSince1970: TimeInterval(restEndTimeMs) / 1000.0)
+    let state = RestLiveActivityAttributes.ContentState(
+        exerciseName: exerciseName,
+        remainingSeconds: restSeconds,
+        totalRestSeconds: restSeconds,
+        restEndTime: restEndTime
+    )
+
+    do {
+      let activity = try Activity.request(
+        attributes: attributes,
+        content: .init(state: state, staleDate: restEndTime),
+        pushType: nil
+      )
+      debugPrint("[LiveView] Activity started: \(activity.id)")
+      result(true)
+    } catch {
+      debugPrint("[LiveView] Error starting activity: \(error)")
+      result(FlutterError(code: "ACTIVITY_ERROR", message: error.localizedDescription, details: nil))
+    }
+  }
+
+  // MARK: - Widget Channel (WidgetKit reload)
 
   private func setupWidgetChannel() {
     widgetChannel?.setMethodCallHandler { call, result in
       switch call.method {
       case "pushCardData":
-        // 写入 App Group UserDefaults（Batch 3 实现 WidgetKit reload）
         if let jsonData = call.arguments as? String {
           let defaults = UserDefaults(suiteName: "group.com.fp.fitplan")
           defaults?.set(jsonData, forKey: "widgetData")
+          // 触发 WidgetKit 刷新
+          WidgetCenter.shared.reloadTimelines(ofKind: "FitTrackWidget")
           result(true)
         } else {
           result(FlutterError(code: "INVALID_ARGS", message: "Expected JSON string", details: nil))
@@ -163,6 +220,7 @@ import UserNotifications
       case "clearCardData":
         let defaults = UserDefaults(suiteName: "group.com.fp.fitplan")
         defaults?.removeObject(forKey: "widgetData")
+        WidgetCenter.shared.reloadTimelines(ofKind: "FitTrackWidget")
         result(true)
       default:
         result(FlutterMethodNotImplemented)
