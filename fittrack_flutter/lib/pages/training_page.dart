@@ -6,9 +6,6 @@ import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../services/rest_notification_service.dart';
 import '../services/smart_push_service.dart';
-import '../services/ohos_reminder_service.dart';
-import '../services/android_alarm_service.dart';
-import '../services/form_kit_service.dart';
 import '../services/achievement_service.dart';
 import '../services/ad_service.dart';
 import '../services/retention_chain_service.dart';
@@ -23,7 +20,11 @@ import '../widgets/rating_prompt_sheet.dart';
 import '../widgets/share_card_frame.dart';
 import '../widgets/opponent/opponent_renderer.dart';
 import '../widgets/opponent/opponent_skin_config.dart';
-import '../utils/platform_utils.dart';
+import '../services/platform/platform_services.dart';
+import '../services/platform/widget_card_service.dart';
+import '../services/platform/live_view_service.dart';
+import '../services/platform/rest_reminder_service.dart';
+import '../services/platform/implementations/ohos_rest_reminder_service.dart';
 
 class TrainingPage extends StatefulWidget {
   final Map<String, dynamic> params;
@@ -93,15 +94,15 @@ class _TrainingPageState extends State<TrainingPage>
     _startTime = DateTime.now();
     _loadData();
 
-    // 监听 OHOS 通知点击
-    if (isOhos) {
-      OhosReminderService.instance.onNotificationClick = _onNotificationClicked;
-      // 注册训练卡片交互回调：卡片点击时原地处理，避免跳转首页销毁本页
-      OhosReminderService.instance.onTrainingCardAction = _onTrainingCardAction;
-    } else {
-      // 监听 Android 通知点击
-      AndroidAlarmService.instance.onCardClick = _onAndroidAlarmCardClick;
-    }
+    // 监听通知点击（通过 PAL 统一处理）
+    PlatformServices.restReminder.onNotificationClick.listen(_onNotificationClicked);
+    // 监听实况窗用户操作（skipRest / resume）
+    PlatformServices.liveView.onUserAction.listen((event) {
+      if (!mounted) return;
+      if (event.action == LiveViewAction.skipRest && _isResting) {
+        _skipRest();
+      }
+    });
   }
 
   @override
@@ -110,26 +111,20 @@ class _TrainingPageState extends State<TrainingPage>
     _restTimer?.cancel();
     _weightController.dispose();
     _repsController.dispose();
-    // 清理通知点击回调
-    if (isOhos) {
-      OhosReminderService.instance.onNotificationClick = null;
-      OhosReminderService.instance.onTrainingCardAction = null;
-    } else {
-      AndroidAlarmService.instance.onCardClick = null;
-    }
     super.dispose();
   }
 
-  /// Android 通知卡片点击回调：回到训练页并处理休息结束
-  void _onAndroidAlarmCardClick(Map<String, dynamic> args) {
+  /// 通知点击回调：回到训练页并处理休息结束
+  void _onNotificationClicked(RestReminderEvent event) {
     if (!mounted) return;
-    final targetPage = args['targetPage'] as String?;
-    final cardAction = args['cardAction'] as String?;
-
-    if (targetPage == 'training' && cardAction == 'resume') {
-      _onNotificationClicked(args);
-    } else if (cardAction == 'skipRest' && _isResting) {
-      _skipRest();
+    if (_isResting && _restEndTime != null) {
+      final now = DateTime.now();
+      if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
+        _restSeconds = 0;
+        RestNotificationService.instance.cancelScheduledNotification();
+        _notifyRestEnd();
+        _advanceAfterRest();
+      }
     }
   }
 
@@ -137,43 +132,13 @@ class _TrainingPageState extends State<TrainingPage>
   /// 只在用户主动离开（返回按钮 / 系统返回 / 保存返回）时调用，
   /// 不放在 dispose() 中，避免 go_router 页面重建时被误重置。
   void _resetWidgetOnExit() {
-    if (isOhos) {
-      FormKitService.instance.endTraining();
-    }
+    PlatformServices.widgetCard.clearCardData();
   }
 
   /// 顶部返回按钮：先恢复卡片空闲态，再返回上一页。
   void _onBackPressed() {
     _resetWidgetOnExit();
     context.pop();
-  }
-
-  /// OHOS 训练卡片点击回调：
-  /// - 休息中点击“结束休息”按钮(skipRest)：原地跳过休息，不跳转
-  /// - 训练中点击“回到应用”(resume)：无需额外处理，应用已被拉到前台
-  void _onTrainingCardAction(Map<String, dynamic> args) {
-    if (!mounted) return;
-    final cardAction = args['cardAction'] as String?;
-    if (cardAction == 'skipRest' && _isResting) {
-      _skipRest();
-    }
-  }
-
-  /// OHOS 通知点击回调：回到训练页并处理休息结束
-  void _onNotificationClicked(Map<String, dynamic> args) {
-    if (!mounted) return;
-    if (_isResting && _restEndTime != null) {
-      final now = DateTime.now();
-      if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
-        _restSeconds = 0;
-        // OHOS 平台：代理提醒由 EntryAbility 自动管理，无需 Flutter 侧取消
-        if (!isOhos) {
-          RestNotificationService.instance.cancelScheduledNotification();
-        }
-        _notifyRestEnd();
-        _advanceAfterRest();
-      }
-    }
   }
 
   @override
@@ -194,19 +159,11 @@ class _TrainingPageState extends State<TrainingPage>
   void _onAppResumedFromBackground() {
     final now = DateTime.now();
     if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
-      // 休息时间已在后台结束
       _restSeconds = 0;
-      // 取消预约通知（可能已发送，清理）
-      // OHOS 平台：代理提醒由 EntryAbility 自动管理，无需 Flutter 侧取消
-      if (!isOhos) {
-        RestNotificationService.instance.cancelScheduledNotification();
-      }
-      // 后台可能没有收到 zonedSchedule 通知，恢复前台时补发通知+振动
+      RestNotificationService.instance.cancelScheduledNotification();
       _notifyRestEnd();
-      // 推进到下一组
       _advanceAfterRest();
     } else {
-      // 休息时间未结束，重新计算剩余秒数并重启计时器
       final remaining = _restEndTime!.difference(now).inSeconds;
       setState(() {
         _restSeconds = remaining;
@@ -354,27 +311,35 @@ class _TrainingPageState extends State<TrainingPage>
       _isLastSetOfExercise = isLastSetOfExercise;
     });
 
-    // 推送休息状态到卡片（含 restEndTime 绝对时间戳，卡片侧本地倒计时据此运行）
-    if (isOhos && _currentExIdx < _exercises.length) {
+    // 推送休息状态到卡片 + 启动实况窗
+    if (_currentExIdx < _exercises.length) {
       final currentEx = _exercises[_currentExIdx];
-      FormKitService.instance.startRest(
-        exerciseName: currentEx['name'] as String,
-        restSeconds: seconds,
-        restEndTime: _restEndTime!.millisecondsSinceEpoch,
-        totalRestSeconds: seconds,
+      final exerciseName = currentEx['name'] as String;
+      final totalSets = (currentEx['sets'] as int?) ?? 0;
+
+      PlatformServices.widgetCard.pushCardData(WidgetCardData(
+        mode: WidgetCardMode.rest,
+        exerciseName: exerciseName,
+        restTotalSeconds: seconds,
+        restEndTime: _restEndTime,
         currentSet: _currentSetIdx + 1,
-        totalSets: (currentEx['sets'] as int?) ?? 0,
+        totalSets: totalSets,
         exerciseIndex: _currentExIdx + 1,
         totalExercises: _exercises.length,
         completedSets: _completedSets + 1,
         totalPlanSets: _totalSets,
+      ));
+      PlatformServices.liveView.startRestLiveView(
+        exerciseName: exerciseName,
+        restSeconds: seconds,
+        restEndTime: _restEndTime!,
       );
     }
 
     // 预约定时通知（后台时系统自动触发）
-    // OHOS 平台：EntryAbility 接收到 mode=rest 数据后自动发布 reminderAgentManager 代理提醒，
-    // 无需 Flutter 侧再通过 flutter_local_notifications 预约，避免 MissingPluginException
-    if (!isOhos) {
+    // OHOS 平台：EntryAbility 接收到 mode=rest 数据后自动发布代理提醒
+    // Android/iOS：通过 RestNotificationService 调度
+    if (PlatformServices.restReminder is! OhosRestReminderService) {
       final exerciseName = _currentExIdx < _exercises.length
           ? _exercises[_currentExIdx]['name'] as String
           : '';
@@ -420,11 +385,7 @@ class _TrainingPageState extends State<TrainingPage>
 
   void _skipRest() {
     _restTimer?.cancel();
-    // 跳过休息时才取消预约通知
-    // OHOS 平台：通过 restSkipped 标记告知 EntryAbility 取消尚未触发的代理提醒
-    if (!isOhos) {
-      RestNotificationService.instance.cancelScheduledNotification();
-    }
+    RestNotificationService.instance.cancelScheduledNotification();
     _advanceAfterRest(restSkipped: true);
   }
 
@@ -441,9 +402,8 @@ class _TrainingPageState extends State<TrainingPage>
         : '';
 
     if (_appLifecycleState == AppLifecycleState.resumed) {
-      // 前台或从后台恢复：显示通知（震动仅在训练结束时触发）
-      // OHOS 平台：通知由 EntryAbility 的 notificationManager 处理
-      if (!isOhos) {
+      // OHOS 平台：通知由 EntryAbility 原生侧处理，跳过 Flutter 侧 show() 避免重复
+      if (PlatformServices.restReminder is! OhosRestReminderService) {
         await RestNotificationService.instance
             .showRestEndNotification(exerciseName: exerciseName);
       }
@@ -477,10 +437,10 @@ class _TrainingPageState extends State<TrainingPage>
 
   /// 推送训练状态到桌面卡片
   void _pushTrainingToWidget({bool restSkipped = false}) {
-    if (!isOhos) return;
     if (_currentExIdx >= _exercises.length) return;
     final currentEx = _exercises[_currentExIdx];
-    FormKitService.instance.updateTrainingState(
+    PlatformServices.widgetCard.pushCardData(WidgetCardData(
+      mode: WidgetCardMode.training,
       exerciseName: currentEx['name'] as String,
       currentSet: _currentSetIdx + 1,
       totalSets: (currentEx['sets'] as int?) ?? 0,
@@ -488,8 +448,7 @@ class _TrainingPageState extends State<TrainingPage>
       totalExercises: _exercises.length,
       completedSets: _completedSets,
       totalPlanSets: _totalSets,
-      restSkipped: restSkipped,
-    );
+    ));
   }
 
   /// 根据计划数据预填重量和次数
@@ -626,9 +585,8 @@ class _TrainingPageState extends State<TrainingPage>
   /// 训练记录已在 _autoSaveTraining() 中自动保存。
   Future<void> _returnHome() async {
     // 更新桌面卡片数据
-    if (isOhos) {
-      FormKitService.instance.endTraining();
-    }
+    PlatformServices.widgetCard.clearCardData();
+    PlatformServices.liveView.stopRestLiveView();
 
     // B3: 训练完成回调，重置今日推送规避
     SmartPushService.instance.onTrainingCompleted();
