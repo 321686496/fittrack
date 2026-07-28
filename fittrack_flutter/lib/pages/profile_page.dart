@@ -4,14 +4,15 @@ import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/user_profile_generator.dart';
-import '../services/form_kit_service.dart';
+import '../services/platform/platform_services.dart';
+import '../services/platform/widget_card_service.dart';
 import '../services/points_service.dart';
 import '../services/achievement_service.dart';
+import '../services/daily_reminder_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/custom_time_picker.dart';
 import '../widgets/max_weight_card.dart';
-import '../utils/platform_utils.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -853,9 +854,11 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                         Navigator.of(ctx).pop();
                         _refreshCache();
                         // 更新卡片数据（训练时间变更）
-                        if (isOhos) {
-                          FormKitService.instance.pushFormData();
-                        }
+                        PlatformServices.widgetCard.pushCardData(
+                          const WidgetCardData(mode: WidgetCardMode.idle),
+                        );
+                        // 训练时间变更后重新调度每日提醒（开关开启时生效）
+                        DailyReminderService.instance.reschedule();
                         FitToast.success(context, '个人信息已更新');
                       },
                       style: ElevatedButton.styleFrom(
