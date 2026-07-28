@@ -11,6 +11,8 @@ import 'implementations/ohos_widget_card_service.dart';
 import 'implementations/ohos_invite_url_service.dart';
 import 'implementations/android_rest_reminder_service.dart';
 import 'implementations/android_invite_url_service.dart';
+import 'implementations/ios_rest_reminder_service.dart';
+import 'implementations/ios_invite_url_service.dart';
 
 class PlatformServices {
   static late final RestReminderService restReminder;
@@ -34,10 +36,11 @@ class PlatformServices {
       widgetCard = NoopWidgetCardService();
       inviteUrl = AndroidInviteUrlService();
     } else if (Platform.isIOS) {
-      restReminder = NoopRestReminderService();
+      restReminder = IosRestReminderService();
+      // iOSLiveViewService / IosWidgetCardService 在 Batch 3 创建
       liveView = NoopLiveViewService();
       widgetCard = NoopWidgetCardService();
-      inviteUrl = NoopInviteUrlService();
+      inviteUrl = IosInviteUrlService();
     } else {
       restReminder = NoopRestReminderService();
       liveView = NoopLiveViewService();
