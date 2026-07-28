@@ -451,6 +451,12 @@ class Storage {
       'adsWatchedToday': 0,
       'adsWatchedDate': '',
       'unlockedFeatures': '[]',
+      // ── 每日训练提醒 & 健身卡到期提醒 ──
+      'dailyTrainingReminderEnabled': false, // 每日训练提醒开关
+      'gymCardExpiryReminderEnabled': false, // 健身卡到期提醒开关
+      'gymCardExpiryDaysThreshold': 7,       // 期限卡到期天数阈值（剩余 ≤ N 天提醒）
+      'gymCardLowCountThreshold': 3,         // 次卡剩余次数阈值（剩余 ≤ N 次提醒）
+      'lastGymCardReminderDate': '',         // 上次健身卡到期提醒日期（防同日重复推送）
     };
     final result = _safeGet(_keySettings, <String, dynamic>{});
     if (result is Map) {

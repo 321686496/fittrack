@@ -38,8 +38,8 @@ class PosterCaptureHelper {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => PopScope(
-        canPop: false,
+      builder: (ctx) => WillPopScope(
+        onWillPop: () async => false,
         child: Center(
           child: Container(
             padding: const EdgeInsets.all(24),
@@ -93,15 +93,30 @@ class PosterCaptureHelper {
         ),
       ),
     );
-    overlay.insert(entry);
 
-    // 等待多帧，确保 layout + paint 完成
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 50));
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 50));
+    // OHOS 引擎 bug 修复：OHOS Flutter 引擎在帧绘制时会重入触发
+    // MouseTracker.updateAllDevices，导致 !_debugDuringDeviceUpdate 断言失败。
+    // 该断言错误会中断帧绘制，导致 endOfFrame 卡住、海报截图失败。
+    // 临时屏蔽该错误，确保帧绘制正常完成。
+    final originalOnError = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails details) {
+      final errorStr = details.exception.toString();
+      if (errorStr.contains('_debugDuringDeviceUpdate') ||
+          errorStr.contains('MouseTracker')) {
+        return;
+      }
+      originalOnError?.call(details);
+    };
 
     try {
+      overlay.insert(entry);
+
+      // 等待多帧，确保 layout + paint 完成
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 50));
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 50));
+
       final imagePath = await PosterGenerator.capture(
         boundaryKey,
         fileNamePrefix: fileNamePrefix,
@@ -130,6 +145,9 @@ class PosterCaptureHelper {
       } else if (context.mounted) {
         FitToast.error(context, '海报生成失败：$e');
       }
+    } finally {
+      // 恢复原始错误处理
+      FlutterError.onError = originalOnError;
     }
   }
 }
