@@ -76,7 +76,10 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "startRestLiveView" -> {
                     val exerciseName = call.argument<String>("exerciseName") ?: ""
-                    val restEndTimeMs = call.argument<Int>("restEndTimeMs")?.toLong() ?: 0L
+                    // C1 修复：Dart 侧传入的 millisecondsSinceEpoch 约 1.78e12，超出 Int32.MAX，
+                    // StandardMessageCodec 以 INT64 编码，Android 侧解码为 java.lang.Long，
+                    // 必须用 call.argument<Long> 接收，否则 ClassCastException 或 null → 0L。
+                    val restEndTimeMs = call.argument<Long>("restEndTimeMs") ?: 0L
                     val intent = Intent(this@MainActivity, RestOngoingService::class.java).apply {
                         action = RestOngoingService.ACTION_START_REST
                         putExtra(RestOngoingService.EXTRA_EXERCISE_NAME, exerciseName)

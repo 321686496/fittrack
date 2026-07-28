@@ -24,6 +24,8 @@ class NoopRestReminderService implements RestReminderService {
 
 class NoopLiveViewService implements LiveViewService {
   @override
+  Future<void> init() async {}
+  @override
   Future<void> startRestLiveView({
     required String exerciseName,
     required int restSeconds,

@@ -20,7 +20,9 @@ struct RestLiveActivity: Widget {
                         .foregroundColor(.white)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(timeString(context.state.remainingSeconds))
+                    // I1 修复：用 Text(timerInterval:) 让系统自动逐秒刷新，
+                    // 避免 remainingSeconds 静态渲染后冻结。
+                    Text(timerInterval: Date()...context.state.restEndTime, countsDown: true)
                         .font(.title2.monospacedDigit())
                         .foregroundColor(.white)
                 }
@@ -33,19 +35,15 @@ struct RestLiveActivity: Widget {
                 Image(systemName: "timer")
                     .foregroundColor(.orange)
             } compactTrailing: {
-                Text(timeString(context.state.remainingSeconds))
+                // I1 修复：紧凑视图同样使用 timerInterval 驱动倒计时。
+                Text(timerInterval: Date()...context.state.restEndTime, countsDown: true)
                     .font(.caption.monospacedDigit())
             } minimal: {
-                Text(timeString(context.state.remainingSeconds))
+                // I1 修复：极简视图同样使用 timerInterval 驱动倒计时。
+                Text(timerInterval: Date()...context.state.restEndTime, countsDown: true)
                     .font(.caption2.monospacedDigit())
             }
         }
-    }
-
-    private func timeString(_ seconds: Int) -> String {
-        let m = seconds / 60
-        let s = seconds % 60
-        return String(format: "%d:%02d", m, s)
     }
 }
 
@@ -62,22 +60,30 @@ struct LockScreenView: View {
                 Text(context.state.exerciseName)
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.8))
+                // I3 修复：锁屏 Live Activity 提供"结束休息"链接，
+                // 通过 fittrack://action?cardAction=skipRest URL 拉起 App，
+                // AppDelegate 的 URL handler 将其路由到 reminderChannel.onCardClick。
+                Link(destination: URL(string: "fittrack://action?cardAction=skipRest")!) {
+                    Text("结束休息")
+                        .font(.caption)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.accentColor.opacity(0.2))
+                        .cornerRadius(8)
+                }
+                .padding(.top, 4)
             }
             Spacer()
             VStack(alignment: .trailing) {
-                Text(timeString(context.state.remainingSeconds))
+                // I1 修复：锁屏倒计时使用 Text(timerInterval:) 逐秒刷新。
+                Text(timerInterval: Date()...context.state.restEndTime, countsDown: true)
                     .font(.system(size: 32, weight: .bold, design: .monospaced))
+                    .monospacedDigit()
                     .foregroundColor(.white)
                 Text("剩余")
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.6))
             }
         }
-    }
-
-    private func timeString(_ seconds: Int) -> String {
-        let m = seconds / 60
-        let s = seconds % 60
-        return String(format: "%d:%02d", m, s)
     }
 }

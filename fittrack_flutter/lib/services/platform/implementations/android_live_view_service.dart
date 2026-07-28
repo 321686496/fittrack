@@ -10,6 +10,26 @@ class AndroidLiveViewService implements LiveViewService {
   final StreamController<LiveViewEvent> _actionController =
       StreamController<LiveViewEvent>.broadcast();
 
+  /// I2 修复：补齐 PAL 契约——注册 liveview MethodChannel 的 onUserAction 监听，
+  /// 将原生侧（未来的实况窗按钮回调）转发为 LiveViewEvent 注入事件流。
+  /// 当前 C2 路由 skipRest 走 alarm channel（onCardClick），不会触发此处；
+  /// 此处用于未来扩展（如其他 LiveViewAction 走 liveview channel）。
+  @override
+  Future<void> init() async {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onUserAction') {
+        final args = Map<String, dynamic>.from(call.arguments as Map);
+        final action = args['action'] as String?;
+        if (action == 'skipRest') {
+          _actionController.add(LiveViewEvent(
+            action: LiveViewAction.skipRest,
+            payload: const <String, dynamic>{},
+          ));
+        }
+      }
+    });
+  }
+
   @override
   Future<void> startRestLiveView({
     required String exerciseName,
