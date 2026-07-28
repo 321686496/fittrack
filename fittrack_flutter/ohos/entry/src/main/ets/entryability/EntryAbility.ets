@@ -222,6 +222,8 @@ export default class EntryAbility extends FlutterAbility {
   private liveViewWantAgent: WantAgent | null = null;
   private currentReminderId: number = -1;
   private liveViewActive: boolean = false;
+  // 每日训练提醒（代理提醒）ID，-1 表示未发布
+  private trainingReminderId: number = -1;
 
   configureFlutterEngine(flutterEngine: FlutterEngine): void {
     super.configureFlutterEngine(flutterEngine);
@@ -239,6 +241,7 @@ export default class EntryAbility extends FlutterAbility {
       REMINDER_CHANNEL_NAME,
       StandardMethodCodec.INSTANCE
     );
+    this.reminderChannel.setMethodCallHandler(new ReminderCallHandler(this));
 
     this.posterChannel = new MethodChannel(
       flutterEngine.getDartExecutor().getBinaryMessenger(),
@@ -645,4 +648,125 @@ export default class EntryAbility extends FlutterAbility {
     }
   }
 
+  /// 发布每日训练提醒（按 HH:mm 每日重复）
+  /// 使用 ReminderRequestCalendar 实现每日定点重复
+  scheduleTrainingReminder(title: string, content: string, timeStr: string): void {
+    this.cancelTrainingReminder();
+
+    // 解析 "HH:mm"
+    const parts: string[] = timeStr.split(':');
+    if (parts.length !== 2) {
+      console.error(`[FitTrack] scheduleTrainingReminder 时间格式错误: ${timeStr}`);
+      return;
+    }
+    const hour: number = parseInt(parts[0], 10);
+    const minute: number = parseInt(parts[1], 10);
+    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      console.error(`[FitTrack] scheduleTrainingReminder 时间非法: ${timeStr}`);
+      return;
+    }
+
+    console.info(`[FitTrack] 准备发布每日训练提醒, time=${timeStr}`);
+
+    try {
+      const bundleInfo: bundleManager.BundleInfo =
+        bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
+
+      // ReminderRequestCalendar：按日历时间重复
+      // dateTime 指定首次触发时间，repeatMonths/repeatDays/repeatDaysOfWeek 为空表示每日重复
+      let reminderRequest: reminderAgentManager.ReminderRequestCalendar = {
+        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
+        dateTime: {
+          year: new Date().getFullYear(),
+          month: new Date().getMonth() + 1,
+          day: new Date().getDate(),
+          hour: hour,
+          minute: minute,
+          second: 0,
+        },
+        // 每日重复：所有月份、所有日期都触发
+        repeatMonths: [],
+        repeatDays: [],
+        title: title,
+        content: content,
+        notificationId: 3001,
+        slotType: notificationManager.SlotType.CONTENT_INFORMATION,
+        wantAgent: {
+          pkgName: bundleInfo.name,
+          abilityName: 'EntryAbility',
+        },
+        actionButton: [
+          {
+            title: '开始训练',
+            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
+          },
+        ],
+      };
+
+      reminderAgentManager.publishReminder(reminderRequest).then((reminderId: number) => {
+        this.trainingReminderId = reminderId;
+        console.info(`[FitTrack] 每日训练提醒发布成功, id=${reminderId}, time=${timeStr}`);
+      }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] 每日训练提醒发布失败: code=${err.code}, msg=${err.message}`);
+      });
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] scheduleTrainingReminder 异常: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
+  /// 取消每日训练提醒
+  cancelTrainingReminder(): void {
+    if (this.trainingReminderId === -1) {
+      return;
+    }
+    try {
+      let id: number = this.trainingReminderId;
+      this.trainingReminderId = -1;
+      reminderAgentManager.cancelReminder(id).then(() => {
+        console.info(`[FitTrack] 每日训练提醒已取消, id=${id}`);
+      }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] 取消每日训练提醒失败: code=${err.code}, msg=${err.message}`);
+      });
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] cancelTrainingReminder 异常: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
+}
+
+/// 处理 Flutter → 原生的 MethodChannel 调用（reminderChannel）
+/// 方法：publishReminder / cancelReminder / cancelAllReminders（休息提醒，由 EntryAbility 内部使用）
+///       scheduleTrainingReminder / cancelTrainingReminder（每日训练提醒）
+class ReminderCallHandler implements MethodCallHandler {
+  private ability: EntryAbility;
+
+  constructor(ability: EntryAbility) {
+    this.ability = ability;
+  }
+
+  onMethodCall(call: MethodCall, result: MethodResult): void {
+    switch (call.method) {
+      case 'scheduleTrainingReminder': {
+        const args = call.args as Record<string, Object>;
+        const title = (args['title'] as string) ?? '训练时间到';
+        const content = (args['content'] as string) ?? '今天也要坚持训练哦！';
+        const timeStr = (args['timeStr'] as string) ?? '';
+        this.ability.scheduleTrainingReminder(title, content, timeStr);
+        result.success(null);
+        break;
+      }
+      case 'cancelTrainingReminder': {
+        this.ability.cancelTrainingReminder();
+        result.success(null);
+        break;
+      }
+      default:
+        // 其他方法（publishReminder/cancelReminder/cancelAllReminders）
+        // 仍由原生侧主动调用，无需 Flutter → 原生
+        result.notImplemented();
+        break;
+    }
+  }
 }

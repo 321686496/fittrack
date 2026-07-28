@@ -352,6 +352,20 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
           ),
         ),
       );
+
+      // OHOS 引擎 bug 修复：OHOS Flutter 引擎在帧绘制时会重入触发
+      // MouseTracker.updateAllDevices，导致 !_debugDuringDeviceUpdate 断言失败。
+      // 临时屏蔽该错误，确保帧绘制正常完成。
+      final originalOnError = FlutterError.onError;
+      FlutterError.onError = (FlutterErrorDetails details) {
+        final errorStr = details.exception.toString();
+        if (errorStr.contains('_debugDuringDeviceUpdate') ||
+            errorStr.contains('MouseTracker')) {
+          return;
+        }
+        originalOnError?.call(details);
+      };
+
       overlay.insert(entry);
 
       // 等待多帧，确保 layout + paint 完成
@@ -376,6 +390,9 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
         entry.remove();
         if (!mounted) return;
         FitToast.error(context, '海报生成失败：$e');
+      } finally {
+        // 恢复原始错误处理
+        FlutterError.onError = originalOnError;
       }
     } finally {
       if (mounted) {
