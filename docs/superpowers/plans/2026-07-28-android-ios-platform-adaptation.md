@@ -1486,6 +1486,7 @@ import UserNotifications
   private var liveViewChannel: FlutterMethodChannel?
   private var widgetChannel: FlutterMethodChannel?
   private var inviteChannel: FlutterMethodChannel?
+  private var lastScheduledNotificationId: Int? = nil
 
   override func application(
     _ application: UIApplication,
@@ -1545,13 +1546,14 @@ import UserNotifications
         }
         self?.scheduleRestReminder(
           title: title,
-          content: content,
+          bodyText: content,
           triggerTimeInSeconds: triggerTimeInSeconds,
           notificationId: notificationId,
           result: result
         )
       case "cancelRestReminder":
-        self?.cancelRestReminder(notificationId: 1001, result: result)
+        let id = self?.lastScheduledNotificationId ?? 1001
+        self?.cancelRestReminder(notificationId: id, result: result)
       case "cancelAllReminders":
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         result(true)
@@ -1563,14 +1565,14 @@ import UserNotifications
 
   private func scheduleRestReminder(
     title: String,
-    content: String,
+    bodyText: String,
     triggerTimeInSeconds: Int,
     notificationId: Int,
     result: @escaping FlutterResult
   ) {
     let content = UNMutableNotificationContent()
     content.title = title
-    content.body = content
+    content.body = bodyText
     content.sound = .default
     content.userInfo = [
       "targetPage": "training",
@@ -1589,10 +1591,11 @@ import UserNotifications
       trigger: trigger
     )
 
-    UNUserNotificationCenter.current().add(request) { error in
+    UNUserNotificationCenter.current().add(request) { [weak self] error in
       if let error = error {
         result(FlutterError(code: "SCHEDULE_ERROR", message: error.localizedDescription, details: nil))
       } else {
+        self?.lastScheduledNotificationId = notificationId
         result(notificationId)
       }
     }
