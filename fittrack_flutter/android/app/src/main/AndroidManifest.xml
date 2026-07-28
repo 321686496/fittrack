@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- 前台服务 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- 前台服务特殊用途（休息倒计时实况通知，Android 14+ 要求） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <!-- 保存海报到相册（API 29 及以下需要写入存储；API 33+ 走 scoped storage） -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
@@ -58,6 +60,28 @@
                 <action android:name="com.fp.fitplan.REST_ALARM"/>
             </intent-filter>
         </receiver>
+
+        <!-- AppWidget Receiver（Glance） -->
+        <receiver
+            android:name=".widget.FitTrackGlanceWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fittrack_widget_info"/>
+        </receiver>
+
+        <!-- 前台服务（休息倒计时实况通知） -->
+        <service
+            android:name=".rest.RestOngoingService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="rest_countdown"/>
+        </service>
 
         <meta-data
             android:name="flutterEmbedding"

@@ -47,5 +47,37 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- 权限说明 -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>用于将训练海报保存到您的相册</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>用于读取相册图片作为头像</string>
+
+	<!-- Live Activities 支持（iOS 16.1+） -->
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+
+	<!-- URL scheme 邀请链接 -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.fp.fitplan.invite</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fittrack</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- 后台模式 -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
