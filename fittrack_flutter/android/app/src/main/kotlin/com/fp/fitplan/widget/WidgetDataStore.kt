@@ -2,8 +2,8 @@
 package com.fp.fitplan.widget
 
 import android.content.Context
-import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import kotlinx.coroutines.runBlocking
 
 /// 卡片数据存储（SharedPreferences）
 object WidgetDataStore {
@@ -14,8 +14,13 @@ object WidgetDataStore {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putString(KEY_WIDGET_DATA, jsonStr).apply()
         // 触发 Glance 卡片刷新
-        GlanceAppWidgetManager(context).getGlanceIds(FitTrackGlanceWidgetReceiver::class.java).forEach { id ->
-            FitTrackGlanceWidget().update(context, id)
+        runBlocking {
+            val manager = GlanceAppWidgetManager(context)
+            val glanceIds = manager.getGlanceIds(FitTrackGlanceWidget::class.java)
+            val widget = FitTrackGlanceWidget()
+            glanceIds.forEach { id ->
+                widget.update(context, id)
+            }
         }
     }
 
@@ -28,8 +33,13 @@ object WidgetDataStore {
     fun clearState(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().remove(KEY_WIDGET_DATA).apply()
-        GlanceAppWidgetManager(context).getGlanceIds(FitTrackGlanceWidgetReceiver::class.java).forEach { id ->
-            FitTrackGlanceWidget().update(context, id)
+        runBlocking {
+            val manager = GlanceAppWidgetManager(context)
+            val glanceIds = manager.getGlanceIds(FitTrackGlanceWidget::class.java)
+            val widget = FitTrackGlanceWidget()
+            glanceIds.forEach { id ->
+                widget.update(context, id)
+            }
         }
     }
 }
