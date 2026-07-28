@@ -1,0 +1,51 @@
+workflows:
+  ios-workflow:
+    name: iOS Build
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      ios_signing:
+        distribution_type: development
+        bundle_identifier: com.fp.fitplan
+      vars:
+        XCODE_WORKSPACE: Runner.xcworkspace
+        XCODE_SCHEME: Runner
+      flutter: 3.7.12
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd fittrack_flutter
+          flutter pub get
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files $(xcode-project detect-bundle-id --project "$CM_BUILD_DIR/ios/Runner.xcodeproj") --type IOS_APP_DEVELOPMENT --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Build iOS
+        script: |
+          cd fittrack_flutter
+          flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - fittrack_flutter/build/ios/ipa/*.ipa
+      - fittrack_flutter/build/ios/ipa/*.dSYM.zip
+
+  android-workflow:
+    name: Android Build
+    instance_type: linux_x2
+    max_build_duration: 30
+    environment:
+      flutter: 3.7.12
+      vars:
+        PACKAGE_NAME: com.fp.fitplan
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd fittrack_flutter
+          flutter pub get
+      - name: Build Android APK
+        script: |
+          cd fittrack_flutter
+          flutter build apk --release
+    artifacts:
+      - fittrack_flutter/build/app/outputs/flutter-apk/*.apk
