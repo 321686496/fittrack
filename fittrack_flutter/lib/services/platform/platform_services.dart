@@ -10,6 +10,8 @@ import 'implementations/ohos_live_view_service.dart';
 import 'implementations/ohos_widget_card_service.dart';
 import 'implementations/ohos_invite_url_service.dart';
 import 'implementations/android_rest_reminder_service.dart';
+import 'implementations/android_live_view_service.dart';
+import 'implementations/android_widget_card_service.dart';
 import 'implementations/android_invite_url_service.dart';
 import 'implementations/ios_rest_reminder_service.dart';
 import 'implementations/ios_invite_url_service.dart';
@@ -34,8 +36,8 @@ class PlatformServices {
       inviteUrl = OhosInviteUrlService();
     } else if (Platform.isAndroid) {
       restReminder = AndroidRestReminderService();
-      liveView = NoopLiveViewService();
-      widgetCard = NoopWidgetCardService();
+      liveView = AndroidLiveViewService();
+      widgetCard = AndroidWidgetCardService();
       inviteUrl = AndroidInviteUrlService();
     } else if (Platform.isIOS) {
       restReminder = IosRestReminderService();
