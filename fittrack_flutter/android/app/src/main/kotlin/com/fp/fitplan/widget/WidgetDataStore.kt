@@ -3,18 +3,24 @@ package com.fp.fitplan.widget
 
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /// 卡片数据存储（SharedPreferences）
 object WidgetDataStore {
     private const val PREFS_NAME = "fittrack_widget_prefs"
     private const val KEY_WIDGET_DATA = "widget_data"
 
+    // Application-scoped supervisor job — children survive caller cancellation
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     fun saveState(context: Context, jsonStr: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putString(KEY_WIDGET_DATA, jsonStr).apply()
-        // 触发 Glance 卡片刷新
-        runBlocking {
+        // Async refresh — fire-and-forget; Dart side treats as best-effort
+        scope.launch {
             val manager = GlanceAppWidgetManager(context)
             val glanceIds = manager.getGlanceIds(FitTrackGlanceWidget::class.java)
             val widget = FitTrackGlanceWidget()
@@ -33,7 +39,8 @@ object WidgetDataStore {
     fun clearState(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().remove(KEY_WIDGET_DATA).apply()
-        runBlocking {
+        // Async refresh — fire-and-forget
+        scope.launch {
             val manager = GlanceAppWidgetManager(context)
             val glanceIds = manager.getGlanceIds(FitTrackGlanceWidget::class.java)
             val widget = FitTrackGlanceWidget()
