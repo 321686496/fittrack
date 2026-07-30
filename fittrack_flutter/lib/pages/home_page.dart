@@ -7,6 +7,7 @@ import '../data/virtual_opponent.dart';
 import '../services/clipboard_invite_service.dart';
 import '../services/retention_chain_service.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/notification_list_sheet.dart';
 import '../widgets/onboarding_coach.dart';
 import '../widgets/page_header.dart';
 import '../widgets/recommendation_banner.dart';
@@ -1005,51 +1006,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   }
 
   void _showNotifications(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final records = Storage.getRecords();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Material(
-          color: Colors.transparent,
-          child: Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
-            decoration: BoxDecoration(
-              color: colors.bgSecondary,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              border: Border.all(color: colors.borderColor),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(margin: const EdgeInsets.symmetric(vertical: 10), width: 40, height: 4, decoration: BoxDecoration(color: colors.borderColor, borderRadius: BorderRadius.circular(2))),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(children: [
-                    Text('通知', style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                    const Spacer(),
-                    GestureDetector(onTap: () => Navigator.of(ctx).pop(), child: Icon(Icons.close, color: colors.textMuted)),
-                  ]),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: [
-                      _notifItem(colors, Icons.celebration, '欢迎使用 FitTrack', '开始你的健身之旅吧！'),
-                      if (records.isNotEmpty)
-                        _notifItem(colors, Icons.fitness_center, '训练提醒', '你已完成 ${records.length} 次训练，继续加油！'),
-                      _notifItem(colors, Icons.tips_and_updates, '每日贴士', MockData.dailyTip['text'] as String),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    NotificationListSheet.show(context);
   }
 
   Widget _notifItem(FitTrackColors colors, IconData icon, String title, String body) {

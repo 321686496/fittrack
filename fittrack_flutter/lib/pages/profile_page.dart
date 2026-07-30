@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
-import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../services/user_profile_generator.dart';
 import '../services/platform/platform_services.dart';
@@ -13,6 +12,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/custom_time_picker.dart';
 import '../widgets/max_weight_card.dart';
+import '../widgets/notification_list_sheet.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -149,57 +149,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
   }
 
   void _showNotifications(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final records = Storage.getRecords();
-    final recentCount = records.length > 5 ? 5 : records.length;
-
-    FitBottomSheet.show(
-      context: context,
-      maxHeightRatio: 0.6,
-      builder: (ctx) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Text('通知', style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () => Navigator.of(ctx).pop(),
-                    child: Icon(Icons.close, color: colors.textMuted),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: records.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.notifications_none, size: 48, color: colors.textMuted),
-                          const SizedBox(height: 8),
-                          Text('暂无通知', style: TextStyle(color: colors.textMuted, fontSize: 14)),
-                        ],
-                      ),
-                    )
-                  : ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      children: [
-                        _buildNotificationItem(colors, Icons.celebration, '欢迎使用 FitTrack', '开始你的健身之旅吧！'),
-                        if (recentCount > 0)
-                          _buildNotificationItem(colors, Icons.fitness_center, '训练提醒', '你已完成 $recentCount 次训练，继续加油！'),
-                        _buildNotificationItem(colors, Icons.tips_and_updates, '每日贴士', MockData.dailyTip['text'] as String),
-                      ],
-                    ),
-            ),
-          ],
-        );
-      },
-    );
+    NotificationListSheet.show(context);
   }
 
   Widget _buildNotificationItem(FitTrackColors colors, IconData icon, String title, String body) {
