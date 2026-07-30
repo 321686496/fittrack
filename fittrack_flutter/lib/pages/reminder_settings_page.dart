@@ -18,8 +18,10 @@ class ReminderSettingsPage extends StatefulWidget {
 
 class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
   bool _restNotificationEnabled = true;
-  bool _vibrationEnabled = true;
-  bool _soundEnabled = true;
+  bool _restVibrationEnabled = true;   // 新增：休息提醒专用振动
+  bool _restSoundEnabled = true;        // 新增：休息提醒专用提示音
+  bool _vibrationEnabled = true;        // 保留：训练完成振动
+  bool _soundEnabled = true;            // 保留：训练完成提示音
   int _defaultRestTime = 90;
   // 每日训练提醒
   bool _dailyTrainingEnabled = false;
@@ -39,6 +41,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
     final settings = Storage.getSettings();
     setState(() {
       _restNotificationEnabled = settings['restNotificationEnabled'] as bool? ?? true;
+      _restVibrationEnabled = settings['restVibrationEnabled'] as bool? ?? true;
+      _restSoundEnabled = settings['restSoundEnabled'] as bool? ?? true;
       _vibrationEnabled = settings['vibrationEnabled'] as bool? ?? true;
       _soundEnabled = settings['soundEnabled'] as bool? ?? true;
       _defaultRestTime = settings['defaultRestTime'] as int? ?? 90;
@@ -83,10 +87,11 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                   CardWidget(
                     child: Column(
                       children: [
+                        // 主开关：休息结束提醒
                         _buildSwitchTile(
                           colors,
                           icon: Icons.notifications_active_outlined,
-                          title: '休息结束通知',
+                          title: '休息结束提醒',
                           subtitle: '组间休息倒计时结束时发送通知',
                           value: _restNotificationEnabled,
                           onChanged: (v) {
@@ -95,28 +100,37 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                           },
                         ),
                         DividerWidget(indent: 44),
-                        _buildSwitchTile(
-                          colors,
-                          icon: Icons.vibration,
-                          title: '振动提醒',
-                          subtitle: '训练结束时振动提醒',
-                          value: _vibrationEnabled,
-                          onChanged: (v) {
-                            setState(() => _vibrationEnabled = v);
-                            _saveSetting('vibrationEnabled', v);
-                          },
-                        ),
+                        // 横幅通知引导（点击跳转引导页）
+                        _buildBannerGuideTile(colors),
                         DividerWidget(indent: 44),
+                        // 提示音（受主开关控制）
                         _buildSwitchTile(
                           colors,
                           icon: Icons.volume_up_outlined,
                           title: '提示音',
                           subtitle: '休息结束时播放提示音',
-                          value: _soundEnabled,
-                          onChanged: (v) {
-                            setState(() => _soundEnabled = v);
-                            _saveSetting('soundEnabled', v);
-                          },
+                          value: _restSoundEnabled,
+                          onChanged: _restNotificationEnabled
+                              ? (v) {
+                                  setState(() => _restSoundEnabled = v);
+                                  _saveSetting('restSoundEnabled', v);
+                                }
+                              : null,
+                        ),
+                        DividerWidget(indent: 44),
+                        // 振动（受主开关控制）
+                        _buildSwitchTile(
+                          colors,
+                          icon: Icons.vibration,
+                          title: '振动提醒',
+                          subtitle: '休息结束时振动提醒',
+                          value: _restVibrationEnabled,
+                          onChanged: _restNotificationEnabled
+                              ? (v) {
+                                  setState(() => _restVibrationEnabled = v);
+                                  _saveSetting('restVibrationEnabled', v);
+                                }
+                              : null,
                         ),
                       ],
                     ),
@@ -303,13 +317,51 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
     );
   }
 
+  /// 横幅通知引导项
+  Widget _buildBannerGuideTile(FitTrackColors colors) {
+    return InkWell(
+      onTap: () => context.push('/banner-notification-guide'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        child: Row(
+          children: [
+            Icon(Icons.notification_important_outlined,
+                size: 22, color: colors.accentGlow),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '横幅通知',
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '点击查看如何开启顶部横幅提醒',
+                    style: TextStyle(color: colors.textMuted, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: colors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSwitchTile(
     FitTrackColors colors, {
     required IconData icon,
     required String title,
     required String subtitle,
     required bool value,
-    required ValueChanged<bool> onChanged,
+    ValueChanged<bool>? onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
