@@ -932,6 +932,9 @@ class Storage {
     final exercises = getCustomExercises();
     final newExercise = <String, dynamic>{
       ...exercise,
+      'description': exercise['description'] ?? '',
+      'muscles': exercise['muscles'] ?? <String>[],
+      'steps': exercise['steps'] ?? <Map<String, dynamic>>[],
       'id': exercise['id'] ?? generateId('customex'),
       'isCustom': true,
       'createTime': DateTime.now().millisecondsSinceEpoch,
