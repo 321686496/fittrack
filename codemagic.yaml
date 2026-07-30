@@ -16,6 +16,32 @@ workflows:
         script: |
           cd fittrack_flutter
           flutter pub get
+      - name: Patch OHOS fork packages for standard Flutter SDK
+        script: |
+          python3 -c "
+          import os
+          patched = []
+          for root, dirs, files in os.walk(os.path.expanduser('~/.pub-cache/git')):
+              for fname in files:
+                  if not fname.endswith('.dart'):
+                      continue
+                  path = os.path.join(root, fname)
+                  try:
+                      with open(path, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                  except Exception:
+                      continue
+                  original = content
+                  content = content.replace('TargetPlatform.ohos', 'TargetPlatform.linux')
+                  content = content.replace('Platform.isOhos', 'Platform.isLinux')
+                  if content != original:
+                      with open(path, 'w', encoding='utf-8') as f:
+                          f.write(content)
+                      patched.append(path)
+          print(f'Patched {len(patched)} file(s) for standard Flutter SDK compatibility')
+          for p in patched:
+              print(f'  {p}')
+          "
       - name: Set up code signing
         script: |
           keychain initialize
@@ -43,6 +69,32 @@ workflows:
         script: |
           cd fittrack_flutter
           flutter pub get
+      - name: Patch OHOS fork packages for standard Flutter SDK
+        script: |
+          python3 -c "
+          import os
+          patched = []
+          for root, dirs, files in os.walk(os.path.expanduser('~/.pub-cache/git')):
+              for fname in files:
+                  if not fname.endswith('.dart'):
+                      continue
+                  path = os.path.join(root, fname)
+                  try:
+                      with open(path, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                  except Exception:
+                      continue
+                  original = content
+                  content = content.replace('TargetPlatform.ohos', 'TargetPlatform.linux')
+                  content = content.replace('Platform.isOhos', 'Platform.isLinux')
+                  if content != original:
+                      with open(path, 'w', encoding='utf-8') as f:
+                          f.write(content)
+                      patched.append(path)
+          print(f'Patched {len(patched)} file(s) for standard Flutter SDK compatibility')
+          for p in patched:
+              print(f'  {p}')
+          "
       - name: Build Android APK
         script: |
           cd fittrack_flutter
