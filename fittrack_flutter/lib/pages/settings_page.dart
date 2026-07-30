@@ -349,6 +349,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 10),
                   _buildTrainingSettings(colors),
                   const SizedBox(height: 20),
+                  const SectionHeader(title: '活跃度配色'),
+                  const SizedBox(height: 10),
+                  _buildActivityColorModeSettings(colors),
+                  const SizedBox(height: 20),
                   const SectionHeader(title: '音效设置'),
                   const SizedBox(height: 10),
                   _buildSoundSettings(colors),
@@ -558,6 +562,58 @@ class _SettingsPageState extends State<SettingsPage> {
             SoundService.instance.play(SoundType.buttonTap);
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildActivityColorModeSettings(FitTrackColors colors) {
+    final settings = Storage.getSettings();
+    final mode = settings['activityColorMode'] ?? 'capacity';
+    final isCapacity = mode != 'duration';
+
+    return CardWidget(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text('配色依据', style: TextStyle(fontSize: 14, color: colors.textPrimary)),
+            ),
+            _buildModeChip(colors, '训练容量', 'capacity', isCapacity),
+            const SizedBox(width: 8),
+            _buildModeChip(colors, '训练时长', 'duration', !isCapacity),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModeChip(FitTrackColors colors, String label, String value, bool active) {
+    return GestureDetector(
+      onTap: () {
+        final s = Storage.getSettings();
+        s['activityColorMode'] = value;
+        Storage.saveSettings(s);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? colors.accentGlow.withOpacity(0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: active ? colors.accentGlow : colors.borderColor,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: active ? colors.accentGlow : colors.textSecondary,
+            fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
