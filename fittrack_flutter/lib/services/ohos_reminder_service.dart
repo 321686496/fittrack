@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../utils/platform_utils.dart';
@@ -168,6 +167,37 @@ class OhosReminderService {
       debugPrint('[OhosReminder] cancelTrainingReminder success');
     } catch (e) {
       debugPrint('[OhosReminder] cancelTrainingReminder error: $e');
+    }
+  }
+
+  /// 调度健身卡到期提醒（后台代理提醒）
+  /// [dateStr] 格式 "YYYY-MM-DD"，提醒时间固定为当天 10:00
+  Future<void> scheduleGymCardReminder({
+    required String title,
+    required String content,
+    required String dateStr,
+  }) async {
+    if (!isOhos) return;
+    try {
+      await _channel.invokeMethod<void>('scheduleGymCardReminder', {
+        'title': title,
+        'content': content,
+        'dateStr': dateStr,
+      });
+      debugPrint('[OhosReminder] scheduleGymCardReminder: $dateStr');
+    } catch (e) {
+      debugPrint('[OhosReminder] scheduleGymCardReminder error: $e');
+    }
+  }
+
+  /// 取消健身卡到期提醒
+  Future<void> cancelGymCardReminder() async {
+    if (!isOhos) return;
+    try {
+      await _channel.invokeMethod<void>('cancelGymCardReminder');
+      debugPrint('[OhosReminder] cancelGymCardReminder success');
+    } catch (e) {
+      debugPrint('[OhosReminder] cancelGymCardReminder error: $e');
     }
   }
 }
