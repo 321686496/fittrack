@@ -1266,3 +1266,608 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 }
+
+// ============================================================
+// Add Exercise Sheet — 添加自定义动作（专业级字段）
+// ============================================================
+
+/// 单个步骤的控制器集合，便于随步骤增减统一 dispose。
+class _StepCtrl {
+  final TextEditingController title = TextEditingController();
+  final TextEditingController desc = TextEditingController();
+  final List<TextEditingController> keyPoses = [TextEditingController()];
+
+  void dispose() {
+    title.dispose();
+    desc.dispose();
+    for (final c in keyPoses) {
+      c.dispose();
+    }
+  }
+}
+
+class _AddExerciseSheet extends StatefulWidget {
+  /// 保存成功后的回调（用于父级刷新列表）
+  final VoidCallback onSaved;
+
+  const _AddExerciseSheet({required this.onSaved});
+
+  @override
+  State<_AddExerciseSheet> createState() => _AddExerciseSheetState();
+}
+
+class _AddExerciseSheetState extends State<_AddExerciseSheet> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _equipCtrl;
+  late final TextEditingController _descCtrl;
+  late final List<String> _categories;
+  late final List<String> _muscleCandidates;
+  String _selectedCategory = '';
+  final List<String> _selectedMuscles = [];
+  final List<_StepCtrl> _stepCtrls = [_StepCtrl()];
+
+  static const int _maxSteps = 6;
+  static const int _maxKeyPoses = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController();
+    _equipCtrl = TextEditingController();
+    _descCtrl = TextEditingController();
+    _categories = MockData.categories.where((c) => c != '全部').toList();
+    _selectedCategory = _categories.isNotEmpty ? _categories.first : '';
+    _muscleCandidates = MockData.exerciseMuscles.values
+        .expand((l) => l)
+        .toSet()
+        .toList();
+    _muscleCandidates.sort();
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _equipCtrl.dispose();
+    _descCtrl.dispose();
+    for (final s in _stepCtrls) {
+      s.dispose();
+    }
+    super.dispose();
+  }
+
+  void _toggleMuscle(String m) {
+    setState(() {
+      if (_selectedMuscles.contains(m)) {
+        _selectedMuscles.remove(m);
+      } else {
+        _selectedMuscles.add(m);
+      }
+    });
+  }
+
+  void _addStep() {
+    if (_stepCtrls.length >= _maxSteps) return;
+    setState(() => _stepCtrls.add(_StepCtrl()));
+  }
+
+  void _removeStep(int index) {
+    if (_stepCtrls.length <= 1) return;
+    setState(() => _stepCtrls.removeAt(index).dispose());
+  }
+
+  void _addKeyPose(int stepIdx) {
+    final kp = _stepCtrls[stepIdx].keyPoses;
+    if (kp.length >= _maxKeyPoses) return;
+    setState(() => kp.add(TextEditingController()));
+  }
+
+  void _removeKeyPose(int stepIdx, int kpIdx) {
+    final kp = _stepCtrls[stepIdx].keyPoses;
+    if (kp.length <= 1) return;
+    setState(() => kp.removeAt(kpIdx).dispose());
+  }
+
+  void _onSave() {
+    if (_nameCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入动作名称')),
+      );
+      return;
+    }
+    if (_descCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入动作描述')),
+      );
+      return;
+    }
+    if (_stepCtrls.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请至少添加一个步骤')),
+      );
+      return;
+    }
+    final steps = _stepCtrls.map((s) => <String, dynamic>{
+      'title': s.title.text.trim(),
+      'desc': s.desc.text.trim(),
+      'keyPoses': s.keyPoses
+          .map((c) => c.text.trim())
+          .where((t) => t.isNotEmpty)
+          .toList(),
+    }).toList();
+    Storage.addCustomExercise({
+      'name': _nameCtrl.text.trim(),
+      'category': _selectedCategory,
+      'equip': _equipCtrl.text.trim(),
+      'description': _descCtrl.text.trim(),
+      'muscles': List<String>.from(_selectedMuscles),
+      'steps': steps,
+    });
+    widget.onSaved();
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.bgSecondary,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(colors),
+            Divider(height: 1, color: colors.borderColor.withOpacity(0.5)),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildNameField(colors),
+                    const SizedBox(height: 14),
+                    _buildCategoryChips(colors),
+                    const SizedBox(height: 14),
+                    _buildEquipField(colors),
+                    const SizedBox(height: 14),
+                    _buildDescField(colors),
+                    const SizedBox(height: 14),
+                    _buildMusclesChips(colors),
+                    const SizedBox(height: 18),
+                    _buildStepsSection(colors),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(16, 10, 16, 10 + bottomInset),
+              decoration: BoxDecoration(
+                border:
+                    Border(top: BorderSide(color: colors.borderColor.withOpacity(0.5))),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _onSave,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.accentGlow,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('保存',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(FitTrackColors colors) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 4, 8),
+      child: Row(
+        children: [
+          Icon(Icons.add_circle, size: 20, color: colors.accentGlow),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '添加动作',
+              style: TextStyle(
+                color: colors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close, size: 20, color: colors.textMuted),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabel(FitTrackColors colors, String text, {String? hint}) {
+    return Row(
+      children: [
+        Text(
+          text,
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        if (hint != null) ...[
+          const SizedBox(width: 6),
+          Text(
+            hint,
+            style: TextStyle(color: colors.textMuted, fontSize: 11),
+          ),
+        ],
+      ],
+    );
+  }
+
+  InputDecoration _fieldDecoration(FitTrackColors colors, {String? hint}) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
+      filled: true,
+      fillColor: colors.bgCard,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: colors.borderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: colors.borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: colors.accentGlow),
+      ),
+    );
+  }
+
+  Widget _buildNameField(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(colors, '动作名称', hint: '必填'),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _nameCtrl,
+          style: TextStyle(color: colors.textPrimary, fontSize: 14),
+          decoration: _fieldDecoration(colors, hint: '如：杠铃卧推'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEquipField(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(colors, '器械'),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _equipCtrl,
+          style: TextStyle(color: colors.textPrimary, fontSize: 14),
+          decoration: _fieldDecoration(colors, hint: '如：杠铃 / 哑铃 / 自重'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescField(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(colors, '动作描述', hint: '必填'),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _descCtrl,
+          maxLines: 3,
+          style: TextStyle(color: colors.textPrimary, fontSize: 14),
+          decoration: _fieldDecoration(colors, hint: '描述动作要点与目标'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryChips(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(colors, '分类'),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _categories.map((c) {
+            final active = c == _selectedCategory;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedCategory = c),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: active
+                      ? colors.accentGlow.withOpacity(0.15)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: active ? colors.accentGlow : colors.borderColor,
+                  ),
+                ),
+                child: Text(
+                  c,
+                  style: TextStyle(
+                    color: active ? colors.accentGlow : colors.textSecondary,
+                    fontSize: 13,
+                    fontWeight:
+                        active ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMusclesChips(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(colors, '目标肌群', hint: '可多选'),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _muscleCandidates.map((m) {
+            final active = _selectedMuscles.contains(m);
+            return GestureDetector(
+              onTap: () => _toggleMuscle(m),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: active ? colors.accentGlow : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: active ? colors.accentGlow : colors.borderColor,
+                  ),
+                ),
+                child: Text(
+                  m,
+                  style: TextStyle(
+                    color: active ? Colors.black : colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight:
+                        active ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStepsSection(FitTrackColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            _buildLabel(colors, '训练步骤', hint: '最多 $_maxSteps 步'),
+            const Spacer(),
+            if (_stepCtrls.length < _maxSteps)
+              TextButton.icon(
+                onPressed: _addStep,
+                icon: Icon(Icons.add, size: 16, color: colors.accentGlow),
+                label: Text('添加步骤',
+                    style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ..._stepCtrls.asMap().entries.map((entry) {
+          return _buildStepCard(colors, entry.key, entry.value);
+        }),
+      ],
+    );
+  }
+
+  Widget _buildStepCard(FitTrackColors colors, int idx, _StepCtrl step) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Step header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: colors.accentGlow.withOpacity(0.08),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
+              border: Border(bottom: BorderSide(color: colors.borderColor)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: colors.accentGlow,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${idx + 1}',
+                      style: TextStyle(
+                        color: colors.bgCard,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '步骤 ${idx + 1}',
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                if (_stepCtrls.length > 1)
+                  GestureDetector(
+                    onTap: () => _removeStep(idx),
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline,
+                            size: 14, color: colors.warningColor),
+                        const SizedBox(width: 2),
+                        Text('删除步骤',
+                            style: TextStyle(
+                                color: colors.warningColor, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // Step body
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: step.title,
+                  style: TextStyle(color: colors.textPrimary, fontSize: 13),
+                  decoration:
+                      _fieldDecoration(colors, hint: '步骤标题'),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: step.desc,
+                  maxLines: 2,
+                  style: TextStyle(color: colors.textPrimary, fontSize: 13),
+                  decoration:
+                      _fieldDecoration(colors, hint: '步骤描述'),
+                ),
+                const SizedBox(height: 10),
+                // Key poses
+                Row(
+                  children: [
+                    Icon(Icons.center_focus_strong,
+                        size: 13, color: colors.accentGlow),
+                    const SizedBox(width: 4),
+                    Text(
+                      '关键姿势',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: colors.accentGlow,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (step.keyPoses.length < _maxKeyPoses)
+                      GestureDetector(
+                        onTap: () => _addKeyPose(idx),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 2),
+                          child: Row(
+                            children: [
+                              Icon(Icons.add, size: 13, color: colors.accentGlow),
+                              const SizedBox(width: 2),
+                              Text('添加',
+                                  style: TextStyle(
+                                      color: colors.accentGlow,
+                                      fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ...step.keyPoses.asMap().entries.map((e) {
+                  final kpIdx = e.key;
+                  final ctrl = e.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: colors.accentGlow,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: ctrl,
+                            style: TextStyle(
+                                color: colors.textPrimary, fontSize: 12),
+                            decoration: _fieldDecoration(colors,
+                                hint: '关键姿势 ${kpIdx + 1}'),
+                          ),
+                        ),
+                        if (step.keyPoses.length > 1)
+                          GestureDetector(
+                            onTap: () => _removeKeyPose(idx, kpIdx),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 6),
+                              child: Icon(Icons.close,
+                                  size: 16, color: colors.textMuted),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
