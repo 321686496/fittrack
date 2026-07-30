@@ -112,44 +112,47 @@ class _ExercisePageState extends State<ExercisePage> {
         ),
         // Category tabs
         Container(
-          height: 44,
           margin: const EdgeInsets.only(top: 8),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: MockData.categories.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (_, index) {
-              final cat = MockData.categories[index];
-              final isActive = cat == _selectedCategory;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedCategory = cat),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? colors.accentGlow.withOpacity(0.15)
-                        : colors.bgCard,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
+          child: SizedBox(
+            height: 38,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: MockData.categories.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, index) {
+                final cat = MockData.categories[index];
+                final isActive = cat == _selectedCategory;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = cat),
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
                       color: isActive
-                          ? colors.accentGlow
-                          : colors.borderColor,
+                          ? colors.accentGlow.withOpacity(0.15)
+                          : colors.bgCard,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isActive
+                            ? colors.accentGlow
+                            : colors.borderColor,
+                      ),
+                    ),
+                    child: Text(
+                      cat,
+                      style: TextStyle(
+                        color: isActive ? colors.accentGlow : colors.textSecondary,
+                        fontSize: 14,
+                        fontWeight:
+                            isActive ? FontWeight.w600 : FontWeight.normal,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    cat,
-                    style: TextStyle(
-                      color: isActive ? colors.accentGlow : colors.textSecondary,
-                      fontSize: 14,
-                      fontWeight:
-                          isActive ? FontWeight.w600 : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
         // Search input
