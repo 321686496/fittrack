@@ -1063,6 +1063,28 @@ class _TrainingPageState extends State<TrainingPage>
                     fillColor: colors.accentGlow,
                   ),
                 ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.coffee,
+                          size: 16, color: Colors.white.withOpacity(0.7)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '你可以离开 App 去喝口水、活动一下，休息结束时我们会发送通知提醒你开始下一组。',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.7),
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 32),
                 GestureDetector(
                   onTap: _skipRest,
