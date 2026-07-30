@@ -88,12 +88,30 @@ class _ExercisePageState extends State<ExercisePage> {
     );
   }
 
+  void _showAddExerciseDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _AddExerciseSheet(
+        onSaved: () => setState(() {}),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
+      floatingActionButton: _selectedExercise == null
+          ? FloatingActionButton(
+              onPressed: () => _showAddExerciseDialog(),
+              backgroundColor: colors.accentGlow,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       body: _selectedExercise != null
           ? _buildDetailView(colors)
           : _buildListView(colors),
