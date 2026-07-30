@@ -92,10 +92,10 @@ class _NoteListPageState extends State<NoteListPage> {
       body: Column(
         children: [
           PageHeader(
+            onBack: () => context.pop(),
             title: '训练笔记',
             subtitle:
                 '${_notes.length} 篇笔记 · ${_notes.where((n) => n.isFeatured).length} 篇精选',
-            isTabPage: true,
           ),
           // v1 V1-11: 筛选条
           Padding(
