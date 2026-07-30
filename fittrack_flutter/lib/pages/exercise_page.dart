@@ -267,10 +267,15 @@ class _ExercisePageState extends State<ExercisePage> {
   Widget _buildDetailView(FitTrackColors colors) {
     final ex = _selectedExercise!;
     final exId = ex['id'] as String;
-    final description =
-        MockData.exerciseDescriptions[exId] ?? '暂无描述';
-    final muscles = MockData.exerciseMuscles[exId] ?? [];
-    final steps = MockData.exerciseSteps[exId] ?? [];
+    final description = (ex['description'] as String?)?.isNotEmpty == true
+        ? ex['description'] as String
+        : (MockData.exerciseDescriptions[exId] ?? '暂无描述');
+    final muscles = (ex['muscles'] as List?)?.isNotEmpty == true
+        ? List<String>.from(ex['muscles'] as List)
+        : (MockData.exerciseMuscles[exId] ?? <String>[]);
+    final steps = (ex['steps'] as List?)?.isNotEmpty == true
+        ? List<Map<String, dynamic>>.from(ex['steps'] as List)
+        : (MockData.exerciseSteps[exId] ?? <Map<String, dynamic>>[]);
 
     return Column(
       children: [
@@ -468,6 +473,53 @@ class _ExercisePageState extends State<ExercisePage> {
               ),
             ),
           ),
+          // 关键姿势
+          if ((step['keyPoses'] as List?)?.isNotEmpty == true) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.center_focus_strong,
+                    size: 14, color: colors.accentGlow),
+                const SizedBox(width: 4),
+                Text(
+                  '关键姿势',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: colors.accentGlow,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ...((step['keyPoses'] as List).map((k) => Padding(
+                  padding: const EdgeInsets.only(left: 18, bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Container(
+                          width: 4,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: colors.accentGlow,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          k.toString(),
+                          style: TextStyle(
+                              fontSize: 12, color: colors.textSecondary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ))),
+          ],
         ],
       ),
     );
