@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../data/storage.dart';
 import '../utils/platform_utils.dart';
+import 'notification_storage_service.dart';
+import 'ohos_reminder_service.dart';
 
 /// 健身卡到期提醒服务
 ///
@@ -129,6 +131,9 @@ class GymCardReminderService {
 
       await _sendNotification(title, content);
 
+      // 同步写入 App 内通知系统
+      NotificationStorageService.instance.addGymCardNotification(title, content);
+
       // 记录今日已推送
       final s = Storage.getSettings();
       s['lastGymCardReminderDate'] = today;
@@ -139,6 +144,111 @@ class GymCardReminderService {
     } catch (e) {
       debugPrint('[GymCardReminder] checkAndPush() error: $e');
       return false;
+    }
+  }
+
+  /// 重新调度健身卡到期提醒（后台代理提醒）
+  ///
+  /// 在以下场景调用：
+  /// - 用户开启/关闭健身卡提醒开关
+  /// - 用户修改阈值
+  /// - 增删健身卡
+  ///
+  /// 策略：扫描所有卡，找出最近需要提醒的日期，用 OHOS 代理提醒调度。
+  /// 只调度最近的一个提醒日（避免发布多个代理提醒）。
+  /// 提醒时间固定为 10:00。
+  Future<void> reschedule() async {
+    if (!isOhos) {
+      // 非 OHOS 平台：保留前台 checkAndPush 兜底，不做后台调度
+      return;
+    }
+
+    try {
+      // 1. 取消现有调度
+      await OhosReminderService.instance.cancelGymCardReminder();
+
+      // 2. 检查开关
+      final settings = Storage.getSettings();
+      final enabled =
+          settings['gymCardExpiryReminderEnabled'] as bool? ?? false;
+      if (!enabled) {
+        debugPrint('[GymCardReminder] reschedule: 开关关闭，不调度');
+        return;
+      }
+
+      // 3. 扫描所有卡，计算最近提醒日
+      final daysThreshold =
+          settings['gymCardExpiryDaysThreshold'] as int? ?? 7;
+      final countThreshold =
+          settings['gymCardLowCountThreshold'] as int? ?? 3;
+      final cards = Storage.getGymCards();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      DateTime? nearestDate;
+      String? alertContent;
+
+      for (final card in cards) {
+        final name = card['name'] as String? ?? '未命名卡';
+        DateTime? candidateDate;
+        String candidateContent = '';
+
+        // 期限卡：到期日 - N天 作为提醒日
+        final endDate = card['endDate'] as int? ?? 0;
+        if (endDate > 0) {
+          final end = DateTime.fromMillisecondsSinceEpoch(endDate);
+          final remindDate = DateTime(end.year, end.month, end.day)
+              .subtract(Duration(days: daysThreshold));
+          // 如果提醒日已过但卡未过期，改为今天提醒
+          candidateDate = remindDate.isBefore(today) ? today : remindDate;
+          final diff = end.difference(now).inDays;
+          candidateContent = diff < 0
+              ? '「$name」已过期 ${-diff} 天'
+              : diff == 0
+                  ? '「$name」今天到期'
+                  : '「$name」还有 $diff 天到期';
+        }
+
+        // 次卡：剩余次数 ≤ 阈值时今天提醒
+        final cardType = card['cardType'] as String? ?? '';
+        final remaining = card['remainingCount'] as int? ?? -1;
+        if (cardType == '次卡' && remaining >= 0 && remaining <= countThreshold) {
+          final content = remaining == 0
+              ? '「$name」已用完所有次数'
+              : '「$name」仅剩 $remaining 次';
+          // 次卡总是今天提醒
+          candidateDate = today;
+          candidateContent = content;
+        }
+
+        // 选最近的提醒日
+        if (candidateDate != null) {
+          if (nearestDate == null || candidateDate.isBefore(nearestDate)) {
+            nearestDate = candidateDate;
+            alertContent = candidateContent;
+          }
+        }
+      }
+
+      if (nearestDate == null || alertContent == null) {
+        debugPrint('[GymCardReminder] reschedule: 无符合条件的卡');
+        return;
+      }
+
+      // 4. 格式化日期为 "YYYY-MM-DD"
+      final dateStr = '${nearestDate.year}-'
+          '${nearestDate.month.toString().padLeft(2, '0')}-'
+          '${nearestDate.day.toString().padLeft(2, '0')}';
+
+      // 5. 调度代理提醒
+      await OhosReminderService.instance.scheduleGymCardReminder(
+        title: '健身卡提醒',
+        content: alertContent,
+        dateStr: dateStr,
+      );
+      debugPrint('[GymCardReminder] reschedule: 已调度到 $dateStr 10:00');
+    } catch (e) {
+      debugPrint('[GymCardReminder] reschedule error: $e');
     }
   }
 
