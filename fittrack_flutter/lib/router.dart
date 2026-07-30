@@ -22,6 +22,7 @@ import 'pages/record_detail_page.dart';
 import 'pages/add_plan_page.dart';
 import 'pages/notification_test_page.dart';
 import 'pages/reminder_settings_page.dart';
+import 'pages/banner_notification_guide_page.dart';
 import 'pages/gym_card_page.dart';
 import 'pages/body_data_page.dart';
 import 'pages/privacy_policy_page.dart';
@@ -292,6 +293,11 @@ GoRouter createRouter() {
         path: '/reminder-settings',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ReminderSettingsPage(),
+      ),
+      GoRoute(
+        path: '/banner-notification-guide',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const BannerNotificationGuidePage(),
       ),
       GoRoute(
         path: '/gym-card',
