@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../data/storage.dart';
 import '../utils/platform_utils.dart';
+import 'notification_storage_service.dart';
 import 'ohos_reminder_service.dart';
 
 /// 每日训练提醒调度服务
@@ -156,5 +157,57 @@ class DailyReminderService {
     } catch (e) {
       debugPrint('[DailyReminder] cancel() error: $e');
     }
+  }
+
+  /// 检查今日训练提醒是否已触发，如已触发则写入 App 内通知系统
+  ///
+  /// 由于 MaxScreenWantAgent 不支持 parameters 字段，无法通过 wantAgent 传递
+  /// notificationType，因此改为在 App 回到前台时检查今日训练时间是否已过，
+  /// 若已过且当日尚未写入通知记录，则补写一条 App 内通知。
+  Future<void> checkAndRecordNotification() async {
+    try {
+      final settings = Storage.getSettings();
+      final enabled =
+          settings['dailyTrainingReminderEnabled'] as bool? ?? false;
+      if (!enabled) return;
+
+      final trainingTime = settings['trainingTime'] as String? ?? '';
+      if (trainingTime.isEmpty) return;
+
+      // 防同日重复
+      final today = _todayStr();
+      final lastRecorded =
+          settings['lastDailyNotificationDate'] as String? ?? '';
+      if (lastRecorded == today) return;
+
+      // 检查今日训练时间是否已过
+      final parts = trainingTime.split(':');
+      if (parts.length != 2) return;
+      final hour = int.tryParse(parts[0]) ?? 0;
+      final minute = int.tryParse(parts[1]) ?? 0;
+      final now = DateTime.now();
+      final scheduledTime =
+          DateTime(now.year, now.month, now.day, hour, minute);
+
+      if (now.isAfter(scheduledTime)) {
+        // 训练时间已过，写入通知记录
+        NotificationStorageService.instance.addDailyTrainingNotification(
+          '训练提醒',
+          '今天是你的训练日，准备好了吗？',
+        );
+        // 记录今日已写入
+        final s = Storage.getSettings();
+        s['lastDailyNotificationDate'] = today;
+        Storage.saveSettings(s);
+        debugPrint('[DailyReminder] 已写入 App 内通知记录');
+      }
+    } catch (e) {
+      debugPrint('[DailyReminder] checkAndRecordNotification error: $e');
+    }
+  }
+
+  String _todayStr() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 }

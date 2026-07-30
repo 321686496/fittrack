@@ -68,6 +68,8 @@ void main() {
     ]);
     // 启动后立即检查一次健身卡到期（fire-and-forget）
     GymCardReminderService.instance.checkAndPush();
+    // 启动兜底：重新调度健身卡到期提醒（防止系统升级/数据迁移后调度丢失）
+    GymCardReminderService.instance.reschedule();
     // 初始化平台抽象层（PAL）—— 根据当前平台注入对应实现
     await PlatformServices.init();
     // 注册邀请链接处理器（解析 fittrack://invite?code=XXX）
@@ -155,6 +157,9 @@ class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
       GymCardReminderService.instance.checkAndPush();
       // 回到前台时重新调度每日训练提醒（防止系统杀后台后调度丢失）
       DailyReminderService.instance.reschedule();
+      // 回到前台时检查今日训练提醒是否已触发并补写 App 内通知记录
+      // （由于无法通过 wantAgent 传递 notificationType，需在前台补登记）
+      DailyReminderService.instance.checkAndRecordNotification();
       // Android: 回到前台时重新检查 ROM 适配状态
       if (!isOhos) {
         _checkRomAdaptationOnResume();
