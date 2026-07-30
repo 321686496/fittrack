@@ -227,6 +227,8 @@ export default class EntryAbility extends FlutterAbility {
   private liveViewActive: boolean = false;
   // 每日训练提醒（代理提醒）ID，-1 表示未发布
   private trainingReminderId: number = -1;
+  // 健身卡到期提醒（代理提醒）ID，-1 表示未发布
+  private gymCardReminderId: number = -1;
 
   // 休息结束刷新桌面卡片用的原生定时器 ID（-1 表示未启动）
   // 代理提醒触发时系统只会发通知，不会回调应用刷新卡片；
@@ -1010,6 +1012,95 @@ export default class EntryAbility extends FlutterAbility {
     }
   }
 
+  /// 调度健身卡到期提醒（后台代理提醒）
+  /// [dateStr] 格式 "YYYY-MM-DD"，提醒时间固定为当天 10:00
+  scheduleGymCardReminder(title: string, content: string, dateStr: string): void {
+    this.cancelGymCardReminder();
+
+    // 解析 dateStr "YYYY-MM-DD"
+    const parts: string[] = dateStr.split('-');
+    if (parts.length !== 3) {
+      console.error(`[FitTrack] scheduleGymCardReminder 日期格式错误: ${dateStr}`);
+      return;
+    }
+    const year: number = parseInt(parts[0], 10);
+    const month: number = parseInt(parts[1], 10);
+    const day: number = parseInt(parts[2], 10);
+    if (isNaN(year) || isNaN(month) || isNaN(day) ||
+      month < 1 || month > 12 || day < 1 || day > 31) {
+      console.error(`[FitTrack] scheduleGymCardReminder 日期非法: ${dateStr}`);
+      return;
+    }
+
+    console.info(`[FitTrack] 准备发布健身卡到期提醒, date=${dateStr}, time=10:00`);
+
+    try {
+      const bundleInfo: bundleManager.BundleInfo =
+        bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
+
+      // ReminderRequestCalendar：按指定日历时间触发（一次性，不重复）
+      // 注意：MaxScreenWantAgent 不支持 parameters 字段，wantAgent 只填 pkgName + abilityName
+      let reminderRequest: reminderAgentManager.ReminderRequestCalendar = {
+        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
+        dateTime: {
+          year: year,
+          month: month,
+          day: day,
+          hour: 10,
+          minute: 0,
+          second: 0,
+        },
+        // 空数组表示不按月/日重复，仅触发一次
+        repeatMonths: [],
+        repeatDays: [],
+        title: title,
+        content: content,
+        notificationId: 4001,
+        // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
+        slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
+        wantAgent: {
+          pkgName: bundleInfo.name,
+          abilityName: 'EntryAbility',
+        },
+        actionButton: [
+          {
+            title: '查看',
+            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
+          },
+        ],
+      };
+
+      reminderAgentManager.publishReminder(reminderRequest).then((reminderId: number) => {
+        this.gymCardReminderId = reminderId;
+        console.info(`[FitTrack] 健身卡代理提醒发布成功, id=${reminderId}, date=${dateStr}`);
+      }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] 健身卡代理提醒发布失败: code=${err.code}, msg=${err.message}`);
+      });
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] scheduleGymCardReminder 异常: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
+  /// 取消健身卡到期提醒
+  cancelGymCardReminder(): void {
+    if (this.gymCardReminderId === -1) {
+      return;
+    }
+    try {
+      let id: number = this.gymCardReminderId;
+      this.gymCardReminderId = -1;
+      reminderAgentManager.cancelReminder(id).then(() => {
+        console.info(`[FitTrack] 健身卡代理提醒已取消, id=${id}`);
+      }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] 取消健身卡代理提醒失败: code=${err.code}, msg=${err.message}`);
+      });
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] cancelGymCardReminder 异常: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
 }
 
 /// 处理 Flutter → 原生的 MethodChannel 调用（reminderChannel）
@@ -1035,6 +1126,20 @@ class ReminderCallHandler implements MethodCallHandler {
       }
       case 'cancelTrainingReminder': {
         this.ability.cancelTrainingReminder();
+        result.success(null);
+        break;
+      }
+      case 'scheduleGymCardReminder': {
+        const args = call.args as Record<string, Object>;
+        const title = (args['title'] as string) ?? '';
+        const content = (args['content'] as string) ?? '';
+        const dateStr = (args['dateStr'] as string) ?? '';
+        this.ability.scheduleGymCardReminder(title, content, dateStr);
+        result.success(null);
+        break;
+      }
+      case 'cancelGymCardReminder': {
+        this.ability.cancelGymCardReminder();
         result.success(null);
         break;
       }
