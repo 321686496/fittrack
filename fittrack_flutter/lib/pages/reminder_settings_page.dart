@@ -258,6 +258,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                           onChanged: (v) {
                             setState(() => _gymCardExpiryEnabled = v);
                             _saveSetting('gymCardExpiryReminderEnabled', v);
+                            // 重新调度后台提醒
+                            GymCardReminderService.instance.reschedule();
                             if (v) {
                               // 开启后立即检查一次
                               GymCardReminderService.instance.checkAndPush();
@@ -281,6 +283,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                             onChangeEnd: (v) {
                               _saveSetting(
                                   'gymCardExpiryDaysThreshold', v.round());
+                              // 重新调度后台提醒
+                              GymCardReminderService.instance.reschedule();
                             },
                           ),
                           DividerWidget(indent: 44),
@@ -299,6 +303,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                             onChangeEnd: (v) {
                               _saveSetting(
                                   'gymCardLowCountThreshold', v.round());
+                              // 重新调度后台提醒
+                              GymCardReminderService.instance.reschedule();
                             },
                           ),
                         ],
