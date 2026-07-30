@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../data/mock_data.dart';
 import '../services/rest_notification_service.dart';
 import '../services/smart_push_service.dart';
 import '../services/achievement_service.dart';
@@ -53,6 +54,9 @@ class _TrainingPageState extends State<TrainingPage>
   int _restSeconds = 0;
   int _totalRestSeconds = 0;
   bool _isLastSetOfExercise = false;
+
+  /// 动作指导卡片是否展开（默认收起）
+  bool _actionGuideExpanded = false;
 
   // ── Wall-clock rest timer ────────────────────────────────────
   /// 休息结束的绝对时间点，用于后台恢复时计算剩余时间
@@ -997,7 +1001,153 @@ class _TrainingPageState extends State<TrainingPage>
               ),
             ),
           ),
+          if (_exercises.isNotEmpty && _currentExIdx < _exercises.length)
+            _buildActionGuide(colors),
         ],
+      ),
+    );
+  }
+
+  // ── Action guide card ────────────────────────────────────────
+
+  Widget _buildActionGuide(FitTrackColors colors) {
+    if (_exercises.isEmpty || _currentExIdx >= _exercises.length) {
+      return const SizedBox.shrink();
+    }
+    final ex = _exercises[_currentExIdx];
+    final exId = ex['id'] as String?;
+
+    // 数据读取：优先动作自带字段，回退 MockData
+    final desc = (ex['description'] as String?)?.isNotEmpty == true
+        ? ex['description'] as String
+        : (exId != null ? (MockData.exerciseDescriptions[exId] ?? '') : '');
+    final muscles = (ex['muscles'] as List?)?.isNotEmpty == true
+        ? List<String>.from(ex['muscles'] as List)
+        : (exId != null ? (MockData.exerciseMuscles[exId] ?? <String>[]) : <String>[]);
+    final steps = (ex['steps'] as List?)?.isNotEmpty == true
+        ? List<Map<String, dynamic>>.from(ex['steps'] as List)
+        : (exId != null ? (MockData.exerciseSteps[exId] ?? <Map<String, dynamic>>[]) : <Map<String, dynamic>>[]);
+
+    final exName = ex['name'] as String? ?? '当前动作';
+    final hasContent = desc.isNotEmpty || muscles.isNotEmpty || steps.isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: CardWidget(
+        child: Column(
+          children: [
+            // 标题行（点击展开/收起）
+            InkWell(
+              onTap: () => setState(() => _actionGuideExpanded = !_actionGuideExpanded),
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline, size: 16, color: colors.accentGlow),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '动作指导 · $exName',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
+                      ),
+                    ),
+                    Icon(
+                      _actionGuideExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      size: 14,
+                      color: colors.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_actionGuideExpanded) ...[
+              const DividerWidget(indent: 14),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.3,
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+                  child: hasContent
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (desc.isNotEmpty) ...[
+                            Text('动作说明', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                            const SizedBox(height: 4),
+                            Text(desc, style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.5)),
+                            const SizedBox(height: 10),
+                          ],
+                          if (muscles.isNotEmpty) ...[
+                            Text('目标肌群', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: muscles.map((m) => Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: colors.accentGlow.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(m, style: TextStyle(fontSize: 11, color: colors.accentGlow)),
+                              )).toList(),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                          if (steps.isNotEmpty) ...[
+                            Text('训练步骤', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                            const SizedBox(height: 6),
+                            ...steps.asMap().entries.map((e) {
+                              final i = e.key;
+                              final s = e.value;
+                              final kp = (s['keyPoses'] as List?) ?? [];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${i + 1}. ${s['title'] ?? ''}',
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
+                                    if ((s['desc'] as String?)?.isNotEmpty == true)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 2, left: 12),
+                                        child: Text(s['desc'],
+                                            style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.4)),
+                                      ),
+                                    if (kp.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      ...kp.map((k) => Padding(
+                                        padding: const EdgeInsets.only(left: 24, bottom: 2),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('· ', style: TextStyle(fontSize: 12, color: colors.accentGlow)),
+                                            Expanded(child: Text(k.toString(),
+                                                style: TextStyle(fontSize: 11, color: colors.textSecondary))),
+                                          ],
+                                        ),
+                                      )),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ],
+                      )
+                    : Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Text('暂无动作指导', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+                        ),
+                      ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
