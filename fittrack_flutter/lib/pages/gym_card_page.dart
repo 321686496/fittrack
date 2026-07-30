@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../services/gym_card_reminder_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/gym_card_poster.dart';
 import '../widgets/page_header.dart';
@@ -455,6 +456,8 @@ class _GymCardPageState extends State<GymCardPage> {
                           Storage.addGymCard(data);
                           FitToast.success(context, '添加成功');
                         }
+                        // 健身卡增删改后重新调度到期提醒（fire-and-forget）
+                        GymCardReminderService.instance.reschedule();
                         Navigator.of(ctx).pop();
                         _loadCards();
                       },
@@ -643,6 +646,8 @@ class _GymCardPageState extends State<GymCardPage> {
       return;
     }
     Storage.updateGymCard(card['id'] as String, {'remainingCount': remaining - 1});
+    // 剩余次数变化可能影响提醒触发，重新调度（fire-and-forget）
+    GymCardReminderService.instance.reschedule();
     FitToast.success(context, '已扣减1次，剩余 ${remaining - 1} 次');
     _loadCards();
   }
@@ -678,6 +683,8 @@ class _GymCardPageState extends State<GymCardPage> {
     );
     if (confirmed == true && mounted) {
       Storage.deleteGymCard(card['id'] as String);
+      // 删除后重新调度到期提醒（fire-and-forget）
+      GymCardReminderService.instance.reschedule();
       FitToast.success(context, '已删除');
       _loadCards();
     }
