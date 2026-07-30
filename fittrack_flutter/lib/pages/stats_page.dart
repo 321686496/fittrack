@@ -34,6 +34,8 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   // ── Daily counts for heatmap ─────────────────────────────────
   Map<String, int> _dailyCounts = {};
+  Map<String, int> _dailyCapacity = {};   // 当日总重量 (kg)
+  Map<String, int> _dailyDuration = {};   // 当日总时长 (分钟)
 
   // ── Muscle color map ─────────────────────────────────────────
   static const Map<String, Color> _muscleColors = {
@@ -78,19 +80,43 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
     _computeMonthChart();
     _computeMuscleDistribution();
     _computePersonalRecords();
-    _computeDailyCounts();
+    _computeDailyMetrics();
   }
 
-  // ── Compute daily counts for heatmap ─────────────────────────
+  // ── Compute daily counts + capacity + duration for heatmap ────
 
-  void _computeDailyCounts() {
+  void _computeDailyMetrics() {
     _dailyCounts = {};
+    _dailyCapacity = {};
+    _dailyDuration = {};
     for (final r in _records) {
       final ts = r['date'] as int? ?? r['createTime'] as int?;
       if (ts == null) continue;
       final d = DateTime.fromMillisecondsSinceEpoch(ts);
       final key = '${d.year}-${d.month}-${d.day}';
       _dailyCounts[key] = (_dailyCounts[key] ?? 0) + 1;
+      _dailyCapacity[key] = (_dailyCapacity[key] ?? 0) + ((r['totalWeight'] as num?)?.toInt() ?? 0);
+      _dailyDuration[key] = (_dailyDuration[key] ?? 0) + ((r['duration'] as num?)?.toInt() ?? 0);
+    }
+  }
+
+  // ── 根据配色模式计算热力图颜色 ────────────────────────────────
+
+  Color _heatColor(String key, FitTrackColors colors) {
+    final count = _dailyCounts[key] ?? 0;
+    if (count == 0) return colors.borderColor.withOpacity(0.3); // 无训练灰色
+
+    final mode = Storage.getSettings()['activityColorMode'] ?? 'capacity';
+    if (mode == 'duration') {
+      final value = _dailyDuration[key] ?? 0;
+      if (value >= 60) return colors.accentGlow;
+      if (value >= 30) return colors.accentGlow.withOpacity(0.7);
+      return colors.accentGlow.withOpacity(0.4);
+    } else {
+      final value = _dailyCapacity[key] ?? 0;
+      if (value >= 5000) return colors.accentGlow;
+      if (value >= 2000) return colors.accentGlow.withOpacity(0.7);
+      return colors.accentGlow.withOpacity(0.4);
     }
   }
 
@@ -755,14 +781,16 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                                         }
                                         final key =
                                             '${date.year}-${date.month}-${date.day}';
-                                        final count = _dailyCounts[key] ?? 0;
-                                        return Container(
-                                          width: cellSize,
-                                          height: cellSize,
-                                          decoration: BoxDecoration(
-                                            color: colorForCount(count),
-                                            borderRadius:
-                                                BorderRadius.circular(borderRadius),
+                                        return GestureDetector(
+                                          onTap: () => _showDayDetail(key),
+                                          child: Container(
+                                            width: cellSize,
+                                            height: cellSize,
+                                            decoration: BoxDecoration(
+                                              color: _heatColor(key, colors),
+                                              borderRadius:
+                                                  BorderRadius.circular(borderRadius),
+                                            ),
                                           ),
                                         );
                                       }),
@@ -835,6 +863,115 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ── 点击方块后展示当日训练详情 ──────────────────────────────────
+
+  void _showDayDetail(String key) {
+    final parts = key.split('-');
+    if (parts.length != 3) return;
+    final date = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+
+    final dayRecords = _records.where((r) {
+      final ts = r['date'] as int? ?? r['createTime'] as int?;
+      if (ts == null) return false;
+      final d = DateTime.fromMillisecondsSinceEpoch(ts);
+      return d.year == date.year && d.month == date.month && d.day == date.day;
+    }).toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final colors = Theme.of(ctx).extension<FitTrackColors>()!;
+        final weekDay = '周${['一','二','三','四','五','六','日'][date.weekday - 1]}';
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$key $weekDay',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: colors.textPrimary),
+                ),
+                const SizedBox(height: 4),
+                if (dayRecords.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text('当日无训练记录', style: TextStyle(color: colors.textSecondary, fontSize: 14)),
+                    ),
+                  )
+                else ...[
+                  Text('${dayRecords.length} 条训练记录',
+                      style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+                  const SizedBox(height: 12),
+                  ...dayRecords.map((r) => _buildDayRecordCard(r, colors)),
+                ],
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDayRecordCard(Map<String, dynamic> r, FitTrackColors colors) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            (r['name'] as String?) ?? '训练',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary),
+          ),
+          if ((r['planName'] as String?)?.isNotEmpty == true)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text('计划：${r['planName']}',
+                  style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+            ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 4,
+            children: [
+              Text('组数: ${r['totalSets'] ?? 0}', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+              Text('总量: ${r['totalWeight'] ?? 0} kg', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+              Text('时长: ${r['duration'] ?? 0} 分钟', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+              Text('动作: ${r['exerciseCount'] ?? 0} 个', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+            ],
+          ),
+          if ((r['muscles'] as List?)?.isNotEmpty == true) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: ((r['muscles'] as List).cast<String>()).map((m) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(m, style: TextStyle(fontSize: 11, color: colors.accentGlow)),
+              )).toList(),
+            ),
+          ],
         ],
       ),
     );
