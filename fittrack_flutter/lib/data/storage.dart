@@ -25,6 +25,7 @@ class Storage {
   static const String _keyBodyDataHistory = 'fitplan_bodyDataHistory';
   static const String _keyPrefsPrefix = 'fittrack_';
   static const String _keyMigrated = 'fittrack_sqlite_migrated';
+  static const String _keyNotifications = 'fittrack_notifications';
 
   // Phase 2 — 全局可观测状态
   static final ValueNotifier<bool> isPremiumNotifier = ValueNotifier<bool>(false);
@@ -1084,5 +1085,78 @@ class Storage {
     });
 
     return demoPlan;
+  }
+
+  // ============================================================
+  // App 内通知记录
+  // ============================================================
+
+  /// 获取所有通知记录（按时间倒序）
+  static List<Map<String, dynamic>> getNotifications() {
+    final list = _safeGet(_keyNotifications, <dynamic>[]) as List<dynamic>;
+    final result = list
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+    result.sort((a, b) {
+      final ta = a['createdAt'] as int? ?? 0;
+      final tb = b['createdAt'] as int? ?? 0;
+      return tb.compareTo(ta);
+    });
+    return result;
+  }
+
+  /// 新增一条通知记录（最多保留 50 条，超出删除最旧的已读通知）
+  static void addNotification(Map<String, dynamic> notification) {
+    final list = getNotifications();
+    list.insert(0, notification);
+    // 超过 50 条时删除最旧的已读通知
+    while (list.length > 50) {
+      final idx = list.lastIndexWhere((n) => n['read'] == true);
+      if (idx >= 0) {
+        list.removeAt(idx);
+      } else {
+        // 没有已读通知，删除最后一条
+        list.removeLast();
+      }
+    }
+    _store[_keyNotifications] = list;
+    _persistKey(_keyNotifications);
+  }
+
+  /// 标记单条通知为已读
+  static void markNotificationRead(String id) {
+    final list = getNotifications();
+    for (final n in list) {
+      if (n['id'] == id) {
+        n['read'] = true;
+        break;
+      }
+    }
+    _store[_keyNotifications] = list;
+    _persistKey(_keyNotifications);
+  }
+
+  /// 标记所有通知为已读
+  static void markAllNotificationsRead() {
+    final list = getNotifications();
+    for (final n in list) {
+      n['read'] = true;
+    }
+    _store[_keyNotifications] = list;
+    _persistKey(_keyNotifications);
+  }
+
+  /// 清空所有通知记录
+  static void clearNotifications() {
+    _store[_keyNotifications] = <dynamic>[];
+    _persistKey(_keyNotifications);
+  }
+
+  /// 删除单条通知记录
+  static void deleteNotification(String id) {
+    final list = getNotifications();
+    list.removeWhere((n) => n['id'] == id);
+    _store[_keyNotifications] = list;
+    _persistKey(_keyNotifications);
   }
 }
