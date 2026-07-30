@@ -30,6 +30,9 @@ class NotePosterContent extends StatefulWidget {
   /// 海报宽度常量（高度随内容自适应）
   static const double posterWidth = 1080.0;
 
+  /// 海报高度常量（用于 Overlay 离屏渲染时的固定尺寸）
+  static const double posterHeight = 1920.0;
+
   @override
   State<NotePosterContent> createState() => _NotePosterContentState();
 }
