@@ -1,10 +1,7 @@
 import 'dart:async';
-import '../../form_kit_service.dart';
 import '../live_view_service.dart';
 
 class OhosLiveViewService implements LiveViewService {
-  final FormKitService _formKit = FormKitService.instance;
-
   final StreamController<LiveViewEvent> _actionController =
       StreamController<LiveViewEvent>.broadcast();
 
@@ -13,24 +10,19 @@ class OhosLiveViewService implements LiveViewService {
   @override
   Future<void> init() async {}
 
+  /// OHOS 实况窗由 EntryAbility 在收到 mode=rest 的 form data 时自动启动，
+  /// 不需要 Flutter 侧额外推送数据。
+  /// 之前这里调用 _formKit.startRest 会导致卡片数据被重复推送：
+  ///   1. widgetCard.pushCardData 推送完整数据（currentSet/totalSets 等有值）
+  ///   2. 本方法再推送一次但字段全为 0，覆盖了正确数据，导致卡片显示 0/0
+  ///   3. 同时触发 manageTrainingState 两次，代理提醒被发布两次
   @override
   Future<void> startRestLiveView({
     required String exerciseName,
     required int restSeconds,
     required DateTime restEndTime,
   }) async {
-    _formKit.startRest(
-      exerciseName: exerciseName,
-      restSeconds: restSeconds,
-      restEndTime: restEndTime.millisecondsSinceEpoch,
-      totalRestSeconds: restSeconds,
-      currentSet: 0,
-      totalSets: 0,
-      exerciseIndex: 0,
-      totalExercises: 0,
-      completedSets: 0,
-      totalPlanSets: 0,
-    );
+    // 无操作：实况窗启动由 EntryAbility 原生侧负责
   }
 
   @override

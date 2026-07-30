@@ -458,6 +458,7 @@ class Storage {
       'gymCardLowCountThreshold': 3,         // 次卡剩余次数阈值（剩余 ≤ N 次提醒）
       'lastGymCardReminderDate': '',         // 上次健身卡到期提醒日期（防同日重复推送）
       'activityColorMode': 'capacity', // 活跃度配色模式：'capacity'（训练容量）或 'duration'（训练时长）
+      'actionGuideCollapsed': false, // 训练页底部动作指导卡片是否收起（默认展开）
     };
     final result = _safeGet(_keySettings, <String, dynamic>{});
     if (result is Map) {

@@ -242,7 +242,10 @@ class _SettingsPageState extends State<SettingsPage> {
     final confirmed = await ConfirmDialog.show(
       context,
       title: '前往应用设置',
-      content: '即将跳转到系统应用管理页面，请在应用信息中手动开启对应权限。',
+      content: '即将跳转到系统应用管理页面，请在应用信息中：\n\n'
+          '1. 开启「通知权限」\n'
+          '2. 开启「横幅通知」（休息结束提醒会在顶部弹出）\n'
+          '3. 开启「锁屏通知」（锁屏时也能看到提醒）',
       confirmText: '去设置',
       icon: Icons.settings,
     );
@@ -253,7 +256,7 @@ class _SettingsPageState extends State<SettingsPage> {
       } catch (e) {
         // 如果 channel 不可用，显示提示
         if (mounted) {
-          FitToast.warning(context, '请前往系统设置 > 应用 > FitTrack 开启权限');
+          FitToast.warning(context, '请前往 设置 > 通知管理 > FitTrack 开启权限和横幅通知');
         }
       }
       // 返回后重新检查权限状态
@@ -269,7 +272,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           const SectionHeader(title: '权限管理'),
           const SizedBox(height: 12),
-          _buildPermissionItem(colors, Icons.notifications_outlined, '通知权限', '用于训练提醒和休息结束通知', _hasNotificationPermission),
+          _buildPermissionItem(colors, Icons.notifications_outlined, '通知权限', '训练提醒和休息结束通知（需开启横幅通知）', _hasNotificationPermission),
           const DividerWidget(),
           _buildPermissionItem(colors, Icons.vibration, '震动权限', '训练结束时震动提醒', _hasVibratePermission),
           const DividerWidget(),

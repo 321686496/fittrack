@@ -89,10 +89,9 @@ class _ExercisePageState extends State<ExercisePage> {
   }
 
   void _showAddExerciseDialog() {
-    showModalBottomSheet(
+    FitBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      maxHeightRatio: 0.9,
       builder: (ctx) => _AddExerciseSheet(
         onSaved: () => setState(() {}),
       ),
@@ -1409,65 +1408,56 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return SafeArea(
-      child: Container(
-        decoration: BoxDecoration(
-          color: colors.bgSecondary,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(colors),
-            Divider(height: 1, color: colors.borderColor.withOpacity(0.5)),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildNameField(colors),
-                    const SizedBox(height: 14),
-                    _buildCategoryChips(colors),
-                    const SizedBox(height: 14),
-                    _buildEquipField(colors),
-                    const SizedBox(height: 14),
-                    _buildDescField(colors),
-                    const SizedBox(height: 14),
-                    _buildMusclesChips(colors),
-                    const SizedBox(height: 18),
-                    _buildStepsSection(colors),
-                  ],
-                ),
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildHeader(colors),
+        Divider(height: 1, color: colors.borderColor.withOpacity(0.5)),
+        Flexible(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildNameField(colors),
+                const SizedBox(height: 14),
+                _buildCategoryChips(colors),
+                const SizedBox(height: 14),
+                _buildEquipField(colors),
+                const SizedBox(height: 14),
+                _buildDescField(colors),
+                const SizedBox(height: 14),
+                _buildMusclesChips(colors),
+                const SizedBox(height: 18),
+                _buildStepsSection(colors),
+              ],
             ),
-            Container(
-              padding: EdgeInsets.fromLTRB(16, 10, 16, 10 + bottomInset),
-              decoration: BoxDecoration(
-                border:
-                    Border(top: BorderSide(color: colors.borderColor.withOpacity(0.5))),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _onSave,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: const Text('保存',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          decoration: BoxDecoration(
+            border:
+                Border(top: BorderSide(color: colors.borderColor.withOpacity(0.5))),
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _onSave,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.accentGlow,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('保存',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
