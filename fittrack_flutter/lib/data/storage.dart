@@ -457,6 +457,7 @@ class Storage {
       'gymCardExpiryDaysThreshold': 7,       // 期限卡到期天数阈值（剩余 ≤ N 天提醒）
       'gymCardLowCountThreshold': 3,         // 次卡剩余次数阈值（剩余 ≤ N 次提醒）
       'lastGymCardReminderDate': '',         // 上次健身卡到期提醒日期（防同日重复推送）
+      'activityColorMode': 'capacity', // 活跃度配色模式：'capacity'（训练容量）或 'duration'（训练时长）
     };
     final result = _safeGet(_keySettings, <String, dynamic>{});
     if (result is Map) {
