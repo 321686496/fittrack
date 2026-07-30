@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
-import '../services/rest_notification_service.dart';
 import '../services/daily_reminder_service.dart';
 import '../services/gym_card_reminder_service.dart';
 import '../widgets/common_widgets.dart';
@@ -59,19 +58,6 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
     final settings = Storage.getSettings();
     settings[key] = value;
     Storage.saveSettings(settings);
-  }
-
-  Future<void> _testNotification() async {
-    await RestNotificationService.instance.showRestEndNotification(
-      exerciseName: '测试动作',
-    );
-    if (mounted) {
-      FitToast.success(context, '测试通知已发送，请查看通知栏');
-    }
-  }
-
-  Future<void> _testVibration() async {
-    await RestNotificationService.vibrate();
   }
 
   @override
@@ -306,30 +292,6 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  SectionHeader(title: '测试'),
-                  const SizedBox(height: 10),
-                  CardWidget(
-                    child: Column(
-                      children: [
-                        _buildActionTile(
-                          colors,
-                          icon: Icons.notifications_outlined,
-                          title: '发送测试通知',
-                          subtitle: '验证通知功能是否正常',
-                          onTap: _testNotification,
-                        ),
-                        DividerWidget(indent: 44),
-                        _buildActionTile(
-                          colors,
-                          icon: Icons.vibration,
-                          title: '测试振动',
-                          subtitle: '验证振动功能是否正常',
-                          onTap: _testVibration,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                   _buildTipCard(colors),
                   const SizedBox(height: 30),
                 ],
@@ -384,52 +346,6 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
             activeColor: colors.accentGlow,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionTile(
-    FitTrackColors colors, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-        child: Row(
-          children: [
-            Icon(icon, size: 22, color: colors.accentGlow),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: colors.textMuted,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, size: 18, color: colors.textMuted),
-          ],
-        ),
       ),
     );
   }
