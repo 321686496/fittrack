@@ -55,8 +55,8 @@ class _TrainingPageState extends State<TrainingPage>
   int _totalRestSeconds = 0;
   bool _isLastSetOfExercise = false;
 
-  /// 动作指导卡片是否展开（默认收起）
-  bool _actionGuideExpanded = false;
+  /// 动作指导卡片是否展开（默认展开，状态从持久化设置读取）
+  bool _actionGuideExpanded = true;
 
   // ── Wall-clock rest timer ────────────────────────────────────
   /// 休息结束的绝对时间点，用于后台恢复时计算剩余时间
@@ -100,6 +100,8 @@ class _TrainingPageState extends State<TrainingPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _startTime = DateTime.now();
+    // 读取持久化的动作指导折叠状态（默认展开）
+    _actionGuideExpanded = !(Storage.getSettings()['actionGuideCollapsed'] as bool? ?? false);
     _loadData();
 
     // 监听通知点击（通过 PAL 统一处理）
@@ -803,8 +805,16 @@ class _TrainingPageState extends State<TrainingPage>
             ),
           ),
           const SizedBox(height: 12),
+          // 动作指导卡片（置于训练卡片上方，避免遮挡完成组数按钮）
+          // 使用 else 分支保持 Column 子元素数量恒定，避免 Expanded 位置变化
+          // 导致整个训练卡片子树被销毁重建（可能触发 _dependents.isEmpty 断言）
+          if (_exercises.isNotEmpty && _currentExIdx < _exercises.length)
+            _buildActionGuide(colors)
+          else
+            const SizedBox.shrink(),
           // Current exercise card
           Expanded(
+            key: const ValueKey('training_card'),
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: CardWidget(
@@ -1001,14 +1011,20 @@ class _TrainingPageState extends State<TrainingPage>
               ),
             ),
           ),
-          if (_exercises.isNotEmpty && _currentExIdx < _exercises.length)
-            _buildActionGuide(colors),
         ],
       ),
     );
   }
 
   // ── Action guide card ────────────────────────────────────────
+
+  /// 切换动作指导卡片展开/收起状态，并持久化
+  void _toggleActionGuide() {
+    setState(() => _actionGuideExpanded = !_actionGuideExpanded);
+    final settings = Storage.getSettings();
+    settings['actionGuideCollapsed'] = !_actionGuideExpanded;
+    Storage.saveSettings(settings);
+  }
 
   Widget _buildActionGuide(FitTrackColors colors) {
     if (_exercises.isEmpty || _currentExIdx >= _exercises.length) {
@@ -1032,13 +1048,14 @@ class _TrainingPageState extends State<TrainingPage>
     final hasContent = desc.isNotEmpty || muscles.isNotEmpty || steps.isNotEmpty;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: CardWidget(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             // 标题行（点击展开/收起）
             InkWell(
-              onTap: () => setState(() => _actionGuideExpanded = !_actionGuideExpanded),
+              onTap: _toggleActionGuide,
               borderRadius: BorderRadius.circular(12),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -1052,100 +1069,118 @@ class _TrainingPageState extends State<TrainingPage>
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                       ),
                     ),
-                    Icon(
-                      _actionGuideExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                      size: 14,
-                      color: colors.textSecondary,
+                    AnimatedRotation(
+                      turns: _actionGuideExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 16,
+                        color: colors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            if (_actionGuideExpanded) ...[
-              const DividerWidget(indent: 14),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.3,
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-                  child: hasContent
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (desc.isNotEmpty) ...[
-                            Text('动作说明', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                            const SizedBox(height: 4),
-                            Text(desc, style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.5)),
-                            const SizedBox(height: 10),
-                          ],
-                          if (muscles.isNotEmpty) ...[
-                            Text('目标肌群', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                            const SizedBox(height: 4),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 4,
-                              children: muscles.map((m) => Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: colors.accentGlow.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(m, style: TextStyle(fontSize: 11, color: colors.accentGlow)),
-                              )).toList(),
-                            ),
-                            const SizedBox(height: 10),
-                          ],
-                          if (steps.isNotEmpty) ...[
-                            Text('训练步骤', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                            const SizedBox(height: 6),
-                            ...steps.asMap().entries.map((e) {
-                              final i = e.key;
-                              final s = e.value;
-                              final kp = (s['keyPoses'] as List?) ?? [];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Column(
+            // 展开内容（带动画）
+            ClipRect(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: _actionGuideExpanded
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const DividerWidget(indent: 14),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * 0.3,
+                          ),
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+                            child: hasContent
+                              ? Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('${i + 1}. ${s['title'] ?? ''}',
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
-                                    if ((s['desc'] as String?)?.isNotEmpty == true)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 2, left: 12),
-                                        child: Text(s['desc'],
-                                            style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.4)),
-                                      ),
-                                    if (kp.isNotEmpty) ...[
+                                    if (desc.isNotEmpty) ...[
+                                      Text('动作说明', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
                                       const SizedBox(height: 4),
-                                      ...kp.map((k) => Padding(
-                                        padding: const EdgeInsets.only(left: 24, bottom: 2),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('· ', style: TextStyle(fontSize: 12, color: colors.accentGlow)),
-                                            Expanded(child: Text(k.toString(),
-                                                style: TextStyle(fontSize: 11, color: colors.textSecondary))),
-                                          ],
-                                        ),
-                                      )),
+                                      Text(desc, style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.5)),
+                                      const SizedBox(height: 10),
+                                    ],
+                                    if (muscles.isNotEmpty) ...[
+                                      Text('目标肌群', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                                      const SizedBox(height: 4),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        children: muscles.map((m) => Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: colors.accentGlow.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(m, style: TextStyle(fontSize: 11, color: colors.accentGlow)),
+                                        )).toList(),
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
+                                    if (steps.isNotEmpty) ...[
+                                      Text('训练步骤', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                                      const SizedBox(height: 6),
+                                      ...steps.asMap().entries.map((e) {
+                                        final i = e.key;
+                                        final s = e.value;
+                                        final kp = (s['keyPoses'] as List?) ?? [];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(bottom: 10),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text('${i + 1}. ${s['title'] ?? ''}',
+                                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
+                                              if ((s['desc'] as String?)?.isNotEmpty == true)
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 2, left: 12),
+                                                  child: Text(s['desc'],
+                                                      style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.4)),
+                                                ),
+                                              if (kp.isNotEmpty) ...[
+                                                const SizedBox(height: 4),
+                                                ...kp.map((k) => Padding(
+                                                  padding: const EdgeInsets.only(left: 24, bottom: 2),
+                                                  child: Row(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text('· ', style: TextStyle(fontSize: 12, color: colors.accentGlow)),
+                                                      Expanded(child: Text(k.toString(),
+                                                          style: TextStyle(fontSize: 11, color: colors.textSecondary))),
+                                                    ],
+                                                  ),
+                                                )),
+                                              ],
+                                            ],
+                                          ),
+                                        );
+                                      }),
                                     ],
                                   ],
+                                )
+                              : Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    child: Text('暂无动作指导', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+                                  ),
                                 ),
-                              );
-                            }),
-                          ],
-                        ],
-                      )
-                    : Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Text('暂无动作指导', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+                          ),
                         ),
-                      ),
-                ),
+                      ],
+                    )
+                  : const SizedBox(width: double.infinity),
               ),
-            ],
+            ),
           ],
         ),
       ),

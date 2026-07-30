@@ -24,6 +24,9 @@ const REST_LIVE_VIEW_ID: number = 30001;
 
 const CAPSULE_ICON: string = 'liveview_icon.png';
 
+// 休息倒计时降级持续通知的 ID（实况窗不可用时使用）
+const REST_FALLBACK_NOTIFICATION_ID: number = 200;
+
 class FormDataCallHandler implements MethodCallHandler {
   private ability: EntryAbility;
 
@@ -225,6 +228,16 @@ export default class EntryAbility extends FlutterAbility {
   // 每日训练提醒（代理提醒）ID，-1 表示未发布
   private trainingReminderId: number = -1;
 
+  // 休息结束刷新桌面卡片用的原生定时器 ID（-1 表示未启动）
+  // 代理提醒触发时系统只会发通知，不会回调应用刷新卡片；
+  // 这里用 setTimeout 在休息结束时主动更新 preferences + reloadForms，
+  // 让桌面卡片从"休息中"切回"训练中"。
+  private restRefreshTimerId: number = -1;
+
+  // 实况窗降级持续通知相关
+  // 实况窗权益未申请/开关未开启/真机不支持时，发布横幅通知告知用户"休息中"
+  private restFallbackActive: boolean = false;
+
   configureFlutterEngine(flutterEngine: FlutterEngine): void {
     super.configureFlutterEngine(flutterEngine);
     GeneratedPluginRegistrant.registerWith(flutterEngine);
@@ -249,6 +262,30 @@ export default class EntryAbility extends FlutterAbility {
       StandardMethodCodec.INSTANCE
     );
     this.posterChannel.setMethodCallHandler(new PosterShareHandler(this));
+
+    // 应用启动时主动请求通知权限 + 预创建 SOCIAL_COMMUNICATION 渠道
+    // 横幅通知开关由用户在系统设置中控制，应用无法通过 API 强制开启，
+    // 但 SOCIAL_COMMUNICATION 渠道类型默认支持横幅，用户开启横幅后即可显示
+    this.requestNotificationPermissionAndCreateSlot();
+  }
+
+  /// 请求通知权限并预创建 SOCIAL_COMMUNICATION 渠道
+  /// - requestEnableNotification：首次调用会弹出系统授权对话框
+  /// - addSlot(SOCIAL_COMMUNICATION)：预创建横幅通知渠道
+  /// - 横幅通知的显示开关由用户在 设置 > 通知管理 > FitTrack 中控制
+  private requestNotificationPermissionAndCreateSlot(): void {
+    notificationManager.requestEnableNotification(this.context)
+      .then(() => {
+        console.info('[FitTrack] 通知权限已授予');
+        // 权限授予后预创建 SOCIAL_COMMUNICATION 渠道
+        return notificationManager.addSlot(notificationManager.SlotType.SOCIAL_COMMUNICATION);
+      })
+      .then(() => {
+        console.info('[FitTrack] SOCIAL_COMMUNICATION 渠道预创建成功');
+      })
+      .catch((err: BusinessError) => {
+        console.warn(`[FitTrack] 通知权限/渠道创建: code=${err.code}, msg=${err.message}`);
+      });
   }
 
   onNewWant(want: Want, launchParams: AbilityConstant.LaunchParam): void {
@@ -264,9 +301,46 @@ export default class EntryAbility extends FlutterAbility {
           this.invokeFlutterMethod('onCardClick', params);
         }
       }
+
+      // 代理提醒触发后用户点击通知拉起应用：此时 want.parameters 可能为空
+      // 检测休息是否已结束（restEndTime > 0 且已过期），若是则刷新桌面卡片
+      // 并通知 Flutter 端执行 skipRest
+      this.checkRestExpiredAndRefresh();
     } catch (e) {
       console.error('[FitTrack] onNewWant error: ' + e);
     }
+  }
+
+  /// 应用回到前台时检查休息是否已结束
+  /// 解决：应用在后台时代理提醒触发通知，但 setTimeout 被冻结无法刷新卡片；
+  /// 用户回到应用时在此兜底刷新卡片 + 通知 Flutter 跳过休息
+  onForeground(): void {
+    super.onForeground();
+    console.info('[FitTrack] onForeground: 检查休息是否已结束');
+    this.checkRestExpiredAndRefresh();
+  }
+
+  /// 检测休息是否已结束（restEndTime > 0 且已过期）
+  /// 若是则：1) 刷新桌面卡片为训练态 2) 通知 Flutter 端执行 skipRest
+  private checkRestExpiredAndRefresh(): void {
+    if (this.restEndTime <= 0) {
+      return;
+    }
+    const now: number = Date.now();
+    if (now < this.restEndTime) {
+      console.info(`[FitTrack] 休息未结束, restEndTime=${this.restEndTime}, now=${now}`);
+      return;
+    }
+
+    console.info('[FitTrack] 检测到休息已结束，刷新卡片 + 通知 Flutter');
+    // 刷新桌面卡片
+    this.refreshCardAfterRest();
+    // 通知 Flutter 端执行 skipRest（让 UI 切换到下一个动作）
+    const params: Record<string, Object> = {
+      'targetPage': 'training',
+      'cardAction': 'skipRest'
+    };
+    this.invokeFlutterMethod('onCardClick', params);
   }
 
   private invokeFlutterMethod(method: string, args: Record<string, Object>): void {
@@ -336,8 +410,10 @@ export default class EntryAbility extends FlutterAbility {
         const restSeconds: number = Math.max(1, Math.round((restEndTime - Date.now()) / 1000));
         this.scheduleRestReminder(restSeconds);
       } else {
-        // 休息结束（或非休息状态）：停止实况窗
+        // 休息结束（或非休息状态）：停止实况窗 + 降级持续通知 + 取消卡片刷新定时器
         this.stopRestLiveView();
+        this.stopRestFallbackNotification();
+        this.cancelRestRefreshTimer();
 
         // 仅在用户主动跳过休息时取消代理提醒；
         // 休息自然结束（Dart Timer 触发，restSkipped 未传或为 false）时不取消，
@@ -398,14 +474,17 @@ export default class EntryAbility extends FlutterAbility {
         console.warn(`[FitTrack] isLiveViewEnabled 调用异常: code=${checkError.code}, msg=${checkError.message}，将继续尝试创建实况窗`);
       }
       if (!enabled) {
-        console.warn('[FitTrack] 实况窗开关未开启，无法创建实况窗。可能原因：1) 用户未在设置中开启实况窗开关；2) 模拟器环境限制；3) 实况窗权益未申请');
+        console.warn('[FitTrack] 实况窗开关未开启，无法创建实况窗。可能原因：1) 用户未在设置中开启实况窗开关；2) 模拟器环境限制；3) 实况窗权益未申请。降级为持续通知');
+        // 实况窗不可用：降级为持续通知显示休息倒计时（保留实况窗代码，仅降级）
+        this.startRestFallbackNotification();
         return;
       }
 
       await this.buildLiveViewWantAgent();
       // 如果 wantAgent 创建失败，则无法继续创建实况窗
       if (this.liveViewWantAgent === null) {
-        console.error('[FitTrack] liveViewWantAgent 创建失败，无法创建实况窗');
+        console.error('[FitTrack] liveViewWantAgent 创建失败，无法创建实况窗，降级为持续通知');
+        this.startRestFallbackNotification();
         return;
       }
 
@@ -522,7 +601,12 @@ export default class EntryAbility extends FlutterAbility {
         } catch (retryErr) {
           const retryError: BusinessError = retryErr as BusinessError;
           console.error(`[FitTrack] startRestLiveView 重试失败: code=${retryError.code}, msg=${retryError.message}`);
+          // 重试仍失败：降级为持续通知
+          this.startRestFallbackNotification();
         }
+      } else {
+        // 其他错误（权益未申请/开关关闭/服务器不可达）：降级为持续通知
+        this.startRestFallbackNotification();
       }
     }
   }
@@ -591,31 +675,66 @@ export default class EntryAbility extends FlutterAbility {
 
   private scheduleRestReminder(restSeconds: number): void {
     this.cancelRestReminder();
+    this.cancelRestRefreshTimer();
 
     // 注意：代理提醒从 API version 20 开始支持模拟器开发
     // 如果在低于 API 20 的模拟器上运行，代理提醒将无法触发
     console.info(`[FitTrack] 准备发布代理提醒, restSeconds=${restSeconds}（注意：模拟器需 API 20+ 才支持代理提醒）`);
 
+    // 关键修复：发布代理提醒前，显式创建 SOCIAL_COMMUNICATION 槽位
+    // 代理提醒触发时（倒计时结束）由系统代理发布通知，若该槽位不存在，
+    // 系统会回退到默认 OTHER_TYPES 槽位（无横幅、无振动），导致用户看不到顶部横幅。
+    // startRestFallbackNotification 中的 addSlot 是异步且依赖 startRestLiveView（async），
+    // 可能在 scheduleRestReminder 执行时尚未完成，因此这里独立调用一次确保槽位就绪。
+    notificationManager.addSlot(notificationManager.SlotType.SOCIAL_COMMUNICATION)
+      .then(() => {
+        console.info('[FitTrack] scheduleRestReminder: SOCIAL_COMMUNICATION 槽位已就绪');
+      })
+      .catch((err: BusinessError) => {
+        // 槽位已存在时会报错，属于正常情况，不影响后续通知发布
+        console.warn(`[FitTrack] scheduleRestReminder: addSlot 失败(可能已存在): code=${err.code}, msg=${err.message}`);
+      });
+
     try {
       const bundleInfo: bundleManager.BundleInfo =
         bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
 
+      // 修复：使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机后台触发时
+      // 能横幅弹出 + 振动，不再静默（CONTENT_INFORMATION 为低优先级静默槽）
       let reminderRequest: reminderAgentManager.ReminderRequestTimer = {
         reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
         triggerTimeInSeconds: restSeconds,
         title: 'FitTrack',
         content: '休息时间到！开始下一组？',
         notificationId: 100,
-        slotType: notificationManager.SlotType.CONTENT_INFORMATION,
+        slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
         wantAgent: {
           pkgName: bundleInfo.name,
           abilityName: 'EntryAbility',
         },
+        // 锁屏下也显示通知，确保用户一定能看到
+        // MaxScreenWantAgent 仅支持 pkgName + abilityName，不支持 parameters
+        maxScreenWantAgent: {
+          pkgName: bundleInfo.name,
+          abilityName: 'EntryAbility',
+        },
+        // 添加操作按钮：点击直接拉起应用并触发 skipRest（开始下一组）
+        actionButton: [
+          {
+            title: '开始下一组',
+            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
+          },
+        ],
       };
 
       reminderAgentManager.publishReminder(reminderRequest).then((reminderId: number) => {
         this.currentReminderId = reminderId;
         console.info(`[FitTrack] 代理提醒发布成功, id=${reminderId}, seconds=${restSeconds}`);
+        // 启动原生定时器：休息结束时主动刷新桌面卡片
+        // 代理提醒触发时系统只发通知，不会回调应用刷新卡片；
+        // 这里用 setTimeout 在 restSeconds 后主动更新 preferences + reloadForms，
+        // 让桌面卡片从"休息中"切回"训练中"
+        this.scheduleRestRefresh(restSeconds);
       }).catch((err: BusinessError) => {
         console.error(`[FitTrack] 代理提醒发布失败: code=${err.code}, msg=${err.message}`);
         // 常见失败原因：
@@ -623,14 +742,92 @@ export default class EntryAbility extends FlutterAbility {
         // 2) 应用未在 AppGallery Connect 申请代理提醒权益（管控限制）
         // 3) 用户未授予通知权限
         // 4) 触发时间过短（triggerTimeInSeconds 需大于 0）
+        // 代理提醒发布失败时，仍启动卡片刷新定时器（保底让卡片能切换）
+        this.scheduleRestRefresh(restSeconds);
       });
     } catch (e) {
       const err: BusinessError = e as BusinessError;
       console.error(`[FitTrack] scheduleRestReminder 异常: code=${err.code}, msg=${err.message}`);
+      // 异常时也启动卡片刷新定时器保底
+      this.scheduleRestRefresh(restSeconds);
+    }
+  }
+
+  /// 启动原生定时器，休息结束时主动刷新桌面卡片为训练态
+  /// 解决：应用在后台时，代理提醒触发通知但桌面卡片仍停留在"休息中"的问题
+  private scheduleRestRefresh(restSeconds: number): void {
+    this.cancelRestRefreshTimer();
+    const delayMs: number = restSeconds * 1000;
+    this.restRefreshTimerId = setTimeout(() => {
+      this.restRefreshTimerId = -1;
+      this.refreshCardAfterRest();
+    }, delayMs);
+    console.info(`[FitTrack] scheduleRestRefresh 已启动, ${restSeconds}s 后刷新卡片`);
+  }
+
+  /// 取消休息结束刷新卡片的定时器
+  private cancelRestRefreshTimer(): void {
+    if (this.restRefreshTimerId !== -1) {
+      clearTimeout(this.restRefreshTimerId);
+      this.restRefreshTimerId = -1;
+      console.info('[FitTrack] cancelRestRefreshTimer 已取消');
+    }
+  }
+
+  /// 休息结束后，主动更新桌面卡片为训练态
+  /// 1. 读取 preferences 中的 form_data
+  /// 2. 将 mode 从 'rest' 改为 'training'，清除休息相关字段
+  /// 3. 写回 preferences 并调用 formProvider.reloadForms 刷新桌面卡片
+  private refreshCardAfterRest(): void {
+    try {
+      const prefs: preferences.Preferences =
+        preferences.getPreferencesSync(this.context, { name: PREFERENCES_NAME });
+      const saved: string = prefs.getSync(KEY_FORM_DATA, '').toString();
+      if (saved === '') {
+        console.info('[FitTrack] refreshCardAfterRest: 无 form_data，跳过');
+        return;
+      }
+
+      const parsed: Record<string, Object> = JSON.parse(saved) as Record<string, Object>;
+      const currentMode: string = (parsed['mode'] as string) ?? 'idle';
+      // 仅在当前为休息态时才切换（避免误覆盖训练态/空闲态）
+      if (currentMode !== 'rest') {
+        console.info(`[FitTrack] refreshCardAfterRest: 当前 mode=${currentMode}，无需切换`);
+        return;
+      }
+
+      // 切换到训练态，清除休息相关字段
+      parsed['mode'] = 'training';
+      parsed['restEndTime'] = 0;
+      parsed['restSeconds'] = 0;
+
+      const newDataStr: string = JSON.stringify(parsed);
+      prefs.putSync(KEY_FORM_DATA, newDataStr);
+      prefs.flushSync();
+      console.info(`[FitTrack] refreshCardAfterRest: 已写入训练态, data=${newDataStr}`);
+
+      // 重置内存中的休息结束时间，避免 onForeground/onNewWant 重复触发
+      this.restEndTime = 0;
+
+      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
+        .then((reloadNum: number) => {
+          console.info(`[FitTrack] refreshCardAfterRest reloadForms 成功, reloadNum=${reloadNum}`);
+        })
+        .catch((err: BusinessError) => {
+          console.error(`[FitTrack] refreshCardAfterRest reloadForms 失败: ${err.code} - ${err.message}`);
+        });
+
+      // 同时停止降级持续通知（如果存在）
+      this.stopRestFallbackNotification();
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] refreshCardAfterRest 异常: code=${err.code}, msg=${err.message}`);
     }
   }
 
   private cancelRestReminder(): void {
+    // 同时取消休息结束刷新卡片的定时器
+    this.cancelRestRefreshTimer();
     if (this.currentReminderId === -1) {
       return;
     }
@@ -645,6 +842,84 @@ export default class EntryAbility extends FlutterAbility {
     } catch (e) {
       const err: BusinessError = e as BusinessError;
       console.error(`[FitTrack] cancelRestReminder 异常: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
+  // ============================================================
+  // 实况窗降级：休息开始时发布一条横幅通知
+  // ============================================================
+  // 当实况窗权益未申请/开关未开启/真机不支持时，发布一条 SOCIAL_COMMUNICATION
+  // 横幅通知告知用户"休息中"。倒计时过程不实时更新（系统 isCountDown 等字段
+  // 均为"预留能力，暂未支持"，setInterval 在应用后台时会被冻结）。
+  // 休息结束时由代理提醒触发新的横幅通知（带声音+振动+横幅）。
+  // 桌面卡片刷新在用户点击通知拉起应用时由 onNewWant 触发。
+
+  /// 启动降级通知（实况窗不可用时调用）
+  /// 发布一条 SOCIAL_COMMUNICATION 横幅通知，告知用户休息开始
+  private startRestFallbackNotification(): void {
+    // 先清理上一次的降级通知
+    this.stopRestFallbackNotification();
+
+    const remainingMs: number = Math.max(0, this.restEndTime - Date.now());
+    const remainingSec: number = Math.max(1, Math.ceil(remainingMs / 1000));
+    const totalSec: number = Math.max(1, Math.round(this.totalRestSeconds));
+
+    // 先确保 SOCIAL_COMMUNICATION 渠道已创建（横幅通知必需）
+    // 不创建渠道直接发布通知时，系统可能使用默认 OTHER_TYPES 渠道（无横幅）
+    notificationManager.addSlot(notificationManager.SlotType.SOCIAL_COMMUNICATION)
+      .then(() => {
+        console.info('[FitTrack] SOCIAL_COMMUNICATION 渠道已创建/已存在');
+        this.publishRestFallbackNotification(remainingSec, totalSec);
+      })
+      .catch((err: BusinessError) => {
+        console.warn(`[FitTrack] addSlot SOCIAL_COMMUNICATION 失败(可能已存在): code=${err.code}, msg=${err.message}`);
+        // 即使创建失败也尝试发布通知（渠道可能已存在）
+        this.publishRestFallbackNotification(remainingSec, totalSec);
+      });
+  }
+
+  /// 实际发布降级横幅通知
+  private publishRestFallbackNotification(remainingSec: number, totalSec: number): void {
+    try {
+      const request: notificationManager.NotificationRequest = {
+        id: REST_FALLBACK_NOTIFICATION_ID,
+        content: {
+          notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+          normal: {
+            title: 'FitTrack - 休息中',
+            text: `${this.currentExerciseName} · 休息 ${totalSec} 秒`,
+            additionalText: `休息结束会自动提醒你（剩余约 ${remainingSec} 秒）`,
+          },
+        },
+        // 使用 SOCIAL_COMMUNICATION 确保顶部横幅弹出（SERVICE_INFORMATION 无横幅）
+        notificationSlotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
+        isAlertOnce: true,    // 仅首次弹出横幅
+      };
+
+      notificationManager.publish(request).then(() => {
+        this.restFallbackActive = true;
+        console.info('[FitTrack] 降级横幅通知发布成功');
+      }).catch((err: BusinessError) => {
+        console.error(`[FitTrack] 降级横幅通知发布失败: code=${err.code}, msg=${err.message}`);
+      });
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] startRestFallbackNotification 异常: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
+  /// 停止降级通知（休息结束/跳过休息时调用）
+  private stopRestFallbackNotification(): void {
+    if (!this.restFallbackActive) {
+      return;
+    }
+    this.restFallbackActive = false;
+    try {
+      notificationManager.cancel(REST_FALLBACK_NOTIFICATION_ID);
+      console.info('[FitTrack] 降级横幅通知已取消');
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.warn(`[FitTrack] 取消降级通知失败: code=${err.code}, msg=${err.message}`);
     }
   }
 
@@ -690,7 +965,8 @@ export default class EntryAbility extends FlutterAbility {
         title: title,
         content: content,
         notificationId: 3001,
-        slotType: notificationManager.SlotType.CONTENT_INFORMATION,
+        // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
+        slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
         wantAgent: {
           pkgName: bundleInfo.name,
           abilityName: 'EntryAbility',
