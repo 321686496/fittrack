@@ -95,6 +95,16 @@ workflows:
           for p in patched:
               print(f'  {p}')
           "
+      - name: Fix Java home for macOS
+        script: |
+          # gradle.properties 中硬编码了 Windows 的 Java 路径，macOS 上需替换
+          JAVA17_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null || echo "")
+          if [ -n "$JAVA17_HOME" ]; then
+            sed -i '' "s|org.gradle.java.home=.*|org.gradle.java.home=$JAVA17_HOME|" fittrack_flutter/android/gradle.properties
+            echo "Updated org.gradle.java.home to $JAVA17_HOME"
+          else
+            echo "Warning: Java 17 not found, using default"
+          fi
       - name: Build Android APK
         script: |
           cd fittrack_flutter
