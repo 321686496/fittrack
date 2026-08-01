@@ -81,6 +81,25 @@ class DialogStyle {
   });
 }
 
+/// 皮肤卡片主题（用于 PK 卡 / 详情页 / 邀请页等 UI 渗透）
+/// 注：皮肤专属色固定，不随 FitTrackColors 主题切换
+class SkinCardTheme {
+  final Color borderColor;
+  final Color glowColor;
+  final Color badgeColor;
+  final String badgeEmoji;
+  final List<Color> gradientColors;
+  final bool showShimmer;
+  const SkinCardTheme({
+    required this.borderColor,
+    required this.glowColor,
+    required this.badgeColor,
+    required this.badgeEmoji,
+    required this.gradientColors,
+    this.showShimmer = false,
+  });
+}
+
 /// 皮肤完整配置
 class OpponentSkinConfig {
   final String id;
@@ -96,6 +115,7 @@ class OpponentSkinConfig {
   final MotionSpec trainingMotion;
   final DialogStyle dialogStyle;
   final String signatureMove;
+  final SkinCardTheme cardTheme;
 
   const OpponentSkinConfig({
     required this.id,
@@ -111,6 +131,7 @@ class OpponentSkinConfig {
     required this.trainingMotion,
     required this.dialogStyle,
     required this.signatureMove,
+    required this.cardTheme,
   });
 
   static OpponentSkinConfig byId(String id) {
@@ -172,6 +193,14 @@ class OpponentSkinConfig {
       loseQuotes: ['你太厉害了，向你学习', '下次我也要更努力'],
     ),
     signatureMove: '活力弯举',
+    cardTheme: SkinCardTheme(
+      borderColor: Color(0xFF10b981),
+      glowColor: Color(0xFF10b981),
+      badgeColor: Color(0xFF10b981),
+      badgeEmoji: '🐣',
+      gradientColors: [Color(0xFFd1fae5), Color(0xFFa7f3d0)],
+      showShimmer: false,
+    ),
   );
 
   // ── skin_iron_warrior（钢铁战士）──
@@ -219,6 +248,14 @@ class OpponentSkinConfig {
       loseQuotes: ['你确实强', '我还要再练'],
     ),
     signatureMove: '裂地深蹲',
+    cardTheme: SkinCardTheme(
+      borderColor: Color(0xFF64748b),
+      glowColor: Color(0xFF64748b),
+      badgeColor: Color(0xFF64748b),
+      badgeEmoji: '🤖',
+      gradientColors: [Color(0xFFe2e8f0), Color(0xFFcbd5e1)],
+      showShimmer: false,
+    ),
   );
 
   // ── skin_cyber_ninja（赛博忍者）──
@@ -267,6 +304,14 @@ class OpponentSkinConfig {
       loseQuotes: ['下次见', '你快了一步'],
     ),
     signatureMove: '闪影连斩',
+    cardTheme: SkinCardTheme(
+      borderColor: Color(0xFFd946ef),
+      glowColor: Color(0xFFd946ef),
+      badgeColor: Color(0xFFd946ef),
+      badgeEmoji: '🥷',
+      gradientColors: [Color(0xFF1e1b4b), Color(0xFF4c1d95)],
+      showShimmer: true,
+    ),
   );
 
   // ── skin_ambassador（燃力大使，限定款）──
@@ -315,5 +360,13 @@ class OpponentSkinConfig {
       loseQuotes: ['后生可畏', '我心服口服'],
     ),
     signatureMove: '王者裁决',
+    cardTheme: SkinCardTheme(
+      borderColor: Color(0xFFf59e0b),
+      glowColor: Color(0xFFf59e0b),
+      badgeColor: Color(0xFFf59e0b),
+      badgeEmoji: '👑',
+      gradientColors: [Color(0xFF1c1917), Color(0xFF451a03)],
+      showShimmer: true,
+    ),
   );
 }

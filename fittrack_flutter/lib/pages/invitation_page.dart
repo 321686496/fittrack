@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../data/storage.dart';
 import '../services/invitation_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/invite_poster.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
+import '../widgets/opponent/opponent_renderer.dart';
+import '../widgets/opponent/opponent_skin_config.dart';
 
 /// v1.1 邀请有礼页面（4 区段结构）
 ///
@@ -23,6 +26,7 @@ class InvitationPage extends StatefulWidget {
 
 class _InvitationPageState extends State<InvitationPage> {
   final _activateController = TextEditingController();
+  final _scrollController = ScrollController();
   bool _activating = false;
   bool _sharing = false;
   late String _myCode;
@@ -43,7 +47,19 @@ class _InvitationPageState extends State<InvitationPage> {
   @override
   void dispose() {
     _activateController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  /// 滚动回顶部邀请码区
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -60,6 +76,7 @@ class _InvitationPageState extends State<InvitationPage> {
           ),
           Expanded(
             child: SingleChildScrollView(
+              controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,6 +407,7 @@ class _InvitationPageState extends State<InvitationPage> {
   // ── 3. 奖励规则说明 ──────────────────────────────────────────────
 
   Widget _buildRewardRulesCard(FitTrackColors colors) {
+    final currentInvites = (_progress['totalReferrals'] as int?) ?? 0;
     final rules = [
       _RewardRule(1, '首次激活', '100 积分 + 引路人徽章', '50 积分'),
       _RewardRule(3, '累计 3 人', '300 积分 + 布道者徽章', '50 积分'),
@@ -416,7 +434,7 @@ class _InvitationPageState extends State<InvitationPage> {
             ],
           ),
           const SizedBox(height: 12),
-          ...rules.map((r) => _buildRewardRuleItem(colors, r)),
+          ...rules.map((r) => _buildRewardRuleItem(colors, r, currentInvites)),
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
@@ -444,27 +462,96 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-  Widget _buildRewardRuleItem(FitTrackColors colors, _RewardRule r) {
+  Widget _buildRewardRuleItem(FitTrackColors colors, _RewardRule r, int currentInvites) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 32, height: 32,
-            decoration: BoxDecoration(
-              color: colors.accentGlow.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                '${r.count}',
-                style: TextStyle(
-                  color: colors.accentGlow,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 32, height: 32,
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '${r.count}',
+                    style: TextStyle(
+                      color: colors.accentGlow,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(r.title, style: TextStyle(
+                      color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
+                    )),
+                    const SizedBox(height: 2),
+                    Text('你：${r.yourReward}', style: TextStyle(color: colors.textSecondary, fontSize: 12, height: 1.4)),
+                    Text('好友：${r.friendReward}', style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.4)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // 5 人档：限定皮肤突出预览
+          if (r.count == 5)
+            _buildAmbassadorPreview(colors, currentInvites),
+        ],
+      ),
+    );
+  }
+
+  /// ambassador 限定皮肤突出预览（5 人档专属）
+  Widget _buildAmbassadorPreview(FitTrackColors colors, int currentInvites) {
+    final cardTheme = OpponentSkinConfig.skinAmbassador.cardTheme;
+    final target = 5;
+    final progress = (currentInvites / target).clamp(0.0, 1.0);
+    final remaining = (target - currentInvites).clamp(0, target);
+    final unlocked = currentInvites >= target ||
+        (Storage.getSettings()['unlockedOpponentSkin'] == true);
+
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: cardTheme.gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cardTheme.borderColor, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: cardTheme.glowColor.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 96x96 皮肤预览
+          SizedBox(
+            width: 96,
+            height: 96,
+            child: OpponentRenderer(
+              skinId: 'skin_ambassador',
+              size: const Size(96, 96),
+              autoTrain: true,
+              showAura: true,
             ),
           ),
           const SizedBox(width: 12),
@@ -472,12 +559,71 @@ class _InvitationPageState extends State<InvitationPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(r.title, style: TextStyle(
-                  color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
-                )),
-                const SizedBox(height: 2),
-                Text('你：${r.yourReward}', style: TextStyle(color: colors.textSecondary, fontSize: 12, height: 1.4)),
-                Text('好友：${r.friendReward}', style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.4)),
+                Row(
+                  children: [
+                    Text(
+                      '${cardTheme.badgeEmoji} 燃力大使',
+                      style: TextStyle(
+                        color: cardTheme.badgeColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    BadgeWidget(text: '限定', variant: BadgeVariant.accent),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  unlocked
+                      ? '已解锁限定皮肤'
+                      : '再邀请 $remaining 位好友即可解锁',
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // 解锁进度条
+                ProgressBar(
+                  progress: progress,
+                  fillColor: cardTheme.glowColor,
+                  height: 6,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '$currentInvites / $target',
+                  style: TextStyle(
+                    color: cardTheme.glowColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // 立即邀请解锁按钮
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: unlocked ? null : _scrollToTop,
+                    icon: const Icon(Icons.card_giftcard, size: 14),
+                    label: Text(
+                      unlocked ? '已解锁' : '立即邀请解锁',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cardTheme.borderColor,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: cardTheme.borderColor.withOpacity(0.4),
+                      disabledForegroundColor: Colors.white70,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

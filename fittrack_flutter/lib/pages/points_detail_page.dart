@@ -316,7 +316,46 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                     _buildWayItem(colors, Icons.ondemand_video, '观看广告', '观看完整广告 +${PointsService.adPoints} 积分', 'ad'),
                   _buildWayItem(colors, Icons.card_giftcard, '邀请好友', '好友首次训练 +${PointsService.invitePoints} 积分，里程碑额外奖励', 'invite'),
                   _buildWayItem(colors, Icons.school, '课程学习', '完成课程章节 +${PointsService.trainingPoints} 积分', 'course'),
-                  _buildWayItem(colors, Icons.emoji_events, '成就解锁', '解锁成就获得变量积分', 'achievement'),
+                  _buildWayItem(colors, Icons.emoji_events, '成就解锁', '成就解锁获得积分（部分成就为纯荣誉）', 'achievement'),
+                  const SizedBox(height: 24),
+                  // 积分兑换入口
+                  Text('积分兑换', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  CardWidget(
+                    onTap: () => context.push('/opponent-detail'),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: colors.purpleColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(Icons.palette, size: 20, color: colors.purpleColor),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('对手皮肤',
+                                  style: TextStyle(
+                                      color: colors.textPrimary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 2),
+                              Text('用积分解锁炫酷皮肤',
+                                  style: TextStyle(
+                                      color: colors.textMuted, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right,
+                            color: colors.textMuted, size: 20),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 100),
                 ],
               ),

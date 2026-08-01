@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/share_card_frame.dart';
+import 'achievement_service.dart';
 import 'poster_generator.dart';
 
 class ShareCardService {
@@ -59,17 +60,20 @@ class ShareCardService {
 
     overlay.insert(entry);
     // paint 等待已统一收敛到 PosterGenerator.capture 内部，
-    // 此处不再使用固定 30ms 等待（首帧 paint 未完成时调用 toImage 会触发
+    // 此处不再使用固定 30ms 等待（首帧 paint 未完成时调用 toByteData 会触发
     // '!debugNeedsPaint' 断言）。
     try {
       // 复用 PosterGenerator.capture 的统一安全路径（含 paint 等待循环、
       // toByteData、写文件、OHOS 临时目录兜底）。
       // 返回 PNG 文件绝对路径。
-      return await PosterGenerator.capture(
+      final imagePath = await PosterGenerator.capture(
         _boundaryKey,
         pixelRatio: 2.0,
         fileNamePrefix: 'share_card',
       );
+      // 分享成功：记录到成就系统（评估 share_first / share_3 / share_10）
+      await AchievementService.instance.recordShare();
+      return imagePath;
     } finally {
       // 确保 OverlayEntry 在 capture 抛异常时也能被移除，避免残留遮罩层。
       entry.remove();

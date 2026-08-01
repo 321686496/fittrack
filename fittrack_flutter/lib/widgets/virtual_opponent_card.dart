@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../data/virtual_opponent.dart';
-import 'common_widgets.dart';
 import 'opponent/opponent_renderer.dart';
+import 'opponent/opponent_skin_config.dart';
 
 /// v1 首页 PK 卡片 — 虚拟对手本周对比
 ///
@@ -28,15 +28,27 @@ class VirtualOpponentCard extends StatefulWidget {
   State<VirtualOpponentCard> createState() => _VirtualOpponentCardState();
 }
 
-class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
+class _VirtualOpponentCardState extends State<VirtualOpponentCard>
+    with SingleTickerProviderStateMixin {
   VirtualOpponent? _opponent;
   int _userWeeklyTrainings = 0;
   int _percentile = 0;
+  late final AnimationController _shimmerController;
 
   @override
   void initState() {
     super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
   }
 
   void _loadData() {
@@ -174,142 +186,224 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
             : opponentTrainings)
         .clamp(1, 7); // 每周最多7次
 
+    // 获取当前皮肤主题；appliedSkinId 为空时 fallback 到无皮肤样式
+    final skinId = _opponent!.appliedSkinId;
+    final hasSkin = skinId.isNotEmpty;
+    final skin = hasSkin ? OpponentSkinConfig.byId(skinId) : null;
+    final cardTheme = skin?.cardTheme;
+
+    // 启停呼吸光效
+    if (cardTheme != null && cardTheme.showShimmer) {
+      if (!_shimmerController.isAnimating) {
+        _shimmerController.repeat(reverse: true);
+      }
+    } else {
+      if (_shimmerController.isAnimating) {
+        _shimmerController.stop();
+      }
+    }
+
     return GestureDetector(
       onTap: widget.onTap ?? () => context.push('/opponent-detail'),
-      child: CardWidget(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 标题行
-            Row(
+      child: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: cardTheme != null
+                  ? LinearGradient(
+                      colors: cardTheme.gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: cardTheme == null ? colors.bgCard : null,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: cardTheme?.borderColor ?? colors.borderColor,
+                width: cardTheme != null ? 1.5 : 1,
+              ),
+              boxShadow: cardTheme != null
+                  ? [
+                      BoxShadow(
+                        color: cardTheme.glowColor.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: OpponentRenderer(
-                    skinId: _opponent!.appliedSkinId,
-                    size: const Size(48, 48),
-                    autoTrain: false,
-                    showAura: false,
-                  ),
+                // 标题行
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: OpponentRenderer(
+                        skinId: _opponent!.appliedSkinId,
+                        size: const Size(48, 48),
+                        autoTrain: false,
+                        showAura: false,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '本周 PK',
+                      style: TextStyle(
+                        color: colors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: colors.accentGlow.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        _opponent!.tier.label,
+                        style: TextStyle(
+                          color: colors.accentGlow,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '本周 PK',
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                const SizedBox(height: 16),
+                // VS 对比区
+                Row(
+                  children: [
+                    // 用户方
+                    Expanded(
+                      child: _buildSide(
+                        colors,
+                        label: '你',
+                        count: _userWeeklyTrainings,
+                        maxCount: maxCount,
+                        isUser: true,
+                        overrideColor: null,
+                      ),
+                    ),
+                    // VS
+                    Container(
+                      width: 36,
+                      alignment: Alignment.center,
+                      child: Text(
+                        'VS',
+                        style: TextStyle(
+                          color: colors.textMuted,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                    // 对手方
+                    Expanded(
+                      child: _buildSide(
+                        colors,
+                        label: _opponent!.nickname,
+                        count: opponentTrainings,
+                        maxCount: maxCount,
+                        isUser: false,
+                        overrideColor: cardTheme?.glowColor,
+                      ),
+                    ),
+                  ],
                 ),
-                const Spacer(),
+                const SizedBox(height: 14),
+                // 对手动态（如果有）
+                if (_opponent!.currentStatus != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: colors.bgSecondary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.chat_bubble_outline, size: 14, color: colors.textMuted),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            '${_opponent!.nickname}：${_opponent!.currentStatus}',
+                            style: TextStyle(
+                              color: colors.textMuted,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                // 激励文案
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: colors.accentGlow.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
+                    color: colors.accentGlow.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _opponent!.tier.label,
+                    _buildIncentiveText(),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: colors.accentGlow,
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // VS 对比区
-            Row(
-              children: [
-                // 用户方
-                Expanded(
-                  child: _buildSide(
-                    colors,
-                    label: '你',
-                    count: _userWeeklyTrainings,
-                    maxCount: maxCount,
-                    isUser: true,
-                  ),
-                ),
-                // VS
-                Container(
-                  width: 36,
-                  alignment: Alignment.center,
-                  child: Text(
-                    'VS',
-                    style: TextStyle(
-                      color: colors.textMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-                // 对手方
-                Expanded(
-                  child: _buildSide(
-                    colors,
-                    label: _opponent!.nickname,
-                    count: opponentTrainings,
-                    maxCount: maxCount,
-                    isUser: false,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            // 对手动态（如果有）
-            if (_opponent!.currentStatus != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: colors.bgSecondary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.chat_bubble_outline, size: 14, color: colors.textMuted),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '${_opponent!.nickname}：${_opponent!.currentStatus}',
-                        style: TextStyle(
-                          color: colors.textMuted,
-                          fontSize: 12,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-            ],
-            // 激励文案
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: colors.accentGlow.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(8),
-              ),
+          ),
+          // 右上角皮肤角标 emoji
+          if (cardTheme != null)
+            Positioned(
+              top: 8,
+              right: 10,
               child: Text(
-                _buildIncentiveText(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.accentGlow,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                cardTheme.badgeEmoji,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          // 呼吸光效叠加（仅 showShimmer=true 的皮肤）
+          if (cardTheme != null && cardTheme.showShimmer)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: _shimmerController,
+                  builder: (_, __) {
+                    // 0.3 → 1.0 → 0.3 循环
+                    final t = _shimmerController.value;
+                    final opacity = 0.3 + 0.7 * (0.5 - (t - 0.5).abs()) * 2;
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: cardTheme.glowColor.withOpacity(opacity.clamp(0.0, 1.0)),
+                          width: 1.5,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -320,9 +414,13 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
     required int count,
     required int maxCount,
     required bool isUser,
+    Color? overrideColor,
   }) {
     final progress = maxCount > 0 ? (count / maxCount).clamp(0.0, 1.0) : 0.0;
-    final sideColor = isUser ? colors.accentGlow : colors.textMuted;
+    // 对手方使用皮肤 glowColor（若有），用户方维持原 accentGlow
+    final sideColor = isUser
+        ? colors.accentGlow
+        : (overrideColor ?? colors.textMuted);
 
     return Column(
       children: [

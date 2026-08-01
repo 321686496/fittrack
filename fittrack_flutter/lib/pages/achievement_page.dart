@@ -284,12 +284,16 @@ class _AchievementPageState extends State<AchievementPage> {
                 ],
               ),
             ),
-            if (a.unlocked && a.unlockedAt != null)
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (_buildPointsBadge(a) != null) ...[
+                    _buildPointsBadge(a)!,
+                    const SizedBox(height: 4),
+                  ],
+                  if (a.unlocked && a.unlockedAt != null) ...[
                     Icon(Icons.check_circle,
                         color: colors.successColor, size: 18),
                     const SizedBox(height: 4),
@@ -298,16 +302,37 @@ class _AchievementPageState extends State<AchievementPage> {
                       style: TextStyle(
                           color: colors.textMuted, fontSize: 10),
                     ),
-                  ],
-                ),
-              )
-            else if (a.unlocked)
-              Icon(Icons.check_circle, color: colors.successColor, size: 22)
-            else
-              Icon(Icons.lock_outline, color: colors.textMuted, size: 22),
+                  ] else if (a.unlocked)
+                    Icon(Icons.check_circle,
+                        color: colors.successColor, size: 22)
+                  else
+                    Icon(Icons.lock_outline,
+                        color: colors.textMuted, size: 22),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  /// 积分标记徽章：
+  /// - canEarnPoints && pointsReward > 0 → purple "+N积分"
+  /// - !canEarnPoints → info "纯荣誉"
+  Widget? _buildPointsBadge(Achievement a) {
+    if (a.canEarnPoints && a.pointsReward > 0) {
+      return BadgeWidget(
+        text: '+${a.pointsReward}积分',
+        variant: BadgeVariant.purple,
+      );
+    }
+    if (!a.canEarnPoints) {
+      return const BadgeWidget(
+        text: '纯荣誉',
+        variant: BadgeVariant.info,
+      );
+    }
+    return null;
   }
 }
