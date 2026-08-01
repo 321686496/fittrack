@@ -10,6 +10,8 @@ class PageHeader extends StatelessWidget {
   final String? subtitle;
   final VoidCallback? onBellTap;
   final VoidCallback? onCalendarTap;
+  final VoidCallback? onStatsTap;
+  final VoidCallback? onSearchTap;
   final bool isTabPage; // 首页tab页面，不显示返回按钮，但显示标题
 
   const PageHeader({
@@ -19,6 +21,8 @@ class PageHeader extends StatelessWidget {
     this.subtitle,
     this.onBellTap,
     this.onCalendarTap,
+    this.onStatsTap,
+    this.onSearchTap,
     this.isTabPage = false,
   });
 
@@ -115,6 +119,40 @@ class PageHeader extends StatelessWidget {
                       child: Icon(
                         Icons.calendar_today_outlined,
                         size: 18,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ),
+                if (onCalendarTap != null) const SizedBox(width: 8),
+                if (onStatsTap != null)
+                  GestureDetector(
+                    onTap: onStatsTap,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colors.borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.bar_chart,
+                        size: 20,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ),
+                if (onStatsTap != null) const SizedBox(width: 8),
+                if (onSearchTap != null)
+                  GestureDetector(
+                    onTap: onSearchTap,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colors.borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.search,
+                        size: 20,
                         color: colors.textSecondary,
                       ),
                     ),

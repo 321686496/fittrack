@@ -61,6 +61,7 @@ dependencies:
   image_gallery_saver: ^2.0.3
   audioplayers: ^4.0.0
   image_picker: ^1.0.4
+  fl_chart: ^0.61.0
 #  permission_handler: ^11.0.1
 #  permission_handler_ohos: ^0.0.8
 

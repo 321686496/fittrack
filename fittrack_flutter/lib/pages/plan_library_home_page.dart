@@ -19,6 +19,7 @@ class PlanLibraryHomePage extends StatelessWidget {
             title: '系统训练计划库',
             subtitle: '选择你的训练目标',
             onBack: () => Navigator.of(context).pop(),
+            onSearchTap: () => context.push('/plan-search'),
           ),
           Expanded(
             child: CustomScrollView(

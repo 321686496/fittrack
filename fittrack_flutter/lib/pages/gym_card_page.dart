@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../services/gym_card_reminder_service.dart';
@@ -834,6 +835,7 @@ class _GymCardPageState extends State<GymCardPage> {
             title: '健身卡',
             subtitle: '管理你的健身卡信息',
             onBack: () => Navigator.of(context).pop(),
+            onStatsTap: () => context.push('/gym-card-stats'),
           ),
           Expanded(
             child: _cards.isEmpty

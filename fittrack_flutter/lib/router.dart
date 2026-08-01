@@ -24,6 +24,7 @@ import 'pages/notification_test_page.dart';
 import 'pages/reminder_settings_page.dart';
 import 'pages/banner_notification_guide_page.dart';
 import 'pages/gym_card_page.dart';
+import 'pages/gym_card_stats_page.dart';
 import 'pages/body_data_page.dart';
 import 'pages/privacy_policy_page.dart';
 import 'pages/user_agreement_page.dart';
@@ -39,6 +40,7 @@ import 'pages/tutorial_list_page.dart';
 import 'pages/all_tutorials_page.dart';
 import 'pages/tutorial_category_page.dart';
 import 'pages/tutorial_detail_page.dart';
+import 'pages/tutorial_search_page.dart';
 import 'pages/course_list_page.dart';
 import 'pages/course_detail_page.dart';
 import 'pages/chapter_read_page.dart';
@@ -48,6 +50,7 @@ import 'pages/points_detail_page.dart';
 import 'pages/plan_library_home_page.dart';
 import 'pages/plan_library_category_page.dart';
 import 'pages/plan_library_detail_page.dart';
+import 'pages/plan_search_page.dart';
 import 'pages/max_weight_detail_page.dart';
 import 'pages/opponent_detail_page.dart';
 import 'widgets/bottom_nav.dart';
@@ -263,6 +266,12 @@ GoRouter createRouter() {
         ),
       ),
       GoRoute(
+        path: '/plan-search',
+        name: 'planSearch',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PlanSearchPage(),
+      ),
+      GoRoute(
         path: '/exercise',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ExercisePage(),
@@ -303,6 +312,11 @@ GoRouter createRouter() {
         path: '/gym-card',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const GymCardPage(),
+      ),
+      GoRoute(
+        path: '/gym-card-stats',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const GymCardStatsPage(),
       ),
       GoRoute(
         path: '/body-data',
@@ -380,6 +394,12 @@ GoRouter createRouter() {
         path: '/all-tutorials',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AllTutorialsPage(),
+      ),
+      GoRoute(
+        path: '/tutorial-search',
+        name: 'tutorialSearch',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const TutorialSearchPage(),
       ),
       // 教学分类详情页（v1.3 新增：瀑布流分类点击进入）
       GoRoute(
