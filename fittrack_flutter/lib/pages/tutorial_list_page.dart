@@ -65,7 +65,11 @@ class _TutorialListPageState extends State<TutorialListPage>
       backgroundColor: colors.bgSecondary,
       body: Column(
         children: [
-          const PageHeader(title: '教学中心', isTabPage: true),
+          PageHeader(
+            title: '教学中心',
+            isTabPage: true,
+            onSearchTap: () => context.push('/tutorial-search'),
+          ),
           Expanded(
             child: RefreshIndicator(
               color: colors.accentGlow,

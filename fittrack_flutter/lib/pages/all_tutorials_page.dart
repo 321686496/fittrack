@@ -30,6 +30,7 @@ class AllTutorialsPage extends StatelessWidget {
             title: '全部教学',
             isTabPage: false,
             onBack: () => Navigator.of(context).pop(),
+            onSearchTap: () => context.push('/tutorial-search'),
           ),
           Expanded(
             child: CustomScrollView(
