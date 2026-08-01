@@ -60,6 +60,7 @@ dependencies:
   timezone: ^0.9.4
   image_gallery_saver: ^2.0.3
   audioplayers: ^4.0.0
+  image_picker: ^1.0.4
 #  permission_handler: ^11.0.1
 #  permission_handler_ohos: ^0.0.8
 
