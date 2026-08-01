@@ -55,6 +55,8 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
         return source == 'invite';
       case 'course':
         return source == 'course_learn';
+      case 'training':
+        return source == 'training';
       case 'achievement':
         return source == 'achievement';
       default:
@@ -75,6 +77,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
       'invite': '邀请好友',
       'feature_unlock': '解锁功能',
       'course_learn': '课程学习',
+      'training': '每日训练',
       'achievement': '成就解锁',
       'checkIn': '每日签到',
     };
@@ -94,6 +97,8 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
           return Icons.card_giftcard;
         case 'course_learn':
           return Icons.school;
+        case 'training':
+          return Icons.fitness_center;
         case 'achievement':
           return Icons.emoji_events;
         default:
@@ -315,7 +320,8 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                   if (adsEnabled)
                     _buildWayItem(colors, Icons.ondemand_video, '观看广告', '观看完整广告 +${PointsService.adPoints} 积分', 'ad'),
                   _buildWayItem(colors, Icons.card_giftcard, '邀请好友', '好友首次训练 +${PointsService.invitePoints} 积分，里程碑额外奖励', 'invite'),
-                  _buildWayItem(colors, Icons.school, '课程学习', '完成课程章节 +${PointsService.trainingPoints} 积分', 'course'),
+                  _buildWayItem(colors, Icons.fitness_center, '每日训练', '完成当天训练 +${PointsService.trainingPoints} 积分', 'training'),
+                  _buildWayItem(colors, Icons.school, '课程学习', '完成课程章节 +10 积分', 'course'),
                   _buildWayItem(colors, Icons.emoji_events, '成就解锁', '成就解锁获得积分（部分成就为纯荣誉）', 'achievement'),
                   const SizedBox(height: 24),
                   // 积分兑换入口
@@ -374,6 +380,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
       MapEntry('checkIn', '签到'),
       MapEntry('ad', '广告'),
       MapEntry('invite', '邀请'),
+      MapEntry('training', '训练'),
       MapEntry('course', '课程'),
       MapEntry('achievement', '成就'),
     ];

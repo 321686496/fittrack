@@ -59,6 +59,9 @@ class ShareCardService {
     };
 
     overlay.insert(entry);
+    // 等待 OverlayEntry 完成挂载与首帧 build，否则 boundaryKey.currentContext
+    // 为 null 会导致 PosterGenerator.capture 内 findRenderObject 抛异常。
+    await WidgetsBinding.instance.endOfFrame;
     // paint 等待已统一收敛到 PosterGenerator.capture 内部，
     // 此处不再使用固定 30ms 等待（首帧 paint 未完成时调用 toByteData 会触发
     // '!debugNeedsPaint' 断言）。
