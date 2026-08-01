@@ -10,8 +10,46 @@ import '../widgets/opponent/opponent_renderer.dart';
 import '../widgets/opponent/opponent_skin_config.dart';
 
 /// 对手详情页 —— P0 最小可用版
-class OpponentDetailPage extends StatelessWidget {
+class OpponentDetailPage extends StatefulWidget {
   const OpponentDetailPage({super.key});
+
+  @override
+  State<OpponentDetailPage> createState() => _OpponentDetailPageState();
+}
+
+class _OpponentDetailPageState extends State<OpponentDetailPage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmerController;
+  bool _unlocking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _purchaseSkin(String goodId) async {
+    if (_unlocking) return;
+    setState(() => _unlocking = true);
+    final ok = await VirtualGoodsStore.unlock(goodId);
+    if (!mounted) return;
+    if (ok) {
+      FitToast.success(context, '解锁成功');
+      setState(() {});
+    } else {
+      FitToast.warning(context, '积分不足或暂不可购买');
+    }
+    setState(() => _unlocking = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,22 +111,76 @@ class OpponentDetailPage extends StatelessWidget {
   }
 
   Widget _buildHeaderCard(FitTrackColors colors, VirtualOpponent opp) {
-    return CardWidget(
+    final skinId = opp.appliedSkinId;
+    final hasSkin = skinId.isNotEmpty;
+    final cardTheme = hasSkin ? OpponentSkinConfig.byId(skinId).cardTheme : null;
+
+    // 启停呼吸光效（限定皮肤闪烁）
+    if (cardTheme != null && cardTheme.showShimmer) {
+      if (!_shimmerController.isAnimating) {
+        _shimmerController.repeat(reverse: true);
+      }
+    } else {
+      if (_shimmerController.isAnimating) _shimmerController.stop();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: cardTheme != null
+            ? LinearGradient(
+                colors: cardTheme.gradientColors,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              )
+            : null,
+        color: cardTheme == null ? colors.bgCard : null,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: cardTheme?.borderColor ?? colors.borderColor,
+          width: cardTheme != null ? 1.5 : 1,
+        ),
+        boxShadow: cardTheme != null
+            ? [
+                BoxShadow(
+                  color: cardTheme.glowColor.withOpacity(0.3),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 240×240 人物图（Row 改 Column，避免溢出）
-          Center(
-            child: SizedBox(
-              width: 240,
-              height: 240,
-              child: OpponentRenderer(
-                skinId: opp.appliedSkinId,
-                size: const Size(240, 240),
-                autoTrain: true,
-                showAura: true,
+          // 240×240 人物图（带光晕）
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              if (cardTheme != null)
+                // 皮肤光晕背景
+                Container(
+                  width: 220,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cardTheme.glowColor.withOpacity(0.15),
+                  ),
+                ),
+              Center(
+                child: SizedBox(
+                  width: 240,
+                  height: 240,
+                  child: OpponentRenderer(
+                    skinId: opp.appliedSkinId,
+                    size: const Size(240, 240),
+                    autoTrain: true,
+                    showAura: true,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
           const SizedBox(height: 16),
           Text(opp.nickname, style: TextStyle(
@@ -108,6 +200,23 @@ class OpponentDetailPage extends StatelessWidget {
                 )),
               ),
               const SizedBox(width: 8),
+              if (cardTheme != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: cardTheme.badgeColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${cardTheme.badgeEmoji} ${OpponentSkinConfig.byId(skinId).name}',
+                    style: TextStyle(
+                      color: cardTheme.badgeColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              const Spacer(),
               Expanded(
                 child: Text(opp.persona, style: TextStyle(
                   color: colors.textMuted, fontSize: 12,
@@ -121,6 +230,12 @@ class OpponentDetailPage extends StatelessWidget {
   }
 
   Widget _buildWeeklyStatsCard(FitTrackColors colors, VirtualOpponent opp) {
+    final skinId = opp.appliedSkinId;
+    final hasSkin = skinId.isNotEmpty;
+    final borderColor = hasSkin
+        ? OpponentSkinConfig.byId(skinId).cardTheme.borderColor
+        : colors.borderColor;
+
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,9 +246,9 @@ class OpponentDetailPage extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildStatItem(colors, '${opp.weeklyTrainings}', '次训练'),
-              _buildStatItem(colors, '${opp.weeklyWeight}', 'kg 总量'),
-              _buildStatItem(colors, '${opp.weeklyDuration}', '分钟时长'),
+              _buildStatItem(colors, '${opp.weeklyTrainings}', '次训练', borderColor),
+              _buildStatItem(colors, '${opp.weeklyWeight}', 'kg 总量', borderColor),
+              _buildStatItem(colors, '${opp.weeklyDuration}', '分钟时长', borderColor),
             ],
           ),
         ],
@@ -141,16 +256,25 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(FitTrackColors colors, String value, String label) {
+  Widget _buildStatItem(FitTrackColors colors, String value, String label, Color borderColor) {
     return Expanded(
-      child: Column(
-        children: [
-          Text(value, style: TextStyle(
-            color: colors.accentGlow, fontSize: 20, fontWeight: FontWeight.w800,
-          )),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(color: colors.textMuted, fontSize: 11)),
-        ],
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 3),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: colors.bgSecondary,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: borderColor.withOpacity(0.5), width: 1),
+        ),
+        child: Column(
+          children: [
+            Text(value, style: TextStyle(
+              color: colors.accentGlow, fontSize: 20, fontWeight: FontWeight.w800,
+            )),
+            const SizedBox(height: 4),
+            Text(label, style: TextStyle(color: colors.textMuted, fontSize: 11)),
+          ],
+        ),
       ),
     );
   }
@@ -175,6 +299,10 @@ class OpponentDetailPage extends StatelessWidget {
   Widget _buildSkinCard(FitTrackColors colors, String skinId, BuildContext context) {
     final skin = skinId.isNotEmpty ? VirtualGoodsStore.byId(skinId) : null;
     final allSkins = VirtualGoodsStore.byCategory(GoodCategory.opponentSkin);
+    // 当前皮肤 OpponentSkinConfig（用于 cardTheme / signatureMove）
+    final appliedSkinCfg = skinId.isNotEmpty ? OpponentSkinConfig.byId(skinId) : null;
+    final cardTheme = appliedSkinCfg?.cardTheme;
+    final isAmbassador = skinId == 'skin_ambassador';
 
     return CardWidget(
       child: Column(
@@ -191,49 +319,102 @@ class OpponentDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           // 当前皮肤
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.accentGlow.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: colors.accentGlow.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 96, height: 96,
-                  child: OpponentRenderer(
-                    skinId: skinId,
-                    size: const Size(96, 96),
-                    autoTrain: false,
-                    showAura: true,
+          Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: cardTheme != null
+                      ? LinearGradient(
+                          colors: cardTheme.gradientColors,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: cardTheme == null ? colors.accentGlow.withOpacity(0.08) : null,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: cardTheme?.borderColor ?? colors.accentGlow.withOpacity(0.3),
+                    width: cardTheme != null ? 1.5 : 1,
+                  ),
+                  boxShadow: cardTheme != null
+                      ? [
+                          BoxShadow(
+                            color: cardTheme.glowColor.withOpacity(0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 96, height: 96,
+                      child: OpponentRenderer(
+                        skinId: skinId,
+                        size: const Size(96, 96),
+                        autoTrain: false,
+                        showAura: true,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(skin?.name ?? '默认皮肤', style: TextStyle(
+                            color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
+                          )),
+                          if (skin != null) ...[
+                            const SizedBox(height: 4),
+                            Text('招式：${appliedSkinCfg?.signatureMove ?? ''}', style: TextStyle(
+                              color: cardTheme?.glowColor ?? colors.accentGlow,
+                              fontSize: 11, fontWeight: FontWeight.w600,
+                            )),
+                            Text(skin.isLimited ? '限定款 · 邀请解锁' : '${skin.pointsCost} 积分', style: TextStyle(
+                              color: colors.textMuted, fontSize: 11,
+                            )),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 限定款角标（ambassador 当前应用时）
+              if (isAmbassador)
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: BadgeWidget(text: '限定', variant: BadgeVariant.accent),
+                ),
+              // ambassador 金色光晕呼吸动画
+              if (isAmbassador && cardTheme != null && cardTheme.showShimmer)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation: _shimmerController,
+                      builder: (_, __) {
+                        final t = _shimmerController.value;
+                        final opacity = 0.3 + 0.7 * (0.5 - (t - 0.5).abs()) * 2;
+                        return Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: cardTheme.glowColor.withOpacity(opacity.clamp(0.0, 1.0)),
+                              width: 1.5,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(skin?.name ?? '默认皮肤', style: TextStyle(
-                        color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
-                      )),
-                      if (skin != null) ...[
-                        const SizedBox(height: 4),
-                        Text('招式：${OpponentSkinConfig.byId(skinId).signatureMove}', style: TextStyle(
-                          color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w600,
-                        )),
-                        Text(skin.isLimited ? '限定款 · 邀请解锁' : '${skin.pointsCost} 积分', style: TextStyle(
-                          color: colors.textMuted, fontSize: 11,
-                        )),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
           const SizedBox(height: 12),
-          // 所有皮肤列表
+          // 所有皮肤列表（含价格 / 购买按钮）
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -269,33 +450,87 @@ class OpponentDetailPage extends StatelessWidget {
   }
 
   Widget _buildSkinTile(FitTrackColors colors, VirtualGood good, bool unlocked) {
+    final skinCfg = OpponentSkinConfig.byId(good.id);
+    final cardTheme = skinCfg.cardTheme;
+    final isAmbassador = good.id == 'skin_ambassador';
+
     return Container(
-      width: 72,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      width: 110,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
       decoration: BoxDecoration(
         color: unlocked ? colors.accentGlow.withOpacity(0.06) : colors.bgSecondary,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: unlocked ? colors.accentGlow.withOpacity(0.3) : colors.borderColor,
+          color: unlocked ? (cardTheme.borderColor) : colors.borderColor,
+          width: unlocked ? 1.5 : 1,
         ),
       ),
       child: Column(
         children: [
-          Text(good.emoji, style: TextStyle(
-            fontSize: 24,
-            color: unlocked ? null : colors.textMuted,
-          )),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(good.emoji, style: TextStyle(
+                fontSize: 24,
+                color: unlocked ? null : colors.textMuted,
+              )),
+              if (isAmbassador && !unlocked)
+                Positioned(
+                  top: -2,
+                  right: -2,
+                  child: BadgeWidget(text: '限定', variant: BadgeVariant.accent),
+                ),
+            ],
+          ),
           const SizedBox(height: 4),
           Text(good.name, style: TextStyle(
             color: unlocked ? colors.textPrimary : colors.textMuted,
             fontSize: 10, fontWeight: FontWeight.w600,
           ), maxLines: 1, overflow: TextOverflow.ellipsis),
-          Icon(
-            unlocked ? Icons.check_circle : Icons.lock,
-            size: 12,
-            color: unlocked ? colors.accentGlow : colors.textMuted,
-          ),
+          const SizedBox(height: 4),
+          if (unlocked)
+            Icon(
+              Icons.check_circle,
+              size: 12,
+              color: cardTheme.glowColor,
+            )
+          else if (good.isPurchasableWithPoints)
+            // 未解锁且可购买：显示价格 + 购买按钮
+            _buildPurchaseButton(colors, good, cardTheme)
+          else
+            // 未解锁且不可购买（限定款）：显示解锁条件
+            Text(
+              good.unlockCondition ?? '',
+              style: TextStyle(color: colors.textMuted, fontSize: 9),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPurchaseButton(
+      FitTrackColors colors, VirtualGood good, SkinCardTheme? cardTheme) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _unlocking ? null : () => _purchaseSkin(good.id),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: cardTheme?.borderColor ?? colors.accentGlow,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          minimumSize: const Size(0, 22),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+          ),
+        ),
+        child: Text(
+          '${good.pointsCost}',
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }

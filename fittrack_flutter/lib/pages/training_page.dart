@@ -9,6 +9,7 @@ import '../services/rest_notification_service.dart';
 import '../services/smart_push_service.dart';
 import '../services/achievement_service.dart';
 import '../services/ad_service.dart';
+import '../services/points_service.dart';
 import '../services/retention_chain_service.dart';
 import '../services/sound_service.dart';
 import '../data/virtual_opponent.dart';
@@ -562,6 +563,8 @@ class _TrainingPageState extends State<TrainingPage>
       final currentRecord = records.isNotEmpty ? records.first : <String, dynamic>{};
       final unlockedAchievements =
           await AchievementService.instance.checkAndUnlock(currentRecord);
+      // 每日训练得积分（同日防重复）：成就检查之后调用，避免与成就解锁积分交错
+      await PointsService.instance.addDailyTrainingPoints();
       if (unlockedAchievements.isNotEmpty && mounted) {
         for (final id in unlockedAchievements) {
           final all = AchievementService.instance.getAll();
@@ -1584,6 +1587,17 @@ class _TrainingPageState extends State<TrainingPage>
       opponent.tier,
     );
 
+    // 皮肤主题（appliedSkinId 为空时 fallback 到无皮肤样式）
+    final skinId = opponent.appliedSkinId;
+    final hasSkin = skinId.isNotEmpty;
+    final skin = hasSkin ? OpponentSkinConfig.byId(skinId) : null;
+    final cardTheme = skin?.cardTheme;
+    // 卡片边框：优先用皮肤 borderColor，否则维持胜负色
+    final cardBorderColor = cardTheme?.borderColor ??
+        (userWon ? colors.successColor.withOpacity(0.4) : colors.borderColor);
+    // 招式名高亮色
+    final signatureColor = cardTheme?.glowColor ?? colors.accentGlow;
+
     return InkWell(
       onTap: () => context.push('/opponent-detail'),
       borderRadius: BorderRadius.circular(12),
@@ -1592,7 +1606,19 @@ class _TrainingPageState extends State<TrainingPage>
         decoration: BoxDecoration(
           color: colors.bgCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: userWon ? colors.successColor.withOpacity(0.4) : colors.borderColor),
+          border: Border.all(
+            color: cardBorderColor,
+            width: cardTheme != null ? 1.5 : 1,
+          ),
+          boxShadow: cardTheme != null
+              ? [
+                  BoxShadow(
+                    color: cardTheme.glowColor.withOpacity(0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1606,6 +1632,15 @@ class _TrainingPageState extends State<TrainingPage>
                   style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
+                if (cardTheme != null)
+                  // 皮肤角标 emoji
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Text(
+                      cardTheme.badgeEmoji,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
@@ -1640,9 +1675,9 @@ class _TrainingPageState extends State<TrainingPage>
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '招式：${OpponentSkinConfig.byId(opponent.appliedSkinId).signatureMove}',
+                    '招式：${hasSkin ? skin!.signatureMove : '默认招式'}',
                     style: TextStyle(
-                      color: colors.accentGlow,
+                      color: signatureColor,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1654,7 +1689,7 @@ class _TrainingPageState extends State<TrainingPage>
             // 双方进度条对比
             _buildPKBar(colors, '我', userWeeklyTrainings, outcome.userScore, colors.accentGlow),
             const SizedBox(height: 8),
-            _buildPKBar(colors, opponent.nickname, opponent.weeklyTrainings, outcome.opponentScore, colors.textMuted),
+            _buildPKBar(colors, opponent.nickname, opponent.weeklyTrainings, outcome.opponentScore, cardTheme?.glowColor ?? colors.textMuted),
             const SizedBox(height: 12),
             // 超越百分比
             Row(

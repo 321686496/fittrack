@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 7;
+  static const int _dbVersion = 8;
 
   Database? _database;
 
@@ -97,13 +97,15 @@ class DatabaseHelper {
     ''');
     await db.execute('CREATE INDEX idx_gym_cards_endDate ON gym_cards(endDate)');
 
-    // 成就表 (v3)
+    // 成就表 (v3, v8 增加 pointsReward/canEarnPoints)
     await db.execute('''
       CREATE TABLE achievements (
         id TEXT PRIMARY KEY,
         category TEXT NOT NULL,
         unlockedAt INTEGER NOT NULL DEFAULT 0,
-        metadata TEXT NOT NULL DEFAULT '{}'
+        metadata TEXT NOT NULL DEFAULT '{}',
+        pointsReward INTEGER NOT NULL DEFAULT 0,
+        canEarnPoints INTEGER NOT NULL DEFAULT 0
       )
     ''');
     await db.execute('CREATE INDEX idx_achievements_category ON achievements(category)');
@@ -250,6 +252,18 @@ class DatabaseHelper {
           'ALTER TABLE records ADD COLUMN planId TEXT');
       await db.execute(
           "ALTER TABLE records ADD COLUMN planName TEXT NOT NULL DEFAULT ''");
+    }
+    if (oldVersion < 8) {
+      // 成就表新增 pointsReward / canEarnPoints 列
+      // 用于成就页/荣誉墙展示「解锁可获积分」或「纯荣誉」标记。
+      // weight 类为纯荣誉（canEarnPoints=0），其余可获积分（canEarnPoints=1）。
+      // pointsReward 按 id 映射在 AchievementService._all 中维护，DB 仅作存储。
+      await db.execute(
+          'ALTER TABLE achievements ADD COLUMN pointsReward INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+          'ALTER TABLE achievements ADD COLUMN canEarnPoints INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+          "UPDATE achievements SET canEarnPoints = CASE WHEN category = 'weight' THEN 0 ELSE 1 END");
     }
   }
 

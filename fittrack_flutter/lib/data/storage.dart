@@ -452,6 +452,9 @@ class Storage {
       'adsWatchedToday': 0,
       'adsWatchedDate': '',
       'unlockedFeatures': '[]',
+      // 每日训练得积分防重复日期 / 分享计数（成就用）
+      'lastTrainingPointsDate': '',
+      'shareCount': 0,
       // ── 每日训练提醒 & 健身卡到期提醒 ──
       'dailyTrainingReminderEnabled': false, // 每日训练提醒开关
       'gymCardExpiryReminderEnabled': false, // 健身卡到期提醒开关

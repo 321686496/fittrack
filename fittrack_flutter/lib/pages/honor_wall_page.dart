@@ -244,40 +244,51 @@ class _HonorWallPageState extends State<HonorWallPage> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: colors.accentGlow.withOpacity(0.2)),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      colors.accentGlow.withOpacity(0.25),
-                      colors.accentGlow.withOpacity(0.08),
-                    ],
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          colors.accentGlow.withOpacity(0.25),
+                          colors.accentGlow.withOpacity(0.08),
+                        ],
+                      ),
+                    ),
+                    child: Icon(_iconFor(ach.icon),
+                        size: 32, color: colors.accentGlow),
                   ),
+                  const SizedBox(height: 12),
+                  Text(
+                    ach.title,
+                    style: TextStyle(
+                        color: colors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatDate(ach.unlockedAt),
+                    style: TextStyle(color: colors.textMuted, fontSize: 11),
+                  ),
+                ],
+              ),
+              // 积分标记（右下角）
+              if (_buildPointsBadge(ach) != null)
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: _buildPointsBadge(ach)!,
                 ),
-                child: Icon(_iconFor(ach.icon),
-                    size: 32, color: colors.accentGlow),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                ach.title,
-                style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _formatDate(ach.unlockedAt),
-                style: TextStyle(color: colors.textMuted, fontSize: 11),
-              ),
             ],
           ),
         ),
@@ -360,9 +371,35 @@ class _HonorWallPageState extends State<HonorWallPage> {
                     size: 14, color: colors.textMuted),
               ),
             ),
+            // 积分标记（右下角）
+            if (_buildPointsBadge(ach) != null)
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: _buildPointsBadge(ach)!,
+              ),
           ],
         ),
       ),
     );
+  }
+
+  /// 积分标记徽章：
+  /// - canEarnPoints && pointsReward > 0 → purple "+N积分"
+  /// - !canEarnPoints → info "纯荣誉"
+  Widget? _buildPointsBadge(Achievement ach) {
+    if (ach.canEarnPoints && ach.pointsReward > 0) {
+      return BadgeWidget(
+        text: '+${ach.pointsReward}积分',
+        variant: BadgeVariant.purple,
+      );
+    }
+    if (!ach.canEarnPoints) {
+      return const BadgeWidget(
+        text: '纯荣誉',
+        variant: BadgeVariant.info,
+      );
+    }
+    return null;
   }
 }

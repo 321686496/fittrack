@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/achievement_service.dart';
 import '../services/poster_generator.dart';
 import '../themes/app_themes.dart';
 import 'common_widgets.dart';
@@ -119,6 +120,10 @@ class PosterCaptureHelper {
         fileNamePrefix: fileNamePrefix,
       );
       entry.remove();
+      if (!context.mounted) return;
+
+      // 分享成功：记录到成就系统（评估 share_first / share_3 / share_10）
+      await AchievementService.instance.recordShare();
       if (!context.mounted) return;
 
       // 关闭 loading 弹窗
