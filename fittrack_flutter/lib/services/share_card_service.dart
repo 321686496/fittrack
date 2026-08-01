@@ -1,11 +1,6 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
 import '../widgets/share_card_frame.dart';
-import '../utils/platform_utils.dart';
+import 'poster_generator.dart';
 
 class ShareCardService {
   static final GlobalKey _boundaryKey = GlobalKey();
@@ -63,43 +58,23 @@ class ShareCardService {
     };
 
     overlay.insert(entry);
-    // 等待多帧，确保 widget 完成 layout + paint
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 30));
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 30));
-
-    final boundary = _boundaryKey.currentContext!.findRenderObject()
-        as RenderRepaintBoundary;
-    late Uint8List bytes;
+    // paint 等待已统一收敛到 PosterGenerator.capture 内部，
+    // 此处不再使用固定 30ms 等待（首帧 paint 未完成时调用 toImage 会触发
+    // '!debugNeedsPaint' 断言）。
     try {
-      final image = await boundary.toImage(pixelRatio: 2.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      bytes = byteData!.buffer.asUint8List();
+      // 复用 PosterGenerator.capture 的统一安全路径（含 paint 等待循环、
+      // toByteData、写文件、OHOS 临时目录兜底）。
+      // 返回 PNG 文件绝对路径。
+      return await PosterGenerator.capture(
+        _boundaryKey,
+        pixelRatio: 2.0,
+        fileNamePrefix: 'share_card',
+      );
     } finally {
-      // 确保 OverlayEntry 在 toImage/toByteData 抛异常时也能被移除，
-      // 避免残留遮罩层。
+      // 确保 OverlayEntry 在 capture 抛异常时也能被移除，避免残留遮罩层。
       entry.remove();
       // 恢复原始错误处理
       FlutterError.onError = originalOnError;
     }
-
-    // OHOS: getTemporaryDirectory() throws MissingPluginException.
-    // Fall back to system temp dir.
-    Directory tempDir;
-    if (isOhos) {
-      try {
-        tempDir = await getTemporaryDirectory();
-      } catch (_) {
-        tempDir = Directory(Directory.systemTemp.path);
-      }
-    } else {
-      tempDir = await getTemporaryDirectory();
-    }
-    final path =
-        '${tempDir.path}/share_card_${DateTime.now().millisecondsSinceEpoch}.png';
-    final file = File(path);
-    await file.writeAsBytes(bytes);
-    return path;
   }
 }

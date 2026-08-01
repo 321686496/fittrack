@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/default_exercise_cover.dart';
 import '../widgets/page_header.dart';
 
 class ExercisePage extends StatefulWidget {
@@ -72,6 +75,24 @@ class _ExercisePageState extends State<ExercisePage> {
       default:
         return BadgeVariant.accent;
     }
+  }
+
+  /// 根据动作数据渲染封面：自定义路径 → Image.file；
+  /// asset 路径 → Image.asset；无 image → DefaultExerciseCover。
+  Widget _buildCoverImage(Map<String, dynamic> ex, double height) {
+    final image = ex['image'] as String?;
+    if (image != null && image.isNotEmpty) {
+      if (image.startsWith('assets/')) {
+        return Image.asset(image, fit: BoxFit.cover,
+            width: double.infinity, height: height);
+      }
+      return Image.file(File(image), fit: BoxFit.cover,
+          width: double.infinity, height: height);
+    }
+    return DefaultExerciseCover(
+      category: (ex['category'] as String?) ?? '其他',
+      size: height,
+    );
   }
 
   void _showPlanPicker(Map<String, dynamic> exercise) {
@@ -234,19 +255,12 @@ class _ExercisePageState extends State<ExercisePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              height: 90,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: colors.bgElevated,
-                                image: ex['image'] != null
-                                    ? DecorationImage(
-                                        image: AssetImage(
-                                            ex['image'] as String),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: SizedBox(
+                                height: 90,
+                                width: double.infinity,
+                                child: _buildCoverImage(ex, 90),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -323,19 +337,14 @@ class _ExercisePageState extends State<ExercisePage> {
                 ),
                 const SizedBox(height: 20),
                 // Exercise hero image
-                if (ex['image'] != null)
-                  Container(
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
                     width: double.infinity,
                     height: 180,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: colors.bgElevated,
-                      image: DecorationImage(
-                        image: AssetImage(ex['image'] as String),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                    child: _buildCoverImage(ex, 180),
                   ),
+                ),
                 const SizedBox(height: 20),
                 // Description
                 SectionHeader(title: '动作说明'),
@@ -1304,6 +1313,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
   String _selectedCategory = '';
   final List<String> _selectedMuscles = [];
   final List<_StepCtrl> _stepCtrls = [_StepCtrl()];
+  String? _coverImagePath;
 
   static const int _maxSteps = 6;
   static const int _maxKeyPoses = 3;
@@ -1366,6 +1376,56 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     setState(() => kp.removeAt(kpIdx).dispose());
   }
 
+  Future<void> _pickCover() async {
+    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: colors.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo_outlined, color: colors.textSecondary),
+              title: Text('从相册选择',
+                  style: TextStyle(color: colors.textPrimary, fontSize: 15)),
+              onTap: () => Navigator.of(ctx).pop('gallery'),
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt_outlined,
+                  color: colors.textSecondary),
+              title: Text('拍照',
+                  style: TextStyle(color: colors.textPrimary, fontSize: 15)),
+              onTap: () => Navigator.of(ctx).pop('camera'),
+            ),
+            ListTile(
+              leading:
+                  Icon(Icons.image_aspect_ratio, color: colors.textSecondary),
+              title: Text('使用默认封面',
+                  style: TextStyle(color: colors.textPrimary, fontSize: 15)),
+              onTap: () => Navigator.of(ctx).pop('default'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == null) return;
+    if (action == 'default') {
+      setState(() => _coverImagePath = null);
+      return;
+    }
+    final source = action == 'gallery'
+        ? ImageSource.gallery
+        : ImageSource.camera;
+    final picker = ImagePicker();
+    final xfile = await picker.pickImage(source: source, imageQuality: 85);
+    if (xfile == null) return;
+    setState(() => _coverImagePath = xfile.path);
+  }
+
   void _onSave() {
     if (_nameCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1393,14 +1453,16 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
           .where((t) => t.isNotEmpty)
           .toList(),
     }).toList();
-    Storage.addCustomExercise({
+    final data = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
       'category': _selectedCategory,
       'equip': _equipCtrl.text.trim(),
       'description': _descCtrl.text.trim(),
       'muscles': List<String>.from(_selectedMuscles),
       'steps': steps,
-    });
+    };
+    if (_coverImagePath != null) data['image'] = _coverImagePath;
+    Storage.addCustomExercise(data);
     widget.onSaved();
     Navigator.of(context).pop();
   }
@@ -1420,6 +1482,8 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildCoverPicker(colors),
+                const SizedBox(height: 14),
                 _buildNameField(colors),
                 const SizedBox(height: 14),
                 _buildCategoryChips(colors),
@@ -1528,6 +1592,65 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: colors.accentGlow),
       ),
+    );
+  }
+
+  Widget _buildCoverPicker(FitTrackColors colors) {
+    final hasCustom = _coverImagePath != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(colors, '封面图', hint: '可选'),
+        const SizedBox(height: 6),
+        GestureDetector(
+          onTap: _pickCover,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: double.infinity,
+              height: 160,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (hasCustom)
+                    Image.file(File(_coverImagePath!),
+                        fit: BoxFit.cover)
+                  else
+                    DefaultExerciseCover(
+                      category: _selectedCategory,
+                      size: 160,
+                    ),
+                  Positioned(
+                    right: 10,
+                    bottom: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.45),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.edit,
+                              size: 13, color: Colors.white.withOpacity(0.9)),
+                          const SizedBox(width: 4),
+                          Text(
+                            hasCustom ? '点击更换封面' : '点击选择封面',
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -3,6 +3,7 @@ import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../services/gym_card_reminder_service.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/fit_date_picker_sheet.dart';
 import '../widgets/gym_card_poster.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
@@ -18,10 +19,42 @@ class _GymCardPageState extends State<GymCardPage> {
   List<Map<String, dynamic>> _cards = [];
   bool _sharing = false;
 
+  // 表单控制器（在 _showAddCardSheet 中使用，生命周期由 State 管理，
+  // 避免 sheet 关闭后 controller 被提前 dispose 引发 _dependents.isEmpty）
+  late TextEditingController _nameCtrl;
+  late TextEditingController _gymNameCtrl;
+  late TextEditingController _priceCtrl;
+  late TextEditingController _phoneCtrl;
+  late TextEditingController _remarkCtrl;
+  late TextEditingController _totalCountCtrl;
+  late TextEditingController _remainingCountCtrl;
+
+  // 标记用户是否手动修改过到期日，避免卡类型联动覆盖用户已设值
+  bool _endDateUserTouched = false;
+
   @override
   void initState() {
     super.initState();
+    _nameCtrl = TextEditingController();
+    _gymNameCtrl = TextEditingController();
+    _priceCtrl = TextEditingController();
+    _phoneCtrl = TextEditingController();
+    _remarkCtrl = TextEditingController();
+    _totalCountCtrl = TextEditingController();
+    _remainingCountCtrl = TextEditingController();
     _loadCards();
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _gymNameCtrl.dispose();
+    _priceCtrl.dispose();
+    _phoneCtrl.dispose();
+    _remarkCtrl.dispose();
+    _totalCountCtrl.dispose();
+    _remainingCountCtrl.dispose();
+    super.dispose();
   }
 
   void _loadCards() {
@@ -192,35 +225,56 @@ class _GymCardPageState extends State<GymCardPage> {
     final colors = Theme.of(context).extension<FitTrackColors>()!;
     final isEdit = existingCard != null;
 
-    final nameCtrl = TextEditingController(text: existingCard?['name']?.toString() ?? '');
-    final gymNameCtrl = TextEditingController(text: existingCard?['gymName']?.toString() ?? '');
-    final priceCtrl = TextEditingController(text: existingCard?['price']?.toString() ?? '');
-    final phoneCtrl = TextEditingController(text: existingCard?['phone']?.toString() ?? '');
-    final remarkCtrl = TextEditingController(text: existingCard?['remark']?.toString() ?? '');
-    // 次卡总次数/剩余次数 controller（避免在 StatefulBuilder.builder 中重复创建，丢失焦点）
-    final _tc = existingCard?['totalCount'] as int?;
-    final _rc = existingCard?['remainingCount'] as int?;
-    final totalCountCtrl = TextEditingController(
-      text: (_tc != null && _tc > 0) ? _tc.toString() : '',
-    );
-    final remainingCountCtrl = TextEditingController(
-      text: (_rc != null && _rc >= 0) ? _rc.toString() : '',
-    );
+    // 清空（添加模式）或填入 existingCard 值（编辑模式）
+    _nameCtrl.text = existingCard?['name']?.toString() ?? '';
+    _gymNameCtrl.text = existingCard?['gymName']?.toString() ?? '';
+    _priceCtrl.text = existingCard?['price']?.toString() ?? '';
+    _phoneCtrl.text = existingCard?['phone']?.toString() ?? '';
+    _remarkCtrl.text = existingCard?['remark']?.toString() ?? '';
+
+    final tc = existingCard?['totalCount'] as int?;
+    _totalCountCtrl.text = (tc != null && tc > 0) ? tc.toString() : '';
+    final rc = existingCard?['remainingCount'] as int?;
+    _remainingCountCtrl.text = (rc != null && rc >= 0) ? rc.toString() : '';
 
     String cardType = existingCard?['cardType'] as String? ?? '年卡';
-    int startDate = existingCard?['startDate'] as int? ?? 0;
+    // 开卡日期默认值改为今天（添加模式）
+    int startDate = existingCard?['startDate'] as int? ??
+        DateTime.now().millisecondsSinceEpoch;
     int endDate = existingCard?['endDate'] as int? ?? 0;
     int remainingCount = existingCard?['remainingCount'] as int? ?? -1;
     int totalCount = existingCard?['totalCount'] as int? ?? -1;
 
-    void disposeControllers() {
-      nameCtrl.dispose();
-      gymNameCtrl.dispose();
-      priceCtrl.dispose();
-      phoneCtrl.dispose();
-      remarkCtrl.dispose();
-      totalCountCtrl.dispose();
-      remainingCountCtrl.dispose();
+    // 编辑模式下若已有到期日，视为用户已设置，不再自动覆盖
+    _endDateUserTouched = isEdit && endDate > 0;
+
+    // 根据当前卡类型 + 开卡日联动计算到期日；
+    // 仅当用户未手动改过到期日时执行（次卡无到期日，跳过）
+    void maybeAutoCalcEndDate() {
+      if (_endDateUserTouched) return;
+      if (cardType == '次卡') return;
+      if (startDate <= 0) return;
+      final start = DateTime.fromMillisecondsSinceEpoch(startDate);
+      DateTime? newEnd;
+      switch (cardType) {
+        case '年卡':
+          newEnd = DateTime(start.year + 1, start.month, start.day);
+          break;
+        case '季卡':
+          newEnd = DateTime(start.year, start.month + 3, start.day);
+          break;
+        case '月卡':
+          newEnd = DateTime(start.year, start.month + 1, start.day);
+          break;
+      }
+      if (newEnd != null) {
+        endDate = newEnd.millisecondsSinceEpoch;
+      }
+    }
+
+    // 添加模式下打开 sheet 时先联动一次，给到期日一个默认值
+    if (!isEdit) {
+      maybeAutoCalcEndDate();
     }
 
     FitBottomSheet.show(
@@ -243,13 +297,13 @@ class _GymCardPageState extends State<GymCardPage> {
                   ),
                   const SizedBox(height: 16),
                   FitTextField(
-                    controller: nameCtrl,
+                    controller: _nameCtrl,
                     label: '卡名称 *',
                     hint: '如：金吉鸟年卡',
                   ),
                   const SizedBox(height: 12),
                   FitTextField(
-                    controller: gymNameCtrl,
+                    controller: _gymNameCtrl,
                     label: '健身房名称',
                     hint: '如：金吉鸟健身(万达店)',
                   ),
@@ -259,11 +313,17 @@ class _GymCardPageState extends State<GymCardPage> {
                   FitChipSelector(
                     options: const ['年卡', '季卡', '月卡', '次卡', '其他'],
                     selected: cardType,
-                    onChanged: (v) => setSheetState(() => cardType = v),
+                    onChanged: (v) {
+                      if (!mounted) return;
+                      setSheetState(() {
+                        cardType = v;
+                        maybeAutoCalcEndDate();
+                      });
+                    },
                   ),
                   const SizedBox(height: 12),
                   FitTextField(
-                    controller: priceCtrl,
+                    controller: _priceCtrl,
                     label: '价格 (元)',
                     hint: '0',
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -274,14 +334,22 @@ class _GymCardPageState extends State<GymCardPage> {
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: () async {
-                      final picked = await showDatePicker(
-                        context: ctx,
-                        initialDate: startDate > 0 ? DateTime.fromMillisecondsSinceEpoch(startDate) : DateTime.now(),
+                      final picked = await FitDatePickerSheet.show(
+                        ctx,
+                        initialDate: startDate > 0
+                            ? DateTime.fromMillisecondsSinceEpoch(startDate)
+                            : DateTime.now(),
                         firstDate: DateTime(2020),
                         lastDate: DateTime(2035),
+                        title: '选择开卡日期',
                       );
                       if (picked != null) {
-                        setSheetState(() => startDate = picked.millisecondsSinceEpoch);
+                        if (!mounted) return;
+                        setSheetState(() {
+                          startDate = picked.millisecondsSinceEpoch;
+                          // 开卡日变化后，若到期日未被用户手动改过，重新自动计算
+                          maybeAutoCalcEndDate();
+                        });
                       }
                     },
                     child: Container(
@@ -308,14 +376,21 @@ class _GymCardPageState extends State<GymCardPage> {
                     const SizedBox(height: 6),
                     GestureDetector(
                       onTap: () async {
-                        final picked = await showDatePicker(
-                          context: ctx,
-                          initialDate: endDate > 0 ? DateTime.fromMillisecondsSinceEpoch(endDate) : DateTime.now().add(const Duration(days: 365)),
+                        final picked = await FitDatePickerSheet.show(
+                          ctx,
+                          initialDate: endDate > 0
+                              ? DateTime.fromMillisecondsSinceEpoch(endDate)
+                              : DateTime.now().add(const Duration(days: 365)),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2035),
+                          title: '选择到期日期',
                         );
                         if (picked != null) {
-                          setSheetState(() => endDate = picked.millisecondsSinceEpoch);
+                          if (!mounted) return;
+                          setSheetState(() {
+                            endDate = picked.millisecondsSinceEpoch;
+                            _endDateUserTouched = true;
+                          });
                         }
                       },
                       child: Container(
@@ -348,7 +423,7 @@ class _GymCardPageState extends State<GymCardPage> {
                               Text('总次数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                               const SizedBox(height: 6),
                               TextField(
-                                controller: totalCountCtrl,
+                                controller: _totalCountCtrl,
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                                 decoration: InputDecoration(
@@ -384,7 +459,7 @@ class _GymCardPageState extends State<GymCardPage> {
                               Text('剩余次数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                               const SizedBox(height: 6),
                               TextField(
-                                controller: remainingCountCtrl,
+                                controller: _remainingCountCtrl,
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                                 decoration: InputDecoration(
@@ -417,14 +492,14 @@ class _GymCardPageState extends State<GymCardPage> {
                     const SizedBox(height: 12),
                   ],
                   FitTextField(
-                    controller: phoneCtrl,
+                    controller: _phoneCtrl,
                     label: '联系电话',
                     hint: '健身房联系电话',
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 12),
                   FitTextField(
-                    controller: remarkCtrl,
+                    controller: _remarkCtrl,
                     label: '备注',
                     hint: '其他备注信息',
                   ),
@@ -433,21 +508,21 @@ class _GymCardPageState extends State<GymCardPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (nameCtrl.text.trim().isEmpty) {
+                        if (_nameCtrl.text.trim().isEmpty) {
                           FitToast.warning(context, '请输入卡名称');
                           return;
                         }
                         final data = <String, dynamic>{
-                          'name': nameCtrl.text.trim(),
-                          'gymName': gymNameCtrl.text.trim(),
+                          'name': _nameCtrl.text.trim(),
+                          'gymName': _gymNameCtrl.text.trim(),
                           'cardType': cardType,
-                          'price': double.tryParse(priceCtrl.text) ?? 0,
+                          'price': double.tryParse(_priceCtrl.text) ?? 0,
                           'startDate': startDate,
                           'endDate': endDate,
                           'remainingCount': remainingCount,
                           'totalCount': totalCount,
-                          'phone': phoneCtrl.text.trim(),
-                          'remark': remarkCtrl.text.trim(),
+                          'phone': _phoneCtrl.text.trim(),
+                          'remark': _remarkCtrl.text.trim(),
                         };
                         if (isEdit) {
                           Storage.updateGymCard(existingCard['id'] as String, data);
@@ -476,7 +551,9 @@ class _GymCardPageState extends State<GymCardPage> {
           },
         );
       },
-    ).whenComplete(disposeControllers);
+    ).whenComplete(() {
+      _endDateUserTouched = false;
+    });
   }
 
   void _showCardDetail(Map<String, dynamic> card) {

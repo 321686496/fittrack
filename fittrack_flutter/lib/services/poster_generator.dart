@@ -32,6 +32,17 @@ class PosterGenerator {
   }) async {
     final boundary = boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
+    // 等待 paint 完成：离屏 RepaintBoundary.toImage() 在含 QrImageView 等异步组件、
+    // 首帧 paint 未完成时调用会触发 '!debugNeedsPaint' 断言。
+    // 此处通过轮询 debugNeedsPaint 状态，最多等待 10 次 × 30ms。
+    for (int i = 0; i < 10; i++) {
+      if (!boundary.debugNeedsPaint) break;
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 30));
+    }
+    if (boundary.debugNeedsPaint) {
+      throw Exception('RepaintBoundary 尚未完成绘制，请重试');
+    }
     final image = await boundary.toImage(pixelRatio: pixelRatio);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     if (byteData == null) {

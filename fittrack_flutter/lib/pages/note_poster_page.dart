@@ -69,12 +69,9 @@ class _NotePosterPageState extends State<NotePosterPage> {
     );
     overlay.insert(entry);
 
-    // 等待多帧，确保 layout + paint 完成
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 50));
-    await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 50));
-
+    // paint 等待已统一收敛到 PosterGenerator.capture 内部，
+    // 此处不再使用固定 50ms 等待（首帧 paint 未完成时调用 toImage 会触发
+    // '!debugNeedsPaint' 断言）。
     try {
       final imagePath = await PosterGenerator.capture(
         boundaryKey,

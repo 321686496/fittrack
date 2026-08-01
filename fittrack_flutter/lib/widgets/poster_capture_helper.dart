@@ -111,12 +111,9 @@ class PosterCaptureHelper {
     try {
       overlay.insert(entry);
 
-      // 等待多帧，确保 layout + paint 完成
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 50));
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 50));
-
+      // paint 等待已统一收敛到 PosterGenerator.capture 内部，
+      // 此处不再使用固定 50ms 等待（首帧 paint 未完成时调用 toImage 会触发
+      // '!debugNeedsPaint' 断言）。
       final imagePath = await PosterGenerator.capture(
         boundaryKey,
         fileNamePrefix: fileNamePrefix,
@@ -141,9 +138,9 @@ class PosterCaptureHelper {
       Navigator.of(context, rootNavigator: true).pop();
 
       if (onError != null) {
-        onError('海报生成失败：$e');
-      } else if (context.mounted) {
-        FitToast.error(context, '海报生成失败：$e');
+        onError('海报生成失败，请重试');
+      } else {
+        FitToast.error(context, '海报生成失败，请重试');
       }
     } finally {
       // 恢复原始错误处理
