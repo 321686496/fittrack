@@ -31,7 +31,7 @@ class FitDatePickerSheet extends StatefulWidget {
   }) {
     return FitBottomSheet.show<DateTime>(
       context: context,
-      maxHeightRatio: 0.6,
+      maxHeightRatio: 0.7,
       builder: (ctx) => FitDatePickerSheet(
         initialDate: initialDate,
         firstDate: firstDate,
@@ -303,7 +303,7 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
       crossAxisCount: 7,
       crossAxisSpacing: 0,
       mainAxisSpacing: 0,
-      childAspectRatio: 1,
+      childAspectRatio: 0.9,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

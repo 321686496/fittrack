@@ -111,6 +111,9 @@ class PosterCaptureHelper {
 
     try {
       overlay.insert(entry);
+      // 等待 OverlayEntry 完成挂载与首帧 build，否则 boundaryKey.currentContext
+      // 为 null 会导致 PosterGenerator.capture 内 findRenderObject 抛异常。
+      await WidgetsBinding.instance.endOfFrame;
 
       // paint 等待已统一收敛到 PosterGenerator.capture 内部，
       // 此处不再使用固定 50ms 等待（首帧 paint 未完成时调用 toImage 会触发
@@ -135,17 +138,19 @@ class PosterCaptureHelper {
         imagePath: imagePath,
         title: title,
       );
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint(' PosterCaptureHelper 海报生成失败: $e\n$st');
       entry.remove();
       if (!context.mounted) return;
 
       // 关闭 loading 弹窗
       Navigator.of(context, rootNavigator: true).pop();
 
+      final msg = '海报生成失败：$e';
       if (onError != null) {
-        onError('海报生成失败，请重试');
+        onError(msg);
       } else {
-        FitToast.error(context, '海报生成失败，请重试');
+        FitToast.error(context, msg);
       }
     } finally {
       // 恢复原始错误处理
