@@ -274,7 +274,7 @@ export default class EntryAbility extends FlutterAbility {
   /// 请求通知权限并预创建 SOCIAL_COMMUNICATION 渠道
   /// - requestEnableNotification：首次调用会弹出系统授权对话框
   /// - addSlot(SOCIAL_COMMUNICATION)：预创建横幅通知渠道
-  /// - 横幅通知的显示开关由用户在 设置 > 通知管理 > FitTrack 中控制
+  /// - 横幅通知的显示开关由用户在 设置 > 通知管理 > LiftTrack 中控制
   private requestNotificationPermissionAndCreateSlot(): void {
     notificationManager.requestEnableNotification(this.context)
       .then(() => {
@@ -377,7 +377,7 @@ export default class EntryAbility extends FlutterAbility {
 
       this.manageTrainingState(dataStr);
 
-      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
+      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'LiftTrack训练卡片')
         .then((reloadNum: number) => {
           console.info(`[FitTrack] reloadForms success, reloadNum=${reloadNum}`);
           result.success(`reloadNum=${reloadNum}`);
@@ -506,7 +506,7 @@ export default class EntryAbility extends FlutterAbility {
         },
         liveViewData: {
           primary: {
-            title: 'FitTrack - 休息中',
+            title: 'LiftTrack - 休息中',
             content: [
               { text: '剩余 ' },
               { text: '${placeholder.timer}', textColor: '#FFFF6B35' },
@@ -568,7 +568,7 @@ export default class EntryAbility extends FlutterAbility {
             },
             liveViewData: {
               primary: {
-                title: 'FitTrack - 休息中',
+                title: 'LiftTrack - 休息中',
                 content: [
                   { text: '剩余 ' },
                   { text: '${placeholder.timer}', textColor: '#FFFF6B35' },
@@ -638,7 +638,7 @@ export default class EntryAbility extends FlutterAbility {
         isMute: false,
         liveViewData: {
           primary: {
-            title: 'FitTrack',
+            title: 'LiftTrack',
             content: [{ text: '休息结束' }],
             keepTime: 1,
             clickAction: this.liveViewWantAgent!,
@@ -706,7 +706,7 @@ export default class EntryAbility extends FlutterAbility {
       let reminderRequest: reminderAgentManager.ReminderRequestTimer = {
         reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
         triggerTimeInSeconds: restSeconds,
-        title: 'FitTrack',
+        title: 'LiftTrack',
         content: '休息时间到！开始下一组？',
         notificationId: 100,
         slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
@@ -811,7 +811,7 @@ export default class EntryAbility extends FlutterAbility {
       // 重置内存中的休息结束时间，避免 onForeground/onNewWant 重复触发
       this.restEndTime = 0;
 
-      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'FitTrack训练卡片')
+      formProvider.reloadForms(this.context, 'entry', 'FitTrackFormExtension', 'LiftTrack训练卡片')
         .then((reloadNum: number) => {
           console.info(`[FitTrack] refreshCardAfterRest reloadForms 成功, reloadNum=${reloadNum}`);
         })
@@ -888,7 +888,7 @@ export default class EntryAbility extends FlutterAbility {
         content: {
           notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
           normal: {
-            title: 'FitTrack - 休息中',
+            title: 'LiftTrack - 休息中',
             text: `${this.currentExerciseName} · 休息 ${totalSec} 秒`,
             additionalText: `休息结束会自动提醒你（剩余约 ${remainingSec} 秒）`,
           },

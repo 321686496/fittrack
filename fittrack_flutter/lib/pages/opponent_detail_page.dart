@@ -15,7 +15,7 @@ class OpponentDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final settings = Storage.getSettings();
     final opponentJson = settings['virtualOpponentData'] as Map<String, dynamic>?;
 
@@ -72,7 +72,7 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCard(FitTrackColors colors, VirtualOpponent opp) {
+  Widget _buildHeaderCard(LiftTrackColors colors, VirtualOpponent opp) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -120,7 +120,7 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildWeeklyStatsCard(FitTrackColors colors, VirtualOpponent opp) {
+  Widget _buildWeeklyStatsCard(LiftTrackColors colors, VirtualOpponent opp) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +141,7 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(FitTrackColors colors, String value, String label) {
+  Widget _buildStatItem(LiftTrackColors colors, String value, String label) {
     return Expanded(
       child: Column(
         children: [
@@ -155,7 +155,7 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCard(FitTrackColors colors, VirtualOpponent opp) {
+  Widget _buildStatusCard(LiftTrackColors colors, VirtualOpponent opp) {
     return CardWidget(
       child: Row(
         children: [
@@ -172,7 +172,7 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSkinCard(FitTrackColors colors, String skinId, BuildContext context) {
+  Widget _buildSkinCard(LiftTrackColors colors, String skinId, BuildContext context) {
     final skin = skinId.isNotEmpty ? VirtualGoodsStore.byId(skinId) : null;
     final allSkins = VirtualGoodsStore.byCategory(GoodCategory.opponentSkin);
 
@@ -268,7 +268,7 @@ class OpponentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSkinTile(FitTrackColors colors, VirtualGood good, bool unlocked) {
+  Widget _buildSkinTile(LiftTrackColors colors, VirtualGood good, bool unlocked) {
     return Container(
       width: 72,
       padding: const EdgeInsets.symmetric(vertical: 8),

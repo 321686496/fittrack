@@ -163,7 +163,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -209,7 +209,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 基础数据区块：身高、体重 + 自动计算 BMI
-  Widget _buildBasicSection(FitTrackColors colors) {
+  Widget _buildBasicSection(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +288,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 详细身体数据：2 列布局（Row + Column），每个字段用 Expanded 包裹，避免溢出
-  Widget _buildDetailsGrid(FitTrackColors colors) {
+  Widget _buildDetailsGrid(LiftTrackColors colors) {
     final fields = <List<dynamic>>[
       ['体脂率 (%)', _bodyFatController, '5 - 50'],
       ['胸围 (cm)', _chestController, '50 - 150'],
@@ -341,7 +341,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 身体变化趋势区块：情绪文案 + 体重折线图
-  Widget _buildTrendSection(FitTrackColors colors) {
+  Widget _buildTrendSection(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,7 +375,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 情绪价值文案：根据体重变化趋势显示鼓励/提醒
-  Widget _buildEmotionalText(FitTrackColors colors) {
+  Widget _buildEmotionalText(LiftTrackColors colors) {
     if (_history.length < 2) {
       return const SizedBox.shrink();
     }
@@ -449,7 +449,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 历史记录列表：完整历史，按时间倒序排列（最新在上）
-  Widget _buildHistoryList(FitTrackColors colors) {
+  Widget _buildHistoryList(LiftTrackColors colors) {
     if (_history.isEmpty) {
       return CardWidget(
         child: Column(
@@ -484,7 +484,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 单条历史记录卡片：显示日期、体重、体脂率、BMI（0 或 null 的字段不显示）
-  Widget _buildHistoryRecordCard(FitTrackColors colors, Map<String, dynamic> record) {
+  Widget _buildHistoryRecordCard(LiftTrackColors colors, Map<String, dynamic> record) {
     // 日期
     final ts = record['timestamp'];
     String dateStr = '未知日期';
@@ -537,7 +537,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 统计数据小标签
-  Widget _buildStatChip(FitTrackColors colors, String label, String value, Color color) {
+  Widget _buildStatChip(LiftTrackColors colors, String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -565,7 +565,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   }
 
   /// 底部保存按钮栏
-  Widget _buildBottomSaveBar(FitTrackColors colors) {
+  Widget _buildBottomSaveBar(LiftTrackColors colors) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       decoration: BoxDecoration(

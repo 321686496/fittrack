@@ -61,7 +61,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       body: SafeArea(
@@ -154,7 +154,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 
-  Widget _buildSlide(FitTrackColors colors, Map<String, dynamic> slide) {
+  Widget _buildSlide(LiftTrackColors colors, Map<String, dynamic> slide) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Column(

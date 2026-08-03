@@ -21,8 +21,8 @@ class RomGuidanceSheet extends StatefulWidget {
 }
 
 class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
-  String _title = '请确保 FitTrack 允许后台运行';
-  String _steps = '请确保 FitTrack 允许后台运行和自启动';
+  String _title = '请确保 LiftTrack 允许后台运行';
+  String _steps = '请确保 LiftTrack 允许后台运行和自启动';
   bool _loading = true;
 
   @override
@@ -46,7 +46,7 @@ class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final romService = RomAdaptationService.instance;
 
     return Container(

@@ -271,8 +271,6 @@ class TutorialLibrary {
         blocks: [
           if (t.breathingTip != null)
             ContentBlock.paragraph(t.breathingTip!),
-          if (t.alternativeExerciseIds.isNotEmpty)
-            ContentBlock.paragraph('替代动作：${t.alternativeExerciseIds.join(", ")}'),
         ],
       ),
     ];

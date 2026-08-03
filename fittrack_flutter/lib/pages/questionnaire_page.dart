@@ -251,7 +251,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       body: SafeArea(
@@ -347,7 +347,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     );
   }
 
-  Widget _buildStepContent(FitTrackColors colors) {
+  Widget _buildStepContent(LiftTrackColors colors) {
     switch (_currentStep) {
       case 0:
         return _buildSelectionStep(
@@ -391,7 +391,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   }
 
   Widget _buildSelectionStep({
-    required FitTrackColors colors,
+    required LiftTrackColors colors,
     required String question,
     required List<Map<String, dynamic>> options,
     required String? selectedValue,
@@ -464,7 +464,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     );
   }
 
-  Widget _buildBodyInfoStep(FitTrackColors colors) {
+  Widget _buildBodyInfoStep(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -577,7 +577,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   }
 
   /// 身体数据详细步骤：体脂率、围度、目标体重、静息心率（均可选）
-  Widget _buildBodyDetailsStep(FitTrackColors colors) {
+  Widget _buildBodyDetailsStep(LiftTrackColors colors) {
     // 字段配置：[label, controller, hintText]
     final fields = <List<dynamic>>[
       ['体脂率 (%)', _bodyFatController, '5 - 50'],
@@ -662,7 +662,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     return '肥胖';
   }
 
-  Widget _buildTrainingTimeStep(FitTrackColors colors) {
+  Widget _buildTrainingTimeStep(LiftTrackColors colors) {
     // 自定义时间段选项
     final timeSlots = [
       {'label': '清晨', 'time': '06:00', 'icon': Icons.wb_sunny_outlined, 'desc': '06:00 - 08:00'},
@@ -787,13 +787,13 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     );
   }
 
-  Widget _buildChannelStep(FitTrackColors colors) {
+  Widget _buildChannelStep(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
         Text(
-          '你从哪里找到 FitTrack？',
+          '你从哪里找到 LiftTrack？',
           style: TextStyle(
             color: colors.textPrimary,
             fontSize: 22,

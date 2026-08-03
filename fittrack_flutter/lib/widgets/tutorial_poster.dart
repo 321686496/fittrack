@@ -8,7 +8,7 @@ import 'poster_theme.dart';
 class TutorialPoster extends StatelessWidget {
   final Tutorial tutorial;
 
-  /// 二维码内容（默认指向 FitTrack 应用入口）
+  /// 二维码内容（默认指向 LiftTrack 应用入口）
   final String qrData;
 
   /// 海报主题 ID；为 null 时从全局 Settings 读取当前主题

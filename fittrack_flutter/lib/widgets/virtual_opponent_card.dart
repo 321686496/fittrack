@@ -162,7 +162,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     if (_opponent == null) {
       return const SizedBox.shrink();
@@ -315,7 +315,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard> {
   }
 
   Widget _buildSide(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required String label,
     required int count,
     required int maxCount,

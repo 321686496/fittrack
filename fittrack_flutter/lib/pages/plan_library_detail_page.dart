@@ -20,7 +20,7 @@ class PlanLibraryDetailPage extends StatefulWidget {
 class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     final plan = SystemPlanLibrary.instance.getById(widget.planId);
 
     if (plan == null) {
@@ -78,7 +78,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
     );
   }
 
-  Widget _buildHeader(SystemPlan plan, FitTrackColors ft) {
+  Widget _buildHeader(SystemPlan plan, LiftTrackColors ft) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -134,7 +134,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
     );
   }
 
-  Widget _buildStats(SystemPlan plan, FitTrackColors ft) {
+  Widget _buildStats(SystemPlan plan, LiftTrackColors ft) {
     final List<MapEntry<String, String>> stats = [
       MapEntry('难度', kDifficultyLabelsZh[plan.difficulty] ?? plan.difficulty),
       MapEntry('类型', kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType),
@@ -181,7 +181,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
     );
   }
 
-  Widget _buildDescription(SystemPlan plan, FitTrackColors ft) {
+  Widget _buildDescription(SystemPlan plan, LiftTrackColors ft) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -227,7 +227,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
   }
 
   /// 未解锁付费计划时的训练日占位卡片
-  Widget _buildLockedDays(SystemPlan plan, FitTrackColors ft) {
+  Widget _buildLockedDays(SystemPlan plan, LiftTrackColors ft) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -276,7 +276,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
     );
   }
 
-  Widget _buildDays(SystemPlan plan, FitTrackColors ft) {
+  Widget _buildDays(SystemPlan plan, LiftTrackColors ft) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -302,7 +302,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
     );
   }
 
-  Widget _buildDayItem(SystemPlanDay day, FitTrackColors ft) {
+  Widget _buildDayItem(SystemPlanDay day, LiftTrackColors ft) {
     return ExpansionTile(
       tilePadding: EdgeInsets.zero,
       title: Row(
@@ -387,7 +387,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
     SystemPlan plan,
     bool isUnlocked,
     PlanUnlockInfo? unlockInfo,
-    FitTrackColors ft,
+    LiftTrackColors ft,
   ) {
     return Container(
       padding: const EdgeInsets.all(16),

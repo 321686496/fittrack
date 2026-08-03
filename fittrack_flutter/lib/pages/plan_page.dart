@@ -256,7 +256,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -283,7 +283,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
 
   // ── Plan List View ─────────────────────────────────────────
 
-  Widget _buildPlanList(FitTrackColors colors) {
+  Widget _buildPlanList(LiftTrackColors colors) {
     // 使用 _loadPlans 中预计算的缓存，避免 build 内深拷贝 records
     final customSorted = _customSortedCache;
     final top3 = customSorted.take(3).toList();
@@ -373,7 +373,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
     final recommendations = PlanRecommendationService.instance.recommend(limit: 3);
     if (recommendations.isEmpty) return const SizedBox.shrink();
 
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -427,7 +427,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
   }
 
   /// 单个推荐卡片
-  Widget _buildRecommendationCard(PlanRecommendation rec, FitTrackColors ft) {
+  Widget _buildRecommendationCard(PlanRecommendation rec, LiftTrackColors ft) {
     final plan = rec.plan;
     final isUnlocked = !plan.isPremium ||
         PlanUnlockService.instance.isPlanUnlocked(plan.id);
@@ -510,7 +510,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
     );
   }
 
-  Widget _buildPlanCard(FitTrackColors colors, Map<String, dynamic> plan) {
+  Widget _buildPlanCard(LiftTrackColors colors, Map<String, dynamic> plan) {
     final progress = ((plan['progress'] as num? ?? 0) / 100.0).clamp(0.0, 1.0);
     final status = plan['status'] as String? ?? 'pending';
     final badgeText = plan['badge'] as String? ?? _statusLabel(status);
@@ -614,7 +614,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
     );
   }
 
-  void _showShareMenu(FitTrackColors colors, Map<String, dynamic> plan) {
+  void _showShareMenu(LiftTrackColors colors, Map<String, dynamic> plan) {
     final planId = plan['id'] as String?;
     if (planId == null) return;
 
@@ -666,7 +666,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
 
   /// 构建计划操作按钮
   Widget _buildPlanActionButton(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -1055,7 +1055,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Container(
       constraints: BoxConstraints(
@@ -1280,7 +1280,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     );
   }
 
-  Widget _buildLabel(FitTrackColors colors, String text) {
+  Widget _buildLabel(LiftTrackColors colors, String text) {
     return Text(
       text,
       style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
@@ -1288,7 +1288,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   }
 
   // 训练动作的小标签：用于展示组数/次数/重量/休息时间
-  Widget _buildMiniTag(FitTrackColors colors, String text) {
+  Widget _buildMiniTag(LiftTrackColors colors, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -1302,7 +1302,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     );
   }
 
-  Widget _buildDayEditor(FitTrackColors colors, int dayIndex, Map<String, dynamic> day) {
+  Widget _buildDayEditor(LiftTrackColors colors, int dayIndex, Map<String, dynamic> day) {
     final isRest = day['isRest'] == true;
     final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final labelController = _labelControllers[dayIndex] ?? TextEditingController(text: '${day['label'] ?? ''}');

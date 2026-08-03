@@ -48,7 +48,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       body: Column(
@@ -85,7 +85,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   // ── 1. 邀请码大卡片 ──────────────────────────────────────────────
 
-  Widget _buildCodeCard(FitTrackColors colors) {
+  Widget _buildCodeCard(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         children: [
@@ -189,7 +189,7 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-  void _copyCode(FitTrackColors colors) {
+  void _copyCode(LiftTrackColors colors) {
     Clipboard.setData(ClipboardData(text: _myCode));
     FitToast.success(context, '邀请码已复制');
   }
@@ -217,7 +217,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   // ── 2. 进度概览 ──────────────────────────────────────────────
 
-  Widget _buildProgressCard(FitTrackColors colors) {
+  Widget _buildProgressCard(LiftTrackColors colors) {
     final totalReferrals = _progress['totalReferrals'] as int? ?? 0;
     final totalPoints = _progress['totalPoints'] as int? ?? 0;
     final isAmbassador = _progress['isAmbassador'] == true;
@@ -344,7 +344,7 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-  Widget _buildStatBox(FitTrackColors colors, String label, String value, String unit, IconData icon) {
+  Widget _buildStatBox(LiftTrackColors colors, String label, String value, String unit, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -389,7 +389,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   // ── 3. 奖励规则说明 ──────────────────────────────────────────────
 
-  Widget _buildRewardRulesCard(FitTrackColors colors) {
+  Widget _buildRewardRulesCard(LiftTrackColors colors) {
     final rules = [
       _RewardRule(1, '首次激活', '100 积分 + 引路人徽章', '50 积分'),
       _RewardRule(3, '累计 3 人', '300 积分 + 布道者徽章', '50 积分'),
@@ -444,7 +444,7 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-  Widget _buildRewardRuleItem(FitTrackColors colors, _RewardRule r) {
+  Widget _buildRewardRuleItem(LiftTrackColors colors, _RewardRule r) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -488,7 +488,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   // ── 4. 邀请流程图解 ──────────────────────────────────────────────
 
-  Widget _buildFlowCard(FitTrackColors colors) {
+  Widget _buildFlowCard(LiftTrackColors colors) {
     final steps = [
       _FlowStep(Icons.share, '分享邀请码', '微信/QQ/复制'),
       _FlowStep(Icons.person_add, '好友注册', '输入你的邀请码'),
@@ -566,7 +566,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   // ── 输入邀请码（保留原逻辑） ──────────────────────────────────────────────
 
-  Widget _buildActivateCard(FitTrackColors colors) {
+  Widget _buildActivateCard(LiftTrackColors colors) {
     final activatedCode = InvitationService.instance.getActivatedCode();
 
     return CardWidget(

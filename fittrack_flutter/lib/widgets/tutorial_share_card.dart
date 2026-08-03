@@ -37,7 +37,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final t = widget.tutorial;
 
     return Container(
@@ -129,7 +129,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
 
   // ── 卡片预览（视觉化展示，未来可截图生成图片） ────────────
 
-  Widget _buildPreviewCard(FitTrackColors colors, Tutorial t) {
+  Widget _buildPreviewCard(LiftTrackColors colors, Tutorial t) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -154,7 +154,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
               Icon(Icons.fitness_center, size: 16, color: colors.accentGlow),
               const SizedBox(width: 6),
               Text(
-                'FitTrack 燃力',
+                'LiftTrack 燃力',
                 style: TextStyle(
                   color: colors.accentGlow,
                   fontSize: 12,
@@ -296,12 +296,12 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
 
   String _buildShareText(Tutorial t) {
     final points = t.keyPoints.take(3).map((p) => '• $p').join('\n');
-    return '【FitTrack · ${t.name}】\n'
+    return '【LiftTrack · ${t.name}】\n'
         '${t.primaryMuscle.label} · ${t.difficulty.label} · ${t.coachName}\n\n'
         '动作要点：\n$points\n\n'
         '输入我的邀请码 $_inviteCode，咱俩都得福利～\n'
         '一键激活：fittrack://invite?code=$_inviteCode\n'
-        '（邀请码位于 FitTrack → 设置 → 邀请有礼）';
+        '（邀请码位于 LiftTrack → 设置 → 邀请有礼）';
   }
 
   void _copyText(Tutorial t) {
@@ -401,5 +401,5 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
     }
   }
 
-  FitTrackColors get colors => Theme.of(context).extension<FitTrackColors>()!;
+  LiftTrackColors get colors => Theme.of(context).extension<LiftTrackColors>()!;
 }

@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fp.fitplan">
+    package="com.fp.fitplan2">
+<!--    package="com.fp.fitplan">-->
     <!-- Android 12+ (API 31+) 精确闹钟权限：用于 setExactAndAllowWhileIdle -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
@@ -20,7 +21,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
 
     <application
-        android:label="FitTrack"
+        android:label="LiftTrack"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

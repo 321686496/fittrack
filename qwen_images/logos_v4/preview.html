@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack Logo V4 - 字母图形化方案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1em;
+            margin-bottom: 40px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+        }
+        .card-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .card-content {
+            padding: 25px;
+        }
+        .card-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .card-desc {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FF6B35, #FF5722);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        .info {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .info h2 {
+            color: #FF6B35;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        .info p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        .info ul {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+        .info li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FitTrack Logo V4</h1>
+        <p class="subtitle">字母图形化极简方案 · 基于 docs/logo_design/index.html</p>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-image">
+                    <img src="logo_v4_1_f_barbell.png" alt="方案1: F·杠铃">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">方案1: F·杠铃</h3>
+                    <p class="card-desc">字母 F 的竖线 = 杠铃杆，横线 = 杠铃片。F 本身就是一根杠铃的抽象形态。</p>
+                    <span class="badge">最简洁推荐</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-image">
+                    <img src="logo_v4_2_tracking_ring.png" alt="方案2: 追踪环·F">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">方案2: 追踪环·F</h3>
+                    <p class="card-desc">追踪圆环（带缺口的圆）+ 内嵌 F 字母。圆环顶部的缺口处有一个小圆点，象征"追踪进行中"。</p>
+                    <span class="badge">最现代几何</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-image">
+                    <img src="logo_v4_3_checkmark_f.png" alt="方案3: 对勾·F">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">方案3: 对勾·F</h3>
+                    <p class="card-desc">左半部分是 F 字母，从 F 的中横起笔延伸出一道对勾（✓）。F = 品牌，对勾 = 记录完成。</p>
+                    <span class="badge">完成打卡感</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-image">
+                    <img src="logo_v4_4_dumbbell_t.png" alt="方案4: 哑铃·T">
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">方案4: 哑铃·T</h3>
+                    <p class="card-desc">字母 T 本身就是一根哑铃的形态。横线 = 哑铃杆+两侧配重，竖线 = 哑铃握把。</p>
+                    <span class="badge">极简大牌</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info">
+            <h2>设计理念</h2>
+            <p><strong>核心思路：</strong>纯粹围绕英文名 FitTrack 做减法设计 —— 字母图形化 + 力量元素，追求简洁、现代、大牌感。</p>
+            <p><strong>名称拆解：</strong></p>
+            <ul>
+                <li><strong>Fit</strong>（健身/力量）→ F 字母 + 杠铃/哑铃元素</li>
+                <li><strong>Track</strong>（追踪/记录/轨迹）→ T 字母 + 圆环/对勾元素</li>
+            </ul>
+            <p><strong>设计规范：</strong></p>
+            <ul>
+                <li>主色：#FF6B35 活力橙</li>
+                <li>渐变：#FF8C42 → #FF5722（135°）</li>
+                <li>圆角方形背景</li>
+                <li>扁平极简风格</li>
+                <li>无文字，纯图形设计</li>
+            </ul>
+            <p><strong>生成工具：</strong>scripts/gen_image.py (RouteAll/Vidu q3-fast)</p>
+        </div>
+    </div>
+</body>
+</html>

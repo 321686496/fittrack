@@ -47,7 +47,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final total = _all.length;
 
     return Scaffold(
@@ -136,7 +136,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
     );
   }
 
-  Widget _buildRecentHonor(FitTrackColors colors, Achievement ach) {
+  Widget _buildRecentHonor(LiftTrackColors colors, Achievement ach) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -188,7 +188,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
     );
   }
 
-  Widget _buildHonorGrid(FitTrackColors colors) {
+  Widget _buildHonorGrid(LiftTrackColors colors) {
     if (_all.isEmpty) {
       return Center(
         child: Padding(
@@ -227,7 +227,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
     );
   }
 
-  Widget _buildHonorCell(FitTrackColors colors, Achievement ach) {
+  Widget _buildHonorCell(LiftTrackColors colors, Achievement ach) {
     if (ach.unlocked) {
       return GestureDetector(
         onTap: () => InfoDialog.show(

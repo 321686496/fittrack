@@ -73,9 +73,9 @@ class _NotificationListContentState extends State<_NotificationListContent> {
   @override
   Widget build(BuildContext context) {
     // 主题色映射说明：
-    // 计划中使用了 bgPrimary/textTertiary/divider/accent，但 FitTrackColors 未提供这些字段。
+    // 计划中使用了 bgPrimary/textTertiary/divider/accent，但 LiftTrackColors 未提供这些字段。
     // 这里使用实际存在的等价字段：bgCard / textMuted / borderColor / accentGlow。
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(

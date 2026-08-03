@@ -66,7 +66,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -324,7 +324,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
   }
 
   /// 横幅通知引导项
-  Widget _buildBannerGuideTile(FitTrackColors colors) {
+  Widget _buildBannerGuideTile(LiftTrackColors colors) {
     return InkWell(
       onTap: () => context.push('/banner-notification-guide'),
       child: Padding(
@@ -362,7 +362,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
   }
 
   Widget _buildSwitchTile(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required IconData icon,
     required String title,
     required String subtitle,
@@ -409,7 +409,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
   }
 
   /// 每日训练提醒时间选择项
-  Widget _buildTimePickerTile(FitTrackColors colors) {
+  Widget _buildTimePickerTile(LiftTrackColors colors) {
     return InkWell(
       onTap: () async {
         final initialTime = _trainingTime.isNotEmpty
@@ -484,7 +484,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
 
   /// 阈值滑块项（用于到期天数 / 剩余次数）
   Widget _buildThresholdSliderTile(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required IconData icon,
     required String title,
     required String subtitle,
@@ -571,7 +571,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
     return const TimeOfDay(hour: 18, minute: 0);
   }
 
-  Widget _buildTipCard(FitTrackColors colors) {
+  Widget _buildTipCard(LiftTrackColors colors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),

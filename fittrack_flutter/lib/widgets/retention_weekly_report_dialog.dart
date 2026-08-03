@@ -5,7 +5,7 @@ import '../themes/app_themes.dart';
 /// v1 新手7天留存链 —— Day7 首份周报弹窗
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md V1-04-04
-/// 验收标准：本地计算本周训练天数/总重量/连续打卡 + "你已经用FitTrack一周了"
+/// 验收标准：本地计算本周训练天数/总重量/连续打卡 + "你已经用LiftTrack一周了"
 ///
 /// 设计风格：Morandi 色调，信息层级从重到轻，双列卡片网格
 class RetentionWeeklyReportDialog extends StatelessWidget {
@@ -28,7 +28,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Dialog(
       backgroundColor: colors.bgSecondary,
@@ -74,7 +74,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   // ── 顶部装饰区 ─────────────────────────────────────────────
 
-  Widget _buildHeader(FitTrackColors colors) {
+  Widget _buildHeader(LiftTrackColors colors) {
     return Container(
       height: 96,
       decoration: BoxDecoration(
@@ -108,7 +108,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                         size: 14, color: Colors.white.withOpacity(0.9)),
                     const SizedBox(width: 6),
                     Text(
-                      'FitTrack · 7日周报',
+                      'LiftTrack · 7日周报',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 11,
@@ -120,7 +120,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  '你已经用 FitTrack 一周了',
+                  '你已经用 LiftTrack 一周了',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -138,7 +138,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   // ── 标题区 ─────────────────────────────────────────────────
 
-  Widget _buildTitle(FitTrackColors colors) {
+  Widget _buildTitle(LiftTrackColors colors) {
     return Text(
       '本周战绩汇总',
       style: TextStyle(
@@ -149,7 +149,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildSubtitle(FitTrackColors colors) {
+  Widget _buildSubtitle(LiftTrackColors colors) {
     final d = report.firstTrainingDate;
     final dateStr = '${d.month}月${d.day}日加入';
     return Text(
@@ -163,7 +163,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   // ── 数据网格（双列布局） ───────────────────────────────────
 
-  Widget _buildStatsGrid(FitTrackColors colors) {
+  Widget _buildStatsGrid(LiftTrackColors colors) {
     return Row(
       children: [
         Expanded(
@@ -191,7 +191,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
   }
 
   Widget _buildStatCard(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required IconData icon,
     required String label,
     required String value,
@@ -263,7 +263,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   // ── 趣味类比 ───────────────────────────────────────────────
 
-  Widget _buildWeightAnalogy(FitTrackColors colors) {
+  Widget _buildWeightAnalogy(LiftTrackColors colors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -293,7 +293,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   // ── 训练肌群标签 ───────────────────────────────────────────
 
-  Widget _buildMuscleChips(FitTrackColors colors) {
+  Widget _buildMuscleChips(LiftTrackColors colors) {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
@@ -320,7 +320,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   // ── 连续打卡横幅 ───────────────────────────────────────────
 
-  Widget _buildStreakBanner(FitTrackColors colors) {
+  Widget _buildStreakBanner(LiftTrackColors colors) {
     if (report.streak <= 0) {
       return const SizedBox.shrink();
     }
@@ -359,7 +359,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   // ── 操作按钮 ───────────────────────────────────────────────
 
-  Widget _buildActions(FitTrackColors colors, BuildContext context) {
+  Widget _buildActions(LiftTrackColors colors, BuildContext context) {
     return Row(
       children: [
         Expanded(

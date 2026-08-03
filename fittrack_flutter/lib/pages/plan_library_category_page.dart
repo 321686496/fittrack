@@ -21,7 +21,7 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     final allPlans = SystemPlanLibrary.instance.getByGoal(widget.goal);
     final filtered = allPlans.where((p) {
       if (_selectedDifficulty != null && p.difficulty != _selectedDifficulty) {
@@ -83,7 +83,7 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
     );
   }
 
-  Widget _buildDifficultyChips(FitTrackColors ft) {
+  Widget _buildDifficultyChips(LiftTrackColors ft) {
     final options = [null, ...kPlanDifficulties];
     return Wrap(
       spacing: 8,
@@ -108,7 +108,7 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
     );
   }
 
-  Widget _buildTrainingTypeChips(FitTrackColors ft) {
+  Widget _buildTrainingTypeChips(LiftTrackColors ft) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -142,7 +142,7 @@ class _PlanListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     final isUnlocked = plan.isPremium &&
         PlanUnlockService.instance.isPlanUnlocked(plan.id);
 

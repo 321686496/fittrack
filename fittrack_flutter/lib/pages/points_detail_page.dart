@@ -157,7 +157,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final points = PointsService.instance.points;
     final earnedTotal = Storage.getSettings()['pointsEarnedTotal'] ?? 0;
     final spentTotal = Storage.getSettings()['pointsSpentTotal'] ?? 0;
@@ -328,7 +328,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
   }
 
   /// 构建筛选标签
-  Widget _buildFilterChips(FitTrackColors colors) {
+  Widget _buildFilterChips(LiftTrackColors colors) {
     // 使用 Map 保持顺序并避免使用 Records 语法（Dart 2.19 不支持 Records）
     const chips = <MapEntry<String, String>>[
       MapEntry('all', '全部'),
@@ -376,7 +376,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
   }
 
   /// 构建单条积分记录
-  Widget _buildLogItem(FitTrackColors colors, Map<String, dynamic> item) {
+  Widget _buildLogItem(LiftTrackColors colors, Map<String, dynamic> item) {
     final delta = item['delta'] as int? ?? 0;
     final isIncome = delta >= 0;
     final source = item['source'] as String? ?? '';
@@ -462,7 +462,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
   }
 
   /// 构建获取途径项，带"去获取"按钮
-  Widget _buildWayItem(FitTrackColors colors, IconData icon, String title, String desc, String type) {
+  Widget _buildWayItem(LiftTrackColors colors, IconData icon, String title, String desc, String type) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Container(

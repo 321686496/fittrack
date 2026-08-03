@@ -181,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showAbout() {
     InfoDialog.show(
       context,
-      title: 'FitTrack',
+      title: 'LiftTrack',
       content: '版本 1.0.0\n\n'
           '一款简洁高效的健身训练助手，帮助你：\n\n'
           '• 制定个性化训练计划\n'
@@ -199,7 +199,7 @@ class _SettingsPageState extends State<SettingsPage> {
       context,
       title: '隐私设置',
       content:
-        'FitTrack 尊重您的隐私：\n\n'
+        'LiftTrack 尊重您的隐私：\n\n'
         '• 所有数据仅存储在本地设备\n'
         '• 不会上传任何个人信息到服务器\n'
         '• 通知权限仅用于训练提醒\n'
@@ -256,7 +256,7 @@ class _SettingsPageState extends State<SettingsPage> {
       } catch (e) {
         // 如果 channel 不可用，显示提示
         if (mounted) {
-          FitToast.warning(context, '请前往 设置 > 通知管理 > FitTrack 开启权限和横幅通知');
+          FitToast.warning(context, '请前往 设置 > 通知管理 > LiftTrack 开启权限和横幅通知');
         }
       }
       // 返回后重新检查权限状态
@@ -265,7 +265,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   /// 构建权限管理区块
-  Widget _buildPermissionMenu(FitTrackColors colors) {
+  Widget _buildPermissionMenu(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,7 +283,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   /// 构建单个权限项
-  Widget _buildPermissionItem(FitTrackColors colors, IconData icon, String title, String desc, bool granted) {
+  Widget _buildPermissionItem(LiftTrackColors colors, IconData icon, String title, String desc, bool granted) {
     return InkWell(
       onTap: () => _openAppSettings(),
       child: Padding(
@@ -328,7 +328,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -379,7 +379,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildThemeEntry(FitTrackColors colors) {
+  Widget _buildThemeEntry(LiftTrackColors colors) {
     return CardWidget(
       child: InkWell(
         onTap: _openThemeSettings,
@@ -436,7 +436,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTrainingSettings(FitTrackColors colors) {
+  Widget _buildTrainingSettings(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,7 +498,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSettingRow(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required IconData icon,
     required String label,
     required TextEditingController controller,
@@ -550,7 +550,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSoundSettings(FitTrackColors colors) {
+  Widget _buildSoundSettings(LiftTrackColors colors) {
     return CardWidget(
       child: SwitchListTile(
         title: Text('音效', style: TextStyle(color: colors.textPrimary)),
@@ -569,7 +569,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildActivityColorModeSettings(FitTrackColors colors) {
+  Widget _buildActivityColorModeSettings(LiftTrackColors colors) {
     final settings = Storage.getSettings();
     final mode = settings['activityColorMode'] ?? 'capacity';
     final isCapacity = mode != 'duration';
@@ -591,7 +591,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildModeChip(FitTrackColors colors, String label, String value, bool active) {
+  Widget _buildModeChip(LiftTrackColors colors, String label, String value, bool active) {
     return GestureDetector(
       onTap: () {
         final s = Storage.getSettings();
@@ -621,7 +621,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildDataMenu(FitTrackColors colors) {
+  Widget _buildDataMenu(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         children: [
@@ -635,7 +635,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildOtherMenu(FitTrackColors colors) {
+  Widget _buildOtherMenu(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         children: [
@@ -663,13 +663,13 @@ class _SettingsPageState extends State<SettingsPage> {
             context.push('/data-privacy');
           }),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.info_outline, '关于 FitTrack', '版本 1.0.0', _showAbout),
+          _buildMenuTile(colors, Icons.info_outline, '关于 LiftTrack', '版本 1.0.0', _showAbout),
         ],
       ),
     );
   }
 
-  Widget _buildMenuTile(FitTrackColors colors, IconData icon, String title, String subtitle, VoidCallback onTap, {Color? color}) {
+  Widget _buildMenuTile(LiftTrackColors colors, IconData icon, String title, String subtitle, VoidCallback onTap, {Color? color}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),

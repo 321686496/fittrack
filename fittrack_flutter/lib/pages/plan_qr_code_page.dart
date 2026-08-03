@@ -63,7 +63,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     return Scaffold(
       backgroundColor: ft.bgSecondary,
       body: Column(
@@ -85,7 +85,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
     );
   }
 
-  Widget _buildError(FitTrackColors ft) {
+  Widget _buildError(LiftTrackColors ft) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -102,7 +102,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
     );
   }
 
-  Widget _buildContent(FitTrackColors ft) {
+  Widget _buildContent(LiftTrackColors ft) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(

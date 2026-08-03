@@ -93,7 +93,7 @@ class _ScanImportPageState extends State<ScanImportPage> {
     final result = ShareCodeService.instance.importFromString(raw);
     if (!mounted) return;
 
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
 
     if (result.result == ShareCodeResult.success && result.planData != null) {
       _doImport(result.planData!, result.warning, ft);
@@ -118,7 +118,7 @@ class _ScanImportPageState extends State<ScanImportPage> {
     }
   }
 
-  void _doImport(Map<String, dynamic> planData, ImportWarning warning, FitTrackColors ft) {
+  void _doImport(Map<String, dynamic> planData, ImportWarning warning, LiftTrackColors ft) {
     if (warning == ImportWarning.excessiveVolume || warning == ImportWarning.excessiveFrequency) {
       ConfirmDialog.show(
         context,

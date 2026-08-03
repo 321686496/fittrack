@@ -90,7 +90,7 @@ class _AchievementPageState extends State<AchievementPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     if (_loading) {
       return Scaffold(
@@ -151,7 +151,7 @@ class _AchievementPageState extends State<AchievementPage> {
     );
   }
 
-  Widget _buildSummary(FitTrackColors colors) {
+  Widget _buildSummary(LiftTrackColors colors) {
     final unlocked = _all.where((a) => a.unlocked).length;
     final total = _all.length;
     final pct = total > 0 ? (unlocked / total * 100).round() : 0;
@@ -211,7 +211,7 @@ class _AchievementPageState extends State<AchievementPage> {
     );
   }
 
-  Widget _buildCategorySection(FitTrackColors colors, String title,
+  Widget _buildCategorySection(LiftTrackColors colors, String title,
       List<Achievement> items) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +224,7 @@ class _AchievementPageState extends State<AchievementPage> {
     );
   }
 
-  Widget _buildAchievementItem(FitTrackColors colors, Achievement a) {
+  Widget _buildAchievementItem(LiftTrackColors colors, Achievement a) {
     return GestureDetector(
       onTap: () => InfoDialog.show(
         context,

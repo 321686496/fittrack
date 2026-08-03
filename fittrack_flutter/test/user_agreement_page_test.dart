@@ -8,7 +8,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: UserAgreementPage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('FitTrack 用户协议'), findsOneWidget);
+    expect(find.text('LiftTrack 用户协议'), findsOneWidget);
     const sections = [
       '一、服务说明',
       '二、虚拟商品不退换',

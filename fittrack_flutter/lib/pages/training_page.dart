@@ -701,7 +701,7 @@ class _TrainingPageState extends State<TrainingPage>
   // ── Training content ─────────────────────────────────────────
 
   Widget _buildTrainingContent() {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final currentEx = _exercises[_currentExIdx];
     final totalSets = (currentEx['sets'] as int?) ?? 0;
     final records = _setRecords[currentEx['id']] ?? [];
@@ -805,21 +805,17 @@ class _TrainingPageState extends State<TrainingPage>
             ),
           ),
           const SizedBox(height: 12),
-          // 动作指导卡片（置于训练卡片上方，避免遮挡完成组数按钮）
-          // 使用 else 分支保持 Column 子元素数量恒定，避免 Expanded 位置变化
-          // 导致整个训练卡片子树被销毁重建（可能触发 _dependents.isEmpty 断言）
-          if (_exercises.isNotEmpty && _currentExIdx < _exercises.length)
-            _buildActionGuide(colors)
-          else
-            const SizedBox.shrink(),
-          // Current exercise card
+          // Current exercise card (动作指导卡片置于下方滚动区域)
           Expanded(
             key: const ValueKey('training_card'),
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: CardWidget(
-                padding: const EdgeInsets.all(20),
-                child: Column(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CardWidget(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -1009,8 +1005,15 @@ class _TrainingPageState extends State<TrainingPage>
                   ],
                 ),
               ),
+                    // 动作指导卡片（置于训练卡片下方）
+                    if (_exercises.isNotEmpty && _currentExIdx < _exercises.length) ...[
+                      const SizedBox(height: 12),
+                      _buildActionGuide(colors),
+                    ],
+                  ],
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -1026,7 +1029,7 @@ class _TrainingPageState extends State<TrainingPage>
     Storage.saveSettings(settings);
   }
 
-  Widget _buildActionGuide(FitTrackColors colors) {
+  Widget _buildActionGuide(LiftTrackColors colors) {
     if (_exercises.isEmpty || _currentExIdx >= _exercises.length) {
       return const SizedBox.shrink();
     }
@@ -1048,7 +1051,7 @@ class _TrainingPageState extends State<TrainingPage>
     final hasContent = desc.isNotEmpty || muscles.isNotEmpty || steps.isNotEmpty;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
       child: CardWidget(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1094,87 +1097,102 @@ class _TrainingPageState extends State<TrainingPage>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const DividerWidget(indent: 14),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height * 0.3,
-                          ),
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-                            child: hasContent
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (desc.isNotEmpty) ...[
-                                      Text('动作说明', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                                      const SizedBox(height: 4),
-                                      Text(desc, style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.5)),
-                                      const SizedBox(height: 10),
-                                    ],
-                                    if (muscles.isNotEmpty) ...[
-                                      Text('目标肌群', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                                      const SizedBox(height: 4),
-                                      Wrap(
-                                        spacing: 6,
-                                        runSpacing: 4,
-                                        children: muscles.map((m) => Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: colors.accentGlow.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Text(m, style: TextStyle(fontSize: 11, color: colors.accentGlow)),
-                                        )).toList(),
-                                      ),
-                                      const SizedBox(height: 10),
-                                    ],
-                                    if (steps.isNotEmpty) ...[
-                                      Text('训练步骤', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                                      const SizedBox(height: 6),
-                                      ...steps.asMap().entries.map((e) {
-                                        final i = e.key;
-                                        final s = e.value;
-                                        final kp = (s['keyPoses'] as List?) ?? [];
-                                        return Padding(
-                                          padding: const EdgeInsets.only(bottom: 10),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text('${i + 1}. ${s['title'] ?? ''}',
-                                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
-                                              if ((s['desc'] as String?)?.isNotEmpty == true)
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 2, left: 12),
-                                                  child: Text(s['desc'],
-                                                      style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.4)),
-                                                ),
-                                              if (kp.isNotEmpty) ...[
-                                                const SizedBox(height: 4),
-                                                ...kp.map((k) => Padding(
-                                                  padding: const EdgeInsets.only(left: 24, bottom: 2),
-                                                  child: Row(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text('· ', style: TextStyle(fontSize: 12, color: colors.accentGlow)),
-                                                      Expanded(child: Text(k.toString(),
-                                                          style: TextStyle(fontSize: 11, color: colors.textSecondary))),
-                                                    ],
-                                                  ),
-                                                )),
-                                              ],
-                                            ],
-                                          ),
-                                        );
-                                      }),
-                                    ],
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+                          child: hasContent
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (desc.isNotEmpty) ...[
+                                    Text('动作说明', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                                    const SizedBox(height: 4),
+                                    Text(desc, style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.5)),
+                                    const SizedBox(height: 10),
                                   ],
-                                )
-                              : Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    child: Text('暂无动作指导', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
-                                  ),
+                                  if (muscles.isNotEmpty) ...[
+                                    Text('目标肌群', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                                    const SizedBox(height: 4),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 4,
+                                      children: muscles.map((m) => Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: colors.accentGlow.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(m, style: TextStyle(fontSize: 11, color: colors.accentGlow)),
+                                      )).toList(),
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
+                                  if (steps.isNotEmpty) ...[
+                                    Text('训练步骤', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
+                                    const SizedBox(height: 6),
+                                    ...steps.asMap().entries.map((e) {
+                                      final i = e.key;
+                                      final s = e.value;
+                                      final kp = (s['keyPoses'] as List?) ?? [];
+                                      final stepImg = s['image'] as String?;
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 10),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('${i + 1}. ${s['title'] ?? ''}',
+                                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
+                                            if (stepImg != null) ...[
+                                              const SizedBox(height: 6),
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Image.asset(
+                                                  stepImg,
+                                                  width: double.infinity,
+                                                  height: 120,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) => Container(
+                                                    width: double.infinity,
+                                                    height: 80,
+                                                    color: colors.bgSecondary,
+                                                    child: Icon(Icons.fitness_center, size: 28, color: colors.textMuted.withOpacity(0.3)),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                            ],
+                                            if ((s['desc'] as String?)?.isNotEmpty == true)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 2, left: 12),
+                                                child: Text(s['desc'],
+                                                    style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.4)),
+                                              ),
+                                            if (kp.isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              ...kp.map((k) => Padding(
+                                                padding: const EdgeInsets.only(left: 24, bottom: 2),
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text('· ', style: TextStyle(fontSize: 12, color: colors.accentGlow)),
+                                                    Expanded(child: Text(k.toString(),
+                                                        style: TextStyle(fontSize: 11, color: colors.textSecondary))),
+                                                  ],
+                                                ),
+                                              )),
+                                            ],
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                ],
+                              )
+                            : Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Text('暂无动作指导', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
                                 ),
-                          ),
+                              ),
                         ),
                       ],
                     )
@@ -1190,7 +1208,7 @@ class _TrainingPageState extends State<TrainingPage>
   // ── Rest overlay ─────────────────────────────────────────────
 
   Widget _buildRestOverlay() {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final progress =
         _totalRestSeconds > 0 ? _restSeconds / _totalRestSeconds : 0.0;
     final currentExName = _currentExIdx < _exercises.length
@@ -1301,7 +1319,7 @@ class _TrainingPageState extends State<TrainingPage>
   // ── Completion screen ────────────────────────────────────────
 
   Widget _buildCompletionScreen() {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final duration = DateTime.now().difference(_startTime).inMinutes;
 
     int totalWeight = 0;
@@ -1539,7 +1557,7 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   /// 详细报告行
-  Widget _detailRow(String label, String value, FitTrackColors colors) {
+  Widget _detailRow(String label, String value, LiftTrackColors colors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1555,7 +1573,7 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   /// v1 虚拟对手 PK 对比卡片 —— 训练完成后展示本周 PK 结果
-  Widget _buildOpponentPKCard(FitTrackColors colors) {
+  Widget _buildOpponentPKCard(LiftTrackColors colors) {
     final settings = Storage.getSettings();
     final opponentJson = settings['virtualOpponentData'] as Map<String, dynamic>?;
     if (opponentJson == null) return const SizedBox.shrink();
@@ -1679,7 +1697,7 @@ class _TrainingPageState extends State<TrainingPage>
     );
   }
 
-  Widget _buildPKBar(FitTrackColors colors, String label, int trainings, double score, Color color) {
+  Widget _buildPKBar(LiftTrackColors colors, String label, int trainings, double score, Color color) {
     return Row(
       children: [
         SizedBox(

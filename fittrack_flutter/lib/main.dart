@@ -104,21 +104,21 @@ void main() {
         ohosLiveView.handleCardClick(args);
       };
     }
-    runApp(const FitTrackApp());
+    runApp(const LiftTrackApp());
   }, (error, stack) {
     debugPrint('Unhandled error: $error');
     debugPrint('Stack: $stack');
   });
 }
 
-class FitTrackApp extends StatefulWidget {
-  const FitTrackApp({super.key});
+class LiftTrackApp extends StatefulWidget {
+  const LiftTrackApp({super.key});
 
   @override
-  State<FitTrackApp> createState() => _FitTrackAppState();
+  State<LiftTrackApp> createState() => _LiftTrackAppState();
 }
 
-class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
+class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver {
   late String _currentThemeId;
   late final GoRouter _router;
   bool _romGuidanceShown = false;
@@ -244,7 +244,7 @@ class _FitTrackAppState extends State<FitTrackApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'FitTrack',
+      title: 'LiftTrack',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.getTheme(_currentThemeId),
       routerConfig: _router,

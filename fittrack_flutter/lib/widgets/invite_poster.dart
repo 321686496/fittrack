@@ -153,7 +153,7 @@ class InvitePoster extends StatelessWidget {
             PosterQrFooter(
               colors: colors,
               qrData: deepLink,
-              hint: '扫码加入 FitTrack',
+              hint: '扫码加入 LiftTrack',
             ),
           ],
         ),

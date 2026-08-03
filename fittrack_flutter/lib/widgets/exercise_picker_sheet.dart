@@ -139,7 +139,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Container(
       decoration: BoxDecoration(
@@ -185,7 +185,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  Widget _buildExerciseList(FitTrackColors colors) {
+  Widget _buildExerciseList(LiftTrackColors colors) {
     // 合并内置动作和自定义动作
     final allExercises = Storage.getAllExercises();
     final customExercises = Storage.getCustomExercises();
@@ -252,7 +252,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  Widget _buildExerciseItem(FitTrackColors colors, Map<String, dynamic> ex, {bool isCustom = false}) {
+  Widget _buildExerciseItem(LiftTrackColors colors, Map<String, dynamic> ex, {bool isCustom = false}) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -315,7 +315,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  void _showCustomExerciseDialog(FitTrackColors colors) {
+  void _showCustomExerciseDialog(LiftTrackColors colors) {
     final nameCtrl = TextEditingController();
     final categoryCtrl = TextEditingController(text: '自定义');
     final equipCtrl = TextEditingController(text: '自重');
@@ -434,7 +434,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  Widget _buildConfigView(FitTrackColors colors) {
+  Widget _buildConfigView(LiftTrackColors colors) {
     final ex = _selectedExercise!;
     final sets = int.tryParse(_setsCtrl.text) ?? widget.defaultSets;
 
@@ -600,7 +600,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   }
 
   // ── 模式切换 ──────────────────────────────────────────────────
-  Widget _buildModeToggle(FitTrackColors colors) {
+  Widget _buildModeToggle(LiftTrackColors colors) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -625,7 +625,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  Widget _buildToggleItem(FitTrackColors colors, String label, IconData icon, bool active, VoidCallback onTap) {
+  Widget _buildToggleItem(LiftTrackColors colors, String label, IconData icon, bool active, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -655,7 +655,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   }
 
   // ── 逐组编辑器 ────────────────────────────────────────────────
-  Widget _buildPerSetEditor(FitTrackColors colors, int sets) {
+  Widget _buildPerSetEditor(LiftTrackColors colors, int sets) {
     final count = sets < _setRepsCtrls.length ? sets : _setRepsCtrls.length;
 
     return Column(
@@ -692,7 +692,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  Widget _buildPerSetRow(FitTrackColors colors, int index) {
+  Widget _buildPerSetRow(LiftTrackColors colors, int index) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
@@ -730,7 +730,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  Widget _buildMiniField(FitTrackColors colors, TextEditingController controller, TextInputType kbType) {
+  Widget _buildMiniField(LiftTrackColors colors, TextEditingController controller, TextInputType kbType) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: TextField(
@@ -761,7 +761,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   }
 
   // ── 通用组件 ──────────────────────────────────────────────────
-  Widget _buildLabelRow(FitTrackColors colors, String label, String hint) {
+  Widget _buildLabelRow(LiftTrackColors colors, String label, String hint) {
     return Row(
       children: [
         Text(label, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
@@ -772,7 +772,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
   }
 
   Widget _buildStepperRow(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required TextEditingController controller,
     required String unit,
     required double step,
@@ -843,7 +843,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     return v == v.toInt().toDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
   }
 
-  Widget _buildNumberButton(FitTrackColors colors, IconData icon, VoidCallback onTap) {
+  Widget _buildNumberButton(LiftTrackColors colors, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

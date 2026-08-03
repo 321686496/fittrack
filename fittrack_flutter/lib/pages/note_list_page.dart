@@ -85,7 +85,7 @@ class _NoteListPageState extends State<NoteListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -149,7 +149,7 @@ class _NoteListPageState extends State<NoteListPage> {
   // ── 空状态 ─────────────────────────────────────────────────
 
   Widget _buildFilterChip(
-      FitTrackColors colors, String label, bool active, VoidCallback onTap) {
+      LiftTrackColors colors, String label, bool active, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -173,7 +173,7 @@ class _NoteListPageState extends State<NoteListPage> {
     );
   }
 
-  Widget _buildEmpty(FitTrackColors colors) {
+  Widget _buildEmpty(LiftTrackColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -201,7 +201,7 @@ class _NoteListPageState extends State<NoteListPage> {
   // ── 月份分组 ───────────────────────────────────────────────
 
   Widget _buildMonthGroup(
-      FitTrackColors colors, String monthLabel, List<TrainingNote> notes) {
+      LiftTrackColors colors, String monthLabel, List<TrainingNote> notes) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -223,7 +223,7 @@ class _NoteListPageState extends State<NoteListPage> {
 
   // ── 笔记卡片 ───────────────────────────────────────────────
 
-  Widget _buildNoteCard(FitTrackColors colors, TrainingNote note) {
+  Widget _buildNoteCard(LiftTrackColors colors, TrainingNote note) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -346,7 +346,7 @@ class _NoteListPageState extends State<NoteListPage> {
     );
   }
 
-  Widget _buildTag(FitTrackColors colors, String label,
+  Widget _buildTag(LiftTrackColors colors, String label,
       {bool icon = false, bool isSore = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -379,7 +379,7 @@ class _NoteListPageState extends State<NoteListPage> {
 
   // ── 长按操作菜单 ───────────────────────────────────────────
 
-  void _showActions(FitTrackColors colors, TrainingNote note) {
+  void _showActions(LiftTrackColors colors, TrainingNote note) {
     showModalBottomSheet(
       context: context,
       backgroundColor: colors.bgSecondary,
@@ -436,7 +436,7 @@ class _NoteListPageState extends State<NoteListPage> {
     );
   }
 
-  Future<bool?> _confirmDelete(FitTrackColors colors) {
+  Future<bool?> _confirmDelete(LiftTrackColors colors) {
     return ConfirmDialog.show(
       context,
       title: '删除笔记',
