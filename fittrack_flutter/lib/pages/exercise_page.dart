@@ -100,7 +100,7 @@ class _ExercisePageState extends State<ExercisePage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -117,7 +117,7 @@ class _ExercisePageState extends State<ExercisePage> {
     );
   }
 
-  Widget _buildListView(FitTrackColors colors) {
+  Widget _buildListView(LiftTrackColors colors) {
     final filtered = _filteredExercises;
 
     return Column(
@@ -281,7 +281,7 @@ class _ExercisePageState extends State<ExercisePage> {
     );
   }
 
-  Widget _buildDetailView(FitTrackColors colors) {
+  Widget _buildDetailView(LiftTrackColors colors) {
     final ex = _selectedExercise!;
     final exId = ex['id'] as String;
     final description = (ex['description'] as String?)?.isNotEmpty == true
@@ -399,7 +399,7 @@ class _ExercisePageState extends State<ExercisePage> {
     );
   }
 
-  Widget _buildStepCard(FitTrackColors colors, int stepNum, Map<String, dynamic> step) {
+  Widget _buildStepCard(LiftTrackColors colors, int stepNum, Map<String, dynamic> step) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -460,7 +460,7 @@ class _ExercisePageState extends State<ExercisePage> {
               decoration: BoxDecoration(
                 color: colors.bgElevated,
                 image: DecorationImage(
-                  image: NetworkImage(step['image'] as String),
+                  image: AssetImage(step['image'] as String),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -699,7 +699,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return SafeArea(
       child: Column(
@@ -726,7 +726,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildHeader(FitTrackColors colors) {
+  Widget _buildHeader(LiftTrackColors colors) {
     final ex = widget.exercise;
     final stepTitles = ['选择计划', '选择训练日', '配置参数'];
     return Padding(
@@ -802,7 +802,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
   }
 
   // ── Step 0: 计划列表 ──────────────────────────────────────────
-  Widget _buildPlanList(FitTrackColors colors) {
+  Widget _buildPlanList(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: widget.plans.map((plan) {
@@ -862,7 +862,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
   }
 
   // ── Step 1: 训练日列表 ────────────────────────────────────────
-  Widget _buildDayList(FitTrackColors colors) {
+  Widget _buildDayList(LiftTrackColors colors) {
     final plan = _selectedPlan!;
     final days = (plan['days'] as List?) ?? [];
 
@@ -938,7 +938,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
   }
 
   // ── Step 2: 参数配置 ──────────────────────────────────────────
-  Widget _buildConfigView(FitTrackColors colors) {
+  Widget _buildConfigView(LiftTrackColors colors) {
     final ex = widget.exercise;
     final plan = _selectedPlan!;
     final days = (plan['days'] as List?) ?? [];
@@ -1004,7 +1004,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildModeToggle(FitTrackColors colors) {
+  Widget _buildModeToggle(LiftTrackColors colors) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -1025,7 +1025,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildToggleItem(FitTrackColors colors, String label, IconData icon, bool active, VoidCallback onTap) {
+  Widget _buildToggleItem(LiftTrackColors colors, String label, IconData icon, bool active, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1054,7 +1054,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildPerSetEditor(FitTrackColors colors, int sets) {
+  Widget _buildPerSetEditor(LiftTrackColors colors, int sets) {
     final count = sets < _setRepsCtrls.length ? sets : _setRepsCtrls.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1089,7 +1089,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildPerSetRow(FitTrackColors colors, int index) {
+  Widget _buildPerSetRow(LiftTrackColors colors, int index) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
@@ -1116,7 +1116,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildMiniField(FitTrackColors colors, TextEditingController controller, TextInputType kbType) {
+  Widget _buildMiniField(LiftTrackColors colors, TextEditingController controller, TextInputType kbType) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: TextField(
@@ -1137,7 +1137,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildLabelRow(FitTrackColors colors, String label, String hint) {
+  Widget _buildLabelRow(LiftTrackColors colors, String label, String hint) {
     return Row(
       children: [
         Text(label, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
@@ -1147,7 +1147,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildStepperRow(FitTrackColors colors, {
+  Widget _buildStepperRow(LiftTrackColors colors, {
     required TextEditingController controller,
     required String unit,
     required double step,
@@ -1207,7 +1207,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     return v == v.toInt().toDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
   }
 
-  Widget _buildNumBtn(FitTrackColors colors, IconData icon, VoidCallback onTap) {
+  Widget _buildNumBtn(LiftTrackColors colors, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1223,7 +1223,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     );
   }
 
-  Widget _buildBottomBar(FitTrackColors colors) {
+  Widget _buildBottomBar(LiftTrackColors colors) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       decoration: BoxDecoration(
@@ -1407,7 +1407,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1461,7 +1461,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildHeader(FitTrackColors colors) {
+  Widget _buildHeader(LiftTrackColors colors) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 4, 8),
       child: Row(
@@ -1487,7 +1487,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildLabel(FitTrackColors colors, String text, {String? hint}) {
+  Widget _buildLabel(LiftTrackColors colors, String text, {String? hint}) {
     return Row(
       children: [
         Text(
@@ -1509,7 +1509,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  InputDecoration _fieldDecoration(FitTrackColors colors, {String? hint}) {
+  InputDecoration _fieldDecoration(LiftTrackColors colors, {String? hint}) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
@@ -1531,7 +1531,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildNameField(FitTrackColors colors) {
+  Widget _buildNameField(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1546,7 +1546,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildEquipField(FitTrackColors colors) {
+  Widget _buildEquipField(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1561,7 +1561,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildDescField(FitTrackColors colors) {
+  Widget _buildDescField(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1577,7 +1577,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildCategoryChips(FitTrackColors colors) {
+  Widget _buildCategoryChips(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1619,7 +1619,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildMusclesChips(FitTrackColors colors) {
+  Widget _buildMusclesChips(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1659,7 +1659,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildStepsSection(FitTrackColors colors) {
+  Widget _buildStepsSection(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1689,7 +1689,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildStepCard(FitTrackColors colors, int idx, _StepCtrl step) {
+  Widget _buildStepCard(LiftTrackColors colors, int idx, _StepCtrl step) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(

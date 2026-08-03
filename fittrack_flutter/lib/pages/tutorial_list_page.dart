@@ -57,7 +57,7 @@ class _TutorialListPageState extends State<TutorialListPage>
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final banners = _bannersCache;
     final recommendedCourses = _recommendedCoursesCache;
 
@@ -126,7 +126,7 @@ class _TutorialListPageState extends State<TutorialListPage>
 
   /// 横滑推荐卡片（banner + 精选课程封面）
   Widget _buildRecommendRow(
-      FitTrackColors colors, List<dynamic> banners, List<Course> courses) {
+      LiftTrackColors colors, List<dynamic> banners, List<Course> courses) {
     return SizedBox(
       height: 100,
       child: ListView.separated(
@@ -233,7 +233,7 @@ class _TutorialListPageState extends State<TutorialListPage>
 
   /// 精选系统化课程列表（只展示推荐的 2 个，无筛选）
   Widget _buildRecommendedCourses(
-      FitTrackColors colors, List<Course> courses) {
+      LiftTrackColors colors, List<Course> courses) {
     if (courses.isEmpty) {
       return _buildEmpty(colors, '暂无推荐课程');
     }
@@ -289,7 +289,7 @@ class _TutorialListPageState extends State<TutorialListPage>
   }
 
   /// 推荐教学：从 4 个类型各取前 N 个作为推荐展示
-  Widget _buildRecommendedTutorials(FitTrackColors colors) {
+  Widget _buildRecommendedTutorials(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -330,7 +330,7 @@ class _TutorialListPageState extends State<TutorialListPage>
 
   /// 单个教学类型子区段（推荐展示，限制数量，无筛选）
   Widget _buildTypeSubsection(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required TutorialType type,
     required String title,
     required String subtitle,
@@ -389,15 +389,9 @@ class _TutorialListPageState extends State<TutorialListPage>
   }
 
   /// 单个教学卡片 —— 锁定状态下显示锁标识与解锁提示
-  Widget _buildTutorialCard(FitTrackColors colors, Tutorial t, bool unlocked) {
+  Widget _buildTutorialCard(LiftTrackColors colors, Tutorial t, bool unlocked) {
     return GestureDetector(
-      onTap: () {
-        if (unlocked) {
-          context.push('/tutorial/${t.id}');
-        } else {
-          FitToast.info(context, t.unlockRequirement ?? '邀请好友激活后解锁');
-        }
-      },
+      onTap: () => context.push('/tutorial/${t.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
@@ -439,7 +433,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                   Text(
                     unlocked
                         ? t.coachName
-                        : (t.unlockRequirement ?? '邀请好友激活后解锁'),
+                        : '${t.coachName} · 点击查看介绍',
                     style: TextStyle(color: colors.textMuted, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -473,7 +467,7 @@ class _TutorialListPageState extends State<TutorialListPage>
     }
   }
 
-  Widget _buildEmpty(FitTrackColors colors, String text) {
+  Widget _buildEmpty(LiftTrackColors colors, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Center(

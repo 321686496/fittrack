@@ -63,7 +63,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       body: Container(
@@ -104,7 +104,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 24),
             Text(
-              'FitTrack',
+              'LiftTrack',
               style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 32,

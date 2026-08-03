@@ -47,10 +47,10 @@ class RomAdaptationService {
     if (isOhos) return '';
     try {
       final result = await _channel?.invokeMethod<String>('getGuidanceTitle');
-      return result ?? '请确保 FitTrack 允许后台运行';
+      return result ?? '请确保 LiftTrack 允许后台运行';
     } catch (e) {
       debugPrint('RomAdaptation: getGuidanceTitle error: $e');
-      return '请确保 FitTrack 允许后台运行';
+      return '请确保 LiftTrack 允许后台运行';
     }
   }
 
@@ -59,10 +59,10 @@ class RomAdaptationService {
     if (isOhos) return '';
     try {
       final result = await _channel?.invokeMethod<String>('getGuidanceSteps');
-      return result ?? '请确保 FitTrack 允许后台运行和自启动';
+      return result ?? '请确保 LiftTrack 允许后台运行和自启动';
     } catch (e) {
       debugPrint('RomAdaptation: getGuidanceSteps error: $e');
-      return '请确保 FitTrack 允许后台运行和自启动';
+      return '请确保 LiftTrack 允许后台运行和自启动';
     }
   }
 

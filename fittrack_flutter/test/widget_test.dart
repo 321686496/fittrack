@@ -3,8 +3,8 @@ import 'package:fittrack_flutter/main.dart';
 
 void main() {
   testWidgets('App launches smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const FitTrackApp());
+    await tester.pumpWidget(const LiftTrackApp());
     await tester.pump();
-    expect(find.text('FitTrack'), findsOneWidget);
+    expect(find.text('LiftTrack'), findsOneWidget);
   });
 }

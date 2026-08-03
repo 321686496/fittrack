@@ -72,7 +72,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
 
   /// v1 新手引导末尾：邀请码激活弹层
   void _showInviteCodeSheet() {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final controller = TextEditingController();
     bool activating = false;
 
@@ -237,7 +237,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       body: SafeArea(
@@ -360,7 +360,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
   }
 
   Widget _buildPlanCard(
-    FitTrackColors colors,
+    LiftTrackColors colors,
     PlanRecommendation rec,
     int index,
   ) {
@@ -562,7 +562,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
     );
   }
 
-  Widget _buildTag(FitTrackColors colors, IconData icon, String text) {
+  Widget _buildTag(LiftTrackColors colors, IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(

@@ -340,7 +340,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final todayPlan = _todayPlanCache;
     final weeklyStats = _weeklyStatsCache;
     final streakData = _streak;
@@ -417,11 +417,11 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
 
   // ── 推荐轮播 Banner ──────────────────────────────────────
 
-  Widget _buildRecommendationBanners(FitTrackColors colors) {
+  Widget _buildRecommendationBanners(LiftTrackColors colors) {
     return const RecommendationBanner();
   }
 
-  Widget _buildNoPlanCard(FitTrackColors colors) {
+  Widget _buildNoPlanCard(LiftTrackColors colors) {
     // 如果有活跃计划但今天没有训练动作，显示休息日提示
     final hasActivePlan = _activePlan != null;
     final title = hasActivePlan ? '今日休息' : '暂无训练计划';
@@ -473,7 +473,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildTodayPlanCard(FitTrackColors colors, Map<String, dynamic> plan) {
+  Widget _buildTodayPlanCard(LiftTrackColors colors, Map<String, dynamic> plan) {
     final completed = plan['completed'] as int? ?? 0;
     final total = plan['exerciseCount'] as int? ?? 1;
     final progress = total > 0 ? completed / total : 0.0;
@@ -550,7 +550,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildWeeklyStatsGrid(FitTrackColors colors, Map<String, dynamic> stats) {
+  Widget _buildWeeklyStatsGrid(LiftTrackColors colors, Map<String, dynamic> stats) {
     final items = [
       {'icon': Icons.fitness_center, 'value': '${stats['trainings'] ?? 0}', 'label': '训练次数', 'color': colors.accentGlow},
       {'icon': Icons.timer_outlined, 'value': '${stats['duration'] ?? '0h'}', 'label': '训练时长', 'color': colors.infoColor},
@@ -582,7 +582,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildWeeklyCalendar(FitTrackColors colors) {
+  Widget _buildWeeklyCalendar(LiftTrackColors colors) {
     final calendarData = _weeklyCalendarDataCache;
 
     return Column(
@@ -680,7 +680,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildStreakCard(FitTrackColors colors, Map<String, dynamic> streak) {
+  Widget _buildStreakCard(LiftTrackColors colors, Map<String, dynamic> streak) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -709,7 +709,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildStreakItem(FitTrackColors colors, String value, String label, Color color) {
+  Widget _buildStreakItem(LiftTrackColors colors, String value, String label, Color color) {
     return Column(
       children: [
         Text(
@@ -725,7 +725,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildRecentTrainings(FitTrackColors colors) {
+  Widget _buildRecentTrainings(LiftTrackColors colors) {
     final recentList = _records.take(3).toList();
     final displayList = recentList.map((r) => {
           'name': r['name'] ?? r['planName'] ?? '训练记录',
@@ -827,7 +827,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     return '$ts';
   }
 
-  Widget _buildPersonalRecords(FitTrackColors colors, List<Map<String, dynamic>> records) {
+  Widget _buildPersonalRecords(LiftTrackColors colors, List<Map<String, dynamic>> records) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -859,7 +859,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildDailyTip(FitTrackColors colors) {
+  Widget _buildDailyTip(LiftTrackColors colors) {
     final tip = MockData.dailyTip;
     return CardWidget(
       child: Column(
@@ -885,7 +885,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildRoundRing(FitTrackColors colors, int currentRound, int totalRounds) {
+  Widget _buildRoundRing(LiftTrackColors colors, int currentRound, int totalRounds) {
     final progress = totalRounds > 0 ? currentRound / totalRounds : 0.0;
     return SizedBox(
       width: 60,
@@ -916,7 +916,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     );
   }
 
-  Widget _buildCurrentPlanCard(FitTrackColors colors, Map<String, dynamic> plan) {
+  Widget _buildCurrentPlanCard(LiftTrackColors colors, Map<String, dynamic> plan) {
     final progress = (plan['progress'] as num? ?? 0) / 100.0;
     final createTime = plan['createTime'] as int? ?? DateTime.now().millisecondsSinceEpoch;
     final totalWeeks = (plan['totalWeeks'] as int?) ?? 8;
@@ -1010,7 +1010,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   }
 
   void _showCalendar(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final records = Storage.getRecords();
     final now = DateTime.now();
     final trainedDays = <int>{};

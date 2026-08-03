@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
+import '../data/storage.dart';
 import '../data/tutorial_content.dart';
 import '../data/content_block.dart';
 import '../data/course_content.dart';
@@ -29,7 +30,7 @@ class TutorialDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final tutorial = TutorialLibrary.getById(tutorialId);
 
     if (tutorial == null) {
@@ -61,6 +62,30 @@ class TutorialDetailPage extends StatelessWidget {
             subtitle: '${tutorial.primaryMuscle.label} · ${tutorial.coachName}',
             onBack: () => Navigator.of(context).pop(),
           ),
+          // 未解锁类型的提示横幅（可查看介绍，内容需解锁）
+          if (!_isTypeUnlocked(tutorial.type))
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.warningColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colors.warningColor.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.lock_outline, size: 16, color: colors.warningColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      tutorial.unlockRequirement ?? '该教学需邀请好友激活后解锁，下方可查看简介',
+                      style: TextStyle(color: colors.warningColor, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -72,6 +97,10 @@ class TutorialDetailPage extends StatelessWidget {
                   // 按章节渲染（替代旧的 keyPoints/mistakes/breathing 卡片）
                   ...tutorial.chapters.map((ch) => _buildChapterCard(colors, tutorial, ch, context)),
                   const SizedBox(height: 16),
+                  if (tutorial.alternativeExerciseIds.isNotEmpty) ...[
+                    _buildAlternativeExercisesCard(colors, tutorial, context),
+                    const SizedBox(height: 16),
+                  ],
                   if (tutorial.recommendedExerciseIds.isNotEmpty) ...[
                     _buildRecommendedExercisesCard(colors, tutorial, context),
                     const SizedBox(height: 16),
@@ -89,7 +118,7 @@ class TutorialDetailPage extends StatelessWidget {
 
   // ── 元信息卡 ──────────────────────────────────────────────
 
-  Widget _buildMetaCard(FitTrackColors colors, Tutorial t) {
+  Widget _buildMetaCard(LiftTrackColors colors, Tutorial t) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +182,7 @@ class TutorialDetailPage extends StatelessWidget {
   }
 
   Widget _buildMetaTag(
-    FitTrackColors colors,
+    LiftTrackColors colors,
     String text, {
     required Color color,
     required Color textColor,
@@ -178,7 +207,7 @@ class TutorialDetailPage extends StatelessWidget {
   // ── 章节卡（按章节渲染 + 单章积分解锁） ──────────────────────
 
   Widget _buildChapterCard(
-    FitTrackColors colors,
+    LiftTrackColors colors,
     Tutorial tutorial,
     Chapter chapter,
     BuildContext context,
@@ -274,7 +303,7 @@ class TutorialDetailPage extends StatelessWidget {
   }
 
   Widget _buildContentBlock(
-    FitTrackColors colors,
+    LiftTrackColors colors,
     ContentBlock block,
     BuildContext context,
   ) {
@@ -356,9 +385,96 @@ class TutorialDetailPage extends StatelessWidget {
     }
   }
 
+  // ── 替代动作（可点击卡片，跳转到对应教学详情） ────────────────
+
+  Widget _buildAlternativeExercisesCard(
+      LiftTrackColors colors, Tutorial t, BuildContext context) {
+    // alternativeExerciseIds 存储的是教学 ID，查找对应的教学项
+    final alternatives = t.alternativeExerciseIds
+        .map((id) => TutorialLibrary.getById(id))
+        .whereType<Tutorial>()
+        .toList();
+
+    if (alternatives.isEmpty) return const SizedBox.shrink();
+
+    return CardWidget(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.swap_horiz, size: 18, color: colors.accentGlow),
+              const SizedBox(width: 8),
+              Text('替代动作', style: TextStyle(
+                color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...alternatives.map((alt) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: GestureDetector(
+              onTap: () => context.push('/tutorial/${alt.id}'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: colors.bgSecondary,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: colors.borderColor),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: colors.accentGlow.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        _muscleIcon(alt.primaryMuscle),
+                        color: colors.accentGlow,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            alt.name,
+                            style: TextStyle(
+                              color: colors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${alt.primaryMuscle.label} · ${alt.difficulty.label}',
+                            style: TextStyle(
+                              color: colors.textMuted,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: colors.textMuted, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
   // ── 推荐训练动作 ──────────────────────────────────────────
 
-  Widget _buildRecommendedExercisesCard(FitTrackColors colors, Tutorial t, BuildContext context) {
+  Widget _buildRecommendedExercisesCard(LiftTrackColors colors, Tutorial t, BuildContext context) {
     final exercises = MockData.exercises
         .where((e) => t.recommendedExerciseIds.contains(e['id']))
         .toList();
@@ -413,8 +529,26 @@ class TutorialDetailPage extends StatelessWidget {
 
   // ── 底部分享栏 ────────────────────────────────────────────
 
+  /// 判断教学类型是否已解锁（用于控制"邀请加速解锁"按钮的显示）
+  bool _isTypeUnlocked(TutorialType type) {
+    final settings = Storage.getSettings();
+    switch (type) {
+      case TutorialType.basic:
+        return true;
+      case TutorialType.advanced:
+        final n = (settings['unlockedAdvancedTutorials'] as num?)?.toInt() ?? 0;
+        return n > 0;
+      case TutorialType.topic:
+        final invited = (settings['myReferralCodes'] as List?)?.length ?? 0;
+        return invited >= 3;
+      case TutorialType.master:
+        return settings['unlockedMasterTutorials'] == true;
+    }
+  }
+
   Widget _buildBottomBar(
-      FitTrackColors colors, Tutorial t, BuildContext context) {
+      LiftTrackColors colors, Tutorial t, BuildContext context) {
+    final typeUnlocked = _isTypeUnlocked(t.type);
     return SafeArea(
       top: false,
       child: Container(
@@ -440,22 +574,25 @@ class TutorialDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => context.push('/invitation'),
-                icon: const Icon(Icons.card_giftcard, size: 18),
-                label: const Text('邀请加速解锁'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
+            // 已解锁类型不显示"邀请加速解锁"按钮
+            if (!typeUnlocked) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push('/invitation'),
+                  icon: const Icon(Icons.card_giftcard, size: 18),
+                  label: const Text('邀请加速解锁'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.accentGlow,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),

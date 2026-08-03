@@ -56,14 +56,14 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
     widget.onThemeChanged(themeId);
   }
 
-  FitTrackColors _getThemeColors(String themeId) {
+  LiftTrackColors _getThemeColors(String themeId) {
     final themeData = AppTheme.getTheme(themeId);
-    return themeData.extension<FitTrackColors>()!;
+    return themeData.extension<LiftTrackColors>()!;
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -107,7 +107,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   }
 
   /// 构建单个主题卡片 — 撑满 PageView 可用高度
-  Widget _buildThemeCard(Map<String, dynamic> theme, FitTrackColors colors) {
+  Widget _buildThemeCard(Map<String, dynamic> theme, LiftTrackColors colors) {
     final themeId = theme['id'] as String;
     final isSelected = themeId == _selectedThemeId;
     final themeColors = _getThemeColors(themeId);
@@ -196,7 +196,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   }
 
   /// 预览图：9:16 手机比例，居中显示，占满分配空间
-  Widget _buildThemePreview(String themeId, FitTrackColors colors) {
+  Widget _buildThemePreview(String themeId, LiftTrackColors colors) {
     return LayoutBuilder(
       builder: (context, constraints) {
         // 可用高度
@@ -236,7 +236,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   }
 
   /// 预览图内容：模拟首页布局，所有尺寸按预览区域比例计算
-  Widget _buildPreviewContent(FitTrackColors colors, double w, double h) {
+  Widget _buildPreviewContent(LiftTrackColors colors, double w, double h) {
     // 比例系数
     final scale = h / 600.0; // 以 600 高度为基准缩放
     final padH = 12.0 * scale;
@@ -485,7 +485,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   }
 
   /// 构建预览图中的小统计卡片
-  Widget _buildMiniStatCard(FitTrackColors colors, double scale, double parentW, Color accentColor) {
+  Widget _buildMiniStatCard(LiftTrackColors colors, double scale, double parentW, Color accentColor) {
     return Container(
       padding: EdgeInsets.all(6 * scale),
       decoration: BoxDecoration(
@@ -519,7 +519,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
     );
   }
 
-  Widget _buildPageIndicator(FitTrackColors colors) {
+  Widget _buildPageIndicator(LiftTrackColors colors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(AppTheme.themes.length, (i) {
@@ -538,7 +538,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
     );
   }
 
-  Widget _buildApplyButton(FitTrackColors colors) {
+  Widget _buildApplyButton(LiftTrackColors colors) {
     final currentTheme = AppTheme.themes[_currentPage];
     final isApplied = currentTheme['id'] == _selectedThemeId;
     return SafeArea(

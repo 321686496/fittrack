@@ -53,7 +53,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       body: Column(
@@ -84,7 +84,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
 
   // ── 生成分享码 ──────────────────────────────────────────────
 
-  Widget _buildGenerateCard(FitTrackColors colors) {
+  Widget _buildGenerateCard(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +135,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
     );
   }
 
-  Widget _buildEmptyPlans(FitTrackColors colors) {
+  Widget _buildEmptyPlans(LiftTrackColors colors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24),
@@ -152,7 +152,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
     );
   }
 
-  Widget _buildPlanSelector(FitTrackColors colors) {
+  Widget _buildPlanSelector(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -166,7 +166,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
     );
   }
 
-  Widget _buildPlanOption(FitTrackColors colors, Map<String, dynamic> plan) {
+  Widget _buildPlanOption(LiftTrackColors colors, Map<String, dynamic> plan) {
     final planId = plan['id'] as String? ?? '';
     final isSelected = _selectedPlanId == planId;
 
@@ -259,7 +259,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
     });
   }
 
-  Widget _buildGeneratedResult(FitTrackColors colors) {
+  Widget _buildGeneratedResult(LiftTrackColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -356,7 +356,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
     );
   }
 
-  void _copyString(FitTrackColors colors) {
+  void _copyString(LiftTrackColors colors) {
     Clipboard.setData(ClipboardData(text: _generatedShareString!));
     FitToast.success(context, '分享串已复制');
   }
@@ -364,13 +364,13 @@ class _ShareCodePageState extends State<ShareCodePage> {
   void _shareString() {
     Share.share(
       _generatedShareString!,
-      subject: 'FitTrack 训练计划分享',
+      subject: 'LiftTrack 训练计划分享',
     );
   }
 
   // ── 导入分享码 ──────────────────────────────────────────────
 
-  Widget _buildImportCard(FitTrackColors colors) {
+  Widget _buildImportCard(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -484,7 +484,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
 
     if (!mounted) return;
 
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     // 处理结果
     switch (result.result) {
@@ -532,7 +532,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
   }
 
   void _showWarningDialog(
-    FitTrackColors colors,
+    LiftTrackColors colors,
     String title,
     String content,
     VoidCallback onConfirm,
@@ -552,7 +552,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
     });
   }
 
-  void _doImport(Map<String, dynamic> planData, FitTrackColors colors) {
+  void _doImport(Map<String, dynamic> planData, LiftTrackColors colors) {
     // 清理分享方字段，生成本地新计划（深拷贝 + 类型归一化）
     final newPlan = ShareCodeService.deepNormalizePlan(planData);
     newPlan.remove('author');

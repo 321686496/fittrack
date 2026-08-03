@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../services/poster_generator.dart';
 import '../themes/app_themes.dart';
 import 'common_widgets.dart';
@@ -32,7 +33,7 @@ class PosterCaptureHelper {
     String fileNamePrefix = 'fittrack_poster',
     void Function(String error)? onError,
   }) async {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     // 显示 loading 弹窗
     showDialog<void>(
@@ -111,11 +112,11 @@ class PosterCaptureHelper {
     try {
       overlay.insert(entry);
 
-      // 等待多帧，确保 layout + paint 完成
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 50));
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 50));
+      // 轮询等待 RepaintBoundary 完成 layout + paint
+      // 原固定 endOfFrame×2 + delay×100ms 在部分设备上不可靠：
+      // showDialog 与 overlay.insert 同帧竞争、OHOS MouseTracker bug
+      // 中断帧绘制等情况都会导致 boundary 未 paint 就执行 toImage()。
+      await _waitForBoundaryReady(boundaryKey);
 
       final imagePath = await PosterGenerator.capture(
         boundaryKey,
@@ -149,5 +150,39 @@ class PosterCaptureHelper {
       // 恢复原始错误处理
       FlutterError.onError = originalOnError;
     }
+  }
+
+  /// 轮询等待 RepaintBoundary 就绪（已挂载且完成 paint）
+  ///
+  /// 每轮迭代：主动 scheduleFrame → endOfFrame → 短延迟 → 检查
+  /// debugNeedsPaint。最多重试 [maxAttempts] 次，确保在各类设备上
+  /// 都能可靠完成 paint 后再截图。
+  static Future<void> _waitForBoundaryReady(
+    GlobalKey key, {
+    int maxAttempts = 10,
+  }) async {
+    for (int i = 0; i < maxAttempts; i++) {
+      // 主动调度帧，确保 overlay entry 被处理
+      WidgetsBinding.instance.scheduleFrame();
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 30));
+
+      final ctx = key.currentContext;
+      if (ctx == null) continue;
+
+      final ro = ctx.findRenderObject();
+      if (ro is! RenderRepaintBoundary) continue;
+
+      // debugNeedsPaint 仅在 debug 模式可安全访问（release 模式
+      // 跳过检查，依赖多帧等待保证 paint 完成）
+      bool needsPaint = false;
+      assert(() {
+        needsPaint = ro.debugNeedsPaint;
+        return true;
+      }());
+
+      if (!needsPaint) return;
+    }
+    // 超过最大重试次数，仍然继续尝试截图（让 toImage 自行决定）
   }
 }

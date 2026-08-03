@@ -1,6 +1,6 @@
 // 隐私政策内容常量（PIPL 7 大类覆盖）
 // 同步加载，避免在测试环境中 rootBundle 异步加载问题
-const String privacyPolicyContent = '''# FitTrack 隐私政策
+const String privacyPolicyContent = '''# LiftTrack 隐私政策
 
 **版本**: v2.0 | **生效日期**: 2026-07-13
 
@@ -43,12 +43,12 @@ const String privacyPolicyContent = '''# FitTrack 隐私政策
 
 // 用户协议内容常量（覆盖四大商店模板要求）
 // 同步加载，避免在测试环境中 rootBundle 异步加载问题
-const String userAgreementContent = '''# FitTrack 用户协议
+const String userAgreementContent = '''# LiftTrack 用户协议
 
 **版本**: v2.0 | **生效日期**: 2026-07-13
 
 ## 一、服务说明
-FitTrack 燃力是由个人开发者提供的健身训练记录应用。
+LiftTrack 燃力是由个人开发者提供的健身训练记录应用。
 
 ## 二、虚拟商品不退换
 - Pro 永久解锁为虚拟商品，购买后不退换
@@ -71,7 +71,7 @@ FitTrack 燃力是由个人开发者提供的健身训练记录应用。
 
 ## 六、知识产权
 - 应用代码开源（参见仓库 LICENSE）
-- 商标"FitTrack 燃力"归开发者所有
+- 商标"LiftTrack 燃力"归开发者所有
 - 用户生成的训练计划归用户所有
 
 ## 七、争议解决

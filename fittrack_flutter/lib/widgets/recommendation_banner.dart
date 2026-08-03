@@ -61,7 +61,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
   }
 
   Widget _buildBanner(BannerItem banner) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final gradient = _gradientFor(banner.type, colors);
 
     return GestureDetector(
@@ -154,7 +154,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
   }
 
   Widget _buildIndicator() {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(_banners.length, (i) {
@@ -175,7 +175,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
     );
   }
 
-  LinearGradient _gradientFor(String type, FitTrackColors colors) {
+  LinearGradient _gradientFor(String type, LiftTrackColors colors) {
     switch (type) {
       case 'premium':
         return LinearGradient(

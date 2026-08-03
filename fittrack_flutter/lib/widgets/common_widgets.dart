@@ -17,7 +17,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -64,7 +64,7 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -115,7 +115,7 @@ class BadgeWidget extends StatelessWidget {
     this.variant = BadgeVariant.accent,
   });
 
-  Color _bgColor(FitTrackColors colors) {
+  Color _bgColor(LiftTrackColors colors) {
     switch (variant) {
       case BadgeVariant.accent:
         return colors.accentGlow.withOpacity(0.15);
@@ -128,7 +128,7 @@ class BadgeWidget extends StatelessWidget {
     }
   }
 
-  Color _textColor(FitTrackColors colors) {
+  Color _textColor(LiftTrackColors colors) {
     switch (variant) {
       case BadgeVariant.accent:
         return colors.accentGlow;
@@ -143,7 +143,7 @@ class BadgeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -179,7 +179,7 @@ class ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(height / 2),
@@ -220,7 +220,7 @@ class CardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return GestureDetector(
       onTap: onTap,
@@ -256,7 +256,7 @@ class MenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return GestureDetector(
       onTap: onTap,
@@ -308,7 +308,7 @@ class IconBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return GestureDetector(
       onTap: onTap,
@@ -342,7 +342,7 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Center(
       child: Column(
@@ -372,7 +372,7 @@ class DividerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Divider(
       height: 1,
@@ -496,7 +496,7 @@ class _ToastOverlayState extends State<_ToastOverlay>
     }
   }
 
-  Color _accentColor(FitTrackColors colors) {
+  Color _accentColor(LiftTrackColors colors) {
     switch (widget.type) {
       case ToastType.info:
         return colors.infoColor;
@@ -511,7 +511,7 @@ class _ToastOverlayState extends State<_ToastOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final padding = MediaQuery.of(context).padding;
 
     return Positioned(
@@ -612,7 +612,7 @@ class ConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final danger = confirmColor ?? colors.warningColor;
 
     return Dialog(
@@ -744,7 +744,7 @@ class InfoDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final accent = iconColor ?? colors.accentGlow;
 
     return Dialog(
@@ -851,7 +851,7 @@ class AchievementDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Dialog(
       backgroundColor: colors.bgCard,
@@ -959,7 +959,7 @@ class _BottomSheetWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final mediaQuery = MediaQuery.of(context);
     // 键盘高度：当输入框获得焦点时，键盘会遮挡底部内容
     final keyboardHeight = mediaQuery.viewInsets.bottom;
@@ -1039,7 +1039,7 @@ class FitTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final hasError = errorText != null && errorText!.isNotEmpty;
 
     return Column(
@@ -1132,7 +1132,7 @@ class FitChipSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final accent = selectedColor ?? colors.accentGlow;
 
     return Wrap(

@@ -30,7 +30,7 @@ void main() {
     // 注：VirtualOpponentCard 实际构造函数仅接受 onTap，
     // 数据从 Storage 读取（plan 中的 opponent/userWeeklyTrainings 参数不存在，
     // 按任务约束"如签名不同，调整测试代码以匹配实际签名"处理）
-    // 使用 AppTheme 提供主题（含 FitTrackColors 扩展，否则 Theme.of(context).extension<FitTrackColors>()! 会 null）
+    // 使用 AppTheme 提供主题（含 LiftTrackColors 扩展，否则 Theme.of(context).extension<LiftTrackColors>()! 会 null）
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.getTheme('vitality-sport'),

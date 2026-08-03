@@ -8,7 +8,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: PrivacyPolicyPage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('FitTrack 隐私政策'), findsOneWidget);
+    expect(find.text('LiftTrack 隐私政策'), findsOneWidget);
     const sections = [
       '一、我们收集的信息',
       '二、信息使用方式',

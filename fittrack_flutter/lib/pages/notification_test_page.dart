@@ -261,7 +261,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -380,7 +380,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     );
   }
 
-  Widget _buildStatusCard(FitTrackColors colors) {
+  Widget _buildStatusCard(LiftTrackColors colors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -405,7 +405,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     );
   }
 
-  Widget _buildStatusRow(FitTrackColors colors, String label, String value, {Color? valueColor}) {
+  Widget _buildStatusRow(LiftTrackColors colors, String label, String value, {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -417,14 +417,14 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     );
   }
 
-  Widget _buildSectionTitle(FitTrackColors colors, String title) {
+  Widget _buildSectionTitle(LiftTrackColors colors, String title) {
     return Text(
       title,
       style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
     );
   }
 
-  Widget _buildButton(FitTrackColors colors, String label, IconData icon, VoidCallback onTap) {
+  Widget _buildButton(LiftTrackColors colors, String label, IconData icon, VoidCallback onTap) {
     return ElevatedButton.icon(
       onPressed: onTap,
       icon: Icon(icon, size: 18),

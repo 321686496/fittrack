@@ -128,7 +128,7 @@ class RetentionChainService {
         ? '昨天的$primaryMuscle训练数据已保存，今天试试$antagonist?'
         : '昨天的训练数据已保存，今天继续加油吧!';
 
-    await _sendPush('FitTrack Day2', message);
+    await _sendPush('LiftTrack Day2', message);
   }
 
   // ── Day4: 温和召回推送 ─────────────────────────────────────
@@ -146,7 +146,7 @@ class RetentionChainService {
 
     if (!hasRecentTraining) {
       await _sendPush(
-        'FitTrack 想你了',
+        'LiftTrack 想你了',
         '休息一下也不错，看看你的训练日历，规划下一次训练吧',
       );
     }
