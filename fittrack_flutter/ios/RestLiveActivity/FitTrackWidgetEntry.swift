@@ -48,7 +48,7 @@ struct FitTrackWidgetEntry: TimelineEntry {
     )
 
     static func fromDefaults() -> FitTrackWidgetEntry {
-        let defaults = UserDefaults(suiteName: "group.com.fp.fitplan")
+        let defaults = UserDefaults(suiteName: "group.com.lt.lifttrack")
         guard let data = defaults?.string(forKey: "widgetData"),
               let json = data.data(using: .utf8),
               let dict = try? JSONSerialization.jsonObject(with: json) as? [String: Any] else {

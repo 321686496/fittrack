@@ -224,7 +224,7 @@ struct RestLiveActivityAttributes: ActivityAttributes {
       switch call.method {
       case "pushCardData":
         if let jsonData = call.arguments as? String {
-          let defaults = UserDefaults(suiteName: "group.com.fp.fitplan")
+          let defaults = UserDefaults(suiteName: "group.com.lt.lifttrack")
           defaults?.set(jsonData, forKey: "widgetData")
           // 触发 WidgetKit 刷新
           if #available(iOS 14.0, *) {
@@ -235,7 +235,7 @@ struct RestLiveActivityAttributes: ActivityAttributes {
           result(FlutterError(code: "INVALID_ARGS", message: "Expected JSON string", details: nil))
         }
       case "clearCardData":
-        let defaults = UserDefaults(suiteName: "group.com.fp.fitplan")
+        let defaults = UserDefaults(suiteName: "group.com.lt.lifttrack")
         defaults?.removeObject(forKey: "widgetData")
         if #available(iOS 14.0, *) {
           WidgetCenter.shared.reloadTimelines(ofKind: "FitTrackWidget")

@@ -21,14 +21,14 @@ name: iOS Build
 #
 # 若项目含 RestLiveActivity Widget Extension，还需额外 Secrets：
 #   - PROVISIONING_PROFILE_EXT_BASE64  Extension 对应的 .mobileprovision base64
-#   （Extension bundle id 形如 com.fp.fitplan.RestLiveActivity）
+#   （Extension bundle id 形如 com.lt.lifttrack.RestLiveActivity）
 #
 # 上传 TestFlight 额外 Secrets（upload_to_testflight=true 时）：
 #   - APP_STORE_CONNECT_KEY_ID        API Key ID
 #   - APP_STORE_CONNECT_ISSUER_ID     Issuer ID
 #   - APP_STORE_CONNECT_KEY_BASE64    AuthKey_XXXXX.p8 文件的 base64 编码
 #
-# 注意：bundle identifier 沿用 codemagic.yaml 的 com.fp.fitplan
+# 注意：bundle identifier 沿用 codemagic.yaml 的 com.lt.lifttrack
 # ==============================================================================
 
 on:
@@ -45,7 +45,7 @@ on:
 
 env:
   FLUTTER_VERSION: '3.7.12'
-  BUNDLE_ID: 'com.fp.fitplan'
+  BUNDLE_ID: 'com.lt.lifttrack'
   WORKSPACE: 'fittrack_flutter'
   SCHEME: 'Runner'
   # 临时 keychain 密码，随便填一个固定值即可（仅本次构建使用）
@@ -226,7 +226,7 @@ jobs:
               content = f.read()
 
           old = (
-              'PRODUCT_BUNDLE_IDENTIFIER = com.fp.fitplan;\n'
+              'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack;\n'
               '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
               '\t\t\t\tSWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";\n'
               '\t\t\t\tSWIFT_VERSION = 5.0;\n'
@@ -237,7 +237,7 @@ jobs:
           team_id = os.environ['TEAM_ID']
           profile_name = os.environ['PROFILE_NAME']
           new = (
-              'PRODUCT_BUNDLE_IDENTIFIER = com.fp.fitplan;\n'
+              'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack;\n'
               '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
               '\t\t\t\tSWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";\n'
               '\t\t\t\tSWIFT_VERSION = 5.0;\n'

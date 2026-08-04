@@ -1,7 +1,7 @@
 # FitTrack iOS 打包操作指南（GitHub Actions）
 
 > 本文档说明如何使用 GitHub Actions 代替 Codemagic 构建 iOS 安装包（IPA），
-> 以及首次需要完成的配置。Bundle ID 为 `com.fp.fitplan`。
+> 以及首次需要完成的配置。Bundle ID 为 `com.lt.lifttrack`。
 
 ---
 
@@ -44,7 +44,7 @@
 1. 打开 [developer.apple.com/account](https://developer.apple.com/account) → **Certificates, Identifiers & Profiles**
 2. **Identifiers** → 新建 App ID：
    - 类型：App
-   - Bundle ID：`com.fp.fitplan`（必须与工程一致）
+   - Bundle ID：`com.lt.lifttrack`（必须与工程一致）
    - 按需勾选 Capabilities（如 Push Notifications、App Groups）
 
 ### 3.2 用 OpenSSL 生成私钥与证书签名请求（CSR）
@@ -63,7 +63,7 @@ openssl req -new -newkey rsa:2048 -nodes \
 1. 打开 [developer.apple.com/account](https://developer.apple.com/account) → **Certificates, Identifiers & Profiles**
 2. **Identifiers** → 新建 App ID：
    - 类型：App
-   - Bundle ID：`com.fp.fitplan`（必须与工程一致）
+   - Bundle ID：`com.lt.lifttrack`（必须与工程一致）
    - 按需勾选 Capabilities（如 Push Notifications、App Groups）
 3. **Certificates** → 新建 → **Apple Distribution**
 4. 上传上一步生成的 `distribution.csr`，下载 `.cer` 证书文件
@@ -87,7 +87,7 @@ openssl pkcs12 -export -out distribution.p12 \
 
 1. Apple Developer → **Profiles** → 新建
 2. 类型选 **App Store Connect**（若想 Ad Hoc 内测分发，选 **Ad Hoc** 并勾选目标设备）
-3. 选择 App ID：`com.fp.fitplan`
+3. 选择 App ID：`com.lt.lifttrack`
 4. 勾选你的 Distribution 证书
 5. 下载生成的 `.mobileprovision` 文件
 
@@ -100,7 +100,7 @@ openssl pkcs12 -export -out distribution.p12 \
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("distribution.p12"))
 
 # Provisioning Profile
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("com.fp.fitplan.mobileprovision"))
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("com.lt.lifttrack.mobileprovision"))
 ```
 
 **方式二：Mac / Linux 终端**
@@ -204,7 +204,7 @@ CI 内的 macOS 服务器会自动完成上传。
 上传成功后，打开 [appstoreconnect.apple.com](https://appstoreconnect.apple.com) →
 **TestFlight** → 等待「正在处理」完成后即可添加测试员分发。
 
-> 首次上传前需在 App Store Connect 中创建 App（Bundle ID `com.fp.fitplan`）并填写
+> 首次上传前需在 App Store Connect 中创建 App（Bundle ID `com.lt.lifttrack`）并填写
 > 基础信息（名称、截图、隐私政策等），否则上传会提示 App 不存在。
 
 ---
@@ -244,5 +244,5 @@ CI 内的 macOS 服务器会自动完成上传。
 
 - Workflow 定义：`.github/workflows/ios-build.yml`
 - iOS 工程目录：`fittrack_flutter/ios/`
-- Bundle ID：`com.fp.fitplan`（`ios/Runner.xcodeproj/project.pbxproj` 与 workflow 中均已配置）
+- Bundle ID：`com.lt.lifttrack`（`ios/Runner.xcodeproj/project.pbxproj` 与 workflow 中均已配置）
 - 原 Codemagic 配置：`codemagic.yaml`（如需保留可不动）
