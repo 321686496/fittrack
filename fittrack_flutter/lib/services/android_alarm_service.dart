@@ -8,7 +8,7 @@ class AndroidAlarmService {
 
   static final AndroidAlarmService instance = AndroidAlarmService._();
 
-  static const String _channelName = 'com.fp.fitplan/alarm';
+  static const String _channelName = 'com.lt.lifttrack/alarm';
 
   final MethodChannel _channel = const MethodChannel(_channelName);
 

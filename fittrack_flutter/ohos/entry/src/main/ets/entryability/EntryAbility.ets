@@ -17,9 +17,9 @@ import fs from '@ohos.file.fs';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
 const KEY_FORM_DATA: string = 'form_data';
-const FORM_CHANNEL_NAME: string = 'com.fp.fitplan/form';
-const REMINDER_CHANNEL_NAME: string = 'com.fp.fitplan/reminder';
-const POSTER_CHANNEL_NAME: string = 'com.fp.fitplan/poster';
+const FORM_CHANNEL_NAME: string = 'com.lt.lifttrack/form';
+const REMINDER_CHANNEL_NAME: string = 'com.lt.lifttrack/reminder';
+const POSTER_CHANNEL_NAME: string = 'com.lt.lifttrack/poster';
 const REST_LIVE_VIEW_ID: number = 30001;
 
 const CAPSULE_ICON: string = 'liveview_icon.png';

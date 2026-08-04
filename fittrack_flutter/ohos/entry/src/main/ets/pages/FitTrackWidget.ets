@@ -147,7 +147,7 @@ struct FitTrackWidget {
       .onClick(() => {
         postCardAction(this, {
           action: 'router',
-          bundleName: 'com.fp.fitplan',
+          bundleName: 'com.lt.lifttrack',
           abilityName: 'EntryAbility',
           params: {
             targetPage: 'home'
@@ -229,7 +229,7 @@ struct FitTrackWidget {
       .onClick(() => {
         postCardAction(this, {
           action: 'router',
-          bundleName: 'com.fp.fitplan',
+          bundleName: 'com.lt.lifttrack',
           abilityName: 'EntryAbility',
           params: {
             targetPage: 'training',
@@ -307,7 +307,7 @@ struct FitTrackWidget {
       .onClick(() => {
         postCardAction(this, {
           action: 'router',
-          bundleName: 'com.fp.fitplan',
+          bundleName: 'com.lt.lifttrack',
           abilityName: 'EntryAbility',
           params: {
             targetPage: 'training',

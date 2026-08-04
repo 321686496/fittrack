@@ -6,7 +6,7 @@ import '../widget_card_service.dart';
 
 /// Android 桌面卡片服务（Glance AppWidget）
 class AndroidWidgetCardService implements WidgetCardService {
-  static const _channel = MethodChannel('com.fp.fitplan/widget');
+  static const _channel = MethodChannel('com.lt.lifttrack/widget');
 
   final StreamController<WidgetCardClickEvent> _clickController =
       StreamController<WidgetCardClickEvent>.broadcast();

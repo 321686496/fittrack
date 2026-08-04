@@ -1,4 +1,4 @@
-package com.fp.fitplan2
+package com.lt.lifttrack
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

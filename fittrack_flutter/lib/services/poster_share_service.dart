@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 class PosterShareService {
   PosterShareService._();
 
-  static const _channel = MethodChannel('com.fp.fitplan/poster');
+  static const _channel = MethodChannel('com.lt.lifttrack/poster');
 
   /// 保存图片到系统相册
   ///

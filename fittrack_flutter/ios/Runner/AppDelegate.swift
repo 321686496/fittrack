@@ -37,28 +37,28 @@ struct RestLiveActivityAttributes: ActivityAttributes {
 
     // 1. 休息提醒通道
     reminderChannel = FlutterMethodChannel(
-      name: "com.fp.fitplan/reminder",
+      name: "com.lt.lifttrack/reminder",
       binaryMessenger: controller!.binaryMessenger
     )
     setupReminderChannel()
 
     // 2. 实况窗通道（Batch 3 实现，此处占位）
     liveViewChannel = FlutterMethodChannel(
-      name: "com.fp.fitplan/liveview",
+      name: "com.lt.lifttrack/liveview",
       binaryMessenger: controller!.binaryMessenger
     )
     setupLiveViewChannel()
 
     // 3. 桌面卡片通道（Batch 3 实现，此处占位）
     widgetChannel = FlutterMethodChannel(
-      name: "com.fp.fitplan/widget",
+      name: "com.lt.lifttrack/widget",
       binaryMessenger: controller!.binaryMessenger
     )
     setupWidgetChannel()
 
     // 4. 邀请链接通道
     inviteChannel = FlutterMethodChannel(
-      name: "com.fp.fitplan/invite",
+      name: "com.lt.lifttrack/invite",
       binaryMessenger: controller!.binaryMessenger
     )
     setupInviteChannel()

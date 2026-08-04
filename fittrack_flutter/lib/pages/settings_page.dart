@@ -213,7 +213,7 @@ class _SettingsPageState extends State<SettingsPage> {
   // 权限管理相关
   // ============================================================
 
-  static const _permissionChannel = MethodChannel('com.fp.fitplan/permission');
+  static const _permissionChannel = MethodChannel('com.lt.lifttrack/permission');
 
   /// 检查权限状态
   Future<void> _checkPermissions() async {

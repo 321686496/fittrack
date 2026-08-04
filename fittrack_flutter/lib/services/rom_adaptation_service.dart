@@ -11,7 +11,7 @@ class RomAdaptationService {
 
   static final RomAdaptationService instance = RomAdaptationService._();
 
-  static const String _channelName = 'com.fp.fitplan/rom_adaptation';
+  static const String _channelName = 'com.lt.lifttrack/rom_adaptation';
 
   final MethodChannel? _channel =
       isOhos ? null : const MethodChannel(_channelName);
