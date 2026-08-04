@@ -57,6 +57,10 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 60
 
+    env:
+      # secrets 不能在 if 条件中直接引用，需先映射到 job 级 env（job 级 env 允许引用 secrets）
+      HAS_EXT_PROFILE: ${{ secrets.PROVISIONING_PROFILE_EXT_BASE64 != '' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -156,7 +160,7 @@ jobs:
           echo "Installed main app provisioning profile: $PP_UUID"
 
       - name: Install provisioning profile (Widget Extension)
-        if: ${{ inputs.sign == true && secrets.PROVISIONING_PROFILE_EXT_BASE64 != '' }}
+        if: ${{ inputs.sign == true && env.HAS_EXT_PROFILE == 'true' }}
         env:
           PROVISIONING_PROFILE_EXT_BASE64: ${{ secrets.PROVISIONING_PROFILE_EXT_BASE64 }}
         run: |
