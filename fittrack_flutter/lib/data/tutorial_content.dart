@@ -97,13 +97,16 @@ extension TutorialTypeExt on TutorialType {
 }
 
 /// 训练目标分类
-enum FitnessGoal { bulk, cut, maintain }
+enum FitnessGoal { bulk, cut, maintain, shape, keep, strength }
 extension FitnessGoalExt on FitnessGoal {
   String get label {
     switch (this) {
       case FitnessGoal.bulk: return '增肌';
       case FitnessGoal.cut: return '减脂';
       case FitnessGoal.maintain: return '保持';
+      case FitnessGoal.shape: return '塑形';
+      case FitnessGoal.keep: return '健康';
+      case FitnessGoal.strength: return '力量';
     }
   }
 }
