@@ -1,5 +1,5 @@
 // fittrack_flutter/android/app/src/main/kotlin/com/fp/fitplan/widget/FitTrackWidgetState.kt
-package com.fp.fitplan2.widget
+package com.lt.lifttrack.widget
 
 import org.json.JSONObject
 

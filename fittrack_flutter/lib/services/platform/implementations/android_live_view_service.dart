@@ -5,7 +5,7 @@ import '../live_view_service.dart';
 
 /// Android 实况窗服务（前台服务通知 + Chronometer）
 class AndroidLiveViewService implements LiveViewService {
-  static const _channel = MethodChannel('com.fp.fitplan/liveview');
+  static const _channel = MethodChannel('com.lt.lifttrack/liveview');
 
   final StreamController<LiveViewEvent> _actionController =
       StreamController<LiveViewEvent>.broadcast();

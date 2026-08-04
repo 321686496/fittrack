@@ -1,5 +1,5 @@
 // fittrack_flutter/android/app/src/main/kotlin/com/fp/fitplan/widget/FitTrackGlanceWidget.kt
-package com.fp.fitplan2.widget
+package com.lt.lifttrack.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -18,7 +18,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.fp.fitplan2.MainActivity
+import com.lt.lifttrack.MainActivity
 
 class FitTrackGlanceWidget : GlanceAppWidget() {
 

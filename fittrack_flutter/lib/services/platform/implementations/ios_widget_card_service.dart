@@ -7,7 +7,7 @@ import '../widget_card_service.dart';
 
 /// iOS 桌面卡片服务（通过 WidgetKit + App Group UserDefaults）
 class IosWidgetCardService implements WidgetCardService {
-  static const _channel = MethodChannel('com.fp.fitplan/widget');
+  static const _channel = MethodChannel('com.lt.lifttrack/widget');
 
   final StreamController<WidgetCardClickEvent> _clickController =
       StreamController<WidgetCardClickEvent>.broadcast();

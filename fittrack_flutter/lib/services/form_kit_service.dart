@@ -22,7 +22,7 @@ class FormKitService {
 
   static final FormKitService instance = FormKitService._();
 
-  static const String _channelName = 'com.fp.fitplan/form';
+  static const String _channelName = 'com.lt.lifttrack/form';
 
   final MethodChannel _channel = const MethodChannel(_channelName);
 

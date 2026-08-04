@@ -6,7 +6,7 @@ import '../live_view_service.dart';
 
 /// iOS 实况窗服务（通过 ActivityKit 实现 Live Activities）
 class IosLiveViewService implements LiveViewService {
-  static const _channel = MethodChannel('com.fp.fitplan/liveview');
+  static const _channel = MethodChannel('com.lt.lifttrack/liveview');
 
   final StreamController<LiveViewEvent> _actionController =
       StreamController<LiveViewEvent>.broadcast();

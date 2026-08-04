@@ -1,5 +1,5 @@
 // fittrack_flutter/android/app/src/main/kotlin/com/fp/fitplan/rest/RestNotificationBuilder.kt
-package com.fp.fitplan2.rest
+package com.lt.lifttrack.rest
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,8 +10,8 @@ import android.content.Intent
 import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import com.fp.fitplan2.MainActivity
-import com.fp.fitplan2.R
+import com.lt.lifttrack.MainActivity
+import com.lt.lifttrack.R
 
 object RestNotificationBuilder {
     private const val CHANNEL_ID = "rest_countdown"

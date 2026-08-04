@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../invite_url_service.dart';
 
 class AndroidInviteUrlService implements InviteUrlService {
-  static const _channel = MethodChannel('com.fp.fitplan/invite');
+  static const _channel = MethodChannel('com.lt.lifttrack/invite');
 
   Future<void> Function(Uri)? _handler;
 

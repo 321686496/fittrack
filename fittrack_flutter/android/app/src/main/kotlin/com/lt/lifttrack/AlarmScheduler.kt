@@ -1,4 +1,4 @@
-package com.fp.fitplan2
+package com.lt.lifttrack
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -29,7 +29,7 @@ object AlarmScheduler {
         cancelRestAlarm(context)
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            action = "com.fp.fitplan.REST_ALARM"
+            action = "com.lt.lifttrack.REST_ALARM"
             putExtra(AlarmReceiver.EXTRA_TITLE, title)
             putExtra(AlarmReceiver.EXTRA_CONTENT, content)
             putExtra(AlarmReceiver.EXTRA_EXERCISE_NAME, exerciseName)
@@ -71,7 +71,7 @@ object AlarmScheduler {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            action = "com.fp.fitplan.REST_ALARM"
+            action = "com.lt.lifttrack.REST_ALARM"
         }
 
         // 使用 FLAG_NO_CREATE：若 PendingIntent 不存在则返回 null，不创建/不修改已有 PI

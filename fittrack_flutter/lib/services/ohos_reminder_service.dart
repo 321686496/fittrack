@@ -17,7 +17,7 @@ class OhosReminderService {
 
   static final OhosReminderService instance = OhosReminderService._();
 
-  static const String _channelName = 'com.fp.fitplan/reminder';
+  static const String _channelName = 'com.lt.lifttrack/reminder';
 
   final MethodChannel _channel = const MethodChannel(_channelName);
 

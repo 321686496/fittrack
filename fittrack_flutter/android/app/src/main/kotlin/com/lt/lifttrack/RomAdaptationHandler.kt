@@ -1,4 +1,4 @@
-package com.fp.fitplan2
+package com.lt.lifttrack
 
 import android.content.Context
 import android.content.Intent
@@ -12,7 +12,7 @@ import io.flutter.plugin.common.MethodChannel
 class RomAdaptationHandler(private val context: Context) : MethodChannel.MethodCallHandler {
 
     companion object {
-        const val CHANNEL_NAME = "com.fp.fitplan/rom_adaptation"
+        const val CHANNEL_NAME = "com.lt.lifttrack/rom_adaptation"
 
         private val OEM_KEYWORDS = listOf(
             "xiaomi", "redmi", "poco",

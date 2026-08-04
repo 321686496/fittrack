@@ -5,7 +5,7 @@ import '../invite_url_service.dart';
 
 /// iOS 邀请链接服务（通过 CFBundleURLTypes 处理 fittrack:// URL）
 class IosInviteUrlService implements InviteUrlService {
-  static const _channel = MethodChannel('com.fp.fitplan/invite');
+  static const _channel = MethodChannel('com.lt.lifttrack/invite');
 
   Future<void> Function(Uri)? _handler;
 

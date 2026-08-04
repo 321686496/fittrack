@@ -1,16 +1,16 @@
-package com.fp.fitplan2
+package com.lt.lifttrack
 
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import com.fp.fitplan2.rest.RestOngoingService
+import com.lt.lifttrack.rest.RestOngoingService
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
-    private val ALARM_CHANNEL_NAME = "com.fp.fitplan/alarm"
+    private val ALARM_CHANNEL_NAME = "com.lt.lifttrack/alarm"
     private var alarmChannel: MethodChannel? = null
     private var romAdaptationChannel: MethodChannel? = null
 
@@ -70,7 +70,7 @@ class MainActivity : FlutterActivity() {
         // LiveView Channel（休息倒计时前台服务）
         val liveViewChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.fp.fitplan/liveview"
+            "com.lt.lifttrack/liveview"
         )
         liveViewChannel.setMethodCallHandler { call, result ->
             when (call.method) {
@@ -106,21 +106,21 @@ class MainActivity : FlutterActivity() {
         // Widget Channel（桌面卡片数据推送）
         val widgetChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.fp.fitplan/widget"
+            "com.lt.lifttrack/widget"
         )
         widgetChannel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "pushCardData" -> {
                     val jsonStr = call.arguments as? String
                     if (jsonStr != null) {
-                        com.fp.fitplan2.widget.WidgetDataStore.saveState(this@MainActivity, jsonStr)
+                        com.lt.lifttrack.widget.WidgetDataStore.saveState(this@MainActivity, jsonStr)
                         result.success(true)
                     } else {
                         result.error("INVALID_ARGS", "Expected JSON string", null)
                     }
                 }
                 "clearCardData" -> {
-                    com.fp.fitplan2.widget.WidgetDataStore.clearState(this@MainActivity)
+                    com.lt.lifttrack.widget.WidgetDataStore.clearState(this@MainActivity)
                     result.success(true)
                 }
                 else -> result.notImplemented()
@@ -146,7 +146,7 @@ class MainActivity : FlutterActivity() {
         if (data != null && data.scheme == "fittrack" && data.host == "invite") {
             val messenger = flutterEngine?.dartExecutor?.binaryMessenger
             if (messenger != null) {
-                val inviteChannel = MethodChannel(messenger, "com.fp.fitplan/invite")
+                val inviteChannel = MethodChannel(messenger, "com.lt.lifttrack/invite")
                 inviteChannel.invokeMethod("onInviteUrl", data.toString())
             }
         }

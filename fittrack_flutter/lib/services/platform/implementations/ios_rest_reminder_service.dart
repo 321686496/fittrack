@@ -5,7 +5,7 @@ import '../rest_reminder_service.dart';
 
 /// iOS 休息提醒服务（通过 MethodChannel 调用 UNUserNotificationCenter）
 class IosRestReminderService implements RestReminderService {
-  static const _channel = MethodChannel('com.fp.fitplan/reminder');
+  static const _channel = MethodChannel('com.lt.lifttrack/reminder');
 
   final StreamController<RestReminderEvent> _clickController =
       StreamController<RestReminderEvent>.broadcast();
