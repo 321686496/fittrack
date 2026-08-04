@@ -129,8 +129,11 @@ jobs:
           echo "BUILD_CERTIFICATE_BASE64 长度: ${#BUILD_CERTIFICATE_BASE64} 字符"
           echo "解码后 p12 大小: $(stat -f%z "$RUNNER_TEMP/diag.p12") 字节 (本地 p12 通常 2~5KB)"
           echo "P12_PASSWORD 长度: ${#P12_PASSWORD} 字符"
+          echo "密码非ASCII字符数(0=纯ASCII): $(printf '%s' "$P12_PASSWORD" | LC_ALL=C tr -d '[:print:]' | wc -c | tr -d ' ')"
           echo "--- OpenSSL 密码验证（若显示 Mac verify error 则密码不匹配）---"
           openssl pkcs12 -in "$RUNNER_TEMP/diag.p12" -passin "pass:$P12_PASSWORD" -noout 2>&1 | head -20
+          echo "--- p12 算法信息（Apple 兼容应为 sha1/3DES/RC2 等旧算法）---"
+          openssl pkcs12 -info -in "$RUNNER_TEMP/diag.p12" -passin "pass:$P12_PASSWORD" -noout 2>&1 | head -12
           echo "===== 证书诊断结束 ====="
 
       - name: Create temporary keychain & import certificate
