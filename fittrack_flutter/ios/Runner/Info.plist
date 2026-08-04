@@ -65,7 +65,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.fp.fitplan.invite</string>
+			<string>com.lt.lifttrack.invite</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>fittrack</string>

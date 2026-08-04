@@ -6,7 +6,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: development
-        bundle_identifier: com.fp.fitplan
+        bundle_identifier: com.lt.lifttrack
       vars:
         XCODE_WORKSPACE: Runner.xcworkspace
         XCODE_SCHEME: Runner
@@ -63,7 +63,7 @@ workflows:
     environment:
       flutter: 3.7.12
       vars:
-        PACKAGE_NAME: com.fp.fitplan
+        PACKAGE_NAME: com.lt.lifttrack
     scripts:
       - name: Install dependencies
         script: |

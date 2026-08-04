@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.fp.fitplan</string>
+		<string>group.com.lt.lifttrack</string>
 	</array>
 </dict>
 </plist>
