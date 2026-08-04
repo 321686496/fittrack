@@ -74,9 +74,14 @@ openssl req -new -newkey rsa:2048 -nodes \
 openssl x509 -in distribution.cer -inform DER -out distribution.pem -outform PEM
 
 # 合并私钥 + 证书为 .p12（会提示设置导出密码，务必记住，填入 P12_PASSWORD）
+# 必须加 -legacy！OpenSSL 3.x 默认用 AES-256/SHA-256 新式算法，
+# Apple 的 security 工具不兼容，会导致 CI 报 "MAC verification failed (wrong password)"
 openssl pkcs12 -export -out distribution.p12 \
-  -inkey distribution.key -in distribution.pem
+  -inkey distribution.key -in distribution.pem -legacy
 ```
+
+> 如果 `-legacy` 不可用（OpenSSL 1.1.1），用显式指定旧式算法代替：
+> `openssl pkcs12 -export -out distribution.p12 -inkey distribution.key -in distribution.pem -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES -macalg sha1`
 
 ### 3.4 创建 Provisioning Profile
 
