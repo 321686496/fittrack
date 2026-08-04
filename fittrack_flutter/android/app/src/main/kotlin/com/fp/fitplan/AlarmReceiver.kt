@@ -23,6 +23,7 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        android.util.Log.i("AlarmReceiver", "onReceive: action=${intent.action}, extras=${intent.extras}")
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "休息结束"
         val content = intent.getStringExtra(EXTRA_CONTENT) ?: "休息时间到了，继续训练吧！"
         val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, NOTIFICATION_ID)

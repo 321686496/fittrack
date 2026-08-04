@@ -433,6 +433,10 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   void _advanceAfterRest({bool restSkipped = false}) {
+    // 停止休息倒计时前台服务（自然结束 + 跳过都应停止）
+    // 避免前台服务通知（ID 2001）淹没 AlarmReceiver 的休息结束通知（ID 1001）
+    PlatformServices.liveView.stopRestLiveView();
+
     _restLog.add({
       'exercise': _exercises[_currentExIdx]['name'],
       'restTime': _totalRestSeconds,
@@ -1037,15 +1041,49 @@ class _TrainingPageState extends State<TrainingPage>
     final exId = ex['id'] as String?;
 
     // 数据读取：优先动作自带字段，回退 MockData
-    final desc = (ex['description'] as String?)?.isNotEmpty == true
+    String desc = (ex['description'] as String?)?.isNotEmpty == true
         ? ex['description'] as String
         : (exId != null ? (MockData.exerciseDescriptions[exId] ?? '') : '');
-    final muscles = (ex['muscles'] as List?)?.isNotEmpty == true
+    List<String> muscles = (ex['muscles'] as List?)?.isNotEmpty == true
         ? List<String>.from(ex['muscles'] as List)
         : (exId != null ? (MockData.exerciseMuscles[exId] ?? <String>[]) : <String>[]);
-    final steps = (ex['steps'] as List?)?.isNotEmpty == true
+    List<Map<String, dynamic>> steps = (ex['steps'] as List?)?.isNotEmpty == true
         ? List<Map<String, dynamic>>.from(ex['steps'] as List)
         : (exId != null ? (MockData.exerciseSteps[exId] ?? <Map<String, dynamic>>[]) : <Map<String, dynamic>>[]);
+
+    // ID 匹配失败时，通过动作名称回退查找 MockData
+    // 系统计划 JSON 使用 ex_str_xxx 等 ID，与 MockData 的 e1-e21 不一致
+    if (desc.isEmpty && muscles.isEmpty && steps.isEmpty) {
+      final exName = ex['name'] as String? ?? '';
+      if (exName.isNotEmpty) {
+        // 1. 精确名称匹配
+        // 2. 模糊匹配：计划动作名包含 MockData 动作名，或反之（如"深蹲"匹配"杠铃深蹲"）
+        String? matchedId;
+        for (final me in MockData.exercises) {
+          final meName = me['name'] as String;
+          if (meName == exName) {
+            matchedId = me['id'] as String;
+            break;
+          }
+        }
+        // 精确匹配失败，尝试模糊匹配
+        if (matchedId == null) {
+          for (final me in MockData.exercises) {
+            final meName = me['name'] as String;
+            if (meName.contains(exName) || exName.contains(meName)) {
+              matchedId = me['id'] as String;
+              break;
+            }
+          }
+        }
+
+        if (matchedId != null) {
+          desc = MockData.exerciseDescriptions[matchedId] ?? '';
+          muscles = MockData.exerciseMuscles[matchedId] ?? <String>[];
+          steps = MockData.exerciseSteps[matchedId] ?? <Map<String, dynamic>>[];
+        }
+      }
+    }
 
     final exName = ex['name'] as String? ?? '当前动作';
     final hasContent = desc.isNotEmpty || muscles.isNotEmpty || steps.isNotEmpty;
