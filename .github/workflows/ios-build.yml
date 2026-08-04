@@ -199,6 +199,66 @@ jobs:
           mv "$PP_PATH" "$PP_DIR/$PP_UUID.mobileprovision"
           echo "Installed extension provisioning profile: $PP_UUID"
 
+      - name: Configure Manual code signing (Runner Release)
+        # 工程默认无签名设置（Automatic），CI 无 Xcode 登录的 Apple ID 会报
+        # "No valid code signing certificates"；改为 Manual 并注入证书/Team/Profile。
+        # Profile 名称自动从已安装的 provisioning profile 读取。
+        if: ${{ inputs.sign == true }}
+        env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          cd ${{ env.WORKSPACE }}
+          PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          PP_FILE=$(ls "$PP_DIR" | head -n1)
+          if [ -z "$PP_FILE" ]; then
+            echo "::error::未找到已安装的 provisioning profile"
+            exit 1
+          fi
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin \
+            <<< "$(security cms -D -i "$PP_DIR/$PP_FILE")")
+          echo "Provisioning profile name: $PROFILE_NAME"
+          export PROFILE_NAME TEAM_ID
+          python3 <<'PYEOF'
+          import os
+
+          pbx_path = 'ios/Runner.xcodeproj/project.pbxproj'
+          with open(pbx_path, 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          old = (
+              'PRODUCT_BUNDLE_IDENTIFIER = com.fp.fitplan;\n'
+              '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
+              '\t\t\t\tSWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";\n'
+              '\t\t\t\tSWIFT_VERSION = 5.0;\n'
+              '\t\t\t\tVERSIONING_SYSTEM = "apple-generic";\n'
+              '\t\t\t};\n'
+              '\t\t\tname = Release;'
+          )
+          team_id = os.environ['TEAM_ID']
+          profile_name = os.environ['PROFILE_NAME']
+          new = (
+              'PRODUCT_BUNDLE_IDENTIFIER = com.fp.fitplan;\n'
+              '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
+              '\t\t\t\tSWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";\n'
+              '\t\t\t\tSWIFT_VERSION = 5.0;\n'
+              '\t\t\t\tVERSIONING_SYSTEM = "apple-generic";\n'
+              '\t\t\t\tCODE_SIGN_STYLE = Manual;\n'
+              '\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n'
+              f'\t\t\t\tDEVELOPMENT_TEAM = "{team_id}";\n'
+              f'\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "{profile_name}";\n'
+              '\t\t\t};\n'
+              '\t\t\tname = Release;'
+          )
+
+          if old not in content:
+              print("ERROR: Runner Release build settings block not found")
+              exit(1)
+          content = content.replace(old, new, 1)
+          with open(pbx_path, 'w', encoding='utf-8') as f:
+              f.write(content)
+          print("Configured Manual code signing for Runner Release")
+          PYEOF
+
       - name: Generate ExportOptions.plist
         if: ${{ inputs.sign == true }}
         env:
