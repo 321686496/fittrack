@@ -116,6 +116,23 @@ jobs:
       # --------------------------------------------------------------------------
       # 代码签名准备（仅 sign=true 时执行）
       # --------------------------------------------------------------------------
+      - name: Diagnose certificate & password
+        # 用于定位 "MAC verification failed (wrong password)" 类错误：
+        # 输出 base64 长度、解码后 p12 大小、密码长度及 OpenSSL 验证结果
+        if: ${{ inputs.sign == true }}
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        run: |
+          printf '%s' "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$RUNNER_TEMP/diag.p12"
+          echo "===== 证书诊断 ====="
+          echo "BUILD_CERTIFICATE_BASE64 长度: ${#BUILD_CERTIFICATE_BASE64} 字符"
+          echo "解码后 p12 大小: $(stat -f%z "$RUNNER_TEMP/diag.p12") 字节 (本地 p12 通常 2~5KB)"
+          echo "P12_PASSWORD 长度: ${#P12_PASSWORD} 字符"
+          echo "--- OpenSSL 密码验证（若显示 Mac verify error 则密码不匹配）---"
+          openssl pkcs12 -in "$RUNNER_TEMP/diag.p12" -passin "pass:$P12_PASSWORD" -noout 2>&1 | head -20
+          echo "===== 证书诊断结束 ====="
+
       - name: Create temporary keychain & import certificate
         if: ${{ inputs.sign == true }}
         env:
@@ -128,9 +145,16 @@ jobs:
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
-          # 解码并导入 .p12 证书
+          # 解码 .p12 证书
           CERT_PATH="$RUNNER_TEMP/build_cert.p12"
-          echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+          printf '%s' "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+
+          # 预校验：密码错误或文件损坏时立即退出并给出明确指引
+          if ! openssl pkcs12 -in "$CERT_PATH" -passin "pass:$P12_PASSWORD" -noout 2>/dev/null; then
+            echo "::error::证书验证失败：请检查 BUILD_CERTIFICATE_BASE64 是否完整（本地 p12 约 $(stat -f%z "$CERT_PATH") 字节，base64 长度 ${#BUILD_CERTIFICATE_BASE64}），P12_PASSWORD 是否与导出时完全一致"
+            exit 1
+          fi
+
           security import "$CERT_PATH" \
             -P "$P12_PASSWORD" \
             -A \
