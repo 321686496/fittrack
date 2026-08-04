@@ -58,7 +58,7 @@ struct FitTrackWidget {
     Column() {
       // 标题
       Row() {
-        Text('FitTrack')
+        Text('LiftTrack')
           .fontSize(14)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.textPrimaryColor)

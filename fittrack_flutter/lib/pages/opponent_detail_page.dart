@@ -53,7 +53,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final settings = Storage.getSettings();
     final opponentJson = settings['virtualOpponentData'] as Map<String, dynamic>?;
 
@@ -110,6 +110,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     );
   }
 
+<<<<<<< HEAD
   Widget _buildHeaderCard(FitTrackColors colors, VirtualOpponent opp) {
     final skinId = opp.appliedSkinId;
     final hasSkin = skinId.isNotEmpty;
@@ -151,6 +152,10 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
               ]
             : null,
       ),
+=======
+  Widget _buildHeaderCard(LiftTrackColors colors, VirtualOpponent opp) {
+    return CardWidget(
+>>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -229,6 +234,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     );
   }
 
+<<<<<<< HEAD
   Widget _buildWeeklyStatsCard(FitTrackColors colors, VirtualOpponent opp) {
     final skinId = opp.appliedSkinId;
     final hasSkin = skinId.isNotEmpty;
@@ -236,6 +242,9 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
         ? OpponentSkinConfig.byId(skinId).cardTheme.borderColor
         : colors.borderColor;
 
+=======
+  Widget _buildWeeklyStatsCard(LiftTrackColors colors, VirtualOpponent opp) {
+>>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
     return CardWidget(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +265,11 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     );
   }
 
+<<<<<<< HEAD
   Widget _buildStatItem(FitTrackColors colors, String value, String label, Color borderColor) {
+=======
+  Widget _buildStatItem(LiftTrackColors colors, String value, String label) {
+>>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -279,7 +292,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     );
   }
 
-  Widget _buildStatusCard(FitTrackColors colors, VirtualOpponent opp) {
+  Widget _buildStatusCard(LiftTrackColors colors, VirtualOpponent opp) {
     return CardWidget(
       child: Row(
         children: [
@@ -296,7 +309,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     );
   }
 
-  Widget _buildSkinCard(FitTrackColors colors, String skinId, BuildContext context) {
+  Widget _buildSkinCard(LiftTrackColors colors, String skinId, BuildContext context) {
     final skin = skinId.isNotEmpty ? VirtualGoodsStore.byId(skinId) : null;
     final allSkins = VirtualGoodsStore.byCategory(GoodCategory.opponentSkin);
     // 当前皮肤 OpponentSkinConfig（用于 cardTheme / signatureMove）
@@ -449,11 +462,15 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     );
   }
 
+<<<<<<< HEAD
   Widget _buildSkinTile(FitTrackColors colors, VirtualGood good, bool unlocked) {
     final skinCfg = OpponentSkinConfig.byId(good.id);
     final cardTheme = skinCfg.cardTheme;
     final isAmbassador = good.id == 'skin_ambassador';
 
+=======
+  Widget _buildSkinTile(LiftTrackColors colors, VirtualGood good, bool unlocked) {
+>>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
     return Container(
       width: 110,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),

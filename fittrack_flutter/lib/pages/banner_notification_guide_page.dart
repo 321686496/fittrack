@@ -41,7 +41,7 @@ class _BannerNotificationGuidePageState
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -96,7 +96,7 @@ class _BannerNotificationGuidePageState
                   Text('开启步骤', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 12),
                   _buildStep(colors, 1, '打开手机「设置」'),
-                  _buildStep(colors, 2, '进入「通知管理」> 找到「FitTrack」'),
+                  _buildStep(colors, 2, '进入「通知管理」> 找到「LiftTrack」'),
                   _buildStep(colors, 3, '开启「横幅通知」开关'),
                   const SizedBox(height: 20),
                   // 状态指示器
@@ -151,7 +151,7 @@ class _BannerNotificationGuidePageState
     );
   }
 
-  Widget _buildStep(FitTrackColors colors, int num, String text) {
+  Widget _buildStep(LiftTrackColors colors, int num, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Custom theme extension for FitTrack extra colors
+/// Custom theme extension for LiftTrack extra colors
 @immutable
-class FitTrackColors extends ThemeExtension<FitTrackColors> {
+class LiftTrackColors extends ThemeExtension<LiftTrackColors> {
   final Color bgSecondary;
   final Color bgCard;
   final Color bgElevated;
@@ -17,7 +17,7 @@ class FitTrackColors extends ThemeExtension<FitTrackColors> {
   final Color infoColor;
   final Color purpleColor;
 
-  const FitTrackColors({
+  const LiftTrackColors({
     required this.bgSecondary,
     required this.bgCard,
     required this.bgElevated,
@@ -34,7 +34,7 @@ class FitTrackColors extends ThemeExtension<FitTrackColors> {
   });
 
   @override
-  FitTrackColors copyWith({
+  LiftTrackColors copyWith({
     Color? bgSecondary,
     Color? bgCard,
     Color? bgElevated,
@@ -49,7 +49,7 @@ class FitTrackColors extends ThemeExtension<FitTrackColors> {
     Color? infoColor,
     Color? purpleColor,
   }) {
-    return FitTrackColors(
+    return LiftTrackColors(
       bgSecondary: bgSecondary ?? this.bgSecondary,
       bgCard: bgCard ?? this.bgCard,
       bgElevated: bgElevated ?? this.bgElevated,
@@ -67,9 +67,9 @@ class FitTrackColors extends ThemeExtension<FitTrackColors> {
   }
 
   @override
-  FitTrackColors lerp(FitTrackColors? other, double t) {
-    if (other is! FitTrackColors) return this;
-    return FitTrackColors(
+  LiftTrackColors lerp(LiftTrackColors? other, double t) {
+    if (other is! LiftTrackColors) return this;
+    return LiftTrackColors(
       bgSecondary: Color.lerp(bgSecondary, other.bgSecondary, t)!,
       bgCard: Color.lerp(bgCard, other.bgCard, t)!,
       bgElevated: Color.lerp(bgElevated, other.bgElevated, t)!,
@@ -180,7 +180,7 @@ class AppTheme {
       onError: Color(0xFFFFFFFF),
     ),
     extensions: const <ThemeExtension<dynamic>>[
-      FitTrackColors(
+      LiftTrackColors(
         bgSecondary: Color(0xFFFFF4EE),
         bgCard: Color(0xFFFFFFFF),
         bgElevated: Color(0xFFFFF8F4),
@@ -349,7 +349,7 @@ class AppTheme {
       onError: Color(0xFF000000),
     ),
     extensions: const <ThemeExtension<dynamic>>[
-      FitTrackColors(
+      LiftTrackColors(
         bgSecondary: Color(0xFF0f1520),
         bgCard: Color(0xFF141c28),
         bgElevated: Color(0xFF1a2436),
@@ -522,7 +522,7 @@ class AppTheme {
       onError: Color(0xFFffffff),
     ),
     extensions: const <ThemeExtension<dynamic>>[
-      FitTrackColors(
+      LiftTrackColors(
         bgSecondary: Color(0xFFfce7f3),
         bgCard: Color(0xFFffffff),
         bgElevated: Color(0xFFfdf2f8),
@@ -691,7 +691,7 @@ class AppTheme {
       onError: Color(0xFFffffff),
     ),
     extensions: const <ThemeExtension<dynamic>>[
-      FitTrackColors(
+      LiftTrackColors(
         bgSecondary: Color(0xFFf0fdf4),
         bgCard: Color(0xFFffffff),
         bgElevated: Color(0xFFf0fdf4),
@@ -881,7 +881,7 @@ class AppTheme {
       onError: Color(0xFFffffff),
     ),
     extensions: const <ThemeExtension<dynamic>>[
-      FitTrackColors(
+      LiftTrackColors(
         bgSecondary: Color(0xFFf1f5f9),
         bgCard: Color(0xFFffffff),
         bgElevated: Color(0xFFf8fafc),
@@ -1049,7 +1049,7 @@ class AppTheme {
       onError: Color(0xFF000000),
     ),
     extensions: const <ThemeExtension<dynamic>>[
-      FitTrackColors(
+      LiftTrackColors(
         bgSecondary: Color(0xFF0f0022),
         bgCard: Color(0xFF15002e),
         bgElevated: Color(0xFF1f0044),
@@ -1221,7 +1221,7 @@ class AppTheme {
       onError: Color(0xFF000000),
     ),
     extensions: const <ThemeExtension<dynamic>>[
-      FitTrackColors(
+      LiftTrackColors(
         bgSecondary: Color(0xFF12100e),
         bgCard: Color(0xFF1a1612),
         bgElevated: Color(0xFF241e18),
@@ -1373,7 +1373,7 @@ class AppTheme {
 }
 
 /// 便捷主题访问类
-class FitTrackTheme {
+class LiftTrackTheme {
   static ThemeData get dark => AppTheme.getTheme('iron-forge');
   static ThemeData get light => AppTheme.getTheme('vitality-sport');
 }

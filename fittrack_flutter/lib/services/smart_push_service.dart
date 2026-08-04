@@ -108,7 +108,7 @@ class SmartPushService {
     final plugin = FlutterLocalNotificationsPlugin();
     await plugin.show(
       _notificationId,
-      'FitTrack 提醒',
+      'LiftTrack 提醒',
       message,
       const NotificationDetails(
         android: AndroidNotificationDetails(

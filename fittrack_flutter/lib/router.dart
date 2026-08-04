@@ -544,7 +544,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -575,7 +575,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
                   ),
                   child: SingleChildScrollView(
                     child: Text(
-                      '欢迎使用 FitTrack！\n\n'
+                      '欢迎使用 LiftTrack！\n\n'
                       '我们非常重视您的隐私保护。在您使用本应用之前，请仔细阅读以下隐私政策：\n\n'
                       '1. 数据收集：我们仅收集您主动提供的个人信息（如身高、体重、健身目标等），用于为您推荐训练计划。所有数据均存储在您的设备本地，不会上传至任何服务器。\n\n'
                       '2. 数据使用：您的数据仅用于提供健身训练服务，包括训练计划推荐、训练记录统计、身体数据追踪等功能。\n\n'

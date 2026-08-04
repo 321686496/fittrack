@@ -10,7 +10,7 @@ class PlanLibraryHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     return Scaffold(
       backgroundColor: ft.bgSecondary,
       body: Column(

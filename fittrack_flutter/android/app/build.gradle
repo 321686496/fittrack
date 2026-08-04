@@ -61,7 +61,8 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.fp.fitplan"
+//        applicationId "com.fp.fitplan"
+        applicationId "com.fp.fitplan2"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 21
@@ -75,6 +76,13 @@ android {
             // CI 环境无 key.properties 时回退到 debug 签名，避免 storeFile 为 null 导致打包失败
             signingConfig keystoreProperties['storeFile'] != null ? signingConfigs.release : signingConfigs.debug
         }
+    }
+
+    // AGP 7.2.0 的 lint 任务使用内置 Kotlin 1.6.x 解析器，读取 1.9.x 元数据会报错。
+    // 关闭 release 构建的 lint 检查以消除报错（Flutter 应用不依赖 Android lint）。
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
     }
 }
 

@@ -4,7 +4,6 @@ import '../data/course_content.dart';
 import '../data/storage.dart';
 import '../data/tutorial_content.dart';
 import '../themes/app_themes.dart';
-import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 /// 教学分类详情页（v1.3 新增）
@@ -28,7 +27,7 @@ class TutorialCategoryPage extends StatefulWidget {
 class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     final meta = _categoryMeta(widget.categoryKey);
     if (meta == null) {
       return Scaffold(
@@ -103,7 +102,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
   }
 
   /// 系统化课程列表
-  Widget _buildCourseList(FitTrackColors ft, List<Course> courses) {
+  Widget _buildCourseList(LiftTrackColors ft, List<Course> courses) {
     if (courses.isEmpty) {
       return _buildEmpty(ft, '暂无系统化课程');
     }
@@ -181,7 +180,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
 
   /// 教学动作列表
   Widget _buildTutorialList(
-      FitTrackColors ft, List<Tutorial> tutorials, _CategoryMeta meta) {
+      LiftTrackColors ft, List<Tutorial> tutorials, _CategoryMeta meta) {
     if (tutorials.isEmpty) {
       return _buildEmpty(ft, '暂无${meta.title}');
     }
@@ -197,15 +196,9 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
     );
   }
 
-  Widget _buildTutorialCard(FitTrackColors ft, Tutorial t, bool unlocked) {
+  Widget _buildTutorialCard(LiftTrackColors ft, Tutorial t, bool unlocked) {
     return GestureDetector(
-      onTap: () {
-        if (unlocked) {
-          context.push('/tutorial/${t.id}');
-        } else {
-          FitToast.info(context, t.unlockRequirement ?? '邀请好友激活后解锁');
-        }
-      },
+      onTap: () => context.push('/tutorial/${t.id}'),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -265,7 +258,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
                   Text(
                     unlocked
                         ? '${t.coachName} · ${t.primaryMuscle.label}'
-                        : (t.unlockRequirement ?? '邀请好友激活后解锁'),
+                        : '${t.coachName} · 点击查看介绍',
                     style: TextStyle(color: ft.textMuted, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -290,7 +283,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
   }
 
   Widget _buildMetaChip(
-      FitTrackColors ft, String text, Color bg, Color fg) {
+      LiftTrackColors ft, String text, Color bg, Color fg) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -301,7 +294,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
     );
   }
 
-  Widget _buildEmpty(FitTrackColors ft, String text) {
+  Widget _buildEmpty(LiftTrackColors ft, String text) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,

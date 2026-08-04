@@ -81,7 +81,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final plan = _plan;
 
     if (plan == null || plan.isEmpty) {
@@ -226,7 +226,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
 
   /// 当前训练日选择器 —— 允许用户手动调整当前处于循环训练的第几天
   Widget _buildCurrentDaySelector(
-      FitTrackColors colors, Map<String, dynamic> plan, List days) {
+      LiftTrackColors colors, Map<String, dynamic> plan, List days) {
     if (days.isEmpty) return const SizedBox.shrink();
     final currentDayIndex = (plan['currentDayIndex'] as num?)?.toInt() ?? 0;
     final activeDayIdx = currentDayIndex.clamp(0, days.length - 1);
@@ -294,7 +294,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
     );
   }
 
-  Widget _buildDayCard(FitTrackColors colors, Map<String, dynamic> plan, Map<String, dynamic> day, int dayIndex) {
+  Widget _buildDayCard(LiftTrackColors colors, Map<String, dynamic> plan, Map<String, dynamic> day, int dayIndex) {
     final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     return Padding(
@@ -362,7 +362,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
     );
   }
 
-  Widget _buildExerciseDetailItem(FitTrackColors colors, Map<String, dynamic> ex) {
+  Widget _buildExerciseDetailItem(LiftTrackColors colors, Map<String, dynamic> ex) {
     final setConfig = ex['setConfig'] as List?;
     final hasPerSet = setConfig != null && setConfig.length > 1;
 
@@ -410,7 +410,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
     );
   }
 
-  Widget _buildUniformStats(FitTrackColors colors, Map<String, dynamic> ex) {
+  Widget _buildUniformStats(LiftTrackColors colors, Map<String, dynamic> ex) {
     final reps = ex['reps'] ?? '-';
     final weight = ex['weight'];
     final restTime = ex['restTime'] ?? 90;
@@ -427,7 +427,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
     );
   }
 
-  Widget _buildPerSetTable(FitTrackColors colors, List setConfig) {
+  Widget _buildPerSetTable(LiftTrackColors colors, List setConfig) {
     return Container(
       decoration: BoxDecoration(
         color: colors.bgCard.withOpacity(0.5),
@@ -477,7 +477,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
     );
   }
 
-  Widget _buildStatChip(FitTrackColors colors, IconData icon, String label, String value) {
+  Widget _buildStatChip(LiftTrackColors colors, IconData icon, String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

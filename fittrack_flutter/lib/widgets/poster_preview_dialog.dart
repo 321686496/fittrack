@@ -40,7 +40,7 @@ class PosterPreviewDialog {
       context: context,
       barrierDismissible: true,
       builder: (ctx) {
-        final ft = Theme.of(ctx).extension<FitTrackColors>()!;
+        final ft = Theme.of(ctx).extension<LiftTrackColors>()!;
         final mediaSize = MediaQuery.of(ctx).size;
         // 海报图片最大高度 = 屏幕高度 - 标题栏 - 底部按钮区 - 内边距
         final maxImageHeight = mediaSize.height - 220;
@@ -193,7 +193,7 @@ class PosterPreviewDialog {
             await PermissionService.showPermissionDeniedDialog(
               ctx,
               permissionName: '存储',
-              reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > FitTrack > 权限管理」中开启「媒体和文件」权限后重试。',
+              reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > LiftTrack > 权限管理」中开启「媒体和文件」权限后重试。',
             );
             return;
           }
@@ -231,7 +231,7 @@ class PosterPreviewDialog {
         await PermissionService.showPermissionDeniedDialog(
           ctx,
           permissionName: '存储',
-          reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > FitTrack > 权限管理」中开启「媒体和文件」权限后重试。',
+          reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > LiftTrack > 权限管理」中开启「媒体和文件」权限后重试。',
         );
         return;
       }
@@ -284,7 +284,7 @@ class PosterPreviewDialog {
       } else {
         await Share.shareXFiles(
           [XFile(imagePath)],
-          text: 'FitTrack 燃力',
+          text: 'LiftTrack 燃力',
         );
       }
     } on PlatformException catch (e) {

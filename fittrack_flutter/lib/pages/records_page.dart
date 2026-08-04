@@ -108,7 +108,7 @@ class _RecordsPageState extends State<RecordsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     // 列表视图
     final grouped = _groupRecords();
@@ -219,7 +219,7 @@ class _RecordsPageState extends State<RecordsPage> {
     );
   }
 
-  Widget _buildRecordCard(FitTrackColors colors, Map<String, dynamic> record) {
+  Widget _buildRecordCard(LiftTrackColors colors, Map<String, dynamic> record) {
     final recordId = record['id'] as String? ?? '';
     final timestamp = record['date'] as int? ??
         record['createTime'] as int? ??
@@ -307,7 +307,7 @@ class _RecordsPageState extends State<RecordsPage> {
 }
 
   Widget _buildStatItem(
-      FitTrackColors colors, IconData icon, String value, String label) {
+      LiftTrackColors colors, IconData icon, String value, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

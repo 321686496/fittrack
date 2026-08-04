@@ -54,7 +54,7 @@ class _PlanPosterPageState extends State<PlanPosterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     return Scaffold(
       backgroundColor: ft.bgSecondary,
       body: Column(
@@ -70,7 +70,7 @@ class _PlanPosterPageState extends State<PlanPosterPage> {
     );
   }
 
-  Widget _buildPreview(FitTrackColors ft) {
+  Widget _buildPreview(LiftTrackColors ft) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(

@@ -356,7 +356,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final isEditing = _editingPlan != null;
     final recommendedPlans = _generateRecommendedPlans();
 
@@ -512,7 +512,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
     );
   }
 
-  Widget _buildRecommendedCard(FitTrackColors colors, PlanRecommendation rec) {
+  Widget _buildRecommendedCard(LiftTrackColors colors, PlanRecommendation rec) {
     final plan = rec.plan;
     final difficultyLabel = kDifficultyLabelsZh[plan.difficulty] ?? plan.difficulty;
     final typeLabel = kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType;
@@ -560,12 +560,12 @@ class _AddPlanPageState extends State<AddPlanPage> {
     );
   }
 
-  Widget _buildLabel(FitTrackColors colors, String text) {
+  Widget _buildLabel(LiftTrackColors colors, String text) {
     return Text(text, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500));
   }
 
   // 训练动作的小标签：用于展示组数/次数/重量/休息时间
-  Widget _buildMiniTag(FitTrackColors colors, String text) {
+  Widget _buildMiniTag(LiftTrackColors colors, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -580,7 +580,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
   }
 
   // 训练日编辑器卡片 —— 可编辑训练日名称、添加/删除/编辑动作
-  Widget _buildDayEditor(FitTrackColors colors, int dayIndex, Map<String, dynamic> day) {
+  Widget _buildDayEditor(LiftTrackColors colors, int dayIndex, Map<String, dynamic> day) {
     final isRest = day['isRest'] == true;
     final exercises = (day['exercises'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final labelController = _labelControllers[dayIndex] ?? TextEditingController(text: '${day['label'] ?? ''}');

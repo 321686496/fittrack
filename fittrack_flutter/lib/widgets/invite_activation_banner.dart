@@ -32,7 +32,7 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Material(
       color: colors.accentGlow,

@@ -223,7 +223,7 @@ class _GymCardPageState extends State<GymCardPage> {
   }
 
   void _showAddCardSheet({Map<String, dynamic>? existingCard}) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final isEdit = existingCard != null;
 
     // 清空（添加模式）或填入 existingCard 值（编辑模式）
@@ -558,7 +558,7 @@ class _GymCardPageState extends State<GymCardPage> {
   }
 
   void _showCardDetail(Map<String, dynamic> card) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final statusInfo = _getCardStatus(card);
     final dailyCost = _calcDailyCost(card);
     final progress = _calcProgress(card);
@@ -786,7 +786,7 @@ class _GymCardPageState extends State<GymCardPage> {
     }
   }
 
-  Color _getProgressColor(String status, FitTrackColors colors) {
+  Color _getProgressColor(String status, LiftTrackColors colors) {
     switch (status) {
       case 'expired':
       case 'expiring_today':
@@ -799,7 +799,7 @@ class _GymCardPageState extends State<GymCardPage> {
     }
   }
 
-  Widget _buildDetailRow(FitTrackColors colors, IconData icon, String label, String value) {
+  Widget _buildDetailRow(LiftTrackColors colors, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -816,7 +816,7 @@ class _GymCardPageState extends State<GymCardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     // 统计即将到期/过期的卡片数量
     int alertCount = 0;
@@ -877,7 +877,7 @@ class _GymCardPageState extends State<GymCardPage> {
     );
   }
 
-  Widget _buildAlertBanner(FitTrackColors colors, int count) {
+  Widget _buildAlertBanner(LiftTrackColors colors, int count) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -901,7 +901,7 @@ class _GymCardPageState extends State<GymCardPage> {
     );
   }
 
-  Widget _buildEmptyState(FitTrackColors colors) {
+  Widget _buildEmptyState(LiftTrackColors colors) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -931,7 +931,7 @@ class _GymCardPageState extends State<GymCardPage> {
     );
   }
 
-  Widget _buildCardItem(FitTrackColors colors, Map<String, dynamic> card) {
+  Widget _buildCardItem(LiftTrackColors colors, Map<String, dynamic> card) {
     final statusInfo = _getCardStatus(card);
     final progress = _calcProgress(card);
     final dailyCost = _calcDailyCost(card);
@@ -1050,7 +1050,7 @@ class _GymCardPageState extends State<GymCardPage> {
     return ['expired', 'expiring_today', 'expiring_soon', 'low_count', 'used_up'].contains(status);
   }
 
-  Widget _buildInfoChip(FitTrackColors colors, IconData icon, String text) {
+  Widget _buildInfoChip(LiftTrackColors colors, IconData icon, String text) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -48,7 +48,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final course = CourseLibrary.getById(widget.courseId);
     final chapter = course?.chapters.where((c) => c.id == widget.chapterId).firstOrNull;
     if (chapter == null) return const Scaffold(body: Center(child: Text('章节不存在')));
@@ -84,7 +84,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
     );
   }
 
-  Widget _buildContent(FitTrackColors colors, Chapter chapter) {
+  Widget _buildContent(LiftTrackColors colors, Chapter chapter) {
     if (chapter.blocks.isEmpty) {
       return _buildLegacyContent(colors, chapter);
     }
@@ -94,7 +94,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
     );
   }
 
-  Widget _buildLegacyContent(FitTrackColors colors, Chapter chapter) {
+  Widget _buildLegacyContent(LiftTrackColors colors, Chapter chapter) {
     // 旧逻辑 fallback：content.split('\n\n') + imageEmojis + 推荐动作卡片
     final course = CourseLibrary.getById(widget.courseId);
     return Column(
@@ -141,7 +141,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
     );
   }
 
-  Widget _buildBlock(FitTrackColors colors, ContentBlock b) {
+  Widget _buildBlock(LiftTrackColors colors, ContentBlock b) {
     switch (b.type) {
       case BlockType.heading:
         return Padding(
@@ -235,7 +235,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
     }
   }
 
-  Widget _buildExerciseCard(FitTrackColors colors, String exerciseId) {
+  Widget _buildExerciseCard(LiftTrackColors colors, String exerciseId) {
     final ex = MockData.exercises.firstWhere(
       (e) => e['id'] == exerciseId,
       orElse: () => {'name': exerciseId},
