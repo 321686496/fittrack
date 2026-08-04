@@ -161,7 +161,7 @@ struct RestLiveActivityAttributes: ActivityAttributes {
           return
         }
 
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
           self?.startRestLiveView(
             exerciseName: exerciseName,
             restSeconds: restSeconds,
@@ -169,8 +169,8 @@ struct RestLiveActivityAttributes: ActivityAttributes {
             result: result
           )
         } else {
-          // 低于 16.1 降级为普通通知
-          result(FlutterError(code: "UNAVAILABLE", message: "Live Activities requires iOS 16.1+", details: nil))
+          // 低于 16.2 降级为普通通知
+          result(FlutterError(code: "UNAVAILABLE", message: "Live Activities requires iOS 16.2+", details: nil))
         }
       case "stopRestLiveView":
         if #available(iOS 16.1, *) {
@@ -187,7 +187,7 @@ struct RestLiveActivityAttributes: ActivityAttributes {
     }
   }
 
-  @available(iOS 16.1, *)
+  @available(iOS 16.2, *)
   private func startRestLiveView(
     exerciseName: String,
     restSeconds: Int,
