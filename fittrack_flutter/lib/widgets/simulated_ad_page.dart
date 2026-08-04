@@ -31,7 +31,7 @@ class _SimulatedAdPageState extends State<SimulatedAdPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     return Scaffold(
       backgroundColor: colors.bgSecondary,
       body: SafeArea(

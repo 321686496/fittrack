@@ -101,7 +101,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -147,7 +147,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 绑定的训练记录摘要 ─────────────────────────────────────
 
-  Widget _buildBoundRecordCard(FitTrackColors colors) {
+  Widget _buildBoundRecordCard(LiftTrackColors colors) {
     final r = _boundRecord!;
     final muscles = (r['muscles'] as List?)?.cast<String>() ?? [];
     final duration = ((r['duration'] ?? 0) as num).toInt();
@@ -220,7 +220,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     );
   }
 
-  Widget _buildMiniStat(FitTrackColors colors, String label, String value) {
+  Widget _buildMiniStat(LiftTrackColors colors, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -238,7 +238,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 训练感受滑块 ───────────────────────────────────────────
 
-  Widget _buildFeelingSection(FitTrackColors colors) {
+  Widget _buildFeelingSection(LiftTrackColors colors) {
     return _buildSection(
       colors,
       icon: Icons.tune,
@@ -300,7 +300,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 最满意动作 ─────────────────────────────────────────────
 
-  Widget _buildBestExerciseSection(FitTrackColors colors) {
+  Widget _buildBestExerciseSection(LiftTrackColors colors) {
     return _buildSection(
       colors,
       icon: Icons.star_outline,
@@ -362,7 +362,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 酸痛部位 ───────────────────────────────────────────────
 
-  Widget _buildSorePartsSection(FitTrackColors colors) {
+  Widget _buildSorePartsSection(LiftTrackColors colors) {
     return _buildSection(
       colors,
       icon: Icons.accessibility_new,
@@ -411,7 +411,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 自由心得 ───────────────────────────────────────────────
 
-  Widget _buildContentSection(FitTrackColors colors) {
+  Widget _buildContentSection(LiftTrackColors colors) {
     final count = _contentCtrl.text.length;
     return _buildSection(
       colors,
@@ -456,7 +456,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 心情贴纸 ───────────────────────────────────────────────
 
-  Widget _buildMoodStickerSection(FitTrackColors colors) {
+  Widget _buildMoodStickerSection(LiftTrackColors colors) {
     return _buildSection(
       colors,
       icon: Icons.mood_outlined,
@@ -530,7 +530,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 精选标记 ───────────────────────────────────────────────
 
-  Widget _buildFeaturedToggle(FitTrackColors colors) {
+  Widget _buildFeaturedToggle(LiftTrackColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -563,7 +563,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   // ── 操作按钮 ───────────────────────────────────────────────
 
-  Widget _buildActions(FitTrackColors colors) {
+  Widget _buildActions(LiftTrackColors colors) {
     return Row(
       children: [
         Expanded(
@@ -610,7 +610,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
   // ── 通用 Section 容器 ──────────────────────────────────────
 
   Widget _buildSection(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required IconData icon,
     required String title,
     required Widget child,

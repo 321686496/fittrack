@@ -54,7 +54,7 @@ struct LockScreenView: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("FitTrack - 休息中")
+                Text("LiftTrack - 休息中")
                     .font(.headline)
                     .foregroundColor(.white)
                 Text(context.state.exerciseName)

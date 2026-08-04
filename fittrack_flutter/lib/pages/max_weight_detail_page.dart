@@ -11,7 +11,7 @@ class MaxWeightDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
     final globalMax = MaxWeightService.instance.getGlobalMax();
     final muscleGroups = MaxWeightService.instance.getTopByMuscleGroup();
 
@@ -57,7 +57,7 @@ class MaxWeightDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildGlobalCard(MaxWeightRecord record, FitTrackColors ft) {
+  Widget _buildGlobalCard(MaxWeightRecord record, LiftTrackColors ft) {
     final comparison = WeightComparison.forWeight(record.weight);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -113,7 +113,7 @@ class MaxWeightDetailPage extends StatelessWidget {
   }
 
   Widget _buildGroupSection(
-      String group, List<MaxWeightRecord> records, FitTrackColors ft) {
+      String group, List<MaxWeightRecord> records, LiftTrackColors ft) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

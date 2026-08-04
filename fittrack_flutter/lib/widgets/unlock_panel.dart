@@ -11,7 +11,7 @@ class UnlockPanel {
     required int pointsCost,
     required String featureId,
   }) async {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final adsEnabled = AdService.adsEnabled;
     final currentPoints = PointsService.instance.points;
 
@@ -94,7 +94,7 @@ class UnlockPanel {
 
   static Widget _buildOption(
     BuildContext ctx,
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required IconData icon,
     required String label,
     required String subtitle,

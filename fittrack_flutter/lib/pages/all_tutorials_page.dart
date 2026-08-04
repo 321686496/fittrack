@@ -17,7 +17,7 @@ class AllTutorialsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ft = Theme.of(context).extension<FitTrackColors>()!;
+    final ft = Theme.of(context).extension<LiftTrackColors>()!;
 
     // 构建分类数据（含数量统计与解锁状态）
     final categories = _buildCategories();

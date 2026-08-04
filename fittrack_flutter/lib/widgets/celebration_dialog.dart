@@ -10,7 +10,7 @@ class CelebrationDialog {
     required int duration,
     required String recordId,
   }) async {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final streak = _calcStreak();
     final messages = _getEmotionalMessages(streak, totalWeight);
     final message = messages[DateTime.now().millisecond % messages.length];
@@ -91,7 +91,7 @@ class CelebrationDialog {
     );
   }
 
-  static Widget _stat(FitTrackColors colors, String value, String label) {
+  static Widget _stat(LiftTrackColors colors, String value, String label) {
     return Column(
       children: [
         Text(value, style: TextStyle(

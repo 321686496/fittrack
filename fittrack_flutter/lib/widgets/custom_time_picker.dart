@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 
 /// 自定义时间选择器 —— 不依赖系统 showTimePicker，
-/// 提供符合 FitTrack 深色主题风格的滚轮式时间选择。
+/// 提供符合 LiftTrack 深色主题风格的滚轮式时间选择。
 class CustomTimePicker extends StatefulWidget {
   /// 是否返回 null（点击取消），true 表示将返回 null 而非当前选中的时间。
   final void Function(TimeOfDay? time)? onConfirm;
@@ -66,7 +66,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Container(
       decoration: BoxDecoration(
@@ -295,7 +295,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
   }
 
   Widget _buildWheel({
-    required FitTrackColors colors,
+    required LiftTrackColors colors,
     required int count,
     required FixedScrollController controller,
     required int selectedValue,
@@ -329,7 +329,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
     );
   }
 
-  Widget _quickChip(FitTrackColors colors, String label, int h, int m) {
+  Widget _quickChip(LiftTrackColors colors, String label, int h, int m) {
     final isSelected = _hour == h && _minute == m;
     return GestureDetector(
       onTap: () {

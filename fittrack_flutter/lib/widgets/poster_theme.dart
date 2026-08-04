@@ -283,7 +283,7 @@ class PosterBrandHeader extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Text(
-              'FitTrack 燃力',
+              'LiftTrack 燃力',
               style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 28,
@@ -383,7 +383,7 @@ class PosterQrFooter extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'FitTrack · 燃力训练',
+                'LiftTrack · 燃力训练',
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 18,

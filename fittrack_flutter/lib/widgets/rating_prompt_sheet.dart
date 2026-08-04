@@ -64,7 +64,7 @@ class _RatingSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final total = totalTrainings;
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -74,7 +74,7 @@ class _RatingSheet extends StatelessWidget {
           const Icon(Icons.star, color: Colors.amber, size: 64),
           const SizedBox(height: 16),
           Text(
-            '你已经用 FitTrack 完成了 $total 次训练！',
+            '你已经用 LiftTrack 完成了 $total 次训练！',
             style: TextStyle(
               color: colors.textPrimary,
               fontSize: 16,

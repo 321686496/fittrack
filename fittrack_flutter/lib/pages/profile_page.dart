@@ -99,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final body = _bodyDataCache;
 
     return Column(
@@ -153,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
   }
 
   void _showCalendar(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final records = Storage.getRecords();
     final now = DateTime.now();
 
@@ -229,7 +229,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  Widget _buildCalendarGrid(FitTrackColors colors, DateTime now, Set<int> trainedDays) {
+  Widget _buildCalendarGrid(LiftTrackColors colors, DateTime now, Set<int> trainedDays) {
     final firstDay = DateTime(now.year, now.month, 1);
     var startWeekday = firstDay.weekday - 1; // 0=Mon
     final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
@@ -279,7 +279,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  Widget _buildProfileHeader(FitTrackColors colors) {
+  Widget _buildProfileHeader(LiftTrackColors colors) {
     final settings = _settingsCache;
     final userName = settings['userName'] as String? ?? '用户';
     final gender = settings['gender'] as String? ?? '';
@@ -365,7 +365,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  Widget _buildStatColumn(FitTrackColors colors, String value, String label) {
+  Widget _buildStatColumn(LiftTrackColors colors, String value, String label) {
     return Expanded(
       child: Column(
         children: [
@@ -387,7 +387,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  Widget _buildVerticalDivider(FitTrackColors colors) {
+  Widget _buildVerticalDivider(LiftTrackColors colors) {
     return Container(
       width: 1,
       height: 28,
@@ -396,7 +396,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
   }
 
   /// 积分单独成卡：大数字 + 入口
-  Widget _buildPointsCard(FitTrackColors colors) {
+  Widget _buildPointsCard(LiftTrackColors colors) {
     final points = PointsService.instance.points;
     return GestureDetector(
       onTap: () => context.push('/points-detail'),
@@ -489,7 +489,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     return streak;
   }
 
-  void _showProfileEditor(FitTrackColors colors) {
+  void _showProfileEditor(LiftTrackColors colors) {
     final settings = Storage.getSettings();
     final nameCtrl = TextEditingController(text: settings['userName'] as String? ?? '用户');
     String selectedGender = settings['gender'] as String? ?? '';
@@ -714,7 +714,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                       final initialTime = trainingTime.isNotEmpty
                           ? _parseTimeOfDay(trainingTime)
                           : const TimeOfDay(hour: 18, minute: 0);
-                      // 使用自定义时间选择器（FitTrack 暗色主题风格滚轮）
+                      // 使用自定义时间选择器（LiftTrack 暗色主题风格滚轮）
                       final picked = await CustomTimePicker.show(
                         context,
                         initialTime: initialTime,
@@ -793,7 +793,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  Widget _buildAchievements(FitTrackColors colors) {
+  Widget _buildAchievements(LiftTrackColors colors) {
     final all = AchievementService.instance.getAll();
     final unlocked = all.where((a) => a.unlocked).toList();
     final pct = all.isNotEmpty ? (unlocked.length / all.length * 100).round() : 0;
@@ -968,7 +968,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     }
   }
 
-  Widget _buildBodyData(FitTrackColors colors, Map<String, dynamic> body) {
+  Widget _buildBodyData(LiftTrackColors colors, Map<String, dynamic> body) {
     // 收集有值的字段（值为 0 或 null 的字段不显示）
     final fieldConfigs = <Map<String, dynamic>>[
       {'key': 'height', 'unit': 'cm', 'label': '身高'},
@@ -1098,7 +1098,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     return false;
   }
 
-  Widget _buildBodyItem(FitTrackColors colors, _BodyFieldItem item) {
+  Widget _buildBodyItem(LiftTrackColors colors, _BodyFieldItem item) {
     return Expanded(
       child: Column(
         children: [
@@ -1157,7 +1157,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  Widget _buildNoBodyDataCard(FitTrackColors colors) {
+  Widget _buildNoBodyDataCard(LiftTrackColors colors) {
     return CardWidget(
       child: Column(
         children: [
@@ -1202,7 +1202,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  Widget _buildMenuList(FitTrackColors colors, BuildContext ctx) {
+  Widget _buildMenuList(LiftTrackColors colors, BuildContext ctx) {
     final menus = [
       {'icon': Icons.card_membership_outlined, 'label': '健身卡', 'page': 'gym-card'},
       {'icon': Icons.history, 'label': '训练记录', 'page': 'records'},
@@ -1270,7 +1270,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
       context,
       title: '隐私与安全',
       content:
-        'FitTrack 尊重您的隐私：\n\n'
+        'LiftTrack 尊重您的隐私：\n\n'
         '• 所有数据仅存储在本地设备\n'
         '• 不会上传任何个人信息到服务器\n'
         '• 通知权限仅用于训练提醒\n'

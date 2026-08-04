@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTrack Logo V2 设计方案对比</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+    color: #1d1d1f;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6e6e73;
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+  .legend {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    font-size: 14px;
+    line-height: 1.8;
+    color: #444;
+  }
+  .legend strong { color: #FF6B35; }
+  .grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  }
+  .card-num {
+    display: inline-block;
+    background: #FF6B35;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: #6e6e73;
+    margin-bottom: 18px;
+  }
+  .logo-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #f5f5f7;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .logo-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 12px;
+    font-weight: 600;
+    background: #e8f0fe;
+    color: #1a73e8;
+  }
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #6e6e73;
+    font-size: 13px;
+  }
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <h1>FitTrack Logo V2 设计方案对比</h1>
+  <p class="subtitle">功能图标 + 健身图形结合 · 无文字 · 千问 q3-fast 生成 · 2K 分辨率</p>
+
+  <div class="legend">
+    <strong>设计规范：</strong>主色 #FF6B35 活力橙 ｜ 渐变 #FF8C42 → #FF5722 (135°) ｜ 圆角方形背景 ｜ 扁平极简<br>
+    <strong>概念分组：</strong>将应用核心功能图标（首页/计划/统计/我的）与健身元素结合<br>
+    <strong>特点：</strong>无文字，纯图形设计，突出功能与健身的关联
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <span class="card-num">A</span>
+      <div class="card-title">房子 + 哑铃</div>
+      <div class="card-desc">首页图标 + 健身元素，象征家庭健身训练</div>
+      <div class="logo-wrap"><img src="logo_v2_A_house_dumbbell.png" alt="logo A"></div>
+      <span class="badge">首页 + 健身</span>
+    </div>
+
+    <div class="card">
+      <span class="card-num">B</span>
+      <div class="card-title">任务板 + 计时器</div>
+      <div class="card-desc">计划图标 + 计时器，象征训练计划与计时功能</div>
+      <div class="logo-wrap"><img src="logo_v2_B_clipboard_timer.png" alt="logo B"></div>
+      <span class="badge">计划 + 计时</span>
+    </div>
+
+    <div class="card">
+      <span class="card-num">C</span>
+      <div class="card-title">柱状图 + 哑铃</div>
+      <div class="card-desc">统计图标 + 力量训练，象征数据追踪与健身</div>
+      <div class="logo-wrap"><img src="logo_v2_C_barchart_dumbbell.png" alt="logo C"></div>
+      <span class="badge">统计 + 力量</span>
+    </div>
+
+    <div class="card">
+      <span class="card-num">D</span>
+      <div class="card-title">人物 + 运动姿态</div>
+      <div class="card-desc">我的图标 + 动态运动，象征个人健身进步</div>
+      <div class="logo-wrap"><img src="logo_v2_D_person_dynamic.png" alt="logo D"></div>
+      <span class="badge">我的 + 运动</span>
+    </div>
+  </div>
+
+  <p class="footer">生成时间：2026-08-03 · 模型：q3-fast (RouteAll/Vidu) · 提示词风格：扁平极简运动风</p>
+</body>
+</html>

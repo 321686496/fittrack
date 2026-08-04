@@ -102,7 +102,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   // ── 根据配色模式计算热力图颜色 ────────────────────────────────
 
-  Color _heatColor(String key, FitTrackColors colors) {
+  Color _heatColor(String key, LiftTrackColors colors) {
     final count = _dailyCounts[key] ?? 0;
     if (count == 0) return colors.borderColor.withOpacity(0.3); // 无训练灰色
 
@@ -393,7 +393,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     // 空状态：保留总览（值为0）+ 引导卡片
     if (_records.isEmpty) {
@@ -644,7 +644,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   // ── 训练活跃度热力图 ──────────────────────────────────────────
 
-  Widget _buildHeatmap(FitTrackColors colors) {
+  Widget _buildHeatmap(LiftTrackColors colors) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final weekday = now.weekday; // 1=Mon..7=Sun
@@ -889,7 +889,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        final colors = Theme.of(ctx).extension<FitTrackColors>()!;
+        final colors = Theme.of(ctx).extension<LiftTrackColors>()!;
         final weekDay = '周${['一','二','三','四','五','六','日'][date.weekday - 1]}';
         return SafeArea(
           child: Padding(
@@ -925,7 +925,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
     );
   }
 
-  Widget _buildDayRecordCard(Map<String, dynamic> r, FitTrackColors colors) {
+  Widget _buildDayRecordCard(Map<String, dynamic> r, LiftTrackColors colors) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
@@ -979,7 +979,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   // ── Frequency chart ──────────────────────────────────────────
 
-  Widget _buildFrequencyChart(FitTrackColors colors) {
+  Widget _buildFrequencyChart(LiftTrackColors colors) {
     final data = _showWeek ? _weekChartData : _monthChartData;
     final maxVal = data.fold(0, (max, d) {
       final v = (d['value'] as num?) ?? 0;
@@ -1062,7 +1062,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   }
 
   Widget _buildToggleBtn(
-      String text, bool active, VoidCallback onTap, FitTrackColors colors) {
+      String text, bool active, VoidCallback onTap, LiftTrackColors colors) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1088,7 +1088,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   // ── Muscle distribution ──────────────────────────────────────
 
-  Widget _buildMuscleDistribution(FitTrackColors colors) {
+  Widget _buildMuscleDistribution(LiftTrackColors colors) {
     return CardWidget(
       padding: const EdgeInsets.all(16),
       child: Wrap(
@@ -1150,7 +1150,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   // ── Personal records ─────────────────────────────────────────
 
-  Widget _buildPersonalRecords(FitTrackColors colors) {
+  Widget _buildPersonalRecords(LiftTrackColors colors) {
     return CardWidget(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1232,7 +1232,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   }
 
   // ── 训练容量趋势（柱状图）─────────────────────────────────────
-  Widget _buildVolumeChart(FitTrackColors colors) {
+  Widget _buildVolumeChart(LiftTrackColors colors) {
     final weeklyStats = _computeWeeklyStats();
     final volumes = List.generate(6, (i) {
       final stat = weeklyStats[5 - i]!; // 倒序：最旧→最新
@@ -1319,7 +1319,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   }
 
   // ── 动作热度榜（水平条形图 Top 5）─────────────────────────────
-  Widget _buildExercisePopularityChart(FitTrackColors colors) {
+  Widget _buildExercisePopularityChart(LiftTrackColors colors) {
     final data = _computeExercisePopularity();
     if (data.isEmpty) return const SizedBox.shrink();
     final maxCount = data.first['count'] as int;
@@ -1404,7 +1404,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   }
 
   // ── 训练时长趋势（折线图）─────────────────────────────────────
-  Widget _buildDurationTrendChart(FitTrackColors colors) {
+  Widget _buildDurationTrendChart(LiftTrackColors colors) {
     final weeklyStats = _computeWeeklyStats();
     final durations = List.generate(6, (i) {
       final stat = weeklyStats[5 - i]!;
@@ -1450,7 +1450,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   }
 
   // ── PR 进度追踪（多折线图）─────────────────────────────────────
-  Widget _buildPrProgressionChart(FitTrackColors colors) {
+  Widget _buildPrProgressionChart(LiftTrackColors colors) {
     final prData = _computePrProgression();
     if (prData.isEmpty) return const SizedBox.shrink();
     final colorsList = [colors.accentGlow, colors.successColor, colors.warningColor];

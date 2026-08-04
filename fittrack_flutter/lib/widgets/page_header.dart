@@ -39,7 +39,7 @@ class PageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final showBack = onBack != null;
     final isLogo = !showBack && !isTabPage && title == null;
 

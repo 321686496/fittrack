@@ -74,7 +74,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final record = _record;
 
     if (record == null || record.isEmpty) {
@@ -273,7 +273,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
   }
 
-  Widget _buildExerciseDetailCard(FitTrackColors colors, String exName, dynamic setsData) {
+  Widget _buildExerciseDetailCard(LiftTrackColors colors, String exName, dynamic setsData) {
     final sets = <Map<String, dynamic>>[];
     if (setsData is List) {
       for (final s in setsData) {
@@ -436,7 +436,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
   }
 
-  Widget _buildDetailStat(FitTrackColors colors, IconData icon, String value, String label) {
+  Widget _buildDetailStat(LiftTrackColors colors, IconData icon, String value, String label) {
     return Column(
       children: [
         Icon(icon, size: 20, color: colors.accentGlow),

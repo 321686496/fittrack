@@ -21,7 +21,7 @@ class BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return SafeArea(
       top: false,
@@ -87,7 +87,7 @@ class _NavItem {
 class _NavItemWidget extends StatelessWidget {
   final _NavItem item;
   final bool isActive;
-  final FitTrackColors colors;
+  final LiftTrackColors colors;
   final VoidCallback onTap;
 
   const _NavItemWidget({

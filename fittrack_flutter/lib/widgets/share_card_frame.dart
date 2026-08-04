@@ -130,7 +130,7 @@ class ShareCardFrame extends StatelessWidget {
             // ── slogan ──────────────────────────────
             Center(
               child: Text(
-                'FitTrack 燃力 · 记录每一组',
+                'LiftTrack 燃力 · 记录每一组',
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 22,

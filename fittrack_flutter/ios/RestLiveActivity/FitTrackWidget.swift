@@ -25,7 +25,7 @@ struct FitTrackWidget: Widget {
         StaticConfiguration(kind: kind, provider: FitTrackWidgetProvider()) { entry in
             FitTrackWidgetView(entry: entry)
         }
-        .configurationDisplayName("FitTrack 训练卡片")
+        .configurationDisplayName("LiftTrack 训练卡片")
         .description("显示今日训练摘要和连续训练天数")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
