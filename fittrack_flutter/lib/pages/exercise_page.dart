@@ -1377,7 +1377,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
   }
 
   Future<void> _pickCover() async {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: colors.bgCard,
@@ -1595,8 +1595,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-<<<<<<< HEAD
-  Widget _buildCoverPicker(FitTrackColors colors) {
+  Widget _buildCoverPicker(LiftTrackColors colors) {
     final hasCustom = _coverImagePath != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1655,10 +1654,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     );
   }
 
-  Widget _buildNameField(FitTrackColors colors) {
-=======
   Widget _buildNameField(LiftTrackColors colors) {
->>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

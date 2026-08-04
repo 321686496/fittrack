@@ -126,7 +126,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     return Scaffold(
       backgroundColor: colors.bgSecondary,
       body: SafeArea(
@@ -150,7 +150,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
   }
 
   /// 顶部搜索栏 + 取消按钮
-  Widget _buildSearchBar(FitTrackColors colors) {
+  Widget _buildSearchBar(LiftTrackColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
@@ -230,7 +230,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
   }
 
   /// 未搜索时的落地页：历史搜索 + 热门推荐
-  Widget _buildLanding(FitTrackColors colors) {
+  Widget _buildLanding(LiftTrackColors colors) {
     final hot = _allTutorials.take(6).toList();
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -288,7 +288,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
   }
 
   /// 搜索结果列表
-  Widget _buildResultList(FitTrackColors colors) {
+  Widget _buildResultList(LiftTrackColors colors) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _results.length,
@@ -297,7 +297,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
   }
 
   /// 教学卡片：渐变封面 + emoji + 标题 + 难度 Badge + 肌群标签
-  Widget _buildTutorialCard(FitTrackColors colors, Tutorial t) {
+  Widget _buildTutorialCard(LiftTrackColors colors, Tutorial t) {
     return GestureDetector(
       onTap: () => context.push('/tutorial/${t.id}'),
       child: Container(
@@ -395,7 +395,7 @@ class _HistoryChip extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
-  final FitTrackColors colors;
+  final LiftTrackColors colors;
 
   const _HistoryChip({
     required this.text,

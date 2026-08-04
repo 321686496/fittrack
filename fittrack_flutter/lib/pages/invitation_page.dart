@@ -406,12 +406,8 @@ class _InvitationPageState extends State<InvitationPage> {
 
   // ── 3. 奖励规则说明 ──────────────────────────────────────────────
 
-<<<<<<< HEAD
-  Widget _buildRewardRulesCard(FitTrackColors colors) {
-    final currentInvites = (_progress['totalReferrals'] as int?) ?? 0;
-=======
   Widget _buildRewardRulesCard(LiftTrackColors colors) {
->>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
+    final currentInvites = (_progress['totalReferrals'] as int?) ?? 0;
     final rules = [
       _RewardRule(1, '首次激活', '100 积分 + 引路人徽章', '50 积分'),
       _RewardRule(3, '累计 3 人', '300 积分 + 布道者徽章', '50 积分'),
@@ -466,11 +462,7 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
-<<<<<<< HEAD
-  Widget _buildRewardRuleItem(FitTrackColors colors, _RewardRule r, int currentInvites) {
-=======
-  Widget _buildRewardRuleItem(LiftTrackColors colors, _RewardRule r) {
->>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
+  Widget _buildRewardRuleItem(LiftTrackColors colors, _RewardRule r, int currentInvites) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Column(
@@ -521,7 +513,7 @@ class _InvitationPageState extends State<InvitationPage> {
   }
 
   /// ambassador 限定皮肤突出预览（5 人档专属）
-  Widget _buildAmbassadorPreview(FitTrackColors colors, int currentInvites) {
+  Widget _buildAmbassadorPreview(LiftTrackColors colors, int currentInvites) {
     final cardTheme = OpponentSkinConfig.skinAmbassador.cardTheme;
     final target = 5;
     final progress = (currentInvites / target).clamp(0.0, 1.0);

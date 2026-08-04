@@ -141,7 +141,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -189,7 +189,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   // ── 区块 1：总览卡 ────────────────────────────────────────
-  Widget _buildOverviewSection(FitTrackColors colors) {
+  Widget _buildOverviewSection(LiftTrackColors colors) {
     int active = 0;
     int expired = 0;
     int expiring7 = 0;
@@ -259,7 +259,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   // ── 区块 2：卡类型分布（饼图） ────────────────────────────
-  Widget _buildTypeDistributionSection(FitTrackColors colors) {
+  Widget _buildTypeDistributionSection(LiftTrackColors colors) {
     final typeCounts = _groupCount((c) => (c['cardType'] as String? ?? '').trim());
     // 类型 -> 颜色 映射
     final typeColorMap = <String, Color>{
@@ -374,7 +374,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   // ── 区块 3：投入分析 ──────────────────────────────────────
-  Widget _buildInvestmentSection(FitTrackColors colors) {
+  Widget _buildInvestmentSection(LiftTrackColors colors) {
     double totalAmount = 0;
     double allocatedTotal = 0;
     int totalUsedDays = 0;
@@ -465,7 +465,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     );
   }
 
-  Widget _moneyBlock(FitTrackColors colors, String label, double value,
+  Widget _moneyBlock(LiftTrackColors colors, String label, double value,
       Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
@@ -496,7 +496,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   // ── 区块 4：健身房分布（柱状图） ──────────────────────────
-  Widget _buildGymDistributionSection(FitTrackColors colors) {
+  Widget _buildGymDistributionSection(LiftTrackColors colors) {
     final gymCounts = _groupCount((c) => (c['gymName'] as String? ?? '').trim());
     final gyms = gymCounts.keys.toList()
       ..sort((a, b) => gymCounts[b]!.compareTo(gymCounts[a]!));
@@ -593,7 +593,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   // ── 区块 5：时间分布（开卡/到期月份柱状图） ────────────────
-  Widget _buildTimeDistributionSection(FitTrackColors colors) {
+  Widget _buildTimeDistributionSection(LiftTrackColors colors) {
     final startMonths = <String, int>{};
     final endMonths = <String, int>{};
     for (final c in _cards) {
@@ -627,7 +627,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     );
   }
 
-  Widget _monthBarChart(FitTrackColors colors, String title,
+  Widget _monthBarChart(LiftTrackColors colors, String title,
       Map<String, int> months, List<String> keys, Color barColor) {
     final barGroups = <BarChartGroupData>[];
     for (var i = 0; i < keys.length; i++) {
@@ -722,7 +722,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   // ── 区块 6：次卡使用率 ────────────────────────────────────
-  Widget _buildCountCardUsageSection(FitTrackColors colors) {
+  Widget _buildCountCardUsageSection(LiftTrackColors colors) {
     int totalCountSum = 0;
     int usedCountSum = 0;
     int remainingSum = 0;
@@ -797,7 +797,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     );
   }
 
-  Widget _usageBlock(FitTrackColors colors, String label, String value, Color color) {
+  Widget _usageBlock(LiftTrackColors colors, String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
@@ -820,7 +820,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   // ── 区块 7：即将到期列表（未来30天到期） ──────────────────
-  Widget _buildExpiringListSection(FitTrackColors colors) {
+  Widget _buildExpiringListSection(LiftTrackColors colors) {
     final now = DateTime.now();
     final expiring = <Map<String, dynamic>>[];
     for (final c in _cards) {

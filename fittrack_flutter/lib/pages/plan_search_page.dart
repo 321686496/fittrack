@@ -164,7 +164,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
     return Scaffold(
       backgroundColor: colors.bgSecondary,
       body: SafeArea(
@@ -192,7 +192,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
   }
 
   /// 顶部搜索栏 + 取消按钮
-  Widget _buildSearchBar(FitTrackColors colors) {
+  Widget _buildSearchBar(LiftTrackColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
@@ -275,7 +275,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
   }
 
   /// 可折叠筛选区
-  Widget _buildFilterArea(FitTrackColors colors) {
+  Widget _buildFilterArea(LiftTrackColors colors) {
     final hasActiveFilter = _filterGoal != null ||
         _filterDifficulty != null ||
         _filterTrainingType != null;
@@ -438,7 +438,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
   }
 
   Widget _filterSection(
-    FitTrackColors colors, {
+    LiftTrackColors colors, {
     required String label,
     required List<_FilterOption> options,
     required String? selected,
@@ -491,7 +491,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
   }
 
   /// 未搜索时的落地页：历史搜索 + 热门推荐
-  Widget _buildLanding(FitTrackColors colors) {
+  Widget _buildLanding(LiftTrackColors colors) {
     final hot = _allPlans.take(6).toList();
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -549,7 +549,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
   }
 
   /// 搜索结果列表
-  Widget _buildResultList(FitTrackColors colors) {
+  Widget _buildResultList(LiftTrackColors colors) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _results.length,
@@ -558,7 +558,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
   }
 
   /// 计划卡片：封面 + 标题 + 目标 + 难度 + 周数 + 解锁状态
-  Widget _buildPlanCard(FitTrackColors colors, SystemPlan p) {
+  Widget _buildPlanCard(LiftTrackColors colors, SystemPlan p) {
     final isUnlocked = !p.isPremium ||
         PlanUnlockService.instance.isPlanUnlocked(p.id);
     final coverColors = _parseCoverColors(p.coverColors);
@@ -704,7 +704,7 @@ class _HistoryChip extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
-  final FitTrackColors colors;
+  final LiftTrackColors colors;
 
   const _HistoryChip({
     required this.text,
