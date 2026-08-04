@@ -307,14 +307,55 @@ jobs:
         if: ${{ inputs.sign == true }}
         run: |
           cd ${{ env.WORKSPACE }}
+          # flutter build ipa 导出失败时只输出笼统的 "Encountered error while creating the IPA"，
+          # 掩盖了 xcodebuild -exportArchive 的真实报错。失败后重跑导出以暴露真实错误。
           flutter build ipa --release \
-            --export-options-plist=ios/ExportOptions.plist
+            --export-options-plist=ios/ExportOptions.plist || {
+            echo "::error::flutter build ipa 导出失败，重跑 xcodebuild -exportArchive 获取真实错误："
+            xcodebuild -exportArchive \
+              -archivePath build/ios/archive/Runner.xcarchive \
+              -exportPath build/ios/ipa \
+              -exportOptionsPlist ios/ExportOptions.plist 2>&1 | tail -120
+            exit 1
+          }
+
+      - name: Inspect archive signing (diagnostic)
+        # 无论导出是否成功，检查归档内嵌的 provisioning profile 类型与 codesign 身份，
+        # 用于定位 "Encountered error while creating the IPA" 的真实原因
+        # （get-task-allow=true + 有 ProvisionedDevices = 开发版 profile，无法导出 App Store IPA）
+        if: ${{ always() && inputs.sign == true }}
+        run: |
+          cd ${{ env.WORKSPACE }}
+          ARCHIVE=build/ios/archive/Runner.xcarchive
+          if [ ! -d "$ARCHIVE" ]; then
+            echo "归档不存在: $ARCHIVE"
+            exit 0
+          fi
+          APP=$(find "$ARCHIVE" -maxdepth 2 -name '*.app' | head -n1)
+          echo "App bundle: $APP"
+          PROFILE="$APP/embedded.mobileprovision"
+          if [ -f "$PROFILE" ]; then
+            echo "===== 归档内嵌 provisioning profile ====="
+            security cms -D -i "$PROFILE" | /usr/libexec/PlistBuddy \
+              -c "Print :Name" \
+              -c "Print :UUID" \
+              -c "Print :ExpirationDate" \
+              -c "Print :get-task-allow" \
+              -c "Print :ProvisionedDevices" \
+              -c "Print :Entitlements" \
+              /dev/stdin 2>&1 || true
+          else
+            echo "无内嵌 profile（归档未签名）"
+          fi
+          echo "===== codesign 身份 ====="
+          codesign -dv --verbose=4 "$APP" 2>&1 | head -20 || true
 
       # --------------------------------------------------------------------------
       # 产物上传
       # --------------------------------------------------------------------------
       - name: Upload IPA artifact
-        if: ${{ inputs.sign == true }}
+        # if 条件需带 success()：否则构建失败后该步骤仍会运行并报 "No files found" 掩盖真实错误
+        if: ${{ success() && inputs.sign == true }}
         uses: actions/upload-artifact@v4
         with:
           name: fittrack-ios-ipa
@@ -323,7 +364,7 @@ jobs:
           retention-days: 14
 
       - name: Upload dSYM artifact
-        if: ${{ inputs.sign == true }}
+        if: ${{ success() && inputs.sign == true }}
         uses: actions/upload-artifact@v4
         with:
           name: fittrack-ios-dsym
@@ -332,7 +373,7 @@ jobs:
           retention-days: 14
 
       - name: Upload app folder (no-codesign mode)
-        if: ${{ inputs.sign != true }}
+        if: ${{ success() && inputs.sign != true }}
         uses: actions/upload-artifact@v4
         with:
           name: fittrack-ios-build
@@ -344,7 +385,7 @@ jobs:
       # 可选：上传到 TestFlight
       # --------------------------------------------------------------------------
       - name: Upload to TestFlight
-        if: ${{ inputs.sign == true && inputs.upload_to_testflight == true }}
+        if: ${{ success() && inputs.sign == true && inputs.upload_to_testflight == true }}
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
