@@ -307,48 +307,67 @@ jobs:
         if: ${{ inputs.sign == true }}
         run: |
           cd ${{ env.WORKSPACE }}
-          # flutter build ipa 导出失败时只输出笼统的 "Encountered error while creating the IPA"，
-          # 掩盖了 xcodebuild -exportArchive 的真实报错。失败后重跑导出以暴露真实错误。
+          # flutter build ipa 导出失败时可能仍以 exit 0 退出且不产出 .ipa，
+          # 因此不能依赖其退出码，改为无条件检查产物；缺失时手动重跑导出暴露真实错误。
           flutter build ipa --release \
-            --export-options-plist=ios/ExportOptions.plist || {
-            echo "::error::flutter build ipa 导出失败，重跑 xcodebuild -exportArchive 获取真实错误："
+            --export-options-plist=ios/ExportOptions.plist || true
+          if [ ! -f build/ios/ipa/Runner.ipa ]; then
+            echo "::error::flutter build ipa 未产出 .ipa，手动重跑 xcodebuild -exportArchive 获取真实错误："
             xcodebuild -exportArchive \
               -archivePath build/ios/archive/Runner.xcarchive \
               -exportPath build/ios/ipa \
-              -exportOptionsPlist ios/ExportOptions.plist 2>&1 | tail -120
+              -exportOptionsPlist ios/ExportOptions.plist 2>&1 | tail -150
             exit 1
-          }
+          fi
+          ls -la build/ios/ipa/
 
       - name: Inspect archive signing (diagnostic)
-        # 无论导出是否成功，检查归档内嵌的 provisioning profile 类型与 codesign 身份，
-        # 用于定位 "Encountered error while creating the IPA" 的真实原因
-        # （get-task-allow=true + 有 ProvisionedDevices = 开发版 profile，无法导出 App Store IPA）
+        # 无论导出是否成功，输出以下证据用于定位 "Encountered error while creating the IPA"：
+        #   1. pbxproj 中 Runner Release 的 Manual 签名设置
+        #   2. xcodebuild 对 Release 配置实际解析的签名设置（归档用的就是它）
+        #   3. keychain 中可用的签名身份（Development / Distribution）
+        #   4. 归档内嵌 provisioning profile 的类型（get-task-allow=true 且有设备列表 = 开发版 profile，无法导出 App Store IPA）
         if: ${{ always() && inputs.sign == true }}
         run: |
           cd ${{ env.WORKSPACE }}
+          echo "===== 1. pbxproj 中的 Manual 签名设置 ====="
+          grep -nE 'CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER' \
+            ios/Runner.xcodeproj/project.pbxproj || echo "（pbxproj 中未找到 Manual 设置）"
+
+          echo "===== 2. xcodebuild Release 实际解析的签名设置 ====="
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
+            -showBuildSettings 2>/dev/null | grep -E '^\s*(CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER|PRODUCT_BUNDLE_IDENTIFIER) =' || true
+
+          echo "===== 3. keychain 中的签名身份 ====="
+          security find-identity -v -p codesigning 2>&1 | head -20
+
           ARCHIVE=build/ios/archive/Runner.xcarchive
           if [ ! -d "$ARCHIVE" ]; then
-            echo "归档不存在: $ARCHIVE"
+            echo "===== 4. 归档不存在: $ARCHIVE ====="
             exit 0
           fi
-          APP=$(find "$ARCHIVE" -maxdepth 2 -name '*.app' | head -n1)
-          echo "App bundle: $APP"
-          PROFILE="$APP/embedded.mobileprovision"
-          if [ -f "$PROFILE" ]; then
-            echo "===== 归档内嵌 provisioning profile ====="
-            security cms -D -i "$PROFILE" | /usr/libexec/PlistBuddy \
-              -c "Print :Name" \
-              -c "Print :UUID" \
-              -c "Print :ExpirationDate" \
-              -c "Print :get-task-allow" \
-              -c "Print :ProvisionedDevices" \
-              -c "Print :Entitlements" \
-              /dev/stdin 2>&1 || true
+          APP=$(find "$ARCHIVE" -type d -name '*.app' | head -n1)
+          echo "===== 4. App bundle: $APP ====="
+          if [ -n "$APP" ]; then
+            echo "--- codesign 身份 ---"
+            codesign -dv --verbose=4 "$APP" 2>&1 | head -20 || true
+            PROFILE="$APP/embedded.mobileprovision"
+            if [ -f "$PROFILE" ]; then
+              echo "--- 内嵌 provisioning profile ---"
+              security cms -D -i "$PROFILE" | /usr/libexec/PlistBuddy \
+                -c "Print :Name" \
+                -c "Print :UUID" \
+                -c "Print :ExpirationDate" \
+                -c "Print :get-task-allow" \
+                -c "Print :ProvisionedDevices" \
+                -c "Print :Entitlements" \
+                /dev/stdin 2>&1 || true
+            else
+              echo "无内嵌 profile（归档未签名）"
+            fi
           else
-            echo "无内嵌 profile（归档未签名）"
+            echo "未在归档中找到 .app"
           fi
-          echo "===== codesign 身份 ====="
-          codesign -dv --verbose=4 "$APP" 2>&1 | head -20 || true
 
       # --------------------------------------------------------------------------
       # 产物上传
