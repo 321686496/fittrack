@@ -82,7 +82,7 @@ class DialogStyle {
 }
 
 /// 皮肤卡片主题（用于 PK 卡 / 详情页 / 邀请页等 UI 渗透）
-/// 注：皮肤专属色固定，不随 FitTrackColors 主题切换
+/// 注：皮肤专属色固定，不随 LiftTrackColors 主题切换
 class SkinCardTheme {
   final Color borderColor;
   final Color glowColor;

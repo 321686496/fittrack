@@ -123,7 +123,7 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<FitTrackColors>()!;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -248,7 +248,7 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
     );
   }
 
-  Widget _buildCalendarGrid(FitTrackColors colors) {
+  Widget _buildCalendarGrid(LiftTrackColors colors) {
     final firstOfMonth = DateTime(_displayedMonth.year, _displayedMonth.month, 1);
     // weekday: 周一=1 ... 周日=7，转换为 周日=0
     final firstWeekday = firstOfMonth.weekday % 7;

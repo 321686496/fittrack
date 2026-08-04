@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import '../services/achievement_service.dart';
-=======
 import 'package:flutter/rendering.dart';
->>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
 import '../services/poster_generator.dart';
 import '../themes/app_themes.dart';
 import 'common_widgets.dart';
@@ -115,18 +112,12 @@ class PosterCaptureHelper {
 
     try {
       overlay.insert(entry);
-<<<<<<< HEAD
-      // 等待 OverlayEntry 完成挂载与首帧 build，否则 boundaryKey.currentContext
-      // 为 null 会导致 PosterGenerator.capture 内 findRenderObject 抛异常。
-      await WidgetsBinding.instance.endOfFrame;
-=======
 
       // 轮询等待 RepaintBoundary 完成 layout + paint
       // 原固定 endOfFrame×2 + delay×100ms 在部分设备上不可靠：
       // showDialog 与 overlay.insert 同帧竞争、OHOS MouseTracker bug
       // 中断帧绘制等情况都会导致 boundary 未 paint 就执行 toImage()。
       await _waitForBoundaryReady(boundaryKey);
->>>>>>> ff02925ef0f479da86b563fa97e773c6e4509bc6
 
       // paint 等待已统一收敛到 PosterGenerator.capture 内部，
       // 此处不再使用固定 50ms 等待（首帧 paint 未完成时调用 toImage 会触发
