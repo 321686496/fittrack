@@ -4,8 +4,23 @@ import UserNotifications
 import ActivityKit
 import WidgetKit
 
+// Live Activity 的 Attributes 类型。
+// 注：RestLiveActivity Widget Extension 尚未接入 Xcode 工程，
+// 因此该类型需在主 target 内定义以保证 AppDelegate 可编译。
+@available(iOS 16.1, *)
+struct RestLiveActivityAttributes: ActivityAttributes {
+    public struct ContentState: Codable, Hashable {
+        var exerciseName: String
+        var remainingSeconds: Int
+        var totalRestSeconds: Int
+        var restEndTime: Date
+    }
+
+    var exerciseName: String
+}
+
 @UIApplicationMain
-@objc class AppDelegate: FlutterAppDelegate, UNUserNotificationCenterDelegate {
+@objc class AppDelegate: FlutterAppDelegate {
   private var reminderChannel: FlutterMethodChannel?
   private var liveViewChannel: FlutterMethodChannel?
   private var widgetChannel: FlutterMethodChannel?
@@ -212,7 +227,9 @@ import WidgetKit
           let defaults = UserDefaults(suiteName: "group.com.fp.fitplan")
           defaults?.set(jsonData, forKey: "widgetData")
           // 触发 WidgetKit 刷新
-          WidgetCenter.shared.reloadTimelines(ofKind: "FitTrackWidget")
+          if #available(iOS 14.0, *) {
+            WidgetCenter.shared.reloadTimelines(ofKind: "FitTrackWidget")
+          }
           result(true)
         } else {
           result(FlutterError(code: "INVALID_ARGS", message: "Expected JSON string", details: nil))
@@ -220,7 +237,9 @@ import WidgetKit
       case "clearCardData":
         let defaults = UserDefaults(suiteName: "group.com.fp.fitplan")
         defaults?.removeObject(forKey: "widgetData")
-        WidgetCenter.shared.reloadTimelines(ofKind: "FitTrackWidget")
+        if #available(iOS 14.0, *) {
+          WidgetCenter.shared.reloadTimelines(ofKind: "FitTrackWidget")
+        }
         result(true)
       default:
         result(FlutterMethodNotImplemented)
@@ -281,16 +300,20 @@ import WidgetKit
 
   // MARK: - UNUserNotificationCenterDelegate
 
-  func userNotificationCenter(
+  override func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
-    // 前台也显示通知
-    completionHandler([.banner, .sound, .badge])
+    // 前台也显示通知（.banner 为 iOS 14+ API）
+    if #available(iOS 14.0, *) {
+      completionHandler([.banner, .sound, .badge])
+    } else {
+      completionHandler([.alert, .sound, .badge])
+    }
   }
 
-  func userNotificationCenter(
+  override func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
