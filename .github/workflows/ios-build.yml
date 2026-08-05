@@ -315,7 +315,9 @@ jobs:
           # flutter build ipa 导出失败时可能仍以 exit 0 退出且不产出 .ipa，
           # 因此不能依赖其退出码，改为无条件检查产物；
           # 缺失时先尝试 ditto 从已签名归档直接打包，仍失败则输出全套诊断。
+          # --build-number 用 GITHUB_RUN_NUMBER（单调递增），避免与 ASC 已有 build 号冲突
           flutter build ipa --release \
+            --build-number=$GITHUB_RUN_NUMBER \
             --export-options-plist=ios/ExportOptions.plist || true
           if [ ! -f build/ios/ipa/Runner.ipa ]; then
             # Xcode 15.4 的 exportArchive 在 IDEDistributionSigningAssetsStep 静默失败
