@@ -669,7 +669,6 @@ class _TrainingPageState extends State<TrainingPage>
     try {
       _startTime = DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
       _plan = data['planId'] != null ? Storage.getPlanById(data['planId'] as String) : null;
-      _plan?['currentDayIndex'] = data['currentExIdx']; // 不恢复此字段
       _dayConfig = data['dayConfig'] as Map<String, dynamic>?;
       final exList = _dayConfig?['exercises'] as List<dynamic>? ?? [];
       _exercises = List<Map<String, dynamic>>.from(
