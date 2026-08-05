@@ -39,8 +39,10 @@ class Storage {
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
 
-    // 清空内存缓存，确保 init() 反映当前 prefs 状态（避免多次 init 调用之间的脏数据残留）
-    _store.clear();
+    // 仅清理即将重载的 key，避免影响 _keyCustomExercises/_keyNotifications 等不在重载循环中的 key
+    for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory, _inProgressKey]) {
+      _store.remove(key);
+    }
 
     // 加载 SharedPreferences 中的轻量数据
     for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory, _inProgressKey]) {
