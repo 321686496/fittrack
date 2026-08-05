@@ -262,6 +262,9 @@ class _TrainingPageState extends State<TrainingPage>
     // 预填第一个动作的计划值
     _prefillWeightReps();
 
+    // 检查是否有进行中的训练（持久化恢复）
+    _checkInProgressTraining();
+
     setState(() {});
 
     // 进入训练页后推送训练态到桌面卡片
@@ -623,6 +626,201 @@ class _TrainingPageState extends State<TrainingPage>
       await Storage.saveInProgressTraining(data);
     } catch (e) {
       debugPrint('_persistInProgressTraining error: $e');
+    }
+  }
+
+  /// 检查是否有进行中的训练
+  void _checkInProgressTraining() {
+    final inProgress = Storage.getInProgressTraining();
+    if (inProgress == null) return;
+
+    final startedAtDate = inProgress['startedAtDate'] as String?;
+    if (startedAtDate == null) return;
+
+    final now = DateTime.now();
+    final today = '${now.year}-${now.month}-${now.day}';
+
+    if (startedAtDate == today) {
+      // 同天：恢复进行中训练
+      _restoreInProgressTraining(inProgress);
+    } else {
+      // 跨天：弹窗让用户选择
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _showCrossDayDialog(inProgress);
+      });
+    }
+  }
+
+  /// 恢复同天进行中的训练
+  void _restoreInProgressTraining(Map<String, dynamic> data) {
+    try {
+      _startTime = DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
+      _plan = data['planId'] != null ? Storage.getPlanById(data['planId'] as String) : null;
+      _plan?['currentDayIndex'] = data['currentExIdx']; // 不恢复此字段
+      _dayConfig = data['dayConfig'] as Map<String, dynamic>?;
+      final exList = _dayConfig?['exercises'] as List<dynamic>? ?? [];
+      _exercises = List<Map<String, dynamic>>.from(
+        exList.map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+
+      _currentExIdx = data['currentExIdx'] as int? ?? 0;
+      _currentSetIdx = data['currentSetIdx'] as int? ?? 0;
+
+      // 恢复 setRecords
+      final setRecords = data['setRecords'] as Map<String, dynamic>?;
+      if (setRecords != null) {
+        for (final ex in _exercises) {
+          final exId = ex['id'] as String;
+          final records = setRecords[exId] as List?;
+          _setRecords[exId] = records != null
+              ? List<Map<String, dynamic>>.from(
+                  records.map((r) => Map<String, dynamic>.from(r as Map)))
+              : [];
+        }
+      }
+
+      // 恢复 restLog
+      final restLog = data['restLog'] as List?;
+      if (restLog != null) {
+        _restLog.clear();
+        _restLog.addAll(
+          restLog.map((r) => Map<String, dynamic>.from(r as Map)),
+        );
+      }
+
+      // 恢复休息阶段
+      // 注意：lastPersistedAt 由 Storage.saveInProgressTraining 写入 data 顶层，
+      // 不在 restPhaseSnapshot 内，因此单独读取并传入。
+      final lastPersistedAt = data['lastPersistedAt'] as int? ?? 0;
+      final snapshot = data['restPhaseSnapshot'] as Map<String, dynamic>?;
+      if (snapshot != null && snapshot['phase'] != null) {
+        _restoreRestPhase(snapshot, lastPersistedAt);
+      }
+
+      _prefillWeightReps();
+    } catch (e) {
+      debugPrint('_restoreInProgressTraining error: $e');
+      Storage.clearInProgressTraining();
+    }
+  }
+
+  /// 恢复休息阶段（wall-clock 校正）
+  /// [lastPersistedAt] 来自持久化数据顶层字段（由 Storage.saveInProgressTraining 写入），
+  /// 用于检测持久化时间过久时是否应兜底结束休息。
+  void _restoreRestPhase(Map<String, dynamic> snapshot, int lastPersistedAt) {
+    _restScheduledSeconds = snapshot['scheduledSeconds'] as int? ?? 0;
+    final actualStartMs = snapshot['actualStartAt'] as int?;
+    final scheduledEndMs = snapshot['scheduledEndAt'] as int?;
+    final overtimeLimitMs = snapshot['overtimeLimitAt'] as int?;
+
+    if (actualStartMs != null) {
+      _restActualStartAt = DateTime.fromMillisecondsSinceEpoch(actualStartMs);
+    }
+    if (scheduledEndMs != null) {
+      _restScheduledEndAt = DateTime.fromMillisecondsSinceEpoch(scheduledEndMs);
+    }
+    if (overtimeLimitMs != null) {
+      _restOvertimeLimitAt = DateTime.fromMillisecondsSinceEpoch(overtimeLimitMs);
+    }
+
+    final phaseStr = snapshot['phase'] as String?;
+    final now = DateTime.now();
+
+    // 兜底：lastPersistedAt > 5分钟且休息中
+    if (lastPersistedAt > 0 &&
+        now.millisecondsSinceEpoch - lastPersistedAt > 5 * 60 * 1000) {
+      _endRest(RestEndReason.autoTimeout,
+          actualSecondsOverride: _restActualStartAt != null
+              ? DateTime.fromMillisecondsSinceEpoch(lastPersistedAt)
+                  .difference(_restActualStartAt!).inSeconds
+              : _restScheduledSeconds);
+      return;
+    }
+
+    if (phaseStr == 'resting') {
+      if (now.isBefore(_restScheduledEndAt!)) {
+        _restPhase = RestPhase.resting;
+        _restDisplaySeconds = _restScheduledEndAt!.difference(now).inSeconds;
+      } else {
+        _enterOvertimePhase(skipSound: true);
+        return;
+      }
+    } else if (phaseStr == 'restingOvertime') {
+      if (now.isBefore(_restOvertimeLimitAt!)) {
+        _restPhase = RestPhase.restingOvertime;
+        _restDisplaySeconds = now.difference(_restScheduledEndAt!).inSeconds;
+      } else {
+        _endRest(RestEndReason.autoTimeout);
+        return;
+      }
+    }
+
+    _restartRestTimer();
+  }
+
+  /// 跨天恢复弹窗
+  void _showCrossDayDialog(Map<String, dynamic> data) {
+    final planName = data['planName'] as String? ?? '训练';
+    final startedAtDate = data['startedAtDate'] as String? ?? '';
+    final setRecords = data['setRecords'] as Map?;
+    final completedSets = setRecords?.values.fold<int>(0, (sum, list) => sum + (list as List).length) ?? 0;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('上次训练未完成'),
+        content: Text('您在 $startedAtDate 开始的"$planName"训练未完成，'
+            '已完成 $completedSets 组。\n\n保存为训练记录（以当前时间为结束）?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _autoSaveAsIncomplete(data);
+            },
+            child: const Text('保存为记录'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Storage.clearInProgressTraining();
+            },
+            child: const Text('丢弃'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 跨天时将未完成的训练保存为记录
+  Future<void> _autoSaveAsIncomplete(Map<String, dynamic> data) async {
+    try {
+      final startedAt = DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
+      final duration = DateTime.now().difference(startedAt).inMinutes;
+      final setRecordsRaw = data['setRecords'] as Map?;
+      final setRecords = setRecordsRaw?.map((k, v) =>
+          MapEntry(k as String, List<Map<String, dynamic>>.from(
+              (v as List).map((r) => Map<String, dynamic>.from(r as Map))))) ?? <String, List<Map<String, dynamic>>>{};
+      final completedSets = setRecords.values.fold<int>(0, (sum, list) => sum + list.length);
+
+      Storage.addRecord({
+        'name': data['planName'] ?? '未完成训练',
+        'date': DateTime.now().millisecondsSinceEpoch,
+        'duration': duration,
+        'pureDuration': duration * 60,
+        'totalWeight': 0,
+        'totalSets': completedSets,
+        'exerciseCount': (data['exercises'] as List?)?.length ?? 0,
+        'muscles': [],
+        'setRecords': setRecords,
+        'restLog': data['restLog'] ?? [],
+        'planId': data['planId'],
+        'planName': data['planName'],
+      });
+      await Storage.clearInProgressTraining();
+    } catch (e) {
+      debugPrint('_autoSaveAsIncomplete error: $e');
     }
   }
 
