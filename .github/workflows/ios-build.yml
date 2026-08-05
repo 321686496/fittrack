@@ -273,7 +273,7 @@ jobs:
               '<plist version=\"1.0\">\n'
               '<dict>\n'
               '    <key>method</key>\n'
-              '    <string>app-store</string>\n'
+              '    <string>app-store-connect</string>\n'
               '    <key>teamID</key>\n'
               f'    <string>{team_id}</string>\n'
               '    <key>uploadBitcode</key>\n'
@@ -308,10 +308,29 @@ jobs:
         run: |
           cd ${{ env.WORKSPACE }}
           # flutter build ipa 导出失败时可能仍以 exit 0 退出且不产出 .ipa，
-          # 因此不能依赖其退出码，改为无条件检查产物；缺失时手动重跑导出并输出全套诊断。
+          # 因此不能依赖其退出码，改为无条件检查产物；
+          # 缺失时先尝试 ditto 从已签名归档直接打包，仍失败则输出全套诊断。
           flutter build ipa --release \
             --export-options-plist=ios/ExportOptions.plist || true
           if [ ! -f build/ios/ipa/Runner.ipa ]; then
+            # Xcode 15.4 的 exportArchive 在 IDEDistributionSigningAssetsStep 静默失败
+            # （profile/证书/归档签名均已验证正确，critical.log 无错误）。
+            # 归档 Runner.xcarchive 已存在且签名正确，先尝试 ditto 从归档直接打包 .ipa 绕过导出黑盒。
+            APP=$(find build/ios/archive/Runner.xcarchive -type d -name '*.app' | head -n1)
+            if [ -n "$APP" ]; then
+              echo "::warning::xcodebuild 导出失败，从已签名归档直接打包 .ipa"
+              rm -rf build/ios/ipa && mkdir -p build/ios/ipa/Payload
+              cp -R "$APP" build/ios/ipa/Payload/
+              (cd build/ios/ipa && ditto -c -k --sequesterRsrc --keepParent Payload Runner.ipa)
+              echo "=== 打包后签名验证 ==="
+              codesign -dv --verbose=2 build/ios/ipa/Payload/Runner.app 2>&1 | grep -E 'Identifier|Authority' || true
+              security cms -D -i build/ios/ipa/Payload/Runner.app/embedded.mobileprovision > "$RUNNER_TEMP/pp.plist" 2>/dev/null && \
+                echo "内嵌 profile Name: $(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/pp.plist" 2>/dev/null)" || true
+              echo "=== Swift 动态库依赖检查（有输出则需要 SwiftSupport） ==="
+              otool -L build/ios/ipa/Payload/Runner.app/Runner | grep -i libswift || echo "无 Swift 动态库依赖（无需 SwiftSupport）"
+              ls -la build/ios/ipa/
+              exit 0
+            fi
             echo "::error::flutter build ipa 未产出 .ipa，进入诊断流程"
             # 注意：不用 ::group:: 包裹，否则内容默认折叠看不到
             echo "======== 1. 签名配置诊断（pbxproj + xcodebuild 实际解析） ========"
