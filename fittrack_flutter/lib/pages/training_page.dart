@@ -581,13 +581,14 @@ class _TrainingPageState extends State<TrainingPage>
     }
 
     // B4: 成就检查（训练完成后自动计算并弹出 — 修复 Issue 1d）
+    int earnedPoints = 0;
     if (mounted) {
       final records = Storage.getRecords();
       final currentRecord = records.isNotEmpty ? records.first : <String, dynamic>{};
       final unlockedAchievements =
           await AchievementService.instance.checkAndUnlock(currentRecord);
       // 每日训练得积分（同日防重复）：成就检查之后调用，避免与成就解锁积分交错
-      await PointsService.instance.addDailyTrainingPoints();
+      earnedPoints = await PointsService.instance.addDailyTrainingPoints();
       if (unlockedAchievements.isNotEmpty && mounted) {
         for (final id in unlockedAchievements) {
           final all = AchievementService.instance.getAll();
@@ -623,6 +624,7 @@ class _TrainingPageState extends State<TrainingPage>
         totalSets: _completedSets,
         duration: duration,
         recordId: _savedRecordId ?? '',
+        earnedPoints: earnedPoints,
       );
     }
   }
