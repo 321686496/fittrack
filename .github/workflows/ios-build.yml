@@ -524,12 +524,27 @@ jobs:
           IPA_PATH=$(ls ${{ env.WORKSPACE }}/build/ios/ipa/*.ipa | head -n1)
           echo "Uploading $IPA_PATH to App Store Connect..."
 
-          xcrun altool --upload-app \
-            -f "$IPA_PATH" \
-            -t ios \
-            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
-            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
-            --verbose
+          # altool 偶发网络超时（NSURLErrorDomain -1001，官方建议 Try again later），加重试
+          UPLOADED=0
+          for attempt in 1 2 3; do
+            echo "=== 上传尝试 $attempt/3 ==="
+            if xcrun altool --upload-app \
+              -f "$IPA_PATH" \
+              -t ios \
+              --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+              --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+              --verbose; then
+              UPLOADED=1
+              echo "上传成功"
+              break
+            fi
+            echo "::warning::上传失败（尝试 $attempt/3），15 秒后重试"
+            [ "$attempt" -lt 3 ] && sleep 15
+          done
+          if [ "$UPLOADED" != "1" ]; then
+            echo "::error::连续 3 次上传失败"
+            exit 1
+          fi
 
       # --------------------------------------------------------------------------
       # 清理临时 keychain（始终执行）
