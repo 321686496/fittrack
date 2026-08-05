@@ -308,66 +308,78 @@ jobs:
         run: |
           cd ${{ env.WORKSPACE }}
           # flutter build ipa 导出失败时可能仍以 exit 0 退出且不产出 .ipa，
-          # 因此不能依赖其退出码，改为无条件检查产物；缺失时手动重跑导出暴露真实错误。
+          # 因此不能依赖其退出码，改为无条件检查产物；缺失时手动重跑导出并输出全套诊断。
           flutter build ipa --release \
             --export-options-plist=ios/ExportOptions.plist || true
           if [ ! -f build/ios/ipa/Runner.ipa ]; then
-            echo "::error::flutter build ipa 未产出 .ipa，手动重跑 xcodebuild -exportArchive 获取真实错误："
+            echo "::error::flutter build ipa 未产出 .ipa，进入诊断流程"
+            echo "::group::1. 签名配置诊断（pbxproj + xcodebuild 实际解析）"
+            echo "--- pbxproj 中的 Manual 设置 ---"
+            grep -nE 'CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER' \
+              ios/Runner.xcodeproj/project.pbxproj || echo "（未找到 Manual 设置）"
+            echo "--- xcodebuild Release 实际解析的签名设置 ---"
+            xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
+              -showBuildSettings 2>/dev/null | grep -E '^\s*(CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER) =' || true
+            echo "::endgroup::"
+
+            echo "::group::2. 手动 xcodebuild -exportArchive（完整输出）"
             xcodebuild -exportArchive \
               -archivePath build/ios/archive/Runner.xcarchive \
               -exportPath build/ios/ipa \
               -exportOptionsPlist ios/ExportOptions.plist 2>&1 | tail -150
+            echo "::endgroup::"
+
+            echo "::group::3. 导出日志（xcdistributionlogs 中的真实错误）"
+            DIST=$(find /var/folders -maxdepth 8 -type d -name '*.xcdistributionlogs' -mmin -10 2>/dev/null | head -n1)
+            if [ -n "$DIST" ]; then
+              echo "日志目录: $DIST"
+              find "$DIST" -type f | while read f; do
+                echo "----- $f -----"
+                case "$f" in
+                  *.xcactivitylog)
+                    gzip -dc "$f" 2>/dev/null | strings | grep -iE 'error|fail|provisioning|certificate|signing|identity|profile' | tail -60 || true
+                    ;;
+                  *)
+                    tail -80 "$f" 2>/dev/null || true
+                    ;;
+                esac
+              done
+            else
+              echo "未找到 xcdistributionlogs"
+            fi
+            echo "::endgroup::"
+
+            echo "::group::4. keychain 签名身份"
+            security find-identity -v -p codesigning 2>&1 | head -20
+            echo "::endgroup::"
+
+            echo "::group::5. 归档签名信息（内嵌 profile 类型）"
+            APP=$(find build/ios/archive/Runner.xcarchive -type d -name '*.app' | head -n1)
+            if [ -n "$APP" ]; then
+              echo "App bundle: $APP"
+              codesign -dv --verbose=4 "$APP" 2>&1 | head -20 || true
+              PROFILE="$APP/embedded.mobileprovision"
+              if [ -f "$PROFILE" ]; then
+                echo "--- 内嵌 provisioning profile ---"
+                security cms -D -i "$PROFILE" | /usr/libexec/PlistBuddy \
+                  -c "Print :Name" \
+                  -c "Print :UUID" \
+                  -c "Print :ExpirationDate" \
+                  -c "Print :get-task-allow" \
+                  -c "Print :ProvisionedDevices" \
+                  -c "Print :Entitlements" \
+                  /dev/stdin 2>&1 || true
+              else
+                echo "无内嵌 profile（归档未签名）"
+              fi
+            else
+              echo "未在归档中找到 .app"
+            fi
+            echo "::endgroup::"
+
             exit 1
           fi
           ls -la build/ios/ipa/
-
-      - name: Inspect archive signing (diagnostic)
-        # 无论导出是否成功，输出以下证据用于定位 "Encountered error while creating the IPA"：
-        #   1. pbxproj 中 Runner Release 的 Manual 签名设置
-        #   2. xcodebuild 对 Release 配置实际解析的签名设置（归档用的就是它）
-        #   3. keychain 中可用的签名身份（Development / Distribution）
-        #   4. 归档内嵌 provisioning profile 的类型（get-task-allow=true 且有设备列表 = 开发版 profile，无法导出 App Store IPA）
-        if: ${{ always() && inputs.sign == true }}
-        run: |
-          cd ${{ env.WORKSPACE }}
-          echo "===== 1. pbxproj 中的 Manual 签名设置 ====="
-          grep -nE 'CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER' \
-            ios/Runner.xcodeproj/project.pbxproj || echo "（pbxproj 中未找到 Manual 设置）"
-
-          echo "===== 2. xcodebuild Release 实际解析的签名设置 ====="
-          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
-            -showBuildSettings 2>/dev/null | grep -E '^\s*(CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER|PRODUCT_BUNDLE_IDENTIFIER) =' || true
-
-          echo "===== 3. keychain 中的签名身份 ====="
-          security find-identity -v -p codesigning 2>&1 | head -20
-
-          ARCHIVE=build/ios/archive/Runner.xcarchive
-          if [ ! -d "$ARCHIVE" ]; then
-            echo "===== 4. 归档不存在: $ARCHIVE ====="
-            exit 0
-          fi
-          APP=$(find "$ARCHIVE" -type d -name '*.app' | head -n1)
-          echo "===== 4. App bundle: $APP ====="
-          if [ -n "$APP" ]; then
-            echo "--- codesign 身份 ---"
-            codesign -dv --verbose=4 "$APP" 2>&1 | head -20 || true
-            PROFILE="$APP/embedded.mobileprovision"
-            if [ -f "$PROFILE" ]; then
-              echo "--- 内嵌 provisioning profile ---"
-              security cms -D -i "$PROFILE" | /usr/libexec/PlistBuddy \
-                -c "Print :Name" \
-                -c "Print :UUID" \
-                -c "Print :ExpirationDate" \
-                -c "Print :get-task-allow" \
-                -c "Print :ProvisionedDevices" \
-                -c "Print :Entitlements" \
-                /dev/stdin 2>&1 || true
-            else
-              echo "无内嵌 profile（归档未签名）"
-            fi
-          else
-            echo "未在归档中找到 .app"
-          fi
 
       # --------------------------------------------------------------------------
       # 产物上传
