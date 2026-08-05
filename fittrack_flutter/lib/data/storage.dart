@@ -39,8 +39,11 @@ class Storage {
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
 
+    // 清空内存缓存，确保 init() 反映当前 prefs 状态（避免多次 init 调用之间的脏数据残留）
+    _store.clear();
+
     // 加载 SharedPreferences 中的轻量数据
-    for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory]) {
+    for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory, _inProgressKey]) {
       final raw = _prefs!.getString('$_keyPrefsPrefix$key');
       if (raw != null) {
         try {
@@ -463,6 +466,9 @@ class Storage {
       'lastGymCardReminderDate': '',         // 上次健身卡到期提醒日期（防同日重复推送）
       'activityColorMode': 'capacity', // 活跃度配色模式：'capacity'（训练容量）或 'duration'（训练时长）
       'actionGuideCollapsed': false, // 训练页底部动作指导卡片是否收起（默认展开）
+      // ── 休息状态机 + 持久化 ──
+      'autoEndAfterRest': false, // 休息结束后自动结束（自制力模式）
+      'restOvertimeLimitMultiplier': 3.0, // 静默计时上限倍数（设定时间 × 3）
     };
     final result = _safeGet(_keySettings, <String, dynamic>{});
     if (result is Map) {
@@ -476,6 +482,44 @@ class Storage {
     // 异步确保数据写入磁盘
     _persistKeyAsync(_keySettings);
     return result;
+  }
+
+  // ============================================================
+  // In-Progress Training (SharedPreferences)
+  // ============================================================
+
+  static const String _inProgressKey = 'fittrack_in_progress_training';
+
+  /// 保存进行中的训练数据（异步落盘）
+  static Future<void> saveInProgressTraining(Map<String, dynamic> data) async {
+    data['lastPersistedAt'] = DateTime.now().millisecondsSinceEpoch;
+    _store[_inProgressKey] = data;
+    _prefs?.setString('$_keyPrefsPrefix$_inProgressKey', jsonEncode(data));
+  }
+
+  /// 读取进行中的训练数据（同步，从内存缓存）
+  static Map<String, dynamic>? getInProgressTraining() {
+    final raw = _store[_inProgressKey];
+    if (raw == null) {
+      // 尝试从 prefs 加载（首次启动时 _store 可能未加载此 key）
+      final prefsRaw = _prefs?.getString('$_keyPrefsPrefix$_inProgressKey');
+      if (prefsRaw == null) return null;
+      try {
+        final decoded = jsonDecode(prefsRaw) as Map<String, dynamic>;
+        _store[_inProgressKey] = decoded;
+        return decoded;
+      } catch (_) {
+        return null;
+      }
+    }
+    if (raw is Map<String, dynamic>) return raw;
+    return null;
+  }
+
+  /// 清除进行中的训练数据
+  static Future<void> clearInProgressTraining() async {
+    _store.remove(_inProgressKey);
+    await _prefs?.remove('$_keyPrefsPrefix$_inProgressKey');
   }
 
   // ============================================================

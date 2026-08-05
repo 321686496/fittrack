@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 8;
+  static const int _dbVersion = 9;
 
   Database? _database;
 
@@ -68,7 +68,8 @@ class DatabaseHelper {
         restLog TEXT NOT NULL DEFAULT '[]',
         createTime INTEGER NOT NULL,
         planId TEXT,
-        planName TEXT NOT NULL DEFAULT ''
+        planName TEXT NOT NULL DEFAULT '',
+        pureDuration INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -264,6 +265,11 @@ class DatabaseHelper {
           'ALTER TABLE achievements ADD COLUMN canEarnPoints INTEGER NOT NULL DEFAULT 0');
       await db.execute(
           "UPDATE achievements SET canEarnPoints = CASE WHEN category = 'weight' THEN 0 ELSE 1 END");
+    }
+    if (oldVersion < 9) {
+      // records 表新增 pureDuration 列（纯训练时长，秒精度，不含休息）
+      await db.execute(
+          'ALTER TABLE records ADD COLUMN pureDuration INTEGER NOT NULL DEFAULT 0');
     }
   }
 
