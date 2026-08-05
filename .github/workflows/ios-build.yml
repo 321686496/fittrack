@@ -493,11 +493,14 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
         run: |
-          # 解码 API Key 到 .p8 文件
-          KEY_DIR="$RUNNER_TEMP/AuthKey"
+          # 解码 API Key 到 .p8 文件。
+          # altool 没有 --api-key 参数，固定从 $HOME/private_keys/（或 workspace 下 private_keys/）
+          # 查找 AuthKey_<keyid>.p8，因此必须放到 $HOME/private_keys/ 才能被找到。
+          KEY_DIR="$HOME/private_keys"
           mkdir -p "$KEY_DIR"
           KEY_PATH="$KEY_DIR/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
           echo "$APP_STORE_CONNECT_KEY_BASE64" | base64 --decode > "$KEY_PATH"
+          ls -la "$KEY_DIR"
 
           IPA_PATH=$(ls ${{ env.WORKSPACE }}/build/ios/ipa/*.ipa | head -n1)
           echo "Uploading $IPA_PATH to App Store Connect..."
@@ -507,7 +510,6 @@ jobs:
             -t ios \
             --apiKey "$APP_STORE_CONNECT_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
-            --api-key "$KEY_DIR" \
             --verbose
 
       # --------------------------------------------------------------------------
