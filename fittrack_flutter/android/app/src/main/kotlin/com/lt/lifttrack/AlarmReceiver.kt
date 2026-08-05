@@ -1,13 +1,16 @@
 package com.lt.lifttrack
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 
 class AlarmReceiver : BroadcastReceiver() {
     companion object {
@@ -24,6 +27,18 @@ class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         android.util.Log.i("AlarmReceiver", "onReceive: action=${intent.action}, extras=${intent.extras}")
+
+        // Android 13+ 检查通知权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                android.util.Log.w("AlarmReceiver", "POST_NOTIFICATIONS not granted, skip notification")
+                return
+            }
+        }
+
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "休息结束"
         val content = intent.getStringExtra(EXTRA_CONTENT) ?: "休息时间到了，继续训练吧！"
         val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, NOTIFICATION_ID)
