@@ -22,6 +22,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
   bool _restSoundEnabled = true;        // 新增：休息提醒专用提示音
   bool _vibrationEnabled = true;        // 保留：训练完成振动
   bool _soundEnabled = true;            // 保留：训练完成提示音
+  bool _autoEndAfterRest = false;       // 新增：休息结束后自动结束
   int _defaultRestTime = 90;
   // 每日训练提醒
   bool _dailyTrainingEnabled = false;
@@ -45,6 +46,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
       _restSoundEnabled = settings['restSoundEnabled'] as bool? ?? true;
       _vibrationEnabled = settings['vibrationEnabled'] as bool? ?? true;
       _soundEnabled = settings['soundEnabled'] as bool? ?? true;
+      _autoEndAfterRest = settings['autoEndAfterRest'] as bool? ?? false;
       _defaultRestTime = settings['defaultRestTime'] as int? ?? 90;
       _dailyTrainingEnabled =
           settings['dailyTrainingReminderEnabled'] as bool? ?? false;
@@ -131,6 +133,19 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                                   _saveSetting('restVibrationEnabled', v);
                                 }
                               : null,
+                        ),
+                        DividerWidget(indent: 44),
+                        // 休息结束后自动结束
+                        _buildSwitchTile(
+                          colors,
+                          icon: Icons.timer_outlined,
+                          title: '休息结束后自动结束',
+                          subtitle: '到点自动结束并关闭休息弹窗, 适合自制力强的用户',
+                          value: _autoEndAfterRest,
+                          onChanged: (v) {
+                            setState(() => _autoEndAfterRest = v);
+                            _saveSetting('autoEndAfterRest', v);
+                          },
                         ),
                       ],
                     ),
