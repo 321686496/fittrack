@@ -133,9 +133,10 @@ jobs:
           echo "P12_PASSWORD 长度: ${#P12_PASSWORD} 字符"
           echo "密码非ASCII字符数(0=纯ASCII): $(printf '%s' "$P12_PASSWORD" | LC_ALL=C tr -d '[:print:]' | wc -c | tr -d ' ')"
           echo "--- OpenSSL 密码验证（若显示 Mac verify error 则密码不匹配）---"
-          openssl pkcs12 -in "$RUNNER_TEMP/diag.p12" -passin "pass:$P12_PASSWORD" -noout 2>&1 | head -20
+          # macos-26 的 OpenSSL 3.x 读取老式 3DES/SHA1 加密 p12 需 -legacy
+          openssl pkcs12 -legacy -in "$RUNNER_TEMP/diag.p12" -passin "pass:$P12_PASSWORD" -noout 2>&1 | head -20
           echo "--- p12 算法信息（Apple 兼容应为 sha1/3DES/RC2 等旧算法）---"
-          openssl pkcs12 -info -in "$RUNNER_TEMP/diag.p12" -passin "pass:$P12_PASSWORD" -noout 2>&1 | head -12
+          openssl pkcs12 -legacy -info -in "$RUNNER_TEMP/diag.p12" -passin "pass:$P12_PASSWORD" -noout 2>&1 | head -12
           echo "===== 证书诊断结束 ====="
 
       - name: Create temporary keychain & import certificate
@@ -154,8 +155,10 @@ jobs:
           CERT_PATH="$RUNNER_TEMP/build_cert.p12"
           printf '%s' "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
 
-          # 预校验：密码错误或文件损坏时立即退出并给出明确指引
-          if ! openssl pkcs12 -in "$CERT_PATH" -passin "pass:$P12_PASSWORD" -noout 2>/dev/null; then
+          # 预校验：密码错误或文件损坏时立即退出并给出明确指引。
+          # 注意：macos-26 的 OpenSSL 3.x 读取老式 3DES/SHA1 加密 p12 需 -legacy
+          # （macos-14 的 LibreSSL 无此参数但本项目已固定 macos-26 runner）
+          if ! openssl pkcs12 -legacy -in "$CERT_PATH" -passin "pass:$P12_PASSWORD" -noout 2>/dev/null; then
             echo "::error::证书验证失败：请检查 BUILD_CERTIFICATE_BASE64 是否完整（本地 p12 约 $(stat -f%z "$CERT_PATH") 字节，base64 长度 ${#BUILD_CERTIFICATE_BASE64}），P12_PASSWORD 是否与导出时完全一致"
             exit 1
           fi
