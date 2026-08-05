@@ -27,6 +27,7 @@ import '../services/platform/widget_card_service.dart';
 import '../services/platform/live_view_service.dart';
 import '../services/platform/rest_reminder_service.dart';
 import '../services/platform/implementations/ohos_rest_reminder_service.dart';
+import '../services/permission_service.dart';
 
 class TrainingPage extends StatefulWidget {
   final Map<String, dynamic> params;
@@ -105,6 +106,9 @@ class _TrainingPageState extends State<TrainingPage>
     _actionGuideExpanded = !(Storage.getSettings()['actionGuideCollapsed'] as bool? ?? false);
     _loadData();
 
+    // 检查通知权限，未授予时提示用户
+    _checkNotificationPermission();
+
     // 监听通知点击（通过 PAL 统一处理）
     _restReminderSub = PlatformServices.restReminder.onNotificationClick.listen(_onNotificationClicked);
     // 监听实况窗用户操作（skipRest / resume）
@@ -114,6 +118,21 @@ class _TrainingPageState extends State<TrainingPage>
         _skipRest();
       }
     });
+  }
+
+  /// 检查通知权限，未授予时弹窗引导用户去设置
+  Future<void> _checkNotificationPermission() async {
+    final granted = await PermissionService.isNotificationGranted();
+    if (!granted && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        PermissionService.showPermissionDeniedDialog(
+          context,
+          permissionName: '通知',
+          reason: '休息结束提醒需要通知权限才能在后台向您发送提醒，请在设置中开启通知权限。',
+        );
+      });
+    }
   }
 
   @override

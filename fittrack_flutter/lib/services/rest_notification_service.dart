@@ -106,6 +106,18 @@ class RestNotificationService {
         debugPrint('Android notification permission: $result');
         return result ?? false;
       }
+      // iOS: 通过 flutter_local_notifications 请求 alert/badge/sound 权限
+      final iosPlugin = _plugin!.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
+      if (iosPlugin != null) {
+        final result = await iosPlugin.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        debugPrint('iOS notification permission: $result');
+        return result ?? false;
+      }
     } catch (e) {
       debugPrint('Request notification permission error: $e');
     }
