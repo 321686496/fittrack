@@ -313,23 +313,22 @@ jobs:
             --export-options-plist=ios/ExportOptions.plist || true
           if [ ! -f build/ios/ipa/Runner.ipa ]; then
             echo "::error::flutter build ipa 未产出 .ipa，进入诊断流程"
-            echo "::group::1. 签名配置诊断（pbxproj + xcodebuild 实际解析）"
+            # 注意：不用 ::group:: 包裹，否则内容默认折叠看不到
+            echo "======== 1. 签名配置诊断（pbxproj + xcodebuild 实际解析） ========"
             echo "--- pbxproj 中的 Manual 设置 ---"
             grep -nE 'CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER' \
               ios/Runner.xcodeproj/project.pbxproj || echo "（未找到 Manual 设置）"
             echo "--- xcodebuild Release 实际解析的签名设置 ---"
             xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
               -showBuildSettings 2>/dev/null | grep -E '^\s*(CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER) =' || true
-            echo "::endgroup::"
 
-            echo "::group::2. 手动 xcodebuild -exportArchive（完整输出）"
+            echo "======== 2. 手动 xcodebuild -exportArchive（完整输出） ========"
             xcodebuild -exportArchive \
               -archivePath build/ios/archive/Runner.xcarchive \
               -exportPath build/ios/ipa \
               -exportOptionsPlist ios/ExportOptions.plist 2>&1 | tail -150
-            echo "::endgroup::"
 
-            echo "::group::3. 导出日志（xcdistributionlogs 中的真实错误）"
+            echo "======== 3. 导出日志（xcdistributionlogs 中的真实错误） ========"
             DIST=$(find /var/folders -maxdepth 8 -type d -name '*.xcdistributionlogs' -mmin -10 2>/dev/null | head -n1)
             if [ -n "$DIST" ]; then
               echo "日志目录: $DIST"
@@ -347,13 +346,11 @@ jobs:
             else
               echo "未找到 xcdistributionlogs"
             fi
-            echo "::endgroup::"
 
-            echo "::group::4. keychain 签名身份"
+            echo "======== 4. keychain 签名身份 ========"
             security find-identity -v -p codesigning 2>&1 | head -20
-            echo "::endgroup::"
 
-            echo "::group::5. 归档签名信息（内嵌 profile 类型）"
+            echo "======== 5. 归档签名信息（内嵌 profile 类型） ========"
             APP=$(find build/ios/archive/Runner.xcarchive -type d -name '*.app' | head -n1)
             if [ -n "$APP" ]; then
               echo "App bundle: $APP"
@@ -375,7 +372,6 @@ jobs:
             else
               echo "未在归档中找到 .app"
             fi
-            echo "::endgroup::"
 
             exit 1
           fi
