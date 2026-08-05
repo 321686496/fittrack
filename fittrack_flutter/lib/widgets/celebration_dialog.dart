@@ -9,6 +9,7 @@ class CelebrationDialog {
     required int totalSets,
     required int duration,
     required String recordId,
+    required int earnedPoints,
   }) async {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final streak = _calcStreak();
@@ -53,7 +54,9 @@ class CelebrationDialog {
                   _stat(colors, '${totalWeight}kg', '总重量'),
                   _stat(colors, '$totalSets', '总组数'),
                   _stat(colors, '${duration}min', '时长'),
-                  _stat(colors, '$streak天', '连续'),
+                  if (earnedPoints > 0)
+                    _stat(colors, '+$earnedPoints', '本次积分',
+                          icon: Icons.stars, iconColor: colors.accentGlow),
                 ],
               ),
               const SizedBox(height: 24),
@@ -91,14 +94,27 @@ class CelebrationDialog {
     );
   }
 
-  static Widget _stat(LiftTrackColors colors, String value, String label) {
+  static Widget _stat(LiftTrackColors colors, String value, String label,
+      {IconData? icon, Color? iconColor}) {
     return Column(
       children: [
-        Text(value, style: TextStyle(
-          color: colors.accentGlow, fontSize: 16, fontWeight: FontWeight.bold,
-        )),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: iconColor ?? colors.accentGlow),
+              const SizedBox(width: 2),
+            ],
+            Text(value, style: TextStyle(
+              color: iconColor ?? colors.textPrimary,
+              fontSize: 16, fontWeight: FontWeight.bold,
+            )),
+          ],
+        ),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(color: colors.textMuted, fontSize: 11)),
+        Text(label, style: TextStyle(
+          color: colors.textSecondary, fontSize: 11,
+        )),
       ],
     );
   }

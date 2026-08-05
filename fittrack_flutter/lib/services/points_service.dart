@@ -57,18 +57,16 @@ class PointsService {
   }
 
   /// 每日训练完成得积分（同日防重复）。
-  /// 在训练记录保存 + 成就检查完成后调用。
-  Future<bool> addDailyTrainingPoints() async {
+  /// 返回实际获得的积分数（0 表示今日已领过）。
+  Future<int> addDailyTrainingPoints() async {
     final today = DateTime.now();
     final todayStr = '${today.year}-${today.month}-${today.day}';
     final settings = Storage.getSettings();
-    if (settings['lastTrainingPointsDate'] == todayStr) return false;
-    // 先标记防重复日期并保存，再调 addPoints（addPoints 会重新读取 settings，
-    // 若顺序反了会被其内部保存覆盖、丢失本字段）
+    if (settings['lastTrainingPointsDate'] == todayStr) return 0;
     settings['lastTrainingPointsDate'] = todayStr;
     Storage.saveSettings(settings);
     await addPoints(trainingPoints, 'training');
-    return true;
+    return trainingPoints;
   }
 
   Future<bool> canWatchAd() async {
