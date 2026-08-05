@@ -112,6 +112,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     final muscles = (record['muscles'] as List?)?.cast<String>() ?? [];
     final setRecords = record['setRecords'] as Map? ?? {};
     final restLog = record['restLog'] as List? ?? [];
+    final pureDuration = record['pureDuration'] as num?;
     // setRecords 的 key 是动作 id，需要解析成动作名展示
     final exLookup = <String, String>{};
     for (final ex in MockData.exercises) {
@@ -195,6 +196,9 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                           '${record['totalWeight'] ?? 0}kg', '总重量'),
                       _buildDetailStat(colors, Icons.sports_gymnastics,
                           '${record['exerciseCount'] ?? exerciseNames.length}', '动作数'),
+                      if (pureDuration != null && pureDuration > 0)
+                        _buildDetailStat(colors, Icons.timer,
+                            '${(pureDuration.toInt() / 60).round()}min', '纯训练'),
                     ],
                   ),
                 ],
@@ -230,9 +234,12 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                     final idx = entry.key;
                     final log = entry.value;
                     final logMap = log is Map<String, dynamic> ? log : <String, dynamic>{};
-                    final after = logMap['after'] as String? ?? '';
-                    final seconds = logMap['seconds'] as num?;
-                    final skipped = logMap['skipped'] as bool? ?? false;
+                    // 新格式字段，fallback 兼容旧数据
+                    final exercise = logMap['exercise'] as String? ?? '';
+                    final actual = (logMap['actualRestSeconds'] as num?)?.toInt()
+                                ?? (logMap['actualTime'] as num?)?.toInt() ?? 0;
+                    final reason = logMap['restEndReason'] as String? ?? 'manual';
+                    final skipped = reason == 'skip';
                     return Padding(
                       padding: EdgeInsets.only(bottom: idx < restLog.length - 1 ? 8 : 0),
                       child: Row(
@@ -248,12 +255,12 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              after.isNotEmpty ? after : '休息 ${idx + 1}',
+                              exercise.isNotEmpty ? exercise : '休息 ${idx + 1}',
                               style: TextStyle(color: colors.textSecondary, fontSize: 13),
                             ),
                           ),
                           Text(
-                            skipped ? '已跳过' : '${seconds ?? 0}秒',
+                            skipped ? '已跳过' : '$actual秒',
                             style: TextStyle(
                               color: skipped ? colors.warningColor : colors.textPrimary,
                               fontSize: 13,
