@@ -88,6 +88,8 @@ class _TrainingPageState extends State<TrainingPage>
 
   // ── Timer ────────────────────────────────────────────────────
   Timer? _restTimer;
+  // ── 持久化兜底定时器 ─────────────────────────────────────────
+  Timer? _persistenceTimer;
   late DateTime _startTime;
 
   // ── PAL stream subscriptions ─────────────────────────────────
@@ -127,6 +129,11 @@ class _TrainingPageState extends State<TrainingPage>
         _skipRest();
       }
     });
+
+    // 每 30 秒定时持久化（兜底防异常杀进程）
+    _persistenceTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      _persistInProgressTraining();
+    });
   }
 
   /// 检查通知权限，未授予时弹窗引导用户去设置
@@ -148,6 +155,7 @@ class _TrainingPageState extends State<TrainingPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _restTimer?.cancel();
+    _persistenceTimer?.cancel();
     _restReminderSub?.cancel();
     _liveViewSub?.cancel();
     _weightController.dispose();
@@ -186,6 +194,10 @@ class _TrainingPageState extends State<TrainingPage>
 
   /// 顶部返回按钮：先恢复卡片空闲态，再返回上一页。
   void _onBackPressed() {
+    // 主动退出：清理进行中训练持久化
+    if (!_trainingDone) {
+      Storage.clearInProgressTraining();
+    }
     _resetWidgetOnExit();
     context.pop();
   }
