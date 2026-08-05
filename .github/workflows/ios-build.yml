@@ -338,6 +338,11 @@ jobs:
                   *.xcactivitylog)
                     gzip -dc "$f" 2>/dev/null | strings | grep -iE 'error|fail|provisioning|certificate|signing|identity|profile' | tail -60 || true
                     ;;
+                  *.critical.log)
+                    # critical 日志直接全文输出（tail 200），避免 grep/tail 截断漏掉真实错误
+                    echo "--- critical.log 全文（tail 200） ---"
+                    tail -200 "$f" 2>/dev/null || true
+                    ;;
                   *)
                     tail -80 "$f" 2>/dev/null || true
                     ;;
@@ -358,19 +363,57 @@ jobs:
               PROFILE="$APP/embedded.mobileprovision"
               if [ -f "$PROFILE" ]; then
                 echo "--- 内嵌 provisioning profile ---"
-                security cms -D -i "$PROFILE" | /usr/libexec/PlistBuddy \
-                  -c "Print :Name" \
-                  -c "Print :UUID" \
-                  -c "Print :ExpirationDate" \
-                  -c "Print :get-task-allow" \
-                  -c "Print :ProvisionedDevices" \
-                  -c "Print :Entitlements" \
-                  /dev/stdin 2>&1 || true
+                # 注意：不能通过管道喂 /dev/stdin（macOS PlistBuddy 无法解析管道），必须写入临时文件
+                PP_PLIST="$RUNNER_TEMP/embedded_pp.plist"
+                security cms -D -i "$PROFILE" > "$PP_PLIST" 2>/dev/null
+                if [ -s "$PP_PLIST" ]; then
+                  /usr/libexec/PlistBuddy \
+                    -c "Print :Name" \
+                    -c "Print :UUID" \
+                    -c "Print :CreationDate" \
+                    -c "Print :ExpirationDate" \
+                    -c "Print :get-task-allow" \
+                    -c "Print :ProvisionedDevices" \
+                    -c "Print :Entitlements" \
+                    "$PP_PLIST" 2>&1 || true
+                  echo "--- 类型判断依据 ---"
+                  echo "get-task-allow=$(/usr/libexec/PlistBuddy -c 'Print :get-task-allow' "$PP_PLIST" 2>/dev/null || echo 'N/A')"
+                  echo "是否有 ProvisionedDevices 键（有=Development/AdHoc，无=App Store）: $(/usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "$PP_PLIST" >/dev/null 2>&1 && echo '有' || echo '无')"
+                else
+                  echo "内嵌 profile 解码失败或为空"
+                fi
               else
                 echo "无内嵌 profile（归档未签名）"
               fi
             else
               echo "未在归档中找到 .app"
+            fi
+
+            echo "======== 6. 已安装的 provisioning profile（源文件） ========"
+            PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+            if [ -d "$PP_DIR" ]; then
+              for PP_FILE in "$PP_DIR"/*.mobileprovision; do
+                [ -f "$PP_FILE" ] || continue
+                echo "----- $(basename "$PP_FILE") -----"
+                PP_PLIST="$RUNNER_TEMP/installed_pp.plist"
+                security cms -D -i "$PP_FILE" > "$PP_PLIST" 2>/dev/null
+                if [ -s "$PP_PLIST" ]; then
+                  /usr/libexec/PlistBuddy \
+                    -c "Print :Name" \
+                    -c "Print :UUID" \
+                    -c "Print :CreationDate" \
+                    -c "Print :ExpirationDate" \
+                    -c "Print :get-task-allow" \
+                    "$PP_PLIST" 2>&1 || true
+                  echo "是否有 ProvisionedDevices 键: $(/usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "$PP_PLIST" >/dev/null 2>&1 && echo '有' || echo '无')"
+                  echo "--- Entitlements ---"
+                  /usr/libexec/PlistBuddy -c "Print :Entitlements" "$PP_PLIST" 2>&1 || true
+                else
+                  echo "解码失败或为空"
+                fi
+              done
+            else
+              echo "未安装任何 provisioning profile"
             fi
 
             exit 1
