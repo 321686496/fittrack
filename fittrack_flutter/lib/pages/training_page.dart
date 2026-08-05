@@ -29,6 +29,11 @@ import '../services/platform/rest_reminder_service.dart';
 import '../services/platform/implementations/ohos_rest_reminder_service.dart';
 import '../services/permission_service.dart';
 
+/// 休息状态机阶段
+enum RestPhase { idle, resting, restingOvertime }
+/// 休息结束原因
+enum RestEndReason { manual, autoTimeout, skip }
+
 class TrainingPage extends StatefulWidget {
   final Map<String, dynamic> params;
 
@@ -52,19 +57,23 @@ class _TrainingPageState extends State<TrainingPage>
   int _currentExIdx = 0;
   int _currentSetIdx = 0;
   bool _trainingDone = false;
-  bool _isResting = false;
-  int _restSeconds = 0;
-  int _totalRestSeconds = 0;
-  bool _isLastSetOfExercise = false;
 
   /// 动作指导卡片是否展开（默认展开，状态从持久化设置读取）
   bool _actionGuideExpanded = true;
 
-  // ── Wall-clock rest timer ────────────────────────────────────
-  /// 休息结束的绝对时间点，用于后台恢复时计算剩余时间
-  DateTime? _restEndTime;
-  /// 是否已经触发过本次休息结束的提醒（防止重复触发）
-  bool _restEndNotified = false;
+  // ── Rest state machine ──────────────────────────────────────
+  RestPhase _restPhase = RestPhase.idle;
+  int _restScheduledSeconds = 0;
+  DateTime? _restActualStartAt;
+  DateTime? _restScheduledEndAt;
+  DateTime? _restOvertimeLimitAt;
+  RestEndReason? _restEndReason;
+  int _restDisplaySeconds = 0;
+  int _lastRestActualSeconds = 0;
+
+  /// 兼容字段：UI 读取 _restSeconds 来显示剩余秒数
+  int get _restSeconds => _restDisplaySeconds;
+  bool get _isResting => _restPhase != RestPhase.idle;
 
   // ── App lifecycle ────────────────────────────────────────────
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
@@ -157,13 +166,13 @@ class _TrainingPageState extends State<TrainingPage>
       _skipRest();
       return;
     }
-    if (_isResting && _restEndTime != null) {
+    // 通知点击回到训练页：如果休息已超时，直接结束
+    if (_restPhase == RestPhase.restingOvertime) {
+      _endRest(RestEndReason.manual);
+    } else if (_restPhase == RestPhase.resting && _restScheduledEndAt != null) {
       final now = DateTime.now();
-      if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
-        _restSeconds = 0;
-        RestNotificationService.instance.cancelScheduledNotification();
-        _notifyRestEnd();
-        _advanceAfterRest();
+      if (now.isAfter(_restScheduledEndAt!)) {
+        _endRest(RestEndReason.manual);
       }
     }
   }
@@ -189,26 +198,39 @@ class _TrainingPageState extends State<TrainingPage>
     // 从后台恢复到前台时，修正倒计时
     if (prevState == AppLifecycleState.paused &&
         state == AppLifecycleState.resumed &&
-        _isResting &&
-        _restEndTime != null) {
+        _restPhase != RestPhase.idle &&
+        _restScheduledEndAt != null) {
       _onAppResumedFromBackground();
+    }
+
+    // App 进入后台时持久化（兜底）
+    if (state == AppLifecycleState.paused) {
+      _persistInProgressTraining();
     }
   }
 
   /// 应用从后台恢复时，根据 wall-clock 修正倒计时
   void _onAppResumedFromBackground() {
     final now = DateTime.now();
-    if (now.isAfter(_restEndTime!) || now.isAtSameMomentAs(_restEndTime!)) {
-      _restSeconds = 0;
-      RestNotificationService.instance.cancelScheduledNotification();
-      _notifyRestEnd();
-      _advanceAfterRest();
-    } else {
-      final remaining = _restEndTime!.difference(now).inSeconds;
-      setState(() {
-        _restSeconds = remaining;
-      });
-      _restartRestTimer();
+    if (_restPhase == RestPhase.resting) {
+      if (now.isAfter(_restScheduledEndAt!) || now.isAtSameMomentAs(_restScheduledEndAt!)) {
+        // 倒计时已结束
+        final autoEnd = Storage.getSettings()['autoEndAfterRest'] as bool? ?? false;
+        if (autoEnd) {
+          _endRest(RestEndReason.autoTimeout,
+              actualSecondsOverride: _restScheduledSeconds);
+        } else {
+          _enterOvertimePhase(skipSound: true);
+        }
+      } else {
+        setState(() {
+          _restDisplaySeconds = _restScheduledEndAt!.difference(now).inSeconds;
+        });
+      }
+    } else if (_restPhase == RestPhase.restingOvertime) {
+      if (now.isAfter(_restOvertimeLimitAt!)) {
+        _endRest(RestEndReason.autoTimeout);
+      }
     }
   }
 
@@ -310,6 +332,7 @@ class _TrainingPageState extends State<TrainingPage>
       'set': _currentSetIdx + 1,
       'weight': weight,
       'reps': reps,
+      'rest': _lastRestActualSeconds,  // 上一组结束后的实际休息秒数
     });
 
     final totalSets = (currentEx['sets'] as int?) ?? 0;
@@ -317,6 +340,8 @@ class _TrainingPageState extends State<TrainingPage>
     final isLastExercise = _currentExIdx + 1 >= _exercises.length;
 
     if (isLastSet && isLastExercise) {
+      // 训练完成：取消所有待发通知（§1 修复）
+      RestNotificationService.instance.cancelScheduledNotification();
       // 训练完成：立即触觉反馈（修复 Issue 1a — 震动与完成动作同步）
       try {
         final settings = Storage.getSettings();
@@ -341,14 +366,20 @@ class _TrainingPageState extends State<TrainingPage>
 
   void _startRest(int seconds, bool isLastSetOfExercise) {
     SoundService.instance.play(SoundType.restStart);
-    _restEndTime = DateTime.now().add(Duration(seconds: seconds));
-    _restEndNotified = false;
+    final now = DateTime.now();
+    _restScheduledSeconds = seconds;
+    _restActualStartAt = now;
+    _restScheduledEndAt = now.add(Duration(seconds: seconds));
+    final multiplier =
+        (Storage.getSettings()['restOvertimeLimitMultiplier'] as num?)?.toDouble() ?? 3.0;
+    _restOvertimeLimitAt = _restScheduledEndAt!.add(
+        Duration(seconds: (seconds * multiplier).round()));
+    // 重置上一次休息的结束原因，使 _notifyRestEnd 的"已通知"守卫按周期生效
+    _restEndReason = null;
 
     setState(() {
-      _isResting = true;
-      _restSeconds = seconds;
-      _totalRestSeconds = seconds;
-      _isLastSetOfExercise = isLastSetOfExercise;
+      _restPhase = RestPhase.resting;
+      _restDisplaySeconds = seconds;
     });
 
     // 推送休息状态到卡片 + 启动实况窗
@@ -361,7 +392,7 @@ class _TrainingPageState extends State<TrainingPage>
         mode: WidgetCardMode.rest,
         exerciseName: exerciseName,
         restTotalSeconds: seconds,
-        restEndTime: _restEndTime,
+        restEndTime: _restScheduledEndAt,
         currentSet: _currentSetIdx + 1,
         totalSets: totalSets,
         exerciseIndex: _currentExIdx + 1,
@@ -372,13 +403,11 @@ class _TrainingPageState extends State<TrainingPage>
       PlatformServices.liveView.startRestLiveView(
         exerciseName: exerciseName,
         restSeconds: seconds,
-        restEndTime: _restEndTime!,
+        restEndTime: _restScheduledEndAt!,
       );
     }
 
     // 预约定时通知（后台时系统自动触发）
-    // OHOS 平台：EntryAbility 接收到 mode=rest 数据后自动发布代理提醒
-    // Android/iOS：通过 RestNotificationService 调度
     if (PlatformServices.restReminder is! OhosRestReminderService) {
       final exerciseName = _currentExIdx < _exercises.length
           ? _exercises[_currentExIdx]['name'] as String
@@ -390,43 +419,116 @@ class _TrainingPageState extends State<TrainingPage>
     }
 
     _restartRestTimer();
+    _persistInProgressTraining();
   }
 
-  /// 启动/重启休息倒计时（基于 wall-clock 校正后的 _restSeconds）
+  /// 启动/重启休息倒计时（基于 wall-clock 校正）
   void _restartRestTimer() {
     _restTimer?.cancel();
     _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!_isResting || _restEndTime == null) {
+      if (_restPhase == RestPhase.idle) {
         timer.cancel();
         return;
       }
 
-      // 使用 wall-clock 计算剩余时间，确保准确
       final now = DateTime.now();
-      final remaining = _restEndTime!.difference(now).inSeconds;
-
       setState(() {
-        _restSeconds = remaining > 0 ? remaining : 0;
+        if (_restPhase == RestPhase.resting) {
+          final remaining = _restScheduledEndAt!.difference(now).inSeconds;
+          _restDisplaySeconds = remaining > 0 ? remaining : 0;
+          if (remaining <= 3 && remaining > 0) {
+            SoundService.instance.play(SoundType.tick);
+          }
+          if (remaining <= 0) {
+            // 倒计时结束
+            final autoEnd = Storage.getSettings()['autoEndAfterRest'] as bool? ?? false;
+            if (autoEnd) {
+              _endRest(RestEndReason.autoTimeout,
+                  actualSecondsOverride: _restScheduledSeconds);
+            } else {
+              _enterOvertimePhase();
+            }
+          }
+        } else if (_restPhase == RestPhase.restingOvertime) {
+          final overtime = now.difference(_restScheduledEndAt!).inSeconds;
+          _restDisplaySeconds = overtime;
+          if (now.isAfter(_restOvertimeLimitAt!)) {
+            _endRest(RestEndReason.autoTimeout);
+          }
+        }
       });
-
-      if (remaining <= 3 && remaining > 0) {
-        SoundService.instance.play(SoundType.tick);
-      }
-
-      if (remaining <= 0) {
-        timer.cancel();
-        // 不取消预约通知！让系统通知自然触发（后台时需要）
-        // 前台时也显示通知 + 振动
-        _notifyRestEnd();
-        _advanceAfterRest();
-      }
     });
   }
 
+  /// 进入超时静默计时阶段
+  void _enterOvertimePhase({bool skipSound = false}) {
+    setState(() {
+      _restPhase = RestPhase.restingOvertime;
+      _restDisplaySeconds = 0;
+    });
+    // 前台时取消预约通知（_notifyRestEnd 已处理），避免重复
+    if (_appLifecycleState == AppLifecycleState.resumed) {
+      RestNotificationService.instance.cancelScheduledNotification();
+    }
+    _notifyRestEnd();
+    _persistInProgressTraining();
+  }
+
   void _skipRest() {
+    _endRest(RestEndReason.skip);
+  }
+
+  /// 统一的休息结束收尾
+  void _endRest(RestEndReason reason, {int? actualSecondsOverride}) {
     _restTimer?.cancel();
-    RestNotificationService.instance.cancelScheduledNotification();
-    _advanceAfterRest(restSkipped: true);
+
+    // §1 修复：前台时取消预约通知，避免重复/延迟触发
+    if (_appLifecycleState == AppLifecycleState.resumed) {
+      RestNotificationService.instance.cancelScheduledNotification();
+    }
+
+    // 计算实际休息秒数
+    final actualSeconds = actualSecondsOverride
+        ?? (_restActualStartAt != null
+            ? DateTime.now().difference(_restActualStartAt!).inSeconds
+            : _restScheduledSeconds);
+
+    if (_currentExIdx < _exercises.length) {
+      _restLog.add({
+        'exercise': _exercises[_currentExIdx]['name'],
+        'scheduledRestSeconds': _restScheduledSeconds,
+        'actualRestSeconds': actualSeconds,
+        'restEndReason': reason.name,
+      });
+    }
+
+    _lastRestActualSeconds = actualSeconds;
+
+    // 停止休息倒计时前台服务
+    PlatformServices.liveView.stopRestLiveView();
+    _pushTrainingToWidget(restSkipped: reason == RestEndReason.skip);
+
+    setState(() {
+      _restPhase = RestPhase.idle;
+      _restActualStartAt = null;
+      _restScheduledEndAt = null;
+      _restOvertimeLimitAt = null;
+      _restEndReason = reason;
+
+      // 推进到下一组/下一动作
+      final currentEx = _currentExIdx < _exercises.length ? _exercises[_currentExIdx] : null;
+      final totalSets = currentEx != null ? (currentEx['sets'] as int?) ?? 0 : 0;
+      if (_currentSetIdx + 1 >= totalSets) {
+        // 当前动作最后一组完成，推进到下一个动作
+        _currentExIdx++;
+        _currentSetIdx = 0;
+      } else {
+        _currentSetIdx++;
+      }
+      _prefillWeightReps();
+    });
+
+    _persistInProgressTraining();
   }
 
   /// 休息结束时提醒
@@ -434,8 +536,7 @@ class _TrainingPageState extends State<TrainingPage>
   /// - 后台恢复：wall-clock 检测到休息已结束，补发通知
   ///   （OHOS 上由 EntryAbility 的 reminderAgentManager 代理提醒处理）
   Future<void> _notifyRestEnd() async {
-    if (_restEndNotified) return;
-    _restEndNotified = true;
+    if (_restEndReason != null) return; // 已通知过
 
     final exerciseName = _currentExIdx < _exercises.length
         ? _exercises[_currentExIdx]['name'] as String
@@ -449,34 +550,6 @@ class _TrainingPageState extends State<TrainingPage>
       }
     }
     // 后台时无法主动触发通知（OHOS 限制），等待用户回到应用时补发
-  }
-
-  void _advanceAfterRest({bool restSkipped = false}) {
-    // 停止休息倒计时前台服务（自然结束 + 跳过都应停止）
-    // 避免前台服务通知（ID 2001）淹没 AlarmReceiver 的休息结束通知（ID 1001）
-    PlatformServices.liveView.stopRestLiveView();
-
-    _restLog.add({
-      'exercise': _exercises[_currentExIdx]['name'],
-      'restTime': _totalRestSeconds,
-      'actualTime': _totalRestSeconds - _restSeconds,
-    });
-
-    setState(() {
-      _isResting = false;
-      _restEndTime = null;
-      _restEndNotified = false;
-      if (_isLastSetOfExercise) {
-        _currentExIdx++;
-        _currentSetIdx = 0;
-      } else {
-        _currentSetIdx++;
-      }
-      // 预填下一个动作/组的计划值
-      _prefillWeightReps();
-    });
-    // 推送训练状态到卡片（restSkipped 标记区分跳过 vs 自然结束）
-    _pushTrainingToWidget(restSkipped: restSkipped);
   }
 
   /// 推送训练状态到桌面卡片
@@ -521,13 +594,56 @@ class _TrainingPageState extends State<TrainingPage>
     }
   }
 
+  /// 持久化进行中训练到 Storage
+  Future<void> _persistInProgressTraining() async {
+    if (_trainingDone || _exercises.isEmpty) return;
+    try {
+      final now = DateTime.now();
+      final today = '${now.year}-${now.month}-${now.day}';
+      final data = <String, dynamic>{
+        'version': 1,
+        'startedAt': _startTime.millisecondsSinceEpoch,
+        'startedAtDate': today,
+        'planId': _plan?['id'],
+        'planName': _plan?['name'],
+        'dayConfig': _dayConfig,
+        'exercises': _exercises,
+        'currentExIdx': _currentExIdx,
+        'currentSetIdx': _currentSetIdx,
+        'setRecords': _setRecords.map((k, v) => MapEntry(k, v)),
+        'restLog': _restLog,
+        'restPhaseSnapshot': _restPhase != RestPhase.idle ? {
+          'phase': _restPhase.name,
+          'scheduledSeconds': _restScheduledSeconds,
+          'actualStartAt': _restActualStartAt?.millisecondsSinceEpoch,
+          'scheduledEndAt': _restScheduledEndAt?.millisecondsSinceEpoch,
+          'overtimeLimitAt': _restOvertimeLimitAt?.millisecondsSinceEpoch,
+        } : null,
+      };
+      await Storage.saveInProgressTraining(data);
+    } catch (e) {
+      debugPrint('_persistInProgressTraining error: $e');
+    }
+  }
+
   /// 训练完成后自动保存记录、检查成就、显示庆祝动画。
   /// 不导航离开，用户仍可查看完成页面、分享成果。
   Future<void> _autoSaveTraining() async {
     if (_isSaved) return; // 防止重复保存
     _isSaved = true;
 
-    final duration = DateTime.now().difference(_startTime).inMinutes;
+    // §1 修复：训练完成时兜底取消所有待发通知
+    RestNotificationService.instance.cancelScheduledNotification();
+
+    // 清理进行中训练持久化
+    Storage.clearInProgressTraining();
+
+    final totalDurationSec = DateTime.now().difference(_startTime).inSeconds;
+    final restTotalSec = _restLog.fold<int>(0, (sum, r) =>
+        sum + ((r['actualRestSeconds'] as num?) ?? 0).toInt());
+    final pureDurationSec = totalDurationSec - restTotalSec;
+    final duration = (totalDurationSec / 60).round();
+
     int totalWeight = 0;
     final muscles = <String>{};
 
@@ -546,6 +662,7 @@ class _TrainingPageState extends State<TrainingPage>
       'name': _dayConfig?['label'] ?? '训练',
       'date': DateTime.now().millisecondsSinceEpoch,
       'duration': duration,
+      'pureDuration': pureDurationSec,
       'totalWeight': totalWeight,
       'totalSets': _completedSets,
       'exerciseCount': _exercises.length,
@@ -1271,11 +1388,22 @@ class _TrainingPageState extends State<TrainingPage>
 
   Widget _buildRestOverlay() {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
-    final progress =
-        _totalRestSeconds > 0 ? _restSeconds / _totalRestSeconds : 0.0;
+    final isOvertime = _restPhase == RestPhase.restingOvertime;
+    // resting 阶段：剩余秒数 / 计划秒数；overtime 阶段：进度已满
+    final progress = isOvertime
+        ? 1.0
+        : (_restScheduledSeconds > 0
+            ? _restSeconds / _restScheduledSeconds
+            : 0.0);
     final currentExName = _currentExIdx < _exercises.length
         ? _exercises[_currentExIdx]['name'] as String
         : '';
+    // overtime 阶段显示 "+Ns" 形式，resting 阶段显示剩余秒数
+    final secondsText = isOvertime ? '+$_restSeconds' : '$_restSeconds';
+    final statusText = isOvertime ? '已超时' : '休息中';
+    final buttonText = isOvertime ? '结束休息' : '跳过休息';
+    // overtime 阶段用警告色高亮按钮
+    final buttonColor = isOvertime ? colors.warningColor : colors.accentGlow;
 
     return Material(
       color: Colors.transparent,
@@ -1296,7 +1424,7 @@ class _TrainingPageState extends State<TrainingPage>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '休息中',
+                  statusText,
                   style: TextStyle(
                     color: colors.textSecondary,
                     fontSize: 16,
@@ -1304,9 +1432,9 @@ class _TrainingPageState extends State<TrainingPage>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '$_restSeconds',
+                  secondsText,
                   style: TextStyle(
-                    color: colors.accentGlow,
+                    color: buttonColor,
                     fontSize: 72,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1325,7 +1453,7 @@ class _TrainingPageState extends State<TrainingPage>
                   child: ProgressBar(
                     progress: progress,
                     height: 8,
-                    fillColor: colors.accentGlow,
+                    fillColor: buttonColor,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -1339,7 +1467,9 @@ class _TrainingPageState extends State<TrainingPage>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '你可以离开 App 去喝口水、活动一下，休息结束时我们会发送通知提醒你开始下一组。',
+                          isOvertime
+                              ? '休息时间已超，按需结束休息开始下一组。'
+                              : '你可以离开 App 去喝口水、活动一下，休息结束时我们会发送通知提醒你开始下一组。',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.white.withOpacity(0.7),
@@ -1352,18 +1482,20 @@ class _TrainingPageState extends State<TrainingPage>
                 ),
                 const SizedBox(height: 32),
                 GestureDetector(
-                  onTap: _skipRest,
+                  onTap: isOvertime
+                      ? () => _endRest(RestEndReason.manual)
+                      : _skipRest,
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: colors.accentGlow),
+                      border: Border.all(color: buttonColor),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      '跳过休息',
+                      buttonText,
                       style: TextStyle(
-                        color: colors.accentGlow,
+                        color: buttonColor,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1492,7 +1624,7 @@ class _TrainingPageState extends State<TrainingPage>
                                       color: colors.textPrimary, fontSize: 14),
                                 ),
                                 Text(
-                                  '休息${log['actualTime']}秒',
+                                  '休息${log['actualRestSeconds']}秒',
                                   style: TextStyle(
                                       color: colors.textSecondary, fontSize: 13),
                                 ),
@@ -1602,7 +1734,7 @@ class _TrainingPageState extends State<TrainingPage>
                           _detailRow('平均休息时长',
                               _restLog.isEmpty
                                   ? '0 秒'
-                                  : '${(_restLog.fold<int>(0, (sum, l) => sum + (l['actualTime'] as num).toInt()) / _restLog.length).round()} 秒',
+                                  : '${(_restLog.fold<int>(0, (sum, l) => sum + (l['actualRestSeconds'] as num).toInt()) / _restLog.length).round()} 秒',
                               colors),
                         ],
                       ),
