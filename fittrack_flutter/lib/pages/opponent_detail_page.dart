@@ -454,59 +454,89 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     final cardTheme = skinCfg.cardTheme;
     final isAmbassador = good.id == 'skin_ambassador';
 
-    return Container(
-      width: 110,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      decoration: BoxDecoration(
-        color: unlocked ? colors.accentGlow.withOpacity(0.06) : colors.bgSecondary,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: unlocked ? (cardTheme.borderColor) : colors.borderColor,
-          width: unlocked ? 1.5 : 1,
+    return GestureDetector(
+      onTap: unlocked ? null : () => _showSkinPreview(colors, good, skinCfg),
+      child: Container(
+        width: 110,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        decoration: BoxDecoration(
+          color: unlocked ? colors.accentGlow.withOpacity(0.06) : colors.bgSecondary,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: unlocked ? (cardTheme.borderColor) : colors.borderColor,
+            width: unlocked ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(good.emoji, style: TextStyle(
+                  fontSize: 24,
+                  color: unlocked ? null : colors.textMuted,
+                )),
+                if (isAmbassador && !unlocked)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: BadgeWidget(text: '限定', variant: BadgeVariant.accent),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(good.name, style: TextStyle(
+              color: unlocked ? colors.textPrimary : colors.textMuted,
+              fontSize: 10, fontWeight: FontWeight.w600,
+            ), maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 4),
+            if (unlocked)
+              Icon(
+                Icons.check_circle,
+                size: 12,
+                color: cardTheme.glowColor,
+              )
+            else if (good.isPurchasableWithPoints)
+              // 未解锁且可购买：显示价格 + 购买按钮
+              _buildPurchaseButton(colors, good, cardTheme)
+            else
+              // 未解锁且不可购买（限定款）：显示解锁条件
+              Text(
+                good.unlockCondition ?? '',
+                style: TextStyle(color: colors.textMuted, fontSize: 9),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+          ],
         ),
       ),
-      child: Column(
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Text(good.emoji, style: TextStyle(
-                fontSize: 24,
-                color: unlocked ? null : colors.textMuted,
-              )),
-              if (isAmbassador && !unlocked)
-                Positioned(
-                  top: -2,
-                  right: -2,
-                  child: BadgeWidget(text: '限定', variant: BadgeVariant.accent),
-                ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(good.name, style: TextStyle(
-            color: unlocked ? colors.textPrimary : colors.textMuted,
-            fontSize: 10, fontWeight: FontWeight.w600,
-          ), maxLines: 1, overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 4),
-          if (unlocked)
-            Icon(
-              Icons.check_circle,
-              size: 12,
-              color: cardTheme.glowColor,
-            )
-          else if (good.isPurchasableWithPoints)
-            // 未解锁且可购买：显示价格 + 购买按钮
-            _buildPurchaseButton(colors, good, cardTheme)
-          else
-            // 未解锁且不可购买（限定款）：显示解锁条件
-            Text(
-              good.unlockCondition ?? '',
-              style: TextStyle(color: colors.textMuted, fontSize: 9),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-        ],
+    );
+  }
+
+  /// 弹出底部 sheet 预览未解锁皮肤
+  void _showSkinPreview(
+      LiftTrackColors colors, VirtualGood good, OpponentSkinConfig skinCfg) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => _SkinPreviewSheet(
+        colors: colors,
+        good: good,
+        skinCfg: skinCfg,
+        unlocking: _unlocking,
+        onPurchase: () {
+          Navigator.of(ctx).pop();
+          _purchaseSkin(good.id);
+        },
+        onInvite: () {
+          Navigator.of(ctx).pop();
+          context.push('/invitation');
+        },
       ),
     );
   }
@@ -532,6 +562,151 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
         ),
       ),
+    );
+  }
+}
+
+/// 皮肤预览底部弹层
+class _SkinPreviewSheet extends StatelessWidget {
+  final LiftTrackColors colors;
+  final VirtualGood good;
+  final OpponentSkinConfig skinCfg;
+  final bool unlocking;
+  final VoidCallback onPurchase;
+  final VoidCallback onInvite;
+
+  const _SkinPreviewSheet({
+    required this.colors,
+    required this.good,
+    required this.skinCfg,
+    required this.unlocking,
+    required this.onPurchase,
+    required this.onInvite,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isAmbassador = good.id == 'skin_ambassador';
+    final cardTheme = skinCfg.cardTheme;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 拖拽指示器
+            Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(
+                color: colors.borderColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 皮肤名称
+            Text(skinCfg.name, style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 18, fontWeight: FontWeight.bold,
+            )),
+            const SizedBox(height: 16),
+            // OpponentRenderer 渲染
+            Container(
+              width: 200, height: 200,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: cardTheme.gradientColors,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: cardTheme.borderColor, width: 2),
+              ),
+              child: OpponentRenderer(
+                skinId: skinCfg.id,
+                size: const Size(180, 180),
+                animate: true,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 皮肤信息
+            _infoRow(colors, '招牌动作', skinCfg.signatureMove),
+            const SizedBox(height: 8),
+            _infoRow(colors, '价格', skinCfg.pointsCost),
+            if (good.unlockCondition != null) ...[
+              const SizedBox(height: 8),
+              _infoRow(colors, '解锁条件', good.unlockCondition!),
+            ],
+            const SizedBox(height: 20),
+            // 购买/邀请按钮
+            if (good.isPurchasableWithPoints)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: unlocking ? null : onPurchase,
+                  icon: const Icon(Icons.stars, size: 18),
+                  label: Text('积分购买 (${good.pointsCost})',
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cardTheme.borderColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            if (isAmbassador) ...[
+              if (good.isPurchasableWithPoints)
+                const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onInvite,
+                  icon: const Icon(Icons.card_giftcard, size: 18),
+                  label: const Text('邀请好友解锁',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.accentGlow,
+                    side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            // 关闭按钮
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('关闭', style: TextStyle(color: colors.textSecondary)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(LiftTrackColors colors, String label, String value) {
+    return Row(
+      children: [
+        Text(label, style: TextStyle(
+          color: colors.textSecondary, fontSize: 13,
+        )),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(value, style: TextStyle(
+            color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500,
+          ), textAlign: TextAlign.end),
+        ),
+      ],
     );
   }
 }
