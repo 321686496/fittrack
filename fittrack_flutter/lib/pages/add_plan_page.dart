@@ -5,6 +5,7 @@ import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
+import '../services/rest_preference_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/exercise_picker_sheet.dart';
 
@@ -440,6 +441,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, '默认休息(秒)'), const SizedBox(height: 6), TextField(controller: _restTimeController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: const InputDecoration(hintText: '90'))])),
               ],
             ),
+            _buildRestRecommendationCard(colors),
             const SizedBox(height: 20),
 
             // 训练日编辑器（可添加/删除训练日与动作）
@@ -562,6 +564,37 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   Widget _buildLabel(LiftTrackColors colors, String text) {
     return Text(text, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500));
+  }
+
+  // 历史休息偏好推荐卡片：基于历史训练数据推荐休息时间
+  Widget _buildRestRecommendationCard(LiftTrackColors colors) {
+    final recommended = RestPreferenceService.instance.computeRecommendedRestSeconds();
+    if (recommended == null) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.accentGlow.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lightbulb, color: colors.accentGlow, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '根据您的历史组间休息偏好, 推荐休息时间 $recommended 秒',
+              style: TextStyle(color: colors.textSecondary, fontSize: 13),
+            ),
+          ),
+          TextButton(
+            onPressed: () => _restTimeController.text = recommended.toString(),
+            child: const Text('应用'),
+          ),
+        ],
+      ),
+    );
   }
 
   // 训练动作的小标签：用于展示组数/次数/重量/休息时间
