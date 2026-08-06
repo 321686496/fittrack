@@ -1,4 +1,4 @@
-﻿name: iOS Build
+name: iOS Build
 
 # ==============================================================================
 # FitTrack iOS 构建 workflow（替代 Codemagic）
@@ -330,19 +330,44 @@ jobs:
               echo "xcodebuild 导出未产出 .ipa，走 ditto 归档打包 fallback（预期路径）"
               rm -rf build/ios/ipa && mkdir -p build/ios/ipa/Payload
               cp -R "$APP" build/ios/ipa/Payload/
-              # 补 SwiftSupport（App Store 上传必需，否则报 ITMS-90426 Invalid Swift Support）
-              SWIFT_LIB_DIR="$(dirname "$(dirname "$(xcrun --find swiftc 2>/dev/null)")")/lib/swift/iphoneos"
+              # 补 SwiftSupport：仅当定位到实际 libswift 动态库时才打包；
+              # 否则不创建 SwiftSupport（部署目标 >= iOS 12.2 时 Swift ABI 稳定，
+              # 运行时由系统提供，空的 SwiftSupport 反而触发 ITMS-90424）。
+              # Xcode 26 起 toolchain 的 usr/lib/swift/iphoneos 不再提供回退库，做多候选目录探测。
+              TOOLCHAIN_ROOT="$(dirname "$(dirname "$(xcrun --find swiftc 2>/dev/null)")")"
+              SDK_SWIFT_DIR="$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null)/usr/lib/swift"
+              SWIFT_LIB_DIRS=(
+                "$TOOLCHAIN_ROOT/lib/swift/iphoneos"
+                "$SDK_SWIFT_DIR/iphoneos"
+                "$SDK_SWIFT_DIR"
+              )
               mkdir -p build/ios/ipa/SwiftSupport/iphoneos
-              otool -L build/ios/ipa/Payload/Runner.app/Runner 2>/dev/null | \
-                grep -o 'libswift[A-Za-z0-9_]*\.dylib' | sort -u | while read -r lib; do
-                if [ -f "$SWIFT_LIB_DIR/$lib" ]; then
-                  cp "$SWIFT_LIB_DIR/$lib" build/ios/ipa/SwiftSupport/iphoneos/
-                  echo "SwiftSupport: $lib"
-                else
-                  echo "::warning::Swift 库 $lib 未在 toolchain 中找到: $SWIFT_LIB_DIR"
+              COPIED_COUNT=0
+              for lib in $(otool -L build/ios/ipa/Payload/Runner.app/Runner 2>/dev/null \
+                | grep -o 'libswift[A-Za-z0-9_]*\.dylib' | sort -u); do
+                FOUND=""
+                for dir in "${SWIFT_LIB_DIRS[@]}"; do
+                  if [ -f "$dir/$lib" ]; then
+                    cp "$dir/$lib" build/ios/ipa/SwiftSupport/iphoneos/
+                    echo "SwiftSupport: $lib"
+                    COPIED_COUNT=$((COPIED_COUNT+1))
+                    FOUND=1
+                    break
+                  fi
+                done
+                if [ -z "$FOUND" ]; then
+                  echo "::warning::Swift 库 $lib 未在候选目录找到: ${SWIFT_LIB_DIRS[*]}"
                 fi
               done
-              if ! (cd build/ios/ipa && rm -f Runner.ipa && zip -q -r Runner.ipa Payload SwiftSupport -x "*.DS_Store"); then
+              if [ "$COPIED_COUNT" -eq 0 ]; then
+                echo "::warning::未定位到任何 libswift 库，移除空的 SwiftSupport（部署目标 >= iOS 12.2 由系统提供 Swift 运行时）"
+                rm -rf build/ios/ipa/SwiftSupport
+              fi
+              ZIP_ARGS="Payload"
+              if [ -d build/ios/ipa/SwiftSupport ]; then
+                ZIP_ARGS="$ZIP_ARGS SwiftSupport"
+              fi
+              if ! (cd build/ios/ipa && rm -f Runner.ipa && zip -q -r Runner.ipa $ZIP_ARGS -x "*.DS_Store"); then
                 echo "::error::zip 打包 .ipa 失败，退出诊断流程"
                 ls -la build/ios/ipa/ || true
                 exit 1
