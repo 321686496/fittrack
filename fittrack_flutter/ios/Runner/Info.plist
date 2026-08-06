@@ -81,5 +81,10 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+
+	<!-- 出口合规：仅使用豁免加密（HTTPS/TLS + 标准 HMAC-SHA256），
+	     设为 false 后 App Store Connect 将跳过加密问卷 -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

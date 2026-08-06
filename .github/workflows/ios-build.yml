@@ -356,12 +356,14 @@ jobs:
                   fi
                 done
                 if [ -z "$FOUND" ]; then
-                  echo "::warning::Swift 库 $lib 未在候选目录找到: ${SWIFT_LIB_DIRS[*]}"
+                  echo "（预期）Swift 库 $lib 不在 toolchain 中：部署目标 >= iOS 12.2，运行时由系统提供，无需打入 SwiftSupport"
                 fi
               done
               if [ "$COPIED_COUNT" -eq 0 ]; then
-                echo "::warning::未定位到任何 libswift 库，移除空的 SwiftSupport（部署目标 >= iOS 12.2 由系统提供 Swift 运行时）"
+                echo "未定位到任何 libswift 库，移除空的 SwiftSupport（部署目标 >= iOS 12.2 由系统提供 Swift 运行时，属预期行为）"
                 rm -rf build/ios/ipa/SwiftSupport
+              else
+                echo "已复制 $COPIED_COUNT 个 Swift 库到 SwiftSupport"
               fi
               ZIP_ARGS="Payload"
               if [ -d build/ios/ipa/SwiftSupport ]; then
