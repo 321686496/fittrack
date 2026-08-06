@@ -6,10 +6,10 @@ import 'package:fittrack_flutter/widgets/opponent/opponent_skin_config.dart';
 void main() {
   group('OpponentSkinConfig', () {
     test('byId returns correct config for 4 known ids', () {
-      expect(OpponentSkinConfig.byId('skin_beginner').name, '健身小白');
-      expect(OpponentSkinConfig.byId('skin_iron_warrior').name, '钢铁战士');
-      expect(OpponentSkinConfig.byId('skin_cyber_ninja').name, '赛博忍者');
-      expect(OpponentSkinConfig.byId('skin_ambassador').name, '燃力大使');
+      expect(OpponentSkinConfig.byId('skin_beginner').name, '晨光起步者');
+      expect(OpponentSkinConfig.byId('skin_iron_warrior').name, '熔铁匠人');
+      expect(OpponentSkinConfig.byId('skin_cyber_ninja').name, '风行游侠');
+      expect(OpponentSkinConfig.byId('skin_ambassador').name, '传承导师');
     });
 
     test('byId falls back to beginner for unknown id', () {

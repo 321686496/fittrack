@@ -20,7 +20,7 @@
         "2*2",
         "2*4"
       ],
-      "formConfigAbility": "ability://com.lt.lifttrack.form"
+      "formConfigAbility": "ability://com.fp.fitplan.form"
     }
   ]
 }

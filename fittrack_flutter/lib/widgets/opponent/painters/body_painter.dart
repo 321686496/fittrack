@@ -24,10 +24,10 @@ class BodyPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
-    // 身体椭圆
-    final bodyRect = Rect.fromCenter(center: const Offset(120, 160), width: 80, height: 100);
-    canvas.drawOval(bodyRect, skinPaint);
-    canvas.drawOval(bodyRect, outlinePaint);
+    // 身体椭圆已隐藏（与 AI 贴图风格不协调），只保留四肢
+    // final bodyRect = Rect.fromCenter(center: const Offset(120, 160), width: 80, height: 100);
+    // canvas.drawOval(bodyRect, skinPaint);
+    // canvas.drawOval(bodyRect, outlinePaint);
 
     // 四肢
     _drawArms(canvas, skinPaint, outlinePaint);

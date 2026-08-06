@@ -11,7 +11,7 @@ void main() {
 
   group('VirtualGoodsStore', () {
     test('byId 返回已知商品', () {
-      expect(VirtualGoodsStore.byId('skin_iron_warrior')?.name, '钢铁战士');
+      expect(VirtualGoodsStore.byId('skin_iron_warrior')?.name, '熔铁匠人');
       expect(VirtualGoodsStore.byId('skin_ambassador')?.isLimited, true);
     });
 
