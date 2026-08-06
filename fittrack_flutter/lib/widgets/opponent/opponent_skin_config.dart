@@ -148,18 +148,18 @@ class OpponentSkinConfig {
     skinAmbassador,
   ];
 
-  // ── skin_beginner（健身小白）──
+  // ── skin_beginner（晨光起步者）── 方案A：训练哲学系列
   static const skinBeginner = OpponentSkinConfig(
     id: 'skin_beginner',
-    name: '健身小白',
+    name: '晨光起步者',
     pointsCost: '100 积分',
     isLimited: false,
     palette: SkinPalette(
-      primary: Color(0xFFFFB87A),
-      secondary: Color(0xFFFFE3C2),
-      accent: Color(0xFFFF6B35),
+      primary: Color(0xFFA8D8B9),   // 薄荷绿
+      secondary: Color(0xFFF5EBDC),  // 米白
+      accent: Color(0xFFE8956D),     // 暖橙点缀
       skinTone: Color(0xFFFDE3C7),
-      auraColor: Color(0xFFFF8C5A),
+      auraColor: Color(0xFFB5D8C2),  // 柔和薄荷光晕
     ),
     trainBias: TrainBias(
       compoundWeight: 0.3,
@@ -187,34 +187,34 @@ class OpponentSkinConfig {
       duration: Duration(milliseconds: 1200),
     ),
     dialogStyle: DialogStyle(
-      greetings: ['今天也要加油哦！', '一起开始训练吧~'],
-      trainingTaunts: ['跟着我一起学动作', '坚持就是胜利！'],
-      winQuotes: ['哇我赢了，下次你也加油', '运气好啦~'],
-      loseQuotes: ['你太厉害了，向你学习', '下次我也要更努力'],
+      greetings: ['晨光初现，一起开始吧！', '今天也要元气满满~'],
+      trainingTaunts: ['跟着我学动作', '一步步来，不着急'],
+      winQuotes: ['晨光属于早起的人~', '运气不错，再来一局？'],
+      loseQuotes: ['你今天状态真好', '我还要多练习'],
     ),
-    signatureMove: '活力弯举',
+    signatureMove: '晨光弯举',
     cardTheme: SkinCardTheme(
-      borderColor: Color(0xFF10b981),
-      glowColor: Color(0xFF10b981),
-      badgeColor: Color(0xFF10b981),
-      badgeEmoji: '🐣',
-      gradientColors: [Color(0xFFd1fae5), Color(0xFFa7f3d0)],
+      borderColor: Color(0xFFA8D8B9),
+      glowColor: Color(0xFFA8D8B9),
+      badgeColor: Color(0xFFA8D8B9),
+      badgeEmoji: '🌱',
+      gradientColors: [Color(0xFFF0F9F2), Color(0xFFD4ECDC)],
       showShimmer: false,
     ),
   );
 
-  // ── skin_iron_warrior（钢铁战士）──
+  // ── skin_iron_warrior（熔铁匠人）── 方案A：训练哲学系列
   static const skinIronWarrior = OpponentSkinConfig(
     id: 'skin_iron_warrior',
-    name: '钢铁战士',
+    name: '熔铁匠人',
     pointsCost: '300 积分',
     isLimited: false,
     palette: SkinPalette(
-      primary: Color(0xFF9B2C2C),
-      secondary: Color(0xFF4A5568),
-      accent: Color(0xFFF56565),
+      primary: Color(0xFF4A5568),   // 石墨灰
+      secondary: Color(0xFF2D3748),  // 深炭黑
+      accent: Color(0xFFC05621),     // 熔岩橙（深）
       skinTone: Color(0xFFE8B894),
-      auraColor: Color(0xFFFF4E50),
+      auraColor: Color(0xFFFF6B35),  // 熔岩橙（亮）
     ),
     trainBias: TrainBias(
       compoundWeight: 0.6,
@@ -242,34 +242,34 @@ class OpponentSkinConfig {
       duration: Duration(milliseconds: 1600),
     ),
     dialogStyle: DialogStyle(
-      greetings: ['今天也要炸裂重量！', '复合动作才是王道'],
-      trainingTaunts: ['扛上去！', '别让我失望'],
-      winQuotes: ['这就是力量的差距', '下一组加重'],
-      loseQuotes: ['你确实强', '我还要再练'],
+      greetings: ['炉火已起，开工', '今天要淬炼什么？'],
+      trainingTaunts: ['重量再加一点', '复合动作不偷懒'],
+      winQuotes: ['百炼成钢', '重量说明一切'],
+      loseQuotes: ['后生可畏', '我回炉再造'],
     ),
-    signatureMove: '裂地深蹲',
+    signatureMove: '熔炉深蹲',
     cardTheme: SkinCardTheme(
-      borderColor: Color(0xFF64748b),
-      glowColor: Color(0xFF64748b),
-      badgeColor: Color(0xFF64748b),
-      badgeEmoji: '🤖',
-      gradientColors: [Color(0xFFe2e8f0), Color(0xFFcbd5e1)],
+      borderColor: Color(0xFF4A5568),
+      glowColor: Color(0xFFC05621),
+      badgeColor: Color(0xFF4A5568),
+      badgeEmoji: '⚒',
+      gradientColors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
       showShimmer: false,
     ),
   );
 
-  // ── skin_cyber_ninja（赛博忍者）──
+  // ── skin_cyber_ninja（风行游侠）── 方案A：训练哲学系列
   static const skinCyberNinja = OpponentSkinConfig(
     id: 'skin_cyber_ninja',
-    name: '赛博忍者',
+    name: '风行游侠',
     pointsCost: '600 积分',
     isLimited: false,
     palette: SkinPalette(
-      primary: Color(0xFF9B5DE5),
-      secondary: Color(0xFF00F5FF),
-      accent: Color(0xFFF15BB5),
+      primary: Color(0xFF7BA7BC),   // 青瓷蓝
+      secondary: Color(0xFFD4DCE1),  // 银白
+      accent: Color(0xFF5A6B7C),     // 月灰
       skinTone: Color(0xFFF5DEB3),
-      auraColor: Color(0xFF9B5DE5),
+      auraColor: Color(0xFF7BA7BC),  // 青瓷蓝光晕
     ),
     trainBias: TrainBias(
       compoundWeight: 0.2,
@@ -298,34 +298,34 @@ class OpponentSkinConfig {
       duration: Duration(milliseconds: 1400),
     ),
     dialogStyle: DialogStyle(
-      greetings: ['敏捷训练上线', '影从黑暗来'],
-      trainingTaunts: ['我的速度你跟不上', '看招'],
-      winQuotes: ['胜负已分', '影遁'],
-      loseQuotes: ['下次见', '你快了一步'],
+      greetings: ['风起，行动', '今日风速宜训'],
+      trainingTaunts: ['跟上我的节奏', '看这招'],
+      winQuotes: ['风过无痕', '胜负已分'],
+      loseQuotes: ['你快了一步', '下次再战'],
     ),
-    signatureMove: '闪影连斩',
+    signatureMove: '疾风连斩',
     cardTheme: SkinCardTheme(
-      borderColor: Color(0xFFd946ef),
-      glowColor: Color(0xFFd946ef),
-      badgeColor: Color(0xFFd946ef),
-      badgeEmoji: '🥷',
-      gradientColors: [Color(0xFF1e1b4b), Color(0xFF4c1d95)],
+      borderColor: Color(0xFF7BA7BC),
+      glowColor: Color(0xFF7BA7BC),
+      badgeColor: Color(0xFF7BA7BC),
+      badgeEmoji: '🍃',
+      gradientColors: [Color(0xFFEBF2F5), Color(0xFFD4E3EB)],
       showShimmer: true,
     ),
   );
 
-  // ── skin_ambassador（燃力大使，限定款）──
+  // ── skin_ambassador（传承导师，限定款）── 方案A：训练哲学系列
   static const skinAmbassador = OpponentSkinConfig(
     id: 'skin_ambassador',
-    name: '燃力大使',
+    name: '传承导师',
     pointsCost: '邀请 5 人解锁',
     isLimited: true,
     palette: SkinPalette(
-      primary: Color(0xFF1A1A1A),
-      secondary: Color(0xFFFFD700),
-      accent: Color(0xFFFFA500),
+      primary: Color(0xFF3D4F3F),   // 墨绿
+      secondary: Color(0xFFB08D57),  // 古铜金
+      accent: Color(0xFFD8C9A6),     // 米色
       skinTone: Color(0xFFFDE3C7),
-      auraColor: Color(0xFFFFD700),
+      auraColor: Color(0xFFB08D57),  // 古铜金光晕
     ),
     trainBias: TrainBias(
       compoundWeight: 0.4,
@@ -354,18 +354,18 @@ class OpponentSkinConfig {
       duration: Duration(milliseconds: 1800),
     ),
     dialogStyle: DialogStyle(
-      greetings: ['以身作则，引领大家', '感谢你的邀请，让我来到这里'],
-      trainingTaunts: ['跟我一起', '示范一下'],
-      winQuotes: ['皇者归来', '理所当然'],
+      greetings: ['后生可畏，共勉之', '以身作则，今日开训'],
+      trainingTaunts: ['看示范', '动作要到位'],
+      winQuotes: ['传承不息', '理所当然'],
       loseQuotes: ['后生可畏', '我心服口服'],
     ),
-    signatureMove: '王者裁决',
+    signatureMove: '传承裁决',
     cardTheme: SkinCardTheme(
-      borderColor: Color(0xFFf59e0b),
-      glowColor: Color(0xFFf59e0b),
-      badgeColor: Color(0xFFf59e0b),
-      badgeEmoji: '👑',
-      gradientColors: [Color(0xFF1c1917), Color(0xFF451a03)],
+      borderColor: Color(0xFFB08D57),
+      glowColor: Color(0xFFB08D57),
+      badgeColor: Color(0xFFB08D57),
+      badgeEmoji: '📜',
+      gradientColors: [Color(0xFF3D4F3F), Color(0xFF2A3830)],
       showShimmer: true,
     ),
   );

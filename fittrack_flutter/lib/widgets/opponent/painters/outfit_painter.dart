@@ -19,12 +19,12 @@ class OutfitPainter extends CustomPainter {
 
     if (outfitImage != null) {
       final src = Rect.fromLTWH(0, 0, outfitImage!.width.toDouble(), outfitImage!.height.toDouble());
-      final dst = Rect.fromCenter(center: const Offset(120, 160), width: 90, height: 110);
+      final dst = Rect.fromCenter(center: const Offset(120, 155), width: 160, height: 190);
       canvas.drawImageRect(outfitImage!, src, dst, Paint());
     } else {
       // fallback：在身体上覆盖一块服饰色块
       final outfitPaint = Paint()..color = palette.primary;
-      final outfitRect = Rect.fromCenter(center: const Offset(120, 150), width: 70, height: 80);
+      final outfitRect = Rect.fromCenter(center: const Offset(120, 155), width: 110, height: 130);
       canvas.drawRRect(RRect.fromRectAndRadius(outfitRect, const Radius.circular(12)), outfitPaint);
     }
 

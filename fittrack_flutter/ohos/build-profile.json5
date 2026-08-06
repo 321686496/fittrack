@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B2801DF592234E894FBCFB4BF70D4F1019A5F0BFC9DCC9869D7E5080F0CDB59F9007A2D412CF0A9",
+          "keyPassword": "0000001904A8A0C0961ABFA8EEDD68A894BCFB74E554414518A2611A8FD7DB911A043C23A640B06D2A",
           "profile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p12",
-          "storePassword": "0000001BBF78611A1015B68E83BF57ECA036D1ACB066B3DD67B9DA7C02B3D670A3418A8ED1F2AF56A31D50"
+          "storePassword": "00000019061A72F7CC53A1634AD3DDD283311CC75A80C943EC42CBEEFE37C7508017447EE3661768DA"
         }
       }
     ],
@@ -26,7 +26,7 @@
     ],
     "capabilities": [
       {
-        "bundleName": "com.lt.lifttrack",
+        "bundleName": "com.fp.fitplan",
         "config": [
           {
             "name": "Push Kit",

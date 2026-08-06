@@ -23,7 +23,7 @@ class PropPainter extends CustomPainter {
 
     if (propImage != null) {
       final src = Rect.fromLTWH(0, 0, propImage!.width.toDouble(), propImage!.height.toDouble());
-      final dst = Rect.fromCenter(center: const Offset(20, 30), width: 50, height: 50);
+      final dst = Rect.fromCenter(center: const Offset(20, 30), width: 100, height: 100);
       canvas.drawImageRect(propImage!, src, dst, Paint());
     } else {
       // fallback：绘制小哑铃

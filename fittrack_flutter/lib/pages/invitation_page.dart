@@ -562,7 +562,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 Row(
                   children: [
                     Text(
-                      '${cardTheme.badgeEmoji} 燃力大使',
+                      '${cardTheme.badgeEmoji} 传承导师',
                       style: TextStyle(
                         color: cardTheme.badgeColor,
                         fontSize: 14,
