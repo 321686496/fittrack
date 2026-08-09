@@ -63,6 +63,22 @@
             </intent-filter>
         </receiver>
 
+        <!-- flutter_local_notifications 定时通知必需 Receiver：
+             缺少 ScheduledNotificationReceiver 时，AlarmManager 闹钟触发后广播无人处理，
+             每日训练/健身卡到期等 zonedSchedule 通知将永远不会弹出。
+             需与插件 example 保持一致（ActionBroadcastReceiver + ScheduledNotificationReceiver +
+             ScheduledNotificationBootReceiver）。 -->
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+
         <!-- AppWidget Receiver（Glance） -->
         <receiver
             android:name=".widget.FitTrackGlanceWidgetReceiver"
