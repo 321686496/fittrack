@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'platform/platform_services.dart';
-import 'platform/implementations/ohos_rest_reminder_service.dart';
+import '../utils/platform_utils.dart';
 import 'sound_service.dart';
 
 /// 休息结束提醒服务
@@ -95,7 +95,10 @@ class RestNotificationService {
     try {
       // OHOS 平台：跳过 flutter_local_notifications 权限请求，避免触发系统通知
       // OHOS 的通知权限由原生 EntryAbility 处理
-      if (PlatformServices.restReminder is OhosRestReminderService) {
+      // 注意：不能使用 PlatformServices.restReminder is OhosRestReminderService，
+      // 因为 PlatformServices.init() 在 main.dart 中晚于此方法执行，
+      // 访问 late final 字段会抛出 LateInitializationError 导致 iOS 权限请求被跳过。
+      if (isOhos) {
         debugPrint('OHOS: skip flutter_local_notifications permission request');
         return true;
       }
@@ -127,7 +130,7 @@ class RestNotificationService {
   Future<void> _configureLocalTimeZone() async {
     if (kIsWeb) return;
     try {
-      if (PlatformServices.restReminder is OhosRestReminderService) {
+      if (isOhos) {
         final String timeZoneName = await _plugin!.getLocalTimezone();
         debugPrint('OHOS timezone: $timeZoneName');
         tz.setLocalLocation(tz.getLocation(timeZoneName));
@@ -180,7 +183,7 @@ class RestNotificationService {
       // 所有平台：Dart Timer 保底（前台有效）
       _scheduleWithDartTimer(exerciseName: exerciseName, delaySeconds: delaySeconds);
 
-      if (PlatformServices.restReminder is OhosRestReminderService) {
+      if (isOhos) {
         // OHOS：由 EntryAbility 原生侧处理代理提醒
         debugPrint('OHOS reminder handled by native EntryAbility, skip Flutter side');
       } else {
