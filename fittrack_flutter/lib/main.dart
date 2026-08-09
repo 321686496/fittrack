@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 import 'themes/app_themes.dart';
 import 'data/storage.dart';
 import 'data/system_plan_library.dart';
@@ -35,6 +36,16 @@ void main() {
 
     // 初始化 timezone 数据库（用于定时通知，必须在 RestNotificationService.init 之前）
     tz_data.initializeTimeZones();
+    // 尽早配置本地时区：DailyReminder/GymCardReminder 等服务的初始化与
+    // RestNotificationService.init 并行执行，若不在此处设置 tz.local，
+    // 它们可能使用默认 UTC 时区调度，导致通知在错误时间触发（如国内偏移 8 小时）。
+    try {
+      tz.setLocalLocation(tz.getLocation(DateTime.now().timeZoneName));
+    } catch (_) {
+      try {
+        tz.setLocalLocation(tz.getLocation('Asia/Shanghai'));
+      } catch (_) {}
+    }
 
     try {
       await Storage.init();

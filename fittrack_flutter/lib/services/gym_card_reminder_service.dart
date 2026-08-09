@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
 import '../data/storage.dart';
 import '../utils/platform_utils.dart';
 import 'notification_storage_service.dart';
@@ -36,6 +38,16 @@ class GymCardReminderService {
     if (_initialized) return;
     try {
       _plugin = FlutterLocalNotificationsPlugin();
+
+      // Android：先 initialize 注册插件 handler，否则并行初始化时
+      // createNotificationChannel/show/zonedSchedule 可能因未注册而抛出
+      // MissingPluginException，导致启动期调度静默失败。
+      if (!isOhos) {
+        const androidSettings =
+            AndroidInitializationSettings('@mipmap/ic_launcher');
+        const initSettings = InitializationSettings(android: androidSettings);
+        await _plugin!.initialize(initSettings);
+      }
 
       // OHOS 平台跳过渠道创建（由原生侧统一管理），仅 Android 创建
       if (!isOhos) {
@@ -147,25 +159,30 @@ class GymCardReminderService {
     }
   }
 
-  /// 重新调度健身卡到期提醒（后台代理提醒）
+  /// 重新调度健身卡到期提醒（后台提醒）
   ///
   /// 在以下场景调用：
   /// - 用户开启/关闭健身卡提醒开关
   /// - 用户修改阈值
   /// - 增删健身卡
   ///
-  /// 策略：扫描所有卡，找出最近需要提醒的日期，用 OHOS 代理提醒调度。
-  /// 只调度最近的一个提醒日（避免发布多个代理提醒）。
+  /// 策略：扫描所有卡，找出最近需要提醒的日期，调度后台提醒。
+  /// 只调度最近的一个提醒日（避免发布多个提醒）。
   /// 提醒时间固定为 10:00。
+  ///
+  /// - OHOS：使用代理提醒（reminderAgentManager，系统级调度，应用被杀也能触发）
+  /// - Android：使用 flutter_local_notifications zonedSchedule 一次性调度
   Future<void> reschedule() async {
-    if (!isOhos) {
-      // 非 OHOS 平台：保留前台 checkAndPush 兜底，不做后台调度
-      return;
+    if (!_initialized) {
+      await init();
     }
-
     try {
       // 1. 取消现有调度
-      await OhosReminderService.instance.cancelGymCardReminder();
+      if (isOhos) {
+        await OhosReminderService.instance.cancelGymCardReminder();
+      } else {
+        await _plugin?.cancel(_notificationId);
+      }
 
       // 2. 检查开关
       final settings = Storage.getSettings();
@@ -176,7 +193,7 @@ class GymCardReminderService {
         return;
       }
 
-      // 3. 扫描所有卡，计算最近提醒日
+      // 3. 扫描所有卡，计算最近提醒日（两平台共用逻辑）
       final daysThreshold =
           settings['gymCardExpiryDaysThreshold'] as int? ?? 7;
       final countThreshold =
@@ -235,20 +252,90 @@ class GymCardReminderService {
         return;
       }
 
-      // 4. 格式化日期为 "YYYY-MM-DD"
-      final dateStr = '${nearestDate.year}-'
-          '${nearestDate.month.toString().padLeft(2, '0')}-'
-          '${nearestDate.day.toString().padLeft(2, '0')}';
+      const title = '健身卡提醒';
 
-      // 5. 调度代理提醒
-      await OhosReminderService.instance.scheduleGymCardReminder(
-        title: '健身卡提醒',
-        content: alertContent,
-        dateStr: dateStr,
-      );
-      debugPrint('[GymCardReminder] reschedule: 已调度到 $dateStr 10:00');
+      if (isOhos) {
+        // 4. OHOS：格式化日期为 "YYYY-MM-DD"，调度代理提醒
+        final dateStr = '${nearestDate.year}-'
+            '${nearestDate.month.toString().padLeft(2, '0')}-'
+            '${nearestDate.day.toString().padLeft(2, '0')}';
+        await OhosReminderService.instance.scheduleGymCardReminder(
+          title: title,
+          content: alertContent,
+          dateStr: dateStr,
+        );
+        debugPrint('[GymCardReminder] reschedule: OHOS 已调度到 $dateStr 10:00');
+      } else {
+        // 5. Android：一次性 zonedSchedule 到提醒日 10:00
+        await _scheduleAndroidOneShot(title, alertContent, nearestDate);
+      }
     } catch (e) {
       debugPrint('[GymCardReminder] reschedule error: $e');
+    }
+  }
+
+  /// Android：调度一次性健身卡到期提醒（提醒日 10:00）
+  ///
+  /// 若目标时间已过（如提醒日=今天且已过 10:00），顺延到 1 分钟后提醒，
+  /// 确保提醒日当天仍能收到提醒。
+  Future<void> _scheduleAndroidOneShot(
+    String title,
+    String content,
+    DateTime remindDate,
+  ) async {
+    if (_plugin == null) return;
+
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      remindDate.year,
+      remindDate.month,
+      remindDate.day,
+      10,
+      0,
+    );
+    if (scheduled.isBefore(now)) {
+      scheduled = now.add(const Duration(minutes: 1));
+      debugPrint('[GymCardReminder] 提醒日 10:00 已过，顺延到 1 分钟后提醒');
+    }
+
+    const androidDetails = AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: _channelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+      enableVibration: true,
+    );
+    const details = NotificationDetails(android: androidDetails);
+
+    try {
+      await _plugin!.zonedSchedule(
+        _notificationId,
+        title,
+        content,
+        scheduled,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: null, // 一次性提醒
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      debugPrint('[GymCardReminder] Android 已调度到 $scheduled');
+    } on PlatformException {
+      // 精确闹钟权限不可用时降级为 inexact，避免静默失败
+      debugPrint('[GymCardReminder] 精确闹钟不可用，降级为 inexactAllowWhileIdle');
+      await _plugin!.zonedSchedule(
+        _notificationId,
+        title,
+        content,
+        scheduled,
+        details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: null,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
     }
   }
 

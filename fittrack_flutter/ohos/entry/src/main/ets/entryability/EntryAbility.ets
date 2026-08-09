@@ -926,7 +926,7 @@ export default class EntryAbility extends FlutterAbility {
   }
 
   /// 发布每日训练提醒（按 HH:mm 每日重复）
-  /// 使用 ReminderRequestCalendar 实现每日定点重复
+  /// 使用 ReminderRequestAlarm 实现每日定点重复（daysOfWeek 1-7 表示每天）
   scheduleTrainingReminder(title: string, content: string, timeStr: string): void {
     this.cancelTrainingReminder();
 
@@ -949,27 +949,28 @@ export default class EntryAbility extends FlutterAbility {
       const bundleInfo: bundleManager.BundleInfo =
         bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
 
-      // ReminderRequestCalendar：按日历时间重复
-      // dateTime 指定首次触发时间，repeatMonths/repeatDays/repeatDaysOfWeek 为空表示每日重复
-      let reminderRequest: reminderAgentManager.ReminderRequestCalendar = {
-        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
-        dateTime: {
-          year: new Date().getFullYear(),
-          month: new Date().getMonth() + 1,
-          day: new Date().getDate(),
-          hour: hour,
-          minute: minute,
-          second: 0,
-        },
-        // 每日重复：所有月份、所有日期都触发
-        repeatMonths: [],
-        repeatDays: [],
+      // ReminderRequestAlarm：闹钟类型，按 hour/minute + daysOfWeek 每日定点重复。
+      // 修复：之前使用 ReminderRequestCalendar 且 repeatMonths/repeatDays 为空，
+      // 按 OHOS 语义空数组表示"不重复只触发一次"，导致每日训练提醒不会每日触发。
+      // 闹钟类型 daysOfWeek 为 [1,2,3,4,5,6,7]（1=周一）即每天触发；
+      // 且闹钟类型不依赖具体日期，即使当天该时刻已过也会在次日按时触发。
+      let reminderRequest: reminderAgentManager.ReminderRequestAlarm = {
+        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_ALARM,
+        hour: hour,
+        minute: minute,
+        // 每天重复（1=周一 ... 7=周日）
+        daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
         title: title,
         content: content,
         notificationId: 3001,
         // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
         slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
         wantAgent: {
+          pkgName: bundleInfo.name,
+          abilityName: 'EntryAbility',
+        },
+        // 锁屏下也显示通知，确保用户一定能看到
+        maxScreenWantAgent: {
           pkgName: bundleInfo.name,
           abilityName: 'EntryAbility',
         },
@@ -1038,6 +1039,42 @@ export default class EntryAbility extends FlutterAbility {
       const bundleInfo: bundleManager.BundleInfo =
         bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
 
+      // 若提醒时间（当天 10:00）已过，日历提醒无法触发当天提醒，
+      // 降级为倒计时提醒（1 分钟后触发），确保用户当天仍能收到提醒。
+      const targetMs: number = new Date(year, month - 1, day, 10, 0, 0).getTime();
+      if (Date.now() >= targetMs) {
+        console.info('[FitTrack] 健身卡提醒时间已过，降级为 1 分钟后立即提醒');
+        const timerRequest: reminderAgentManager.ReminderRequestTimer = {
+          reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
+          triggerTimeInSeconds: 60,
+          title: title,
+          content: content,
+          notificationId: 4001,
+          slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
+          wantAgent: {
+            pkgName: bundleInfo.name,
+            abilityName: 'EntryAbility',
+          },
+          maxScreenWantAgent: {
+            pkgName: bundleInfo.name,
+            abilityName: 'EntryAbility',
+          },
+          actionButton: [
+            {
+              title: '查看',
+              type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
+            },
+          ],
+        };
+        reminderAgentManager.publishReminder(timerRequest).then((reminderId: number) => {
+          this.gymCardReminderId = reminderId;
+          console.info(`[FitTrack] 健身卡到期提醒(倒计时)发布成功, id=${reminderId}`);
+        }).catch((err: BusinessError) => {
+          console.error(`[FitTrack] 健身卡到期提醒(倒计时)发布失败: code=${err.code}, msg=${err.message}`);
+        });
+        return;
+      }
+
       // ReminderRequestCalendar：按指定日历时间触发（一次性，不重复）
       // 注意：MaxScreenWantAgent 不支持 parameters 字段，wantAgent 只填 pkgName + abilityName
       let reminderRequest: reminderAgentManager.ReminderRequestCalendar = {
@@ -1059,6 +1096,11 @@ export default class EntryAbility extends FlutterAbility {
         // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
         slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
         wantAgent: {
+          pkgName: bundleInfo.name,
+          abilityName: 'EntryAbility',
+        },
+        // 锁屏下也显示通知
+        maxScreenWantAgent: {
           pkgName: bundleInfo.name,
           abilityName: 'EntryAbility',
         },

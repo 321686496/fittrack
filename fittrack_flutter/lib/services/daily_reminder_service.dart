@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../data/storage.dart';
@@ -33,6 +34,16 @@ class DailyReminderService {
     if (_initialized) return;
     try {
       _plugin = FlutterLocalNotificationsPlugin();
+
+      // Android：先 initialize 注册插件 handler，否则并行初始化时
+      // createNotificationChannel/zonedSchedule 可能因未注册而抛出
+      // MissingPluginException，导致启动期调度静默失败。
+      if (!isOhos) {
+        const androidSettings =
+            AndroidInitializationSettings('@mipmap/ic_launcher');
+        const initSettings = InitializationSettings(android: androidSettings);
+        await _plugin!.initialize(initSettings);
+      }
 
       // 创建 Android 通知渠道（独立于休息提醒渠道）
       await _plugin
@@ -133,17 +144,36 @@ class DailyReminderService {
     );
     const details = NotificationDetails(android: androidDetails);
 
-    await _plugin!.zonedSchedule(
-      _notificationId,
-      '训练时间到',
-      '今天也要坚持训练哦，开始你的训练吧！',
-      scheduled,
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time, // 每日按时间重复
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+    try {
+      await _plugin!.zonedSchedule(
+        _notificationId,
+        '训练时间到',
+        '今天也要坚持训练哦，开始你的训练吧！',
+        scheduled,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time, // 每日按时间重复
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } on PlatformException {
+      // Android 12+ 上用户可能拒绝精确闹钟权限（exactAllowWhileIdle 会抛
+      // ExactAlarmPermissionException）。降级为 inexactAllowWhileIdle，
+      // 避免静默失败导致通知完全不触发。
+      debugPrint(
+          '[DailyReminder] 精确闹钟不可用，降级为 inexactAllowWhileIdle 调度');
+      await _plugin!.zonedSchedule(
+        _notificationId,
+        '训练时间到',
+        '今天也要坚持训练哦，开始你的训练吧！',
+        scheduled,
+        details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    }
   }
 
   /// 取消所有每日训练提醒
