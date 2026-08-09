@@ -5,8 +5,8 @@ import ActivityKit
 import WidgetKit
 
 // Live Activity 的 Attributes 类型。
-// 注：RestLiveActivity Widget Extension 尚未接入 Xcode 工程，
-// 因此该类型需在主 target 内定义以保证 AppDelegate 可编译。
+// 主 App target 和 Widget Extension target 各自定义一份结构相同的类型，
+// ActivityKit 通过类型名 + Codable 序列化匹配，无需共享文件。
 @available(iOS 16.1, *)
 struct RestLiveActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
@@ -65,6 +65,18 @@ struct RestLiveActivityAttributes: ActivityAttributes {
 
     // 设置 UNUserNotificationCenter 代理（处理通知点击）
     UNUserNotificationCenter.current().delegate = self
+
+    // 原生侧请求通知权限：确保 App 在 iOS 设置 > 通知中可见。
+    // 调用 requestAuthorization 后，无论用户允许或拒绝，App 都会出现在系统通知设置列表中。
+    // 多次调用是安全的——首次调用弹出系统对话框，后续调用仅返回当前状态。
+    UNUserNotificationCenter.current().requestAuthorization(
+      options: [.alert, .badge, .sound]
+    ) { granted, error in
+      if let error = error {
+        debugPrint("[Notification] requestAuthorization error: \(error)")
+      }
+      debugPrint("[Notification] permission granted: \(granted)")
+    }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
