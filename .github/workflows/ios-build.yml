@@ -281,37 +281,64 @@ jobs:
           content = content.replace(old, new, 1)
           print("Configured Manual code signing for Runner Release")
 
-          # 2. 配置 RestLiveActivity (Widget Extension) Release 的 Manual 签名
-          # 注意：无 Extension profile 时回退使用主 App profile
-          # （主 App 的 Distribution profile 通常通过通配符 com.lt.lifttrack.* 覆盖 Extension）
-          ext_profile_name = os.environ.get('EXT_PROFILE_NAME', '') or profile_name
-          ext_old = (
-              'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack.RestLiveActivity;\n'
-              '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
-              '\t\t\t\tSKIP_INSTALL = YES;\n'
-              '\t\t\t\tSWIFT_VERSION = 5.0;\n'
-              '\t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";\n'
-              '\t\t\t};\n'
-              '\t\t\tname = Release;'
-          )
-          ext_new = (
-              'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack.RestLiveActivity;\n'
-              '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
-              '\t\t\t\tSKIP_INSTALL = YES;\n'
-              '\t\t\t\tSWIFT_VERSION = 5.0;\n'
-              '\t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";\n'
-              '\t\t\t\tCODE_SIGN_STYLE = Manual;\n'
-              '\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n'
-              f'\t\t\t\tDEVELOPMENT_TEAM = "{team_id}";\n'
-              f'\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "{ext_profile_name}";\n'
-              '\t\t\t};\n'
-              '\t\t\tname = Release;'
-          )
-          if ext_old in content:
-              content = content.replace(ext_old, ext_new, 1)
-              print(f"Configured Manual code signing for RestLiveActivity Release (profile: {ext_profile_name})")
+          # 2. 配置 RestLiveActivity (Widget Extension) Release 签名
+          ext_profile_name = os.environ.get('EXT_PROFILE_NAME', '')
+          if ext_profile_name:
+              # 有独立 Extension profile → Manual 签名
+              ext_old = (
+                  'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack.RestLiveActivity;\n'
+                  '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
+                  '\t\t\t\tSKIP_INSTALL = YES;\n'
+                  '\t\t\t\tSWIFT_VERSION = 5.0;\n'
+                  '\t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";\n'
+                  '\t\t\t};\n'
+                  '\t\t\tname = Release;'
+              )
+              ext_new = (
+                  'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack.RestLiveActivity;\n'
+                  '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
+                  '\t\t\t\tSKIP_INSTALL = YES;\n'
+                  '\t\t\t\tSWIFT_VERSION = 5.0;\n'
+                  '\t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";\n'
+                  '\t\t\t\tCODE_SIGN_STYLE = Manual;\n'
+                  '\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n'
+                  f'\t\t\t\tDEVELOPMENT_TEAM = "{team_id}";\n'
+                  f'\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "{ext_profile_name}";\n'
+                  '\t\t\t};\n'
+                  '\t\t\tname = Release;'
+              )
+              if ext_old in content:
+                  content = content.replace(ext_old, ext_new, 1)
+                  print(f"Configured Manual code signing for RestLiveActivity Release (profile: {ext_profile_name})")
+              else:
+                  print("WARNING: RestLiveActivity Release block not found, skipping extension signing config")
           else:
-              print("WARNING: RestLiveActivity Release block not found, skipping extension signing config")
+              # 无 Extension profile → 仅设置 Team ID，保持 Automatic 签名
+              # （Xcode 自动从已安装的 profile 中匹配 bundle ID com.lt.lifttrack.RestLiveActivity）
+              ext_old = (
+                  'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack.RestLiveActivity;\n'
+                  '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
+                  '\t\t\t\tSKIP_INSTALL = YES;\n'
+                  '\t\t\t\tSWIFT_VERSION = 5.0;\n'
+                  '\t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";\n'
+                  '\t\t\t};\n'
+                  '\t\t\tname = Release;'
+              )
+              ext_new = (
+                  'PRODUCT_BUNDLE_IDENTIFIER = com.lt.lifttrack.RestLiveActivity;\n'
+                  '\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";\n'
+                  '\t\t\t\tSKIP_INSTALL = YES;\n'
+                  '\t\t\t\tSWIFT_VERSION = 5.0;\n'
+                  '\t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";\n'
+                  f'\t\t\t\tDEVELOPMENT_TEAM = "{team_id}";\n'
+                  '\t\t\t};\n'
+                  '\t\t\tname = Release;'
+              )
+              if ext_old in content:
+                  content = content.replace(ext_old, ext_new, 1)
+                  print(f"Configured Automatic + Team ID for RestLiveActivity Release (team: {team_id})")
+              else:
+                  print("WARNING: RestLiveActivity Release block not found, skipping extension signing config")
 
           with open(pbx_path, 'w', encoding='utf-8') as f:
               f.write(content)
@@ -332,16 +359,12 @@ jobs:
             EXT_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin \
               <<< "$(security cms -D -i "$PP_DIR/${PP_FILES[1]}")")
           fi
-          # 无 Extension profile 时回退使用主 App profile
-          if [ -z "$EXT_PROFILE_NAME" ]; then
-            EXT_PROFILE_NAME="$MAIN_PROFILE_NAME"
-          fi
           export MAIN_PROFILE_NAME EXT_PROFILE_NAME TEAM_ID
           python3 -c "
           import os
           team_id = os.environ['TEAM_ID']
           main_profile = os.environ['MAIN_PROFILE_NAME']
-          ext_profile = os.environ.get('EXT_PROFILE_NAME', '') or main_profile
+          ext_profile = os.environ.get('EXT_PROFILE_NAME', '')
           lines = [
               '<?xml version=\"1.0\" encoding=\"UTF-8\"?>',
               '<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">',
@@ -362,10 +385,11 @@ jobs:
               f'        <key>com.lt.lifttrack</key>',
               f'        <string>{main_profile}</string>',
           ]
-          lines.extend([
-              f'        <key>com.lt.lifttrack.RestLiveActivity</key>',
-              f'        <string>{ext_profile}</string>',
-          ])
+          if ext_profile:
+              lines.extend([
+                  f'        <key>com.lt.lifttrack.RestLiveActivity</key>',
+                  f'        <string>{ext_profile}</string>',
+              ])
           lines.extend([
               '    </dict>',
               '</dict>',
