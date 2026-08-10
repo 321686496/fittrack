@@ -8,7 +8,7 @@ import 'poster_preview_dialog.dart';
 
 /// 海报截图辅助工具
 ///
-/// 提供统一的"离屏渲染 → 截图 → 预览弹窗"流程，
+/// 提供统一的"屏上渲染 → 截图 → 预览弹窗"流程，
 /// 替代原来的整页跳转模式，避免页面切换带来的体验问题。
 ///
 /// 支持：
@@ -23,6 +23,7 @@ class PosterCaptureHelper {
   /// [context] 调用方 BuildContext
   /// [posterWidget] 海报内容组件（宽度固定，高度自适应）
   /// [posterWidth] 海报宽度（像素）
+  /// [posterHeight] 海报高度（像素，可选；传入时固定高度）
   /// [title] 预览弹窗标题
   /// [fileNamePrefix] 临时文件名前缀
   /// [onError] 截图失败回调（可选）
@@ -30,71 +31,52 @@ class PosterCaptureHelper {
     BuildContext context, {
     required Widget posterWidget,
     required double posterWidth,
+    double? posterHeight,
     required String title,
     String fileNamePrefix = 'fittrack_poster',
     void Function(String error)? onError,
   }) async {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
-
-    // 显示 loading 弹窗
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => WillPopScope(
-        onWillPop: () async => false,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: colors.bgCard,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    color: colors.accentGlow,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '正在生成海报...',
-                  style: TextStyle(
-                    color: colors.textSecondary,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
     final boundaryKey = GlobalKey();
     final overlay = Overlay.of(context);
 
-    // 用 Overlay + Positioned(offscreen) 渲染海报
-    // 仅固定宽度，高度随内容自适应（不指定 height 和 bottom）
+    // 海报必须渲染在可视区域内：
+    // OHOS fork 引擎不会 paint 完全离屏（负坐标）的 RepaintBoundary，
+    // 导致 debugNeedsPaint 永远为 true，截图轮询超时抛
+    // "RepaintBoundary 尚未完成绘制，请重试"。
+    // 因此海报放在 left:0/top:0（屏上），并用不透明遮罩盖住避免闪现。
+    // 仅固定宽度，高度默认随内容自适应；传入 [posterHeight] 时固定高度。
     late OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (_) => Positioned(
-        left: -posterWidth,
-        top: 0,
-        width: posterWidth,
-        child: Material(
-          color: Colors.transparent,
-          child: RepaintBoundary(
-            key: boundaryKey,
-            child: posterWidget,
+      builder: (_) => Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            width: posterWidth,
+            height: posterHeight,
+            child: Material(
+              color: Colors.transparent,
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: posterWidget,
+              ),
+            ),
           ),
-        ),
+          // 不透明遮罩：盖住屏上的海报，视觉上无感
+          Positioned.fill(
+            child: ColoredBox(color: colors.bgSecondary),
+          ),
+        ],
       ),
     );
+
+    // 插入海报 entry。注意：loading 弹窗不能与海报 entry 同帧插入 overlay。
+    // 海报 entry 与 DialogRoute 的 entries 若同时挂载，首帧 paint 会出现
+    // 尚未 layout 的 PhysicalModel（_defaultClip 的 hasSize 断言失败，OHOS
+    // fork 引擎 paint 竞态），paint 中断导致 RepaintBoundary 永不完成
+    // paint，截图轮询超时。因此先等海报 entry 就绪，再显示 loading 弹窗。
+    overlay.insert(entry);
 
     // OHOS 引擎 bug 修复：OHOS Flutter 引擎在帧绘制时会重入触发
     // MouseTracker.updateAllDevices，导致 !_debugDuringDeviceUpdate 断言失败。
@@ -107,21 +89,83 @@ class PosterCaptureHelper {
           errorStr.contains('MouseTracker')) {
         return;
       }
+      // 诊断：hasSize 断言失败时，dump 海报子树渲染状态定位根因
+      if (errorStr.contains('hasSize') && boundaryKey.currentContext != null) {
+        debugPrint('=== [诊断] hasSize 断言失败，海报子树渲染树 ===');
+        debugPrint(_dumpRenderTree(boundaryKey.currentContext!.findRenderObject()));
+        final ho = Overlay.of(context).context.findRenderObject();
+        debugPrint('=== [诊断] overlay 渲染树 ===');
+        debugPrint(_dumpRenderTree(ho));
+      }
       originalOnError?.call(details);
     };
 
+    bool dialogShown = false;
     try {
-      overlay.insert(entry);
-
-      // 轮询等待 RepaintBoundary 完成 layout + paint
-      // 原固定 endOfFrame×2 + delay×100ms 在部分设备上不可靠：
-      // showDialog 与 overlay.insert 同帧竞争、OHOS MouseTracker bug
-      // 中断帧绘制等情况都会导致 boundary 未 paint 就执行 toImage()。
+      // 轮询等待 RepaintBoundary 完成 layout + paint。
+      // 必须在 showDialog 之前完成：loading 弹窗（DialogRoute）与海报 entry
+      // 若同帧插入 overlay，首帧 paint 竞态会中断海报 RepaintBoundary 的
+      // paint（见上方注释），导致截图失败。
       await _waitForBoundaryReady(boundaryKey);
+      if (!context.mounted) return;
 
-      // paint 等待已统一收敛到 PosterGenerator.capture 内部，
-      // 此处不再使用固定 50ms 等待（首帧 paint 未完成时调用 toImage 会触发
-      // '!debugNeedsPaint' 断言）。
+      // 海报已就绪，显示 loading 弹窗（确保弹窗显示在遮罩之上）
+      dialogShown = true;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => WillPopScope(
+          onWillPop: () async => false,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colors.bgCard,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 静态加载指示器：不使用 CircularProgressIndicator，
+                  // 因为它的持续动画会不断调度帧，导致 overlay 渲染树
+                  // 持续被标记为 needsPaint，使海报 RepaintBoundary 的
+                  // debugNeedsPaint 无法稳定为 false，截图轮询超时。
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: colors.accentGlow,
+                        width: 3,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.hourglass_empty,
+                      color: colors.accentGlow,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '正在生成海报...',
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // showDialog 会触发新帧，可能让 boundary 的 debugNeedsPaint 重新变为
+      // true。在调用 capture 之前再次等待就绪，避免 capture 内部重试耗尽。
+      await _waitForBoundaryReady(boundaryKey);
+      if (!context.mounted) return;
+
       final imagePath = await PosterGenerator.capture(
         boundaryKey,
         fileNamePrefix: fileNamePrefix,
@@ -147,8 +191,10 @@ class PosterCaptureHelper {
       entry.remove();
       if (!context.mounted) return;
 
-      // 关闭 loading 弹窗
-      Navigator.of(context, rootNavigator: true).pop();
+      // 仅当 loading 弹窗已显示时才关闭（海报就绪前失败时弹窗尚未出现）
+      if (dialogShown) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
 
       final msg = '海报生成失败：$e';
       if (onError != null) {
@@ -160,6 +206,25 @@ class PosterCaptureHelper {
       // 恢复原始错误处理
       FlutterError.onError = originalOnError;
     }
+  }
+
+  /// 递归 dump 渲染树（类型 + hasSize + size），用于诊断布局/paint 断言问题
+  static String _dumpRenderTree(RenderObject? ro, {int depth = 0}) {
+    if (ro == null) return '(null)';
+    final buffer = StringBuffer();
+    buffer.write('${'  ' * depth}${ro.runtimeType}');
+    if (ro is RenderBox) {
+      buffer.write(' hasSize=${ro.hasSize}'
+          ' size=${ro.hasSize ? ro.size : 'N/A'}');
+    } else {
+      buffer.write(' (not RenderBox)');
+    }
+    if (ro.debugNeedsPaint) buffer.write(' needsPaint');
+    buffer.write('\n');
+    ro.visitChildren((child) {
+      buffer.write(_dumpRenderTree(child, depth: depth + 1));
+    });
+    return buffer.toString();
   }
 
   /// 轮询等待 RepaintBoundary 就绪（已挂载且完成 paint）

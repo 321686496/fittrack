@@ -284,7 +284,7 @@ class PosterPreviewDialog {
       } else {
         await Share.shareXFiles(
           [XFile(imagePath)],
-          text: 'LiftTrack 燃力',
+          text: 'LiftTrack',
         );
       }
     } on PlatformException catch (e) {

@@ -432,7 +432,7 @@ class Storage {
       'unlockedAdvancedTutorials': 0, // 已解锁进阶教学数（邀请1人=3个）
       'unlockedMasterTutorials': false, // 高手教学专题（累计5人）
       'unlockedOpponentSkin': false, // 专属虚拟对手皮肤（累计5人）
-      'unlockedAmbassadorTitle': false, // "燃力大使"称号（累计10人）
+      'unlockedAmbassadorTitle': false, // "LiftTrack 大使"称号（累计10人）
       'adFreeReportUnlocked': false, // 永久免广告看训练报告（累计3人）
       'retentionRewardUnlocked': false, // 7日留存奖励已解锁
       'advancedStatsTrialUntil': 0, // 7天高级统计体验到期时间

@@ -40,31 +40,44 @@ class _NotePosterPageState extends State<NotePosterPage> {
     final overlay = Overlay.of(context);
     const posterWidth = NotePosterContent.posterWidth;
     const posterHeight = NotePosterContent.posterHeight;
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
-    // 用 Overlay + Positioned(offscreen) 渲染海报
+    // 海报必须渲染在可视区域内：
+    // OHOS fork 引擎不会 paint 完全离屏（负坐标）的 RepaintBoundary，
+    // 导致 debugNeedsPaint 永远为 true，截图轮询超时抛
+    // "RepaintBoundary 尚未完成绘制，请重试"。
+    // 因此海报放在 left:0/top:0（屏上），并用不透明遮罩盖住避免闪现。
     late OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (_) => Positioned(
-        left: -posterWidth,
-        top: -posterHeight,
-        width: posterWidth,
-        height: posterHeight,
-        child: Material(
-          color: Colors.transparent,
-          child: OverflowBox(
-            minWidth: posterWidth,
-            maxWidth: posterWidth,
-            minHeight: posterHeight,
-            maxHeight: posterHeight,
-            child: RepaintBoundary(
-              key: boundaryKey,
-              child: NotePosterContent(
-                note: widget.note,
-                boundRecord: widget.boundRecord,
+      builder: (_) => Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            width: posterWidth,
+            height: posterHeight,
+            child: Material(
+              color: Colors.transparent,
+              child: OverflowBox(
+                minWidth: posterWidth,
+                maxWidth: posterWidth,
+                minHeight: posterHeight,
+                maxHeight: posterHeight,
+                child: RepaintBoundary(
+                  key: boundaryKey,
+                  child: NotePosterContent(
+                    note: widget.note,
+                    boundRecord: widget.boundRecord,
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+          // 不透明遮罩：盖住屏上的海报，视觉上无感
+          Positioned.fill(
+            child: ColoredBox(color: colors.bgSecondary),
+          ),
+        ],
       ),
     );
     overlay.insert(entry);

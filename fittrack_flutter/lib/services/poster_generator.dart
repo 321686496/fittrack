@@ -32,16 +32,24 @@ class PosterGenerator {
   }) async {
     final boundary = boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
-    // 等待 paint 完成：离屏 RepaintBoundary.toImage() 在含 QrImageView 等异步组件、
-    // 首帧 paint 未完成时调用会触发 '!debugNeedsPaint' 断言。
-    // 此处通过轮询 debugNeedsPaint 状态，最多等待 10 次 × 30ms。
-    for (int i = 0; i < 10; i++) {
+    // 等待 paint 完成：
+    // - showDialog 触发的新帧会让 debugNeedsPaint 重新变为 true
+    // - QrImageView 等异步组件需要额外帧才能完成渲染
+    // 此处通过轮询 debugNeedsPaint 状态，最多等待 30 次 × 30ms（≈900ms）。
+    // 若仍为 true，再额外等待 3 帧（给 QR 码等异步组件更多时间），然后强制截图。
+    for (int i = 0; i < 30; i++) {
       if (!boundary.debugNeedsPaint) break;
       await WidgetsBinding.instance.endOfFrame;
       await Future.delayed(const Duration(milliseconds: 30));
     }
     if (boundary.debugNeedsPaint) {
-      throw Exception('RepaintBoundary 尚未完成绘制，请重试');
+      // 额外等 3 帧，给异步组件（QR 码等）最后的机会
+      for (int i = 0; i < 3; i++) {
+        await WidgetsBinding.instance.endOfFrame;
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+      // 强制截图：toImage 内部会自行处理 paint 状态
+      debugPrint('PosterGenerator: debugNeedsPaint 仍为 true，强制截图');
     }
     final image = await boundary.toImage(pixelRatio: pixelRatio);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);

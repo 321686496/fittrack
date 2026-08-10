@@ -154,7 +154,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
               Icon(Icons.fitness_center, size: 16, color: colors.accentGlow),
               const SizedBox(width: 6),
               Text(
-                'LiftTrack 燃力',
+                'LiftTrack',
                 style: TextStyle(
                   color: colors.accentGlow,
                   fontSize: 12,
@@ -328,28 +328,41 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
       const posterHeight = TutorialPoster.posterHeight;
 
       late OverlayEntry entry;
+      // 海报必须渲染在可视区域内：
+      // OHOS fork 引擎不会 paint 完全离屏（负坐标）的 RepaintBoundary，
+      // 导致 debugNeedsPaint 永远为 true，截图轮询超时抛
+      // "RepaintBoundary 尚未完成绘制，请重试"。
+      // 因此海报放在 left:0/top:0（屏上），并用不透明遮罩盖住避免闪现。
       entry = OverlayEntry(
-        builder: (_) => Positioned(
-          left: -posterWidth,
-          top: -posterHeight,
-          width: posterWidth,
-          height: posterHeight,
-          child: Material(
-            color: Colors.transparent,
-            child: OverflowBox(
-              minWidth: posterWidth,
-              maxWidth: posterWidth,
-              minHeight: posterHeight,
-              maxHeight: posterHeight,
-              child: RepaintBoundary(
-                key: boundaryKey,
-                child: TutorialPoster(
-                  tutorial: t,
-                  qrData: 'fittrack://tutorial?id=${t.id}',
+        builder: (_) => Stack(
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              width: posterWidth,
+              height: posterHeight,
+              child: Material(
+                color: Colors.transparent,
+                child: OverflowBox(
+                  minWidth: posterWidth,
+                  maxWidth: posterWidth,
+                  minHeight: posterHeight,
+                  maxHeight: posterHeight,
+                  child: RepaintBoundary(
+                    key: boundaryKey,
+                    child: TutorialPoster(
+                      tutorial: t,
+                      qrData: 'fittrack://tutorial?id=${t.id}',
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            // 不透明遮罩：盖住屏上的海报，视觉上无感
+            Positioned.fill(
+              child: ColoredBox(color: colors.bgSecondary),
+            ),
+          ],
         ),
       );
 

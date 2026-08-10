@@ -18,7 +18,7 @@ import 'points_service.dart';
 /// | 1 人 | 100 积分 + "引路人"徽章 | 50 积分 |
 /// | 3 人 | 300 积分 + "布道者"徽章 | 50 积分 |
 /// | 5 人 | 600 积分 + "传道者"徽章 + 限定对手皮肤 skin_ambassador | 50 积分 |
-/// | 10 人 | 1200 积分 + "燃力大使"称号 | 50 积分 |
+/// | 10 人 | 1200 积分 + "LiftTrack 大使"称号 | 50 积分 |
 enum InvitationResult {
   success,
   invalidFormat,

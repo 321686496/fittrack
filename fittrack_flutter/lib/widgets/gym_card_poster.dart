@@ -217,7 +217,7 @@ class GymCardPoster extends StatelessWidget {
             PosterQrFooter(
               colors: colors,
               qrData: 'fittrack://gym',
-              hint: 'LiftTrack 燃力训练',
+              hint: 'LiftTrack 训练',
             ),
           ],
         ),
