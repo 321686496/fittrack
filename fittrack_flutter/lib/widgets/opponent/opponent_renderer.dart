@@ -8,6 +8,7 @@ import 'painters/body_painter.dart';
 import 'painters/head_painter.dart';
 import 'painters/outfit_painter.dart';
 import 'painters/prop_painter.dart';
+import 'video_frame_animation.dart';
 
 class OpponentRenderer extends StatefulWidget {
   final String skinId;
@@ -38,7 +39,7 @@ class _OpponentRendererState extends State<OpponentRenderer>
   late AnimationController _entryController;
   bool _isTraining = false;
 
-  // 预加载贴图
+  // 预加载贴图（fallback 用）
   ui.Image? _faceImage;
   ui.Image? _outfitImage;
   ui.Image? _propImage;
@@ -82,7 +83,6 @@ class _OpponentRendererState extends State<OpponentRenderer>
       if (skin.propAsset != null) _loadImage(skin.propAsset!),
     ]);
     if (!mounted) return;
-    // 按顺序赋值，避免索引越界（旧代码 results[1]/[2] 在缺资源时 RangeError）
     int idx = 0;
     if (skin.faceAsset != null) face = results[idx++];
     if (skin.outfitAsset != null) outfit = results[idx++];
@@ -103,7 +103,7 @@ class _OpponentRendererState extends State<OpponentRenderer>
       ui.decodeImageFromList(bytes, completer.complete);
       return completer.future;
     } catch (_) {
-      return null; // fallback to code drawing
+      return null;
     }
   }
 
@@ -133,6 +133,8 @@ class _OpponentRendererState extends State<OpponentRenderer>
         final entryOffset = (1 - Curves.elasticOut.transform(_entryController.value)) * 60;
 
         final isThumbnail = widget.size.width < 80;
+        // 非缩略图时使用视频帧动画
+        final useVideoFrames = !isThumbnail;
 
         return RepaintBoundary(
           child: Transform.translate(
@@ -140,18 +142,27 @@ class _OpponentRendererState extends State<OpponentRenderer>
             child: SizedBox(
               width: widget.size.width,
               height: widget.size.height,
-              child: CustomPaint(
-                painter: CompositePainter(
-                  skin: skin,
-                  frame: frame,
-                  showAura: widget.showAura,
-                  entryProgress: _entryController.value,
-                  faceImage: _imagesLoaded ? _faceImage : null,
-                  outfitImage: _imagesLoaded ? _outfitImage : null,
-                  propImage: _imagesLoaded ? _propImage : null,
-                  isThumbnail: isThumbnail,
-                ),
-              ),
+              child: useVideoFrames
+                  ? VideoFrameAnimation(
+                      skinId: widget.skinId,
+                      isTraining: _isTraining,
+                      progress: progress,
+                      showAura: widget.showAura,
+                      auraColor: skin.palette.auraColor,
+                      entryProgress: _entryController.value,
+                    )
+                  : CustomPaint(
+                      painter: CompositePainter(
+                        skin: skin,
+                        frame: frame,
+                        showAura: widget.showAura,
+                        entryProgress: _entryController.value,
+                        faceImage: _imagesLoaded ? _faceImage : null,
+                        outfitImage: _imagesLoaded ? _outfitImage : null,
+                        propImage: _imagesLoaded ? _propImage : null,
+                        isThumbnail: isThumbnail,
+                      ),
+                    ),
             ),
           ),
         );
@@ -160,7 +171,7 @@ class _OpponentRendererState extends State<OpponentRenderer>
   }
 }
 
-/// 聚合 4 个子 Painter
+/// 聚合 4 个子 Painter（fallback：缩略图时使用）
 class CompositePainter extends CustomPainter {
   final OpponentSkinConfig skin;
   final MotionFrame frame;
@@ -184,23 +195,18 @@ class CompositePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 光圈
     if (showAura) _drawAura(canvas, size);
 
-    // 身体
     BodyPainter(palette: skin.palette, frame: frame).paint(canvas, size);
 
-    // 服饰（缩略图跳过）
     if (!isThumbnail) {
       OutfitPainter(palette: skin.palette, frame: frame, outfitImage: outfitImage)
           .paint(canvas, size);
     }
 
-    // 头部
     HeadPainter(palette: skin.palette, frame: frame, faceImage: faceImage)
         .paint(canvas, size);
 
-    // 道具（缩略图跳过）
     if (!isThumbnail) {
       PropPainter(palette: skin.palette, frame: frame, propImage: propImage)
           .paint(canvas, size);

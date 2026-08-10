@@ -139,7 +139,7 @@ class InvitePoster extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '一起开启燃力训练之旅',
+                    '一起开启训练之旅',
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 24,

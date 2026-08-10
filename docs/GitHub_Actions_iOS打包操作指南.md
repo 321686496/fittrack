@@ -45,7 +45,9 @@
 2. **Identifiers** → 新建 App ID：
    - 类型：App
    - Bundle ID：`com.lt.lifttrack`（必须与工程一致）
-   - 按需勾选 Capabilities（如 Push Notifications、App Groups）
+   - **按需勾选 Capabilities（如 Push Notifications、App Groups）**
+   - > 如果项目含 Widget Extension（RestLiveActivity），**此步就要勾选 App Groups**，
+   - > 这样后面 3.4 生成的 Profile 一步到位，无需再重新生成（见 3.10 说明）
 
 ### 3.2 用 OpenSSL 生成私钥与证书签名请求（CSR）
 
@@ -113,7 +115,87 @@ cat cert.p12.b64
 
 把输出的完整 base64 字符串复制到对应的 GitHub Secret。
 
-### 3.6 创建 App Store Connect API Key（仅需上传 TestFlight 时）
+### 3.6 创建 App Group（仅项目含 Widget Extension 时需要）
+
+> 如果项目没有 `RestLiveActivity`（Live Activity Widget Extension），可以跳过此步。
+
+1. 打开 [developer.apple.com/account](https://developer.apple.com/account) → **Certificates, Identifiers & Profiles**
+2. 点击 **Identifiers** → 点 **+** 新建
+3. 选择 **App Groups** → 点 **Continue**
+4. 填写：
+   - **Description**: `FitTrack App Group`
+   - **Identifier**: `group.com.lt.lifttrack`
+5. 点 **Continue** → **Register** → **Done**
+
+### 3.7 创建 Widget Extension 的 App ID（仅项目含 Widget Extension 时需要）
+
+> 如果项目没有 `RestLiveActivity`（Live Activity Widget Extension），可以跳过此步。
+
+1. **Identifiers** → 点 **+** 新建
+2. 选择 **App IDs** → **App** → **Continue**
+3. 填写：
+   - **Description**: `FitTrack RestLiveActivity`
+   - **Bundle ID**: 选 **Explicit** → 输入 `com.lt.lifttrack.RestLiveActivity`
+4. 往下翻 **Capabilities**，勾选 **App Groups**
+5. 点 **Continue** → **Register** → **Done**
+
+### 3.8 将 App Group 关联到两个 App ID
+
+> 需要在 Extension 和主 App 的 App ID 上都关联同一个 App Group，两者才能共享数据。
+
+**关联到 Extension App ID：**
+1. Identifiers 列表中找到 `com.lt.lifttrack.RestLiveActivity`，点进去
+2. 找到 **App Groups** 行，点 **Configure**
+3. 勾选 `group.com.lt.lifttrack`
+4. **Continue** → **Save**
+
+**关联到主 App App ID：**
+1. Identifiers 列表中找到 `com.lt.lifttrack`（主 App），点进去
+2. 找到 **App Groups** 行，点 **Configure**
+3. 勾选 `group.com.lt.lifttrack`
+4. **Continue** → **Save**
+
+### 3.9 创建 Widget Extension 的 Provisioning Profile（仅项目含 Widget Extension 时需要）
+
+> 如果项目没有 `RestLiveActivity`（Live Activity Widget Extension），可以跳过此步。
+
+1. Apple Developer → **Profiles** → 点 **+** 新建
+2. 类型选 **App Store Connect** → **Continue**
+3. **App ID** 下拉选择 `com.lt.lifttrack.RestLiveActivity` → **Continue**
+4. **Certificates** 勾选你的 Distribution 证书 → **Continue**
+5. **Name** 输入 `FitTrack_RestLiveActivity_Profile` → **Continue**
+6. 点 **Download** 下载 `.mobileprovision` 文件
+
+### 3.10 重新生成主 App 的 Provisioning Profile（仅旧 Profile 需要）
+
+> **按本指南 3.1 已勾选 App Groups、且 3.4 创建的 Profile 包含该能力的话，请跳过此步。**
+> 此步只适用于**之前已经创建过主 App Profile、且当时没勾选 App Groups** 的情况
+> （比如按旧版指南配置过）。因为 App ID 新增能力后，旧 Profile 不会自动带上，需要重新生成。
+
+1. Apple Developer → **Profiles** → 找到之前创建的主 App profile（`com.lt.lifttrack`）
+2. 点进去 → **Edit** → **Generate** 重新生成
+3. 下载新的 `.mobileprovision` 文件（覆盖旧的）
+
+### 3.11 对新增/更新的 Profile 做 base64 编码
+
+> 3.5 已介绍 .p12 和主 App Profile 的编码方法。这里补充：
+> - **Extension Profile**（3.9 下载的）→ 必做，编码后填入 `PROVISIONING_PROFILE_EXT_BASE64`
+> - **主 App Profile**（仅当你执行了 3.10 重新生成时才需要）→ 编码后覆盖更新 `PROVISIONING_PROFILE_BASE64`
+
+**Extension Provisioning Profile：**
+```powershell
+# Windows PowerShell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("FitTrack_RestLiveActivity_Profile.mobileprovision"))
+```
+
+**（如执行了 3.10）重新生成后的主 App Provisioning Profile：**
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("com.lt.lifttrack.mobileprovision"))
+```
+
+> 把输出的 base64 字符串分别填入对应的 GitHub Secret（见 3.13）。
+
+### 3.12 创建 App Store Connect API Key（仅需上传 TestFlight 时）
 
 1. 打开 [appstoreconnect.apple.com](https://appstoreconnect.apple.com) → **用户和访问** → **密钥（Keys）** → **App Store Connect API**
 2. 生成新密钥，角色选 **App Manager**（或 Admin）
@@ -133,7 +215,7 @@ cat cert.p12.b64
 base64 -i AuthKey_XXXXXXXXXX.p8
 ```
 
-### 3.7 配置 GitHub Secrets
+### 3.13 配置 GitHub Secrets
 
 打开 GitHub 仓库 → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**。
 
@@ -141,7 +223,8 @@ base64 -i AuthKey_XXXXXXXXXX.p8
 |---|---|---|
 | `BUILD_CERTIFICATE_BASE64` | `.p12` 文件的 base64 内容 | `sign=true` |
 | `P12_PASSWORD` | 导出 .p12 时设置的密码 | `sign=true` |
-| `PROVISIONING_PROFILE_BASE64` | `.mobileprovision` 的 base64 内容 | `sign=true` |
+| `PROVISIONING_PROFILE_BASE64` | 主 App 的 `.mobileprovision` 的 base64 内容 | `sign=true` |
+| `PROVISIONING_PROFILE_EXT_BASE64` | Extension（RestLiveActivity）的 `.mobileprovision` 的 base64 内容 | `sign=true`（项目含 Widget Extension 时必填） |
 | `TEAM_ID` | Apple Developer Team ID（10 位，如 `ABCD1234EF`，在账号页可查） | `sign=true` |
 | `APP_STORE_CONNECT_KEY_ID` | API Key ID | 上传 TestFlight |
 | `APP_STORE_CONNECT_ISSUER_ID` | API Key Issuer ID | 上传 TestFlight |
@@ -215,6 +298,8 @@ CI 内的 macOS 服务器会自动完成上传。
 |---|---|
 | 构建失败：`No profile found` / 签名错误 | 证书或 Profile 过期/不匹配。重新生成 Profile，更新对应 Secrets |
 | 构建失败：`No signing certificate` | `BUILD_CERTIFICATE_BASE64` 或 `P12_PASSWORD` 配置错误。确认 .p12 含私钥、密码正确 |
+| 构建失败：`Signing for "RestLiveActivity" requires a development team` | 项目含 Widget Extension 但未配置 Extension 签名。按 3.6~3.9 创建 App Group、Extension App ID、Extension Profile，设置 `PROVISIONING_PROFILE_EXT_BASE64` |
+| 构建失败：`Provisioning profile ... does not match the bundle ID ... RestLiveActivity` | Extension 用了主 App 的 profile。需要创建独立的 Extension Profile（3.9） |
 | 上传 TestFlight 报 401/403 | API Key 权限不足或已失效。确认角色为 App Manager/Admin，重新生成 Key |
 | 上传提示 App 不存在 | 未在 App Store Connect 创建 App。先创建应用（Bundle ID 一致） |
 | 想分发到指定设备而非 TestFlight | 使用 **Ad Hoc** 类型 Profile（需在 3.4 选择 Ad Hoc 并勾选设备 UDID） |
@@ -230,7 +315,8 @@ CI 内的 macOS 服务器会自动完成上传。
 ├────────────────────────────────┼──────────────────────────────────────┤
 │ BUILD_CERTIFICATE_BASE64        │ 钥匙串导出 .p12 → base64             │
 │ P12_PASSWORD                    │ 导出 .p12 时设置的密码               │
-│ PROVISIONING_PROFILE_BASE64     │ Apple Developer 下载 .mobileprovision│
+│ PROVISIONING_PROFILE_BASE64     │ Apple Developer 下载主 App .mobileprovision │
+│ PROVISIONING_PROFILE_EXT_BASE64 │ Apple Developer 下载 Extension .mobileprovision │
 │ TEAM_ID                         │ Apple Developer 账号页               │
 │ APP_STORE_CONNECT_KEY_ID        │ App Store Connect 密钥页             │
 │ APP_STORE_CONNECT_ISSUER_ID     │ App Store Connect 密钥页             │
@@ -245,4 +331,7 @@ CI 内的 macOS 服务器会自动完成上传。
 - Workflow 定义：`.github/workflows/ios-build.yml`
 - iOS 工程目录：`fittrack_flutter/ios/`
 - Bundle ID：`com.lt.lifttrack`（`ios/Runner.xcodeproj/project.pbxproj` 与 workflow 中均已配置）
+- Widget Extension（Live Activity）：`fittrack_flutter/ios/RestLiveActivity/`
+  - Bundle ID：`com.lt.lifttrack.RestLiveActivity`
+  - Entitlements：App Groups `group.com.lt.lifttrack`（`RestLiveActivity.entitlements`）
 - 原 Codemagic 配置：`codemagic.yaml`（如需保留可不动）

@@ -98,7 +98,7 @@ class VirtualGoodsStore {
     // ── 称号 ──
     VirtualGood(
       id: 'title_ambassador',
-      name: '燃力大使称号',
+      name: 'LiftTrack 大使称号',
       category: GoodCategory.title,
       pointsCost: 1200,
       emoji: '🎖️',

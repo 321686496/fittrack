@@ -102,6 +102,14 @@ flutter:
     - assets/data/system_plans/
     - assets/sounds/
     - assets/opponent/
+    - assets/opponent/video_frames/beginner_idle/
+    - assets/opponent/video_frames/beginner_train/
+    - assets/opponent/video_frames/iron_idle/
+    - assets/opponent/video_frames/iron_train/
+    - assets/opponent/video_frames/ninja_idle/
+    - assets/opponent/video_frames/ninja_train/
+    - assets/opponent/video_frames/ambassador_idle/
+    - assets/opponent/video_frames/ambassador_train/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

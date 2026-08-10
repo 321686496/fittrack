@@ -345,7 +345,7 @@ class _InvitationPageState extends State<InvitationPage> {
                   Icon(Icons.military_tech, color: colors.accentGlow, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    '已获得「燃力大使」永久称号',
+                    '已获得「LiftTrack 大使」永久称号',
                     style: TextStyle(
                       color: colors.accentGlow,
                       fontSize: 13,
@@ -412,7 +412,7 @@ class _InvitationPageState extends State<InvitationPage> {
       _RewardRule(1, '首次激活', '100 积分 + 引路人徽章', '50 积分'),
       _RewardRule(3, '累计 3 人', '300 积分 + 布道者徽章', '50 积分'),
       _RewardRule(5, '累计 5 人', '600 积分 + 传道者徽章 + 限定对手皮肤', '50 积分'),
-      _RewardRule(10, '累计 10 人', '1200 积分 + 燃力大使称号', '50 积分'),
+      _RewardRule(10, '累计 10 人', '1200 积分 + LiftTrack 大使称号', '50 积分'),
     ];
 
     return CardWidget(

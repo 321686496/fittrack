@@ -185,16 +185,23 @@ class PosterBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 说明：必须用 StackFit.passthrough + Positioned.fill 渐变背景。
+    // 若用 StackFit.expand，当父级只给宽度（高度无界，如海报截图 Positioned(height: null)）
+    // 时 Stack 会被撑成无限高 → assert(size.isFinite) 失败 → 布局中断 → RepaintBoundary
+    // 永不完成 paint → 海报截图报「RepaintBoundary 尚未完成绘制」。passthrough 在
+    // 紧凑约束（固定海报高度）下与 expand 行为一致，在宽松约束下高度随内容自适应。
     return Stack(
-      fit: StackFit.expand,
+      fit: StackFit.passthrough,
       children: [
-        // 渐变背景
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [colors.bgTop, colors.bgBottom],
+        // 渐变背景（填充整个 Stack，高度自适应）
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [colors.bgTop, colors.bgBottom],
+              ),
             ),
           ),
         ),
@@ -283,7 +290,7 @@ class PosterBrandHeader extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Text(
-              'LiftTrack 燃力',
+              'LiftTrack',
               style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 28,
@@ -383,7 +390,7 @@ class PosterQrFooter extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'LiftTrack · 燃力训练',
+                'LiftTrack · 训练',
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 18,

@@ -53,6 +53,7 @@ import 'pages/plan_library_detail_page.dart';
 import 'pages/plan_search_page.dart';
 import 'pages/max_weight_detail_page.dart';
 import 'pages/opponent_detail_page.dart';
+import 'pages/logo_preview_page.dart';
 import 'widgets/bottom_nav.dart';
 
 // 全局 NavigatorKey
@@ -442,6 +443,11 @@ GoRouter createRouter() {
         path: '/opponent-detail',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const OpponentDetailPage(),
+      ),
+      GoRoute(
+        path: '/logo-preview',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const LogoPreviewPage(),
       ),
       // v1 V1-11: 训练笔记路由
       GoRoute(

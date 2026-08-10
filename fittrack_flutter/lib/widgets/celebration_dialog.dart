@@ -144,7 +144,7 @@ class CelebrationDialog {
       return [
         '连续训练第$streak天，你已经超越了90%的用户！',
         '坚持就是力量！连续$streak天，你正在成为更好的自己。',
-        '$streak天不间断，这就是燃力！',
+        '$streak天不间断，这就是坚持的力量！',
       ];
     }
     if (totalWeight > 1000) {
