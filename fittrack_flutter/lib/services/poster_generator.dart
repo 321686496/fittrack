@@ -37,12 +37,18 @@ class PosterGenerator {
     // - QrImageView 等异步组件需要额外帧才能完成渲染
     // 此处通过轮询 debugNeedsPaint 状态，最多等待 30 次 × 30ms（≈900ms）。
     // 若仍为 true，再额外等待 3 帧（给 QR 码等异步组件更多时间），然后强制截图。
+    bool needsPaint = false;
     for (int i = 0; i < 30; i++) {
-      if (!boundary.debugNeedsPaint) break;
+      needsPaint = false;
+      assert(() {
+        needsPaint = boundary.debugNeedsPaint;
+        return true;
+      }());
+      if (!needsPaint) break;
       await WidgetsBinding.instance.endOfFrame;
       await Future.delayed(const Duration(milliseconds: 30));
     }
-    if (boundary.debugNeedsPaint) {
+    if (needsPaint) {
       // 额外等 3 帧，给异步组件（QR 码等）最后的机会
       for (int i = 0; i < 3; i++) {
         await WidgetsBinding.instance.endOfFrame;
