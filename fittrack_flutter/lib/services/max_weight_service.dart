@@ -50,6 +50,18 @@ class MaxWeightService {
     return best;
   }
 
+  /// 获取各部位的最大重量（单条，取该部位重量最高的记录）
+  Map<String, double> getMaxByMuscleGroup() {
+    final grouped = getTopByMuscleGroup(limit: 1);
+    final result = <String, double>{};
+    grouped.forEach((key, list) {
+      if (list.isNotEmpty) {
+        result[key] = list.first.weight;
+      }
+    });
+    return result;
+  }
+
   /// 按部位分组获取 Top N 动作最大重量（同一动作在不同训练中可能多次出现，保留每次记录）
   Map<String, List<MaxWeightRecord>> getTopByMuscleGroup({int limit = 5}) {
     final Map<String, List<MaxWeightRecord>> grouped = {};
@@ -116,4 +128,15 @@ class MaxWeightService {
   }
 
   static const List<String> kMuscleGroups = ['胸部', '背部', '腿部', '肩膀', '手臂', '核心', '其他'];
+
+  /// 各部位最大重量里程碑（kg），按升序排列
+  static const Map<String, List<double>> kMuscleGroupMilestones = {
+    '胸部': [20, 40, 60, 80, 100, 120, 140],
+    '背部': [20, 40, 60, 80, 100, 120, 140, 160],
+    '腿部': [30, 50, 80, 100, 120, 140, 160, 180, 200],
+    '肩膀': [10, 20, 30, 40, 50, 60, 70],
+    '手臂': [10, 15, 20, 25, 30, 40],
+    '核心': [10, 20, 30, 40, 50],
+    '其他': [20, 40, 60, 80, 100],
+  };
 }

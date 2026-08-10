@@ -133,17 +133,14 @@ export default function ExercisePage() {
             {EXERCISE_IMAGES[selected.id] && (
               <div style={{
                 width: '100%',
-                aspectRatio: '4/3',
                 borderRadius: 'var(--radius-lg, 12px)',
                 overflow: 'hidden',
                 marginBottom: 'var(--section-gap, 16px)',
                 background: 'var(--bg-elevated)',
-                position: 'relative',
               }}>
                 {!imgLoaded && (
                   <div style={{
-                    position: 'absolute',
-                    inset: 0,
+                    padding: '48px 0',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -160,9 +157,9 @@ export default function ExercisePage() {
                   onError={() => setImgLoaded(true)}
                   style={{
                     width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: imgLoaded ? 'block' : 'none',
+                    height: 'auto',
+                    display: 'block',
+                    visibility: imgLoaded ? 'visible' : 'hidden',
                   }}
                 />
               </div>

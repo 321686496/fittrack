@@ -79,19 +79,19 @@ class _ExercisePageState extends State<ExercisePage> {
 
   /// 根据动作数据渲染封面：自定义路径 → Image.file；
   /// asset 路径 → Image.asset；无 image → DefaultExerciseCover。
-  Widget _buildCoverImage(Map<String, dynamic> ex, double height) {
+  Widget _buildCoverImage(Map<String, dynamic> ex, double? height, {BoxFit fit = BoxFit.cover}) {
     final image = ex['image'] as String?;
     if (image != null && image.isNotEmpty) {
       if (image.startsWith('assets/')) {
-        return Image.asset(image, fit: BoxFit.cover,
+        return Image.asset(image, fit: fit,
             width: double.infinity, height: height);
       }
-      return Image.file(File(image), fit: BoxFit.cover,
+      return Image.file(File(image), fit: fit,
           width: double.infinity, height: height);
     }
     return DefaultExerciseCover(
       category: (ex['category'] as String?) ?? '其他',
-      size: height,
+      size: height ?? 180,
     );
   }
 
@@ -339,11 +339,7 @@ class _ExercisePageState extends State<ExercisePage> {
                 // Exercise hero image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 180,
-                    child: _buildCoverImage(ex, 180),
-                  ),
+                  child: _buildCoverImage(ex, null, fit: BoxFit.fitWidth),
                 ),
                 const SizedBox(height: 20),
                 // Description
@@ -465,13 +461,11 @@ class _ExercisePageState extends State<ExercisePage> {
           if (step['image'] != null)
             Container(
               width: double.infinity,
-              height: 140,
-              decoration: BoxDecoration(
-                color: colors.bgElevated,
-                image: DecorationImage(
-                  image: AssetImage(step['image'] as String),
-                  fit: BoxFit.cover,
-                ),
+              color: colors.bgElevated,
+              child: Image.asset(
+                step['image'] as String,
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
               ),
             )
           else

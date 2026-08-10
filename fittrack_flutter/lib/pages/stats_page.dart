@@ -311,6 +311,21 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
     for (final ex in MockData.exercises) {
       exLookup[ex['id'] as String] = ex['name'] as String;
     }
+    for (final plan in Storage.getPlans()) {
+      final days = plan['days'] as List? ?? [];
+      for (final day in days) {
+        final dayMap = day as Map;
+        final exercises = dayMap['exercises'] as List? ?? [];
+        for (final ex in exercises) {
+          final exMap = ex as Map;
+          final id = exMap['id']?.toString() ?? '';
+          final name = exMap['name']?.toString() ?? '';
+          if (id.isNotEmpty && name.isNotEmpty && !exLookup.containsKey(id)) {
+            exLookup[id] = name;
+          }
+        }
+      }
+    }
     final list = counts.entries.map((e) {
       return {
         'name': exLookup[e.key] ?? e.key,
