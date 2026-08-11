@@ -341,18 +341,39 @@ class InvitationService {
 
   /// 记录一次"被邀请人激活"事件（邀请人视角，本地层面）
   ///
-  /// 单机版限制：无法自动感知被邀请人激活。
-  /// 实际使用场景：
-  /// - 邀请人主动输入被邀请人激活的码（反向验证）
-  /// - 或联网版通过服务器推送
+  /// 入参支持两种格式：
+  /// - `FIT-INV-` 邀请码：纯 HMAC 签名验证（历史路径）
+  /// - `FIT-ACT-` 激活识别码：解密使用数据 → 达标判定（有效训练 ≥ 1）
+  ///   → 防自邀（身份哈希 ≠ 当前用户）→ 去重 → 入账
   ///
   /// 返回是否触发新的里程碑。
   Future<ReferralMilestone?> recordReferralActivation(String inviteeCode) async {
-    if (!_verifySignature(inviteeCode)) return null;
+    final code = inviteeCode.trim().toUpperCase();
+    if (code.startsWith('FIT-ACT-')) {
+      return _recordByReceipt(code);
+    }
+    if (!_verifySignature(code)) return null;
+    return _grantMilestone(code);
+  }
+
+  /// 识别码分支：达标 + 防自邀 + 去重后才入账
+  Future<ReferralMilestone?> _recordByReceipt(String code) async {
+    final validation = validateActivationReceipt(code);
+    if (validation.result != ReceiptResult.validReached) return null;
+    // 防自邀：识别码身份 = 当前用户身份
+    if (validation.identity.isNotEmpty &&
+        validation.identity == _computeMyIdentity()) {
+      return null;
+    }
+    return _grantMilestone(code);
+  }
+
+  /// 公共入账：写入 myReferralCodes（去重）+ 里程碑积分/徽章/皮肤发放
+  Future<ReferralMilestone?> _grantMilestone(String code) async {
     final settings = Storage.getSettings();
     final myList = (settings['myReferralCodes'] as List?)?.cast<String>() ?? [];
-    if (myList.contains(inviteeCode)) return null;
-    myList.add(inviteeCode);
+    if (myList.contains(code)) return null;
+    myList.add(code);
     settings['myReferralCodes'] = myList;
     Storage.saveSettings(settings);
 
@@ -377,7 +398,7 @@ class InvitationService {
     if (count >= 3) _unlockBadge('referral_three');
     if (count >= 5) {
       _unlockBadge('referral_five');
-      _unlockOpponentSkin(); // 新增：累计5人解锁限定皮肤
+      _unlockOpponentSkin(); // 累计5人解锁限定皮肤
     }
     if (count >= 10) _unlockBadge('referral_ten');
 
