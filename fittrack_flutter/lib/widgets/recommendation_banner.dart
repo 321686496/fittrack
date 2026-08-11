@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../data/storage.dart';
 import '../services/recommendation_service.dart';
 import '../themes/app_themes.dart';
 
@@ -21,6 +22,9 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
   void initState() {
     super.initState();
     _banners = RecommendationService.generateBanners();
+    // 监听数据变更：邀请入账后自动刷新进度（/invitation 为 root 全屏 push，
+    // 返回首页时 tab 激活回调不会触发，必须由数据通知驱动）
+    Storage.dataChanged.addListener(_onDataChanged);
     if (_banners.isNotEmpty) {
       _timer = Timer.periodic(const Duration(seconds: 5), (_) {
         if (_controller.hasClients) {
@@ -35,9 +39,29 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
 
   @override
   void dispose() {
+    Storage.dataChanged.removeListener(_onDataChanged);
     _timer?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  /// 数据变更时刷新横幅；仅当邀请进度实际变化才重建，
+  /// 避免无关数据变更（训练记录等）打断轮播与浪费重建
+  void _onDataChanged() {
+    final newBanners = RecommendationService.generateBanners();
+    final oldCount = _banners.isNotEmpty && _banners.first.type == 'invitation'
+        ? (_banners.first.extra?['totalReferrals'] as num?)?.toInt()
+        : null;
+    final newCount = newBanners.isNotEmpty && newBanners.first.type == 'invitation'
+        ? (newBanners.first.extra?['totalReferrals'] as num?)?.toInt()
+        : null;
+    if (oldCount == newCount) return;
+    setState(() {
+      _banners = newBanners;
+      if (_currentPage >= _banners.length) {
+        _currentPage = _banners.length - 1;
+      }
+    });
   }
 
   @override
