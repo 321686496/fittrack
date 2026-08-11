@@ -906,8 +906,8 @@ class _InvitationPageState extends State<InvitationPage> {
     setState(() => _recording = true);
     final milestone =
         await InvitationService.instance.recordReferralActivation(code);
-    setState(() => _recording = false);
     if (!mounted) return;
+    setState(() => _recording = false);
 
     if (milestone != null) {
       FitToast.success(context, '记录成功！积分奖励已到账');

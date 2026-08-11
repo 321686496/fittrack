@@ -169,11 +169,10 @@ void main() {
       insertValidTraining(minutes: 30, sets: 10);
       final code = InvitationService.instance.generateActivationReceipt();
 
-      // 翻转明文第 14 个字符（签名区第 1 个）
+      // 翻转明文第 1 个字符（身份段），验证数据位篡改同样被 HMAC 拦截
       final payload = code.replaceFirst('FIT-ACT-', '');
-      final tampered = 'FIT-ACT-${payload.substring(0, 13)}'
-          '${payload.substring(13, 14) == 'A' ? 'B' : 'A'}'
-          '${payload.substring(14)}';
+      final tampered = 'FIT-ACT-${payload.substring(0, 1) == 'A' ? 'B' : 'A'}'
+          '${payload.substring(1)}';
       final v = InvitationService.instance.validateActivationReceipt(tampered);
       expect(v.result, ReceiptResult.invalidSignature);
     });
