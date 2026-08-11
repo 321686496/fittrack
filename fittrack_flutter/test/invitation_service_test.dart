@@ -186,4 +186,84 @@ void main() {
       expect(v2.result, ReceiptResult.invalidFormat);
     });
   });
+
+  group('识别码入账闭环', () {
+    void insertValidTraining() {
+      Storage.addRecord({
+        'name': '测试训练',
+        'date': DateTime.now().millisecondsSinceEpoch,
+        'duration': 30,
+        'pureDuration': 1800,
+        'totalWeight': 100,
+        'totalSets': 10,
+        'exerciseCount': 1,
+        'muscles': [],
+        'setRecords': <String, List<Map<String, dynamic>>>{},
+        'restLog': <Map<String, dynamic>>[],
+        'planId': 'p1',
+        'planName': '测试训练',
+      });
+    }
+
+    test('达标识别码入账并发放首次里程碑', () async {
+      // 被邀请人（有训练）
+      useDeviceId('invitee_loop_seed_1');
+      insertValidTraining();
+      final receipt = InvitationService.instance.generateActivationReceipt();
+
+      // 邀请人
+      useDeviceId('inviter_loop_main');
+      final milestone =
+          await InvitationService.instance.recordReferralActivation(receipt);
+      expect(milestone, ReferralMilestone.firstActivation);
+      expect(PointsService.instance.points, 100);
+
+      final myList = (Storage.getSettings()['myReferralCodes'] as List).cast<String>();
+      expect(myList, contains(receipt));
+    });
+
+    test('未达标识别码不入账', () async {
+      useDeviceId('invitee_loop_seed_2');
+      final receipt = InvitationService.instance.generateActivationReceipt();
+
+      useDeviceId('inviter_loop_main2');
+      final milestone =
+          await InvitationService.instance.recordReferralActivation(receipt);
+      expect(milestone, isNull);
+      expect(PointsService.instance.points, 0);
+      // Storage.getSettings() 会合并 defaults（含 myReferralCodes: []），
+      // 未入账时表现为空列表而非 null
+      expect(Storage.getSettings()['myReferralCodes'], isEmpty);
+    });
+
+    test('输入自己的识别码不入账（防自邀）', () async {
+      useDeviceId('inviter_loop_main3');
+      insertValidTraining();
+      final receipt = InvitationService.instance.generateActivationReceipt();
+
+      final milestone =
+          await InvitationService.instance.recordReferralActivation(receipt);
+      expect(milestone, isNull);
+      // Storage.getSettings() 会合并 defaults（含 myReferralCodes: []），
+      // 未入账时表现为空列表而非 null
+      expect(Storage.getSettings()['myReferralCodes'], isEmpty);
+    });
+
+    test('同一识别码重复入账被去重', () async {
+      useDeviceId('invitee_loop_seed_3');
+      insertValidTraining();
+      final receipt = InvitationService.instance.generateActivationReceipt();
+
+      useDeviceId('inviter_loop_main4');
+      await InvitationService.instance.recordReferralActivation(receipt);
+      final second =
+          await InvitationService.instance.recordReferralActivation(receipt);
+      expect(second, isNull);
+      expect(PointsService.instance.points, 100); // 只发一次
+      expect(
+        (Storage.getSettings()['myReferralCodes'] as List).length,
+        1,
+      );
+    });
+  });
 }
