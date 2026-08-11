@@ -62,6 +62,9 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
 
   Widget _buildBanner(BannerItem banner) {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
+    if (banner.type == 'invitation') {
+      return _buildInvitationBanner(colors, banner);
+    }
     final gradient = _gradientFor(banner.type, colors);
 
     return GestureDetector(
@@ -137,6 +140,159 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                     ),
                     child: Text(
                       '立即查看 →',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.95),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 邀请有礼专属卡片：动态进度 + 进度条 + 动态 CTA
+  Widget _buildInvitationBanner(LiftTrackColors colors, BannerItem banner) {
+    final totalReferrals =
+        (banner.extra?['totalReferrals'] as num?)?.toInt() ?? 0;
+    final nextMilestone = (banner.extra?['nextMilestone'] as num?)?.toInt() ?? 1;
+    final isAmbassador = banner.extra?['isAmbassador'] == true;
+    final remaining = nextMilestone - totalReferrals;
+    final progress = (totalReferrals / nextMilestone).clamp(0.0, 1.0).toDouble();
+
+    final String ctaText;
+    if (totalReferrals == 0) {
+      ctaText = '邀请好友，双方得积分 →';
+    } else if (remaining > 0) {
+      ctaText = '还差 $remaining 人解锁奖励 →';
+    } else {
+      ctaText = '查看全部奖励 →';
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (banner.route != null) context.push(banner.route!);
+      },
+      child: Container(
+        margin: EdgeInsets.zero,
+        decoration: BoxDecoration(
+          gradient: _gradientFor('invitation', colors),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.borderColor.withOpacity(0.08)),
+        ),
+        child: Stack(
+          children: [
+            // 装饰几何：右上圆形光晕
+            Positioned(
+              top: -20,
+              right: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.08),
+                ),
+              ),
+            ),
+            // 装饰几何：左下小圆
+            Positioned(
+              bottom: 16,
+              left: 16,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.10),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 头部：礼物图标 + 标题 + 大使角标
+                  Row(
+                    children: [
+                      const Icon(Icons.card_giftcard,
+                          color: Colors.white, size: 22),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          banner.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                      if (isAmbassador)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            '大使',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const Spacer(),
+                  // 进度文案
+                  Text(
+                    isAmbassador
+                        ? '已邀请 $totalReferrals 人 · 大使'
+                        : '已邀请 $totalReferrals / $nextMilestone 人',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // 进度条
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: Container(
+                      height: 6,
+                      color: Colors.white.withOpacity(0.25),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: progress,
+                        child: Container(
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // 动态 CTA
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      ctaText,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.95),
                         fontSize: 12,
