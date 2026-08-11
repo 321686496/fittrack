@@ -376,6 +376,9 @@ class InvitationService {
     myList.add(code);
     settings['myReferralCodes'] = myList;
     Storage.saveSettings(settings);
+    // 通知数据变更：邀请进度已变化（非里程碑档位无积分入账，
+    // 不会走 PointsService.addPoints 的通知路径，必须在此显式通知）
+    Storage.dataChanged.value = !Storage.dataChanged.value;
 
     final count = myList.length;
     // 按里程碑发放积分（每达成新档位发放对应积分，不累加同档位）
