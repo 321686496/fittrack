@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "fittrack_flutter" "\0"
+            VALUE "FileDescription", "LiftTrack" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "fittrack_flutter" "\0"
+            VALUE "InternalName", "LiftTrack" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "fittrack_flutter.exe" "\0"
-            VALUE "ProductName", "fittrack_flutter" "\0"
+            VALUE "OriginalFilename", "LiftTrack.exe" "\0"
+            VALUE "ProductName", "LiftTrack" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

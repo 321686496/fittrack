@@ -95,10 +95,12 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                     width: 2,
                   ),
                 ),
-                child: Icon(
-                  Icons.fitness_center,
-                  size: 50,
-                  color: colors.accentGlow,
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
