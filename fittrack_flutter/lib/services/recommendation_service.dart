@@ -4,6 +4,7 @@ import '../data/course_content.dart';
 import '../data/tutorial_content.dart';
 import 'plan_recommendation_service.dart';
 import '../data/system_plan_library.dart';
+import 'invitation_service.dart';
 
 class BannerItem {
   final String type; // teaching / premium / invitation / achievement
@@ -22,13 +23,21 @@ class BannerItem {
     this.extra,
   });
 
-  factory BannerItem.invitation() => const BannerItem(
-    type: 'invitation',
-    title: '邀请有礼',
-    subtitle: '最高 2000 积分等你拿',
-    icon: 'card_giftcard',
-    route: '/invitation',
-  );
+  factory BannerItem.invitation() {
+    final progress = InvitationService.instance.getReferralProgress();
+    return BannerItem(
+      type: 'invitation',
+      title: '邀请有礼',
+      subtitle: '最高 2000 积分等你拿',
+      icon: 'card_giftcard',
+      route: '/invitation',
+      extra: {
+        'totalReferrals': progress['totalReferrals'],
+        'nextMilestone': progress['nextMilestone'],
+        'isAmbassador': progress['isAmbassador'],
+      },
+    );
+  }
 
   factory BannerItem.achievementChallenge() => const BannerItem(
     type: 'achievement',
@@ -98,11 +107,12 @@ class RecommendationService {
     }
 
     // 3. 内部推广
-    items.add(BannerItem.invitation());
     items.add(BannerItem.achievementChallenge());
 
-    // 每日固定顺序（基于日期 seed，每天顺序不同但同一天内稳定）
+    // 邀请有礼固定为轮播第一项，其余 banner 每日随机顺序
+    final inviteBanner = BannerItem.invitation();
     items.shuffle(Random(DateTime.now().day));
+    items.insert(0, inviteBanner);
     return items;
   }
 }
