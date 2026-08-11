@@ -72,14 +72,25 @@ class PageHeader extends StatelessWidget {
                 if (showBack) const SizedBox(width: 12),
                 Expanded(
                   child: isLogo
-                      ? Text(
-                          'FITPLAN',
-                          style: TextStyle(
-                            color: colors.accentGlow,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 3,
-                          ),
+                      ? Row(
+                          children: [
+                            Image.asset(
+                              'assets/images/logo.png',
+                              width: 28,
+                              height: 28,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'LiftTrack',
+                              style: TextStyle(
+                                color: colors.accentGlow,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ],
                         )
                       : Text(
                           title ?? '',

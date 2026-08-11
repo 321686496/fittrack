@@ -1,6 +1,6 @@
 {
-    "name": "fittrack_flutter",
-    "short_name": "fittrack_flutter",
+    "name": "LiftTrack",
+    "short_name": "LiftTrack",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
