@@ -35,6 +35,31 @@ enum ReferralMilestone {
   tenActivations, // 累计10人
 }
 
+/// 激活识别码校验结果
+enum ReceiptResult {
+  validReached, // 校验通过且达标（有效训练次数 ≥ 1）
+  validNotReached, // 校验通过但未达标（次数 = 0）
+  invalidFormat,
+  invalidSignature,
+}
+
+/// 激活识别码校验返回值
+class ReceiptValidationResult {
+  final ReceiptResult result;
+  final String identity; // 识别码内身份哈希（4位），用于防自邀比对
+  final int trainingCount; // 有效训练次数
+  final int totalDurationMin; // 训练总时长（分钟）
+  final int daysSinceActivation; // 自激活起天数
+
+  const ReceiptValidationResult({
+    required this.result,
+    this.identity = '',
+    this.trainingCount = 0,
+    this.totalDurationMin = 0,
+    this.daysSinceActivation = 0,
+  });
+}
+
 class InvitationService {
   static final InvitationService instance = InvitationService._();
   InvitationService._();
@@ -45,6 +70,13 @@ class InvitationService {
 
   /// 邀请码格式：FIT-INV-XXXXXX（6位大写字母数字）
   static final RegExp _pattern = RegExp(r'^FIT-INV-([A-Z0-9]{6})$');
+
+  /// 激活识别码独立密钥（与邀请码/兑换码/分享码完全隔离）
+  /// Phase 2 本地架构可接受硬编码，Phase 3 服务器下发时移除
+  static const String _receiptSecret = 'fitTrack_receipt_secret_v1_2026';
+
+  /// 激活识别码格式：FIT-ACT-XXXXXXXXXX-XXXXXXX（17位）
+  static final RegExp _receiptPattern = RegExp(r'^FIT-ACT-([A-Z0-9]{17})$');
 
   /// Base32 字母表（去除易混淆字符 0/O/1/I）
   static const String _alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -153,6 +185,137 @@ class InvitationService {
     if (deviceId.isEmpty) return '';
     final hmac = Hmac(sha256, utf8.encode(_invitationSecret));
     final digest = hmac.convert(utf8.encode(deviceId));
+    final chars = <String>[];
+    for (int i = 0; i < 4; i++) {
+      chars.add(_alphabet[digest.bytes[i] % _alphabet.length]);
+    }
+    return chars.join();
+  }
+
+  /// 生成激活识别码（被邀请人侧，动态快照）
+  ///
+  /// 结构：FIT-ACT- + 17位 Base32
+  /// - 明文 13 位：身份哈希 4 + 有效训练次数 3 + 总时长分钟 4 + 激活天数 2
+  /// - 签名 4 位：HMAC-SHA256(明文) 前 4 字节 mod 32
+  String generateActivationReceipt() {
+    final identity = _computeMyIdentity();
+    if (identity.isEmpty) {
+      throw StateError('deviceId not initialized; call Storage.init() first');
+    }
+
+    final stats = _effectiveTrainingStats();
+    final count = stats['count']!.clamp(0, 32767).toInt();
+    final totalDuration = stats['totalDurationMin']!.clamp(0, 1048575).toInt();
+    final days = _daysSinceActivation().clamp(0, 1023).toInt();
+
+    // 明文段：身份 4 组 + 次数 3 组 + 时长 4 组 + 天数 2 组 = 13 组
+    final groups = <int>[];
+    for (final ch in identity.split('')) {
+      groups.add(_alphabet.indexOf(ch));
+    }
+    groups.addAll(_intToBase32Groups(count, 15));
+    groups.addAll(_intToBase32Groups(totalDuration, 20));
+    groups.addAll(_intToBase32Groups(days, 10));
+
+    final plain = groups.map((g) => _alphabet[g]).join();
+    final sig = _receiptSignature(plain);
+    return 'FIT-ACT-$plain$sig';
+  }
+
+  /// 校验激活识别码（邀请人侧）：格式 → 签名 → 解密 → 达标判定
+  ReceiptValidationResult validateActivationReceipt(String code) {
+    final normalized = code.toUpperCase().trim();
+    final match = _receiptPattern.firstMatch(normalized);
+    if (match == null) {
+      return const ReceiptValidationResult(result: ReceiptResult.invalidFormat);
+    }
+    final payload = match.group(1)!;
+    if (!payload.split('').every((c) => _alphabet.contains(c))) {
+      return const ReceiptValidationResult(result: ReceiptResult.invalidFormat);
+    }
+
+    final plain = payload.substring(0, 13);
+    final providedSig = payload.substring(13, 17);
+    if (_receiptSignature(plain) != providedSig) {
+      return const ReceiptValidationResult(result: ReceiptResult.invalidSignature);
+    }
+
+    final groups = plain.split('').map(_alphabet.indexOf).toList();
+    final identity = plain.substring(0, 4);
+    final count = _base32GroupsToInt(groups.sublist(4, 7), 15);
+    final totalDuration = _base32GroupsToInt(groups.sublist(7, 11), 20);
+    final days = _base32GroupsToInt(groups.sublist(11, 13), 10);
+
+    return ReceiptValidationResult(
+      result: count >= 1
+          ? ReceiptResult.validReached
+          : ReceiptResult.validNotReached,
+      identity: identity,
+      trainingCount: count,
+      totalDurationMin: totalDuration,
+      daysSinceActivation: days,
+    );
+  }
+
+  /// 有效训练统计：totalSets > 0 的记录数 + duration 求和（分钟）
+  Map<String, int> _effectiveTrainingStats() {
+    final records = Storage.getRecords();
+    int count = 0;
+    int total = 0;
+    for (final r in records) {
+      final sets = (r['totalSets'] as num?)?.toInt() ?? 0;
+      if (sets > 0) {
+        count++;
+        total += (r['duration'] as num?)?.toInt() ?? 0;
+      }
+    }
+    return {'count': count, 'totalDurationMin': total};
+  }
+
+  /// 自激活起的天数（未激活返回 0）
+  int _daysSinceActivation() {
+    final activatedAt = Storage.getSettings()['invitationActivatedAt'] as int?;
+    if (activatedAt == null) return 0;
+    final diff = DateTime.now()
+        .difference(DateTime.fromMillisecondsSinceEpoch(activatedAt));
+    return diff.inDays.clamp(0, 1023).toInt();
+  }
+
+  /// 数字 → 定长 5bit 组（大端序，末组不足 5bit 低位补 0）
+  List<int> _intToBase32Groups(int value, int bitWidth) {
+    final bits = <int>[];
+    for (int i = bitWidth - 1; i >= 0; i--) {
+      bits.add((value >> i) & 1);
+    }
+    final groups = <int>[];
+    for (int i = 0; i < bits.length; i += 5) {
+      int g = 0;
+      for (int j = 0; j < 5; j++) {
+        g = (g << 1) | ((i + j < bits.length) ? bits[i + j] : 0);
+      }
+      groups.add(g);
+    }
+    return groups;
+  }
+
+  /// 5bit 组 → 整数（只消费前 bitWidth 位）
+  int _base32GroupsToInt(List<int> groups, int bitWidth) {
+    int value = 0;
+    int consumed = 0;
+    for (final g in groups) {
+      for (int b = 4; b >= 0; b--) {
+        if (consumed >= bitWidth) break;
+        value = (value << 1) | ((g >> b) & 1);
+        consumed++;
+      }
+    }
+    return value;
+  }
+
+  /// 识别码签名：HMAC-SHA256(明文) 前 4 字节 mod 32
+  String _receiptSignature(String plain) {
+    final hmac = Hmac(sha256, utf8.encode(_receiptSecret));
+    final digest = hmac.convert(utf8.encode(plain));
     final chars = <String>[];
     for (int i = 0; i < 4; i++) {
       chars.add(_alphabet[digest.bytes[i] % _alphabet.length]);
