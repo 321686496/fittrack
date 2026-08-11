@@ -26,6 +26,10 @@ class InvitationPage extends StatefulWidget {
 
 class _InvitationPageState extends State<InvitationPage> {
   final _activateController = TextEditingController();
+  final _receiptController = TextEditingController();
+  bool _verifying = false;
+  bool _recording = false;
+  ReceiptValidationResult? _receiptValidation;
   final _scrollController = ScrollController();
   bool _activating = false;
   bool _sharing = false;
@@ -47,6 +51,7 @@ class _InvitationPageState extends State<InvitationPage> {
   @override
   void dispose() {
     _activateController.dispose();
+    _receiptController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -90,6 +95,8 @@ class _InvitationPageState extends State<InvitationPage> {
                   _buildFlowCard(colors),
                   const SizedBox(height: 16),
                   _buildActivateCard(colors),
+                  const SizedBox(height: 16),
+                  _buildRecordReceiptCard(colors),
                   const SizedBox(height: 100),
                 ],
               ),
@@ -710,6 +717,208 @@ class _InvitationPageState extends State<InvitationPage> {
     );
   }
 
+  // ── 记录邀请成果（邀请人输入被邀请人识别码） ──────────────────────────
+
+  Widget _buildRecordReceiptCard(LiftTrackColors colors) {
+    return CardWidget(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.verified_user, size: 20, color: colors.accentGlow),
+              const SizedBox(width: 8),
+              Text(
+                '记录邀请成果',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '好友激活你的邀请码后，输入好友出示的 FIT-ACT 识别码，'
+            '可验证其训练数据并确认成果',
+            style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _receiptController,
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
+            ],
+            decoration: InputDecoration(
+              hintText: 'FIT-ACT-XXXXXXXXXX-XXXXXXX',
+              hintStyle: TextStyle(color: colors.textMuted, letterSpacing: 1),
+              filled: true,
+              fillColor: colors.bgSecondary,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 14,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _verifying ? null : _verifyReceipt,
+              icon: _verifying
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.search, size: 18),
+              label: Text(_verifying ? '校验中...' : '校验识别码'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.accentGlow,
+                side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+          ),
+          if (_receiptValidation != null) ...[
+            const SizedBox(height: 12),
+            _buildReceiptResultCard(colors),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptResultCard(LiftTrackColors colors) {
+    final v = _receiptValidation!;
+    final valid = v.result == ReceiptResult.validReached;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: (valid ? colors.successColor : colors.warningColor)
+            .withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: (valid ? colors.successColor : colors.warningColor)
+              .withOpacity(0.25),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                valid ? Icons.check_circle : Icons.info_outline,
+                color: valid ? colors.successColor : colors.warningColor,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  valid ? '该好友已完成首次训练，可记录成果' : '好友尚未完成首次训练',
+                  style: TextStyle(
+                    color: valid ? colors.successColor : colors.warningColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '有效训练 ${v.trainingCount} 次 · 总时长 ${v.totalDurationMin} 分钟'
+            ' · 已激活 ${v.daysSinceActivation} 天',
+            style: TextStyle(color: colors.textSecondary, fontSize: 12),
+          ),
+          if (valid) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _recording ? null : _recordReceipt,
+                icon: _recording
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.card_giftcard, size: 18),
+                label: Text(_recording ? '记录中...' : '确认记录'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.accentGlow,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _verifyReceipt() async {
+    final code = _receiptController.text.trim().toUpperCase();
+    if (code.isEmpty) {
+      FitToast.info(context, '请输入识别码');
+      return;
+    }
+    setState(() => _verifying = true);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    if (!mounted) return;
+    final v = InvitationService.instance.validateActivationReceipt(code);
+    setState(() {
+      _verifying = false;
+      _receiptValidation = v;
+    });
+    if (v.result == ReceiptResult.invalidFormat) {
+      FitToast.error(context, '识别码格式错误');
+    } else if (v.result == ReceiptResult.invalidSignature) {
+      FitToast.error(context, '识别码无效');
+    }
+  }
+
+  Future<void> _recordReceipt() async {
+    final code = _receiptController.text.trim().toUpperCase();
+    setState(() => _recording = true);
+    final milestone =
+        await InvitationService.instance.recordReferralActivation(code);
+    setState(() => _recording = false);
+    if (!mounted) return;
+
+    if (milestone != null) {
+      FitToast.success(context, '记录成功！积分奖励已到账');
+      _receiptController.clear();
+      setState(() => _receiptValidation = null);
+      _loadData();
+    } else {
+      FitToast.error(context, '记录失败：识别码无效、未达标或已记录过');
+    }
+  }
+
   // ── 输入邀请码（保留原逻辑） ──────────────────────────────────────────────
 
   Widget _buildActivateCard(LiftTrackColors colors) {
@@ -785,6 +994,8 @@ class _InvitationPageState extends State<InvitationPage> {
                 height: 1.5,
               ),
             ),
+            const SizedBox(height: 8),
+            _buildActivationReceiptEntry(colors, activatedCode),
           ] else ...[
             Text(
               '输入好友的邀请码，激活后双方获得奖励',
@@ -841,6 +1052,114 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  // ── 我的激活凭证（被邀请人生成识别码） ──────────────────────────────
+
+  Widget _buildActivationReceiptEntry(
+      LiftTrackColors colors, String activatedCode) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.badge, size: 18, color: colors.accentGlow),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '我的激活凭证',
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '生成识别码发给邀请你的好友，好友输入后双方得奖励。'
+            '识别码含你的训练数据并加密签名，请放心展示',
+            style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showReceiptDialog(colors),
+              icon: const Icon(Icons.qr_code_2, size: 18),
+              label: const Text('生成我的激活凭证'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.accentGlow,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReceiptDialog(LiftTrackColors colors) {
+    final code = InvitationService.instance.generateActivationReceipt();
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: colors.bgCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text('我的激活凭证', textAlign: TextAlign.center),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SelectableText(
+              code,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.accentGlow,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '将此码发给邀请你的好友。好友在「记录邀请成果」中输入确认后，'
+              '双方均可获得奖励。每次生成均反映你最新的训练数据。',
+              style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('关闭'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: code));
+              Navigator.of(dialogContext).pop();
+              FitToast.success(context, '识别码已复制');
+            },
+            icon: const Icon(Icons.copy, size: 16),
+            label: const Text('复制识别码'),
+          ),
         ],
       ),
     );
