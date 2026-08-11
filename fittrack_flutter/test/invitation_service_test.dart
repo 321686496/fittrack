@@ -1,12 +1,17 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:fittrack_flutter/data/storage.dart';
 import 'package:fittrack_flutter/services/points_service.dart';
 import 'package:fittrack_flutter/services/invitation_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // Storage.addRecord/getRecords 依赖 SQLite，测试环境需初始化 ffi databaseFactory
+  // （与 achievement_service_test.dart 等项目测试保持一致）
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
 
   // PointsService.addPoints 触发 SoundService（创建 AudioPlayer 使用 MethodChannel），
   // mock audioplayers 通道避免 MissingPluginException
@@ -19,6 +24,8 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     await Storage.init();
+    // 清空 SQLite 记录与内存缓存，保证 FIT-ACT 测试间记录隔离
+    await Storage.clearAll();
     // Storage._store is static and not cleared between tests (see rating_prompt_test.dart).
     // 重置 settings 至默认值以保证测试隔离
     Storage.saveSettings(<String, dynamic>{});
@@ -91,6 +98,92 @@ void main() {
 
       // 累计：100(1人) + 300(3人) + 600(5人) = 1000
       expect(PointsService.instance.points, 1000);
+    });
+  });
+
+  group('激活识别码 FIT-ACT', () {
+    void insertValidTraining({int minutes = 30, int sets = 10}) {
+      Storage.addRecord({
+        'name': '测试训练',
+        'date': DateTime.now().millisecondsSinceEpoch,
+        'duration': minutes,
+        'pureDuration': minutes * 60,
+        'totalWeight': 100,
+        'totalSets': sets,
+        'exerciseCount': 1,
+        'muscles': [],
+        'setRecords': <String, List<Map<String, dynamic>>>{},
+        'restLog': <Map<String, dynamic>>[],
+        'planId': 'p1',
+        'planName': '测试训练',
+      });
+    }
+
+    test('生成识别码可往返解码，数据一致且达标', () {
+      useDeviceId('invitee_receipt_seed_1');
+      final s = Storage.getSettings();
+      s['invitationActivatedAt'] =
+          DateTime.now().subtract(const Duration(days: 3)).millisecondsSinceEpoch;
+      Storage.saveSettings(s);
+      insertValidTraining(minutes: 30, sets: 10);
+      insertValidTraining(minutes: 45, sets: 8);
+
+      final code = InvitationService.instance.generateActivationReceipt();
+      expect(code.startsWith('FIT-ACT-'), true);
+      // FIT-ACT-（8字符） + 17位 Base32 payload = 25
+      expect(code.length, 25);
+
+      final v = InvitationService.instance.validateActivationReceipt(code);
+      expect(v.result, ReceiptResult.validReached);
+      expect(v.trainingCount, 2);
+      expect(v.totalDurationMin, 75);
+      expect(v.daysSinceActivation, 3);
+    });
+
+    test('无有效训练时识别码未达标', () {
+      useDeviceId('invitee_receipt_seed_2');
+      // 插入 totalSets=0 的无效记录（跨天未完成场景）
+      Storage.addRecord({
+        'name': '未完成',
+        'date': DateTime.now().millisecondsSinceEpoch,
+        'duration': 10,
+        'pureDuration': 600,
+        'totalWeight': 0,
+        'totalSets': 0,
+        'exerciseCount': 0,
+        'muscles': [],
+        'setRecords': <String, List<Map<String, dynamic>>>{},
+        'restLog': <Map<String, dynamic>>[],
+        'planId': 'p1',
+        'planName': '未完成',
+      });
+
+      final code = InvitationService.instance.generateActivationReceipt();
+      final v = InvitationService.instance.validateActivationReceipt(code);
+      expect(v.result, ReceiptResult.validNotReached);
+      expect(v.trainingCount, 0);
+    });
+
+    test('篡改识别码任意数据位导致签名校验失败', () {
+      useDeviceId('invitee_receipt_seed_3');
+      insertValidTraining(minutes: 30, sets: 10);
+      final code = InvitationService.instance.generateActivationReceipt();
+
+      // 翻转明文第 14 个字符（签名区第 1 个）
+      final payload = code.replaceFirst('FIT-ACT-', '');
+      final tampered = 'FIT-ACT-${payload.substring(0, 13)}'
+          '${payload.substring(13, 14) == 'A' ? 'B' : 'A'}'
+          '${payload.substring(14)}';
+      final v = InvitationService.instance.validateActivationReceipt(tampered);
+      expect(v.result, ReceiptResult.invalidSignature);
+    });
+
+    test('非法格式返回 invalidFormat', () {
+      final v = InvitationService.instance
+          .validateActivationReceipt('FIT-INV-ABCDEF');
+      expect(v.result, ReceiptResult.invalidFormat);
+      final v2 = InvitationService.instance.validateActivationReceipt('FIT-ACT-1');
+      expect(v2.result, ReceiptResult.invalidFormat);
     });
   });
 }
