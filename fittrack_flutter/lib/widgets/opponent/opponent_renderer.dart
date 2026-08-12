@@ -74,88 +74,30 @@ class _OpponentRendererState extends State<OpponentRenderer>
   @override
   Widget build(BuildContext context) {
     final skin = OpponentSkinConfig.byId(widget.skinId);
-    final entryOffset = (1 - Curves.elasticOut.transform(_entryController.value)) * 60;
-    final isThumbnail = widget.size.width < 80;
 
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: Listenable.merge([_idleController, _trainController, _entryController]),
         builder: (context, _) {
           final progress = _isTraining ? _trainController.value : _idleController.value;
+          final entryOffset = (1 - Curves.elasticOut.transform(_entryController.value)) * 60;
           return Transform.translate(
             offset: Offset(0, entryOffset),
             child: SizedBox(
               width: widget.size.width,
               height: widget.size.height,
-              child: isThumbnail
-                  ? _buildThumbnail(skin)
-                  : VideoFrameAnimation(
-                      skinId: widget.skinId,
-                      isTraining: _isTraining,
-                      progress: progress,
-                      showAura: widget.showAura,
-                      auraColor: skin.palette.auraColor,
-                      entryProgress: _entryController.value,
-                    ),
+              child: VideoFrameAnimation(
+                skinId: widget.skinId,
+                isTraining: _isTraining,
+                progress: progress,
+                showAura: widget.showAura,
+                auraColor: skin.palette.auraColor,
+                entryProgress: _entryController.value,
+              ),
             ),
           );
         },
       ),
-    );
-  }
-
-  /// 缩略图：用 face + outfit + prop 图片拼接
-  Widget _buildThumbnail(OpponentSkinConfig skin) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // 光圈
-        if (widget.showAura)
-          IgnorePointer(
-            child: Container(
-              width: widget.size.width * 0.9,
-              height: widget.size.width * 0.9,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: skin.palette.auraColor.withOpacity(0.15),
-              ),
-            ),
-          ),
-        // 服饰
-        if (skin.outfitAsset != null)
-          Positioned(
-            bottom: 0,
-            child: Image.asset(
-              skin.outfitAsset!,
-              width: widget.size.width * 0.7,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            ),
-          ),
-        // 头部
-        if (skin.faceAsset != null)
-          Positioned(
-            top: 0,
-            child: Image.asset(
-              skin.faceAsset!,
-              width: widget.size.width * 0.55,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            ),
-          ),
-        // 道具
-        if (skin.propAsset != null)
-          Positioned(
-            right: 0,
-            bottom: widget.size.height * 0.3,
-            child: Image.asset(
-              skin.propAsset!,
-              width: widget.size.width * 0.35,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            ),
-          ),
-      ],
     );
   }
 }
