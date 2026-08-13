@@ -20,6 +20,7 @@ import 'pages/records_page.dart';
 import 'pages/plan_detail_page.dart';
 import 'pages/record_detail_page.dart';
 import 'pages/add_plan_page.dart';
+import 'pages/plan_create_guide_page.dart';
 import 'pages/notification_test_page.dart';
 import 'pages/reminder_settings_page.dart';
 import 'pages/banner_notification_guide_page.dart';
@@ -29,6 +30,9 @@ import 'pages/body_data_page.dart';
 import 'pages/privacy_policy_page.dart';
 import 'pages/user_agreement_page.dart';
 import 'pages/data_privacy_page.dart';
+import 'pages/about_page.dart';
+import 'pages/privacy_security_page.dart';
+import 'pages/help_feedback_page.dart';
 import 'pages/achievement_page.dart';
 import 'pages/redeem_page.dart';
 import 'pages/invitation_page.dart';
@@ -243,6 +247,11 @@ GoRouter createRouter() {
           return AddPlanPage(editPlanId: editPlanId);
         },
       ),
+      GoRoute(
+        path: '/plan-guide',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PlanCreateGuidePage(),
+      ),
       // 系统计划库路由（注意：detail 必须在 :goal 之前，避免 :goal 匹配 "detail"）
       GoRoute(
         path: '/plan-library',
@@ -346,6 +355,21 @@ GoRouter createRouter() {
         path: '/data-privacy',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const DataPrivacyPage(),
+      ),
+      GoRoute(
+        path: '/about',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AboutPage(),
+      ),
+      GoRoute(
+        path: '/privacy-security',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PrivacySecurityPage(),
+      ),
+      GoRoute(
+        path: '/help-feedback',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const HelpFeedbackPage(),
       ),
       GoRoute(
         path: '/achievements',

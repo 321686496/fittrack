@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/tutorial_content.dart';
+import '../utils/art_assets.dart';
 
 class TutorialCoverCard extends StatelessWidget {
   final Tutorial tutorial;
@@ -29,6 +30,34 @@ class TutorialCoverCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            // 目标主题美术背景（缺失时回退到渐变）
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  goalArtAsset(tutorial.goal.name) ?? '',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            // 左侧压暗，保证文字可读
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withOpacity(0.55),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.7],
+                  ),
+                ),
+              ),
+            ),
             // 背景装饰
             Positioned(
               right: -20, top: -20,

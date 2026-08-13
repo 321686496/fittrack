@@ -15,6 +15,7 @@
     "tags": ["塑形", "三分化", "新手友好"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 18-23，体脂率 20-26%，希望改善线条",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -67,6 +68,7 @@
     "tags": ["精品", "全身塑形", "女性友好"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 17-22，体脂率 22-28%，追求匀称线条",
+    "gender": "female",
     "days": [
       {
         "day": 1,
@@ -130,6 +132,7 @@
     "tags": ["女性塑形", "三分化", "臀腿重点"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 17-23，体脂率 22-28%，女性塑形",
+    "gender": "female",
     "days": [
       {
         "day": 1,
@@ -182,6 +185,7 @@
     "tags": ["精品", "四分化", "身材比例"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-24，体脂率 20-26%，健身经验 3-12 个月",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -245,6 +249,7 @@
     "tags": ["全身塑形", "循环训练", "初级"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-24，体脂率 20-26%，健身经验 3-12 个月",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -308,6 +313,7 @@
     "tags": ["臀腿塑形", "四分化", "蜜桃臀"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 17-23，体脂率 22-28%，希望塑形臀腿",
+    "gender": "female",
     "days": [
       {
         "day": 1,
@@ -371,6 +377,7 @@
     "tags": ["精品", "五分化", "线条雕刻"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 18-24，体脂率 18-24%，健身经验 1-2 年",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -445,6 +452,7 @@
     "tags": ["全身塑形", "中级", "超级组"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-24，体脂率 18-24%，健身经验 1-2 年",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -508,6 +516,7 @@
     "tags": ["精品", "精英塑形", "超级组"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 19-25，体脂率 15-22%，健身经验 2 年以上",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -582,6 +591,7 @@
     "tags": ["精品", "高级", "肌耐力"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 19-25，体脂率 16-22%，健身经验 2 年以上",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -645,6 +655,7 @@
     "tags": ["精品", "腹肌雕刻", "核心专项"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-24，体脂率 16-24%，追求清晰腹肌线条",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -713,6 +724,7 @@
     "tags": ["精品", "六分化塑形", "线条雕刻"],
     "recommendedFrequency": 6,
     "suitableFor": "BMI 18-24，体脂率 16-22%，健身经验 1-2 年",
+    "gender": "all",
     "days": [
       {
         "day": 1,

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
@@ -1415,9 +1416,28 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
         ? ImageSource.gallery
         : ImageSource.camera;
     final picker = ImagePicker();
-    final xfile = await picker.pickImage(source: source, imageQuality: 85);
-    if (xfile == null) return;
-    setState(() => _coverImagePath = xfile.path);
+    try {
+      final xfile = await picker.pickImage(source: source, imageQuality: 85);
+      if (xfile == null || !mounted) return;
+
+      // 将选中的图片复制到应用文档目录，避免使用系统临时目录导致重启后失效
+      final dir = await getApplicationDocumentsDirectory();
+      final coverDir = Directory('${dir.path}/custom_exercise_covers');
+      if (!coverDir.existsSync()) {
+        coverDir.createSync(recursive: true);
+      }
+      final ext = xfile.path.contains('.') ? xfile.path.split('.').last : 'jpg';
+      final safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].contains(ext) ? ext : 'jpg';
+      final target = '${coverDir.path}/cover_${DateTime.now().millisecondsSinceEpoch}.$safeExt';
+      await File(xfile.path).copy(target);
+      if (!mounted) return;
+      setState(() => _coverImagePath = target);
+      FitToast.success(context, '封面图片已选择');
+    } catch (e) {
+      if (mounted) {
+        FitToast.error(context, '选择图片失败，请检查相册权限后重试');
+      }
+    }
   }
 
   void _onSave() {
@@ -1607,8 +1627,14 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                 fit: StackFit.expand,
                 children: [
                   if (hasCustom)
-                    Image.file(File(_coverImagePath!),
-                        fit: BoxFit.cover)
+                    Image.file(
+                      File(_coverImagePath!),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => DefaultExerciseCover(
+                        category: _selectedCategory,
+                        size: 160,
+                      ),
+                    )
                   else
                     DefaultExerciseCover(
                       category: _selectedCategory,

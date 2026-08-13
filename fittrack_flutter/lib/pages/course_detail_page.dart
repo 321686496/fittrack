@@ -4,6 +4,7 @@ import '../themes/app_themes.dart';
 import '../data/course_content.dart';
 import '../data/tutorial_content.dart';
 import '../services/points_service.dart';
+import '../utils/art_assets.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/unlock_panel.dart';
 import '../widgets/page_header.dart';
@@ -81,13 +82,23 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               Container(
                 width: 64,
                 height: 64,
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: course.coverColors),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Center(
-                  child: Text(course.coverEmoji,
-                      style: const TextStyle(fontSize: 32)),
+                child: Image.asset(
+                  courseArtAsset(course.id),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: course.coverColors),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Text(course.coverEmoji,
+                          style: const TextStyle(fontSize: 32)),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),

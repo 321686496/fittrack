@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../services/recommendation_service.dart';
 import '../themes/app_themes.dart';
+import '../utils/art_assets.dart';
 
 class RecommendationBanner extends StatefulWidget {
   const RecommendationBanner({super.key});
@@ -104,6 +105,34 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
         ),
         child: Stack(
           children: [
+            // 美术背景（缺失时回退到渐变）
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  bannerArtAsset(banner.type) ?? '',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            // 左侧压暗，保证文字可读
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withOpacity(0.55),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.65],
+                  ),
+                ),
+              ),
+            ),
             // 装饰几何：右上圆形光晕
             Positioned(
               top: -20,
@@ -211,6 +240,33 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
         ),
         child: Stack(
           children: [
+            // 美术背景（缺失时回退到渐变）
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  bannerArtAsset('invitation') ?? '',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withOpacity(0.5),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.7],
+                  ),
+                ),
+              ),
+            ),
             // 装饰几何：右上圆形光晕
             Positioned(
               top: -20,

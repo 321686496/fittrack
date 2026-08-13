@@ -179,34 +179,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showAbout() {
-    InfoDialog.show(
-      context,
-      title: 'LiftTrack',
-      content: '版本 1.0.0\n\n'
-          '一款简洁高效的健身训练助手，帮助你：\n\n'
-          '• 制定个性化训练计划\n'
-          '• 记录每次训练数据\n'
-          '• 追踪身体数据变化\n'
-          '• 统计训练成就\n\n'
-          '所有数据仅保存在本地设备，不会上传至任何服务器。',
-      actionText: '知道了',
-      icon: Icons.fitness_center,
-    );
+    context.push('/about');
   }
 
   void _showPrivacyInfo() {
-    InfoDialog.show(
-      context,
-      title: '隐私设置',
-      content:
-        'LiftTrack 尊重您的隐私：\n\n'
-        '• 所有数据仅存储在本地设备\n'
-        '• 不会上传任何个人信息到服务器\n'
-        '• 通知权限仅用于训练提醒\n'
-        '• 振动权限仅用于训练结束时提醒\n'
-        '• 您可以随时在此清除所有数据',
-      icon: Icons.privacy_tip_outlined,
-    );
+    context.push('/privacy-security');
   }
 
   // ============================================================
@@ -649,7 +626,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const DividerWidget(indent: 44),
           // v1 获客留存版：隐藏"兑换 Pro"入口（Pro/兑换码体系已编码但 v1 不启用）
           // 后续版本可通过条件判断恢复入口：if (Storage.isPremiumNotifier.value == false) ...
-          _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私设置', '查看隐私与权限说明', _showPrivacyInfo),
+          _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私与安全', '查看隐私保护与权限说明', _showPrivacyInfo),
           const DividerWidget(indent: 44),
           _buildMenuTile(colors, Icons.description_outlined, '隐私政策', '查看完整隐私政策文本', () {
             context.push('/privacy-full');

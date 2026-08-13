@@ -1,5 +1,9 @@
 ﻿import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:zxing2/qrcode.dart';
 import '../data/storage.dart';
 import '../services/share_code_service.dart';
 import '../themes/app_themes.dart';
@@ -15,6 +19,8 @@ class ScanImportPage extends StatefulWidget {
 class _ScanImportPageState extends State<ScanImportPage> {
   final MobileScannerController _controller = MobileScannerController();
   bool _processed = false;
+  bool _cameraFailed = false;
+  bool _picking = false;
 
   @override
   void dispose() {
@@ -47,28 +53,60 @@ class _ScanImportPageState extends State<ScanImportPage> {
           Expanded(
             child: Stack(
               children: [
-                MobileScanner(
-                  controller: _controller,
-                  onDetect: _onDetect,
-                ),
-                Center(
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white70, width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                if (_cameraFailed)
+                  _buildCameraFallback()
+                else
+                  MobileScanner(
+                    controller: _controller,
+                    onDetect: _onDetect,
+                    errorBuilder: (context, error, child) => _buildCameraFallback(),
                   ),
+                Center(
+                  child: _cameraFailed
+                      ? const SizedBox.shrink()
+                      : Container(
+                          width: 250,
+                          height: 250,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white70, width: 2),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
                 ),
                 Positioned(
-                  bottom: 40,
+                  bottom: 88,
                   left: 0,
                   right: 0,
-                  child: Text(
-                    '将二维码对准框内即可自动扫描',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                  child: _cameraFailed
+                      ? const SizedBox.shrink()
+                      : Text(
+                          '将二维码对准框内即可自动扫描',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                        ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 24,
+                  child: Center(
+                    child: ElevatedButton.icon(
+                      onPressed: _picking ? null : _pickQrImage,
+                      icon: _picking
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.photo_library_outlined, size: 18),
+                      label: Text(_picking ? '识别中...' : '从相册选择二维码图片'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black54,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -79,16 +117,113 @@ class _ScanImportPageState extends State<ScanImportPage> {
     );
   }
 
-  void _onDetect(BarcodeCapture capture) {
+  /// 相机不可用（无权限 / 平台不支持）时的兜底引导
+  Widget _buildCameraFallback() {
+    return Container(
+      color: const Color(0xFF111111),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.no_photography_outlined, size: 56, color: Colors.white38),
+          const SizedBox(height: 16),
+          const Text(
+            '无法启动相机',
+            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '请检查相机权限，或使用下方"从相册选择二维码图片"导入',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () async {
+              setState(() => _cameraFailed = false);
+              try {
+                await _controller.start();
+              } catch (_) {
+                if (mounted) setState(() => _cameraFailed = true);
+              }
+            },
+            icon: const Icon(Icons.refresh, size: 18),
+            label: const Text('重试相机'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white38),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 从相册选择二维码图片并解析（纯 Dart 解码，兼容不支持摄像头的平台）
+  Future<void> _pickQrImage() async {
+    if (_picking) return;
+    setState(() => _picking = true);
+    try {
+      final picker = ImagePicker();
+      final xfile = await picker.pickImage(source: ImageSource.gallery);
+      if (xfile == null || !mounted) return;
+
+      final bytes = await xfile.readAsBytes();
+      final rawText = await _decodeQrFromBytes(bytes);
+      if (rawText == null || rawText.isEmpty) {
+        if (mounted) FitToast.error(context, '未在图片中识别到二维码，请换一张清晰的图片');
+        return;
+      }
+      _handleDecoded(rawText);
+    } catch (e) {
+      if (mounted) FitToast.error(context, '图片解析失败，请重试');
+    } finally {
+      if (mounted) setState(() => _picking = false);
+    }
+  }
+
+  /// 将图片字节解码为像素并识别二维码
+  Future<String?> _decodeQrFromBytes(Uint8List bytes) async {
+    try {
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final width = image.width;
+      final height = image.height;
+      if (width <= 0 || height <= 0) return null;
+
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      if (byteData == null) return null;
+
+      final buffer = byteData.buffer.asUint8List();
+      final pixels = Int32List(width * height);
+      for (var i = 0; i < pixels.length; i++) {
+        final o = i * 4;
+        final r = buffer[o];
+        final g = buffer[o + 1];
+        final b = buffer[o + 2];
+        pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+      }
+
+      final source = RGBLuminanceSource(width, height, pixels);
+      final bitmap = BinaryBitmap(GlobalHistogramBinarizer(source));
+      final reader = QRCodeReader();
+      final result = reader.decode(bitmap);
+      return result.text;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 统一处理解析到的分享串（相机扫码 / 相册图片共用）
+  void _handleDecoded(String raw) {
     if (_processed) return;
-    final barcodes = capture.barcodes;
-    if (barcodes.isEmpty) return;
-
-    final raw = barcodes.first.rawValue;
-    if (raw == null || raw.isEmpty) return;
-
     _processed = true;
-    _controller.stop();
+    try {
+      _controller.stop();
+    } catch (_) {}
 
     final result = ShareCodeService.instance.importFromString(raw);
     if (!mounted) return;
@@ -114,8 +249,24 @@ class _ScanImportPageState extends State<ScanImportPage> {
       }
       FitToast.error(context, errorMsg);
       setState(() => _processed = false);
-      _controller.start();
+      try {
+        _controller.start();
+      } catch (_) {}
     }
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_processed) return;
+    final barcodes = capture.barcodes;
+    if (barcodes.isEmpty) return;
+
+    final raw = barcodes.first.rawValue;
+    if (raw == null || raw.isEmpty) return;
+
+    _processed = true;
+    _controller.stop();
+
+    _handleDecoded(raw);
   }
 
   void _doImport(Map<String, dynamic> planData, ImportWarning warning, LiftTrackColors ft) {

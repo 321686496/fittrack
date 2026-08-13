@@ -15,6 +15,7 @@
     "tags": ["力量入门", "5x5", "三大项"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 18-26，体脂率 16-26%，力量训练新手",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -67,6 +68,7 @@
     "tags": ["精品", "全身力量", "技术指导"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-26，体脂率 16-26%，力量训练新手",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -130,6 +132,7 @@
     "tags": ["力量进阶", "三分化", "推拉腿"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 19-26，体脂率 14-24%，健身经验 3-12 个月",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -182,6 +185,7 @@
     "tags": ["精品", "全身力量", "爆发力"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 19-26，体脂率 14-24%，健身经验 3-12 个月",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -245,6 +249,7 @@
     "tags": ["中级力量", "四分化", "PR突破"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 20-27，体脂率 12-22%，健身经验 1-2 年",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -308,6 +313,7 @@
     "tags": ["精品", "5/3/1", "周期化"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 20-27，体脂率 12-22%，健身经验 1-2 年",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -360,6 +366,7 @@
     "tags": ["精品", "力量举", "德州法"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 20-27，体脂率 12-22%，健身经验 1-2 年",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -423,6 +430,7 @@
     "tags": ["精品", "5/3/1 BBB", "Wendler周期"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 20-27，体脂率 12-22%，健身经验 1-2 年，已耗尽线性进阶",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -486,6 +494,7 @@
     "tags": ["精品", "Starting Strength", "3×5线性进阶"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 18-26，体脂率 16-26%，零基础力量新手",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -535,6 +544,7 @@
     "tags": ["精品", "Texas Method", "容量-恢复-强度"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 20-27，体脂率 12-22%，健身经验 1-2 年，已耗尽 5×5 线性进阶",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -584,6 +594,7 @@
     "tags": ["精品", "GZCLP", "三层结构"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 19-26，体脂率 14-22%，健身经验 6-18 个月",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -643,6 +654,7 @@
     "tags": ["精品", "Westside Conjugate", "ME/DE分离"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 21-28，体脂率 10-20%，健身经验 2 年以上，技术扎实",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -705,6 +717,7 @@
     "tags": ["精品", "备赛", "峰值训练"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 21-28，体脂率 10-20%，健身经验 2 年以上",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -757,6 +770,7 @@
     "tags": ["精品", "精英", "Block周期"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 21-28，体脂率 10-20%，健身经验 3 年以上",
+    "gender": "male",
     "days": [
       {
         "day": 1,
