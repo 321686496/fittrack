@@ -498,7 +498,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () => context.push('/plan'),
+                                onPressed: () => context.go('/plan'),
                                 child: const Text('去训练'),
                               ),
                             ),

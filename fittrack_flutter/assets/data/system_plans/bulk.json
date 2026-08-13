@@ -15,6 +15,7 @@
     "tags": ["新手友好", "三分化", "基础动作"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 18-24，体脂率 18-25%，健身经验 0-6 个月",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -67,6 +68,7 @@
     "tags": ["精品", "全身训练", "新手友好"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-24，体脂率 18-25%，希望全身均衡发展",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -130,6 +132,7 @@
     "tags": ["新手进阶", "三分化", "容量提升"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 18-25，体脂率 16-24%，健身经验 1-3 个月",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -182,6 +185,7 @@
     "tags": ["精品", "四分化", "进阶训练"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 19-25，体脂率 15-22%，健身经验 3-12 个月",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -245,6 +249,7 @@
     "tags": ["全身训练", "初级", "复合动作"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-25，体脂率 16-23%，健身经验 3-6 个月",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -308,6 +313,7 @@
     "tags": ["精品", "进阶", "肌肥大"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -375,6 +381,7 @@
     "tags": ["五分化", "中级", "高容量"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -449,6 +456,7 @@
     "tags": ["精品", "高容量", "超级组"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -528,6 +536,7 @@
     "tags": ["高级", "力量周期", "五分化"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 21-27，体脂率 12-20%，健身经验 2 年以上",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -602,6 +611,7 @@
     "tags": ["精品", "精英", "力量举融合"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 21-28，体脂率 12-20%，健身经验 3 年以上",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -669,6 +679,7 @@
     "tags": ["六分化", "中级", "弱项强化"],
     "recommendedFrequency": 6,
     "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -760,6 +771,7 @@
     "tags": ["精品", "高级六分化", "超级组"],
     "recommendedFrequency": 6,
     "suitableFor": "BMI 21-27，体脂率 12-20%，健身经验 2 年以上",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -853,6 +865,7 @@
     "tags": ["精品", "手臂专项", "超级组"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年，手臂薄弱者",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -930,6 +943,7 @@
     "tags": ["精品", "背部专项", "倒三角"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年，背部薄弱者",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -997,6 +1011,7 @@
     "tags": ["精品", "腿部专项", "股四头肌/腘绳肌分离"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 20-26，体脂率 14-22%，健身经验 1-2 年，腿部薄弱者",
+    "gender": "male",
     "days": [
       {
         "day": 1,
@@ -1063,6 +1078,7 @@
     "tags": ["上班族", "倒三角", "上肢增肌", "四分化"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 18-26，体脂率 16-24%，久坐办公人群希望改善上肢体态",
+    "gender": "male",
     "days": [
       {
         "day": 1,

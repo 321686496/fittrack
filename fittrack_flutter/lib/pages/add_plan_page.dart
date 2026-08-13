@@ -6,6 +6,7 @@ import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
 import '../services/rest_preference_service.dart';
+import '../utils/art_assets.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/exercise_picker_sheet.dart';
 
@@ -55,6 +56,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   String _selectedType = '三分化';
   String _selectedDifficulty = '初级';
+  String _selectedGender = 'all';
   List<Map<String, dynamic>> _days = [];
   Map<String, dynamic>? _editingPlan;
 
@@ -64,7 +66,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
   @override
   void initState() {
     super.initState();
-    _applyQuickSetup(_selectedType);
+    // 新建计划默认为空：不预填模板数据，由用户主动选择模板或手动添加训练日
+    _selectedType = '自定义';
+    _days = [];
     if (widget.editPlanId != null) {
       _loadExistingPlan(widget.editPlanId!);
     }
@@ -108,6 +112,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
       _nameController.text = plan['name'] as String? ?? '';
       _selectedType = plan['type'] as String? ?? '三分化';
       _selectedDifficulty = plan['difficulty'] as String? ?? '初级';
+      _selectedGender = plan['gender'] as String? ?? 'all';
       _totalWeeksController.text = '${plan['totalWeeks'] ?? 8}';
       _restTimeController.text = '${plan['defaultRestTime'] ?? 90}';
       final days = plan['days'] as List?;
@@ -119,9 +124,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   void _applyQuickSetup(String type) {
     if (type == '自定义') {
-      _days = [
-        {'day': 1, 'label': '训练日1', 'muscle': '', 'exercises': <Map<String, dynamic>>[]},
-      ];
+      // 自定义模式保持空白，由用户手动添加训练日
+      _days = [];
     } else {
       final template = _quickSetup[type];
       if (template != null) {
@@ -292,6 +296,10 @@ class _AddPlanPageState extends State<AddPlanPage> {
       FitToast.info(context, '请输入计划名称');
       return;
     }
+    if (_days.isEmpty) {
+      FitToast.warning(context, '请先添加训练日（右上角「+ 训练日」），或选择训练类型使用模板');
+      return;
+    }
     final totalWeeks = int.tryParse(_totalWeeksController.text) ?? 8;
     final restTime = int.tryParse(_restTimeController.text) ?? 90;
 
@@ -318,6 +326,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
       'type': _selectedType,
       'frequency': frequency,
       'difficulty': _selectedDifficulty,
+      'gender': _selectedGender,
       'totalWeeks': totalWeeks,
       'defaultRestTime': restTime,
       'days': _days,
@@ -433,6 +442,12 @@ class _AddPlanPageState extends State<AddPlanPage> {
             ),
             const SizedBox(height: 16),
 
+            // 适用人群
+            _buildLabel(colors, '适用人群'),
+            const SizedBox(height: 6),
+            _buildGenderSelector(colors),
+            const SizedBox(height: 16),
+
             // 总周数 & 休息时间
             Row(
               children: [
@@ -471,6 +486,34 @@ class _AddPlanPageState extends State<AddPlanPage> {
               ],
             ),
             const SizedBox(height: 8),
+            if (_days.isEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: colors.bgCard,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colors.borderColor),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.event_note_outlined, size: 36, color: colors.textMuted),
+                    const SizedBox(height: 8),
+                    Text(
+                      '还没有训练日',
+                      style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '点击上方「+ 训练日」开始添加，或选择训练类型使用模板快速生成',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             ..._days.asMap().entries.map((entry) {
               final idx = entry.key;
               final day = entry.value;
@@ -525,9 +568,20 @@ class _AddPlanPageState extends State<AddPlanPage> {
         children: [
           Container(
             width: 44, height: 44,
-            decoration: BoxDecoration(color: colors.accentGlow.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-            child: Center(
-              child: Text(plan.coverEmoji, style: const TextStyle(fontSize: 22)),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+            child: Image.asset(
+              goalArtAsset(plan.goal) ?? '',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                decoration: BoxDecoration(
+                  color: colors.accentGlow.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(plan.coverEmoji, style: const TextStyle(fontSize: 22)),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -564,6 +618,41 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   Widget _buildLabel(LiftTrackColors colors, String text) {
     return Text(text, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500));
+  }
+
+  Widget _buildGenderSelector(LiftTrackColors colors) {
+    const options = <Map<String, String>>[
+      {'value': 'all', 'label': '全部人群'},
+      {'value': 'male', 'label': '男性'},
+      {'value': 'female', 'label': '女性'},
+    ];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.map((g) {
+        final value = g['value']!;
+        final selected = _selectedGender == value;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedGender = value),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: selected ? colors.accentGlow.withOpacity(0.15) : colors.bgCard,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: selected ? colors.accentGlow : colors.borderColor),
+            ),
+            child: Text(
+              g['label']!,
+              style: TextStyle(
+                color: selected ? colors.accentGlow : colors.textSecondary,
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
   }
 
   // 历史休息偏好推荐卡片：基于历史训练数据推荐休息时间

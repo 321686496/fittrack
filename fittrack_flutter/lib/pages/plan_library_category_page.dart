@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_unlock_service.dart';
 import '../themes/app_themes.dart';
+import '../utils/art_assets.dart';
 import '../widgets/page_header.dart';
 
 class PlanLibraryCategoryPage extends StatefulWidget {
@@ -18,6 +19,7 @@ class PlanLibraryCategoryPage extends StatefulWidget {
 class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
   String? _selectedDifficulty; // null = 全部
   final Set<String> _selectedTypes = {}; // 空集合 = 全部
+  String? _genderFilter; // null = 全部人群
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +30,11 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
         return false;
       }
       if (_selectedTypes.isNotEmpty && !_selectedTypes.contains(p.trainingType)) {
+        return false;
+      }
+      if (_genderFilter != null &&
+          p.gender != _genderFilter &&
+          p.gender != 'all') {
         return false;
       }
       return true;
@@ -58,6 +65,25 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
                     child: _buildTrainingTypeChips(ft),
                   ),
                 ),
+                // 适用人群筛选
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: _buildGenderChips(ft),
+                  ),
+                ),
+                if (filtered.isEmpty)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: Text(
+                          '当前筛选条件下暂无计划',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
+                      ),
+                    ),
+                  ),
                 // 计划列表
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -134,6 +160,34 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
       }).toList(),
     );
   }
+
+  Widget _buildGenderChips(LiftTrackColors ft) {
+    const options = <Map<String, String?>>[
+      {'value': null, 'label': '全部人群'},
+      {'value': 'male', 'label': '男性'},
+      {'value': 'female', 'label': '女性'},
+    ];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.map((g) {
+        final selected = _genderFilter == g['value'];
+        return ChoiceChip(
+          label: Text(g['label']!),
+          selected: selected,
+          onSelected: (_) {
+            setState(() {
+              _genderFilter = selected ? null : g['value'];
+            });
+          },
+          selectedColor: ft.successColor,
+          labelStyle: TextStyle(
+            color: selected ? Colors.white : ft.textSecondary,
+          ),
+        );
+      }).toList(),
+    );
+  }
 }
 
 class _PlanListCard extends StatelessWidget {
@@ -162,19 +216,29 @@ class _PlanListCard extends StatelessWidget {
             Container(
               width: 60,
               height: 60,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                gradient: LinearGradient(
-                  colors: plan.coverColors
-                      .map((c) => Color(int.parse(c.substring(1), radix: 16) |
-                          0xFF000000))
-                      .toList(),
-                ),
               ),
-              child: Center(
-                child: Text(
-                  plan.coverEmoji,
-                  style: const TextStyle(fontSize: 28),
+              child: Image.asset(
+                goalArtAsset(plan.goal) ?? '',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: plan.coverColors
+                          .map((c) => Color(int.parse(c.substring(1), radix: 16) |
+                              0xFF000000))
+                          .toList(),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      plan.coverEmoji,
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                  ),
                 ),
               ),
             ),

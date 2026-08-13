@@ -206,6 +206,7 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
 
   /// Android: ????? ROM ??????? ROM ???????????
   Future<void> _checkRomAdaptationOnStartup() async {
+    final romService = RomAdaptationService.instance;
     final needsGuidance = await romService.needsRomGuidance();
     if (!needsGuidance) return;
 
@@ -283,6 +284,5 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
       themeMode: ThemeMode.light,
       routerConfig: _router,
     );
-  }
   }
 }

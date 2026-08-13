@@ -50,6 +50,15 @@ const Map<String, String> kTrainingTypeLabelsZh = {
   'hiit': 'HIIT',
 };
 
+/// 适用人群（gender）常量：all=全部人群 / male=男性 / female=女性
+const List<String> kPlanGenders = ['all', 'male', 'female'];
+
+const Map<String, String> kGenderLabelsZh = {
+  'all': '全部人群',
+  'male': '男性',
+  'female': '女性',
+};
+
 /// 按难度的积分价格（精品计划）
 const Map<String, int> kDifficultyPointsCost = {
   'beginner': 100,
@@ -149,6 +158,7 @@ class SystemPlan {
   final List<String> tags;
   final int recommendedFrequency;
   final String suitableFor;
+  final String gender;
   final List<SystemPlanDay> days;
 
   const SystemPlan({
@@ -167,6 +177,7 @@ class SystemPlan {
     required this.tags,
     required this.recommendedFrequency,
     required this.suitableFor,
+    this.gender = 'all',
     required this.days,
   });
 
@@ -191,6 +202,7 @@ class SystemPlan {
           .toList(),
       recommendedFrequency: (json['recommendedFrequency'] as num).toInt(),
       suitableFor: json['suitableFor'] as String? ?? '',
+      gender: json['gender'] as String? ?? 'all',
       days: (json['days'] as List)
           .map((e) => SystemPlanDay.fromJson(e as Map<String, dynamic>))
           .toList(),

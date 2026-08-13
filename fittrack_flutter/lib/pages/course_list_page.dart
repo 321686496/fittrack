@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/course_content.dart';
+import '../utils/art_assets.dart';
 import '../widgets/page_header.dart';
 
 class CourseListPage extends StatelessWidget {
@@ -28,27 +29,58 @@ class CourseListPage extends StatelessWidget {
                         gradient: LinearGradient(colors: c.coverColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Text(c.coverEmoji, style: const TextStyle(fontSize: 48)),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(c.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 4),
-                                  Text(c.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                                  const SizedBox(height: 8),
-                                  Text('${c.chapters.length}章 · ${c.pointsCost}积分', style: const TextStyle(color: Colors.white60, fontSize: 12)),
-                                ],
+                      child: Stack(
+                        children: [
+                          // 课程封面美术（缺失时回退到渐变）
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                courseArtAsset(c.id),
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.black.withOpacity(0.5),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.7],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Text(c.coverEmoji, style: const TextStyle(fontSize: 48)),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(c.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 4),
+                                      Text(c.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                                      const SizedBox(height: 8),
+                                      Text('${c.chapters.length}章 · ${c.pointsCost}积分', style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

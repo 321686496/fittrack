@@ -1,5 +1,6 @@
 import { FlutterEngine, Log } from '@ohos/flutter_ohos';
 import FlutterLocalNotificationsPlugin from 'flutter_local_notifications';
+import ImagePickerPlugin from 'image_picker_ohos';
 import PermissionHandlerPlugin from 'permission_handler_ohos';
 import SharedPreferencesPlugin from 'shared_preferences_ohos';
 import SqflitePlugin from 'sqflite';
@@ -17,6 +18,7 @@ export class GeneratedPluginRegistrant {
   static registerWith(flutterEngine: FlutterEngine) {
     try {
       flutterEngine.getPlugins()?.add(new FlutterLocalNotificationsPlugin());
+      flutterEngine.getPlugins()?.add(new ImagePickerPlugin());
       flutterEngine.getPlugins()?.add(new PermissionHandlerPlugin());
       flutterEngine.getPlugins()?.add(new SharedPreferencesPlugin());
       flutterEngine.getPlugins()?.add(new SqflitePlugin());

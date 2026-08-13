@@ -185,7 +185,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 child: ElevatedButton.icon(
                   onPressed: _sharing ? null : _shareCode,
                   icon: _sharing
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
@@ -854,7 +854,7 @@ class _InvitationPageState extends State<InvitationPage> {
               child: ElevatedButton.icon(
                 onPressed: _recording ? null : _recordReceipt,
                 icon: _recording
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
@@ -1043,7 +1043,7 @@ class _InvitationPageState extends State<InvitationPage> {
                   ),
                 ),
                 child: _activating
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: colors.textPrimary),

@@ -1025,18 +1025,18 @@ class Storage {
     if (hasData()) return null;
 
     final demoPlan = addPlan({
-      'name': '三分化增肌计�?,
-      'type': '三分�?,
-      'frequency': '6�?�?,
+      'name': '三分化增肌计划',
+      'type': '三分化',
+      'frequency': '6天/周',
       'difficulty': '进阶',
       'totalWeeks': 8,
       'week': 4,
-      'badge': '进行�?,
+      'badge': '进行中',
       'days': [
         {
           'day': 1,
-          'label': '胸部 + 三头�?,
-          'muscle': '�?,
+          'label': '胸部 + 三头肌',
+          'muscle': '胸',
           'exercises': [
             {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
             {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
@@ -1046,8 +1046,8 @@ class Storage {
         },
         {
           'day': 2,
-          'label': '背部 + 二头�?,
-          'muscle': '�?,
+          'label': '背部 + 二头肌',
+          'muscle': '背',
           'exercises': [
             {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
             {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
@@ -1060,7 +1060,7 @@ class Storage {
         {
           'day': 3,
           'label': '腿部',
-          'muscle': '�?,
+          'muscle': '腿',
           'exercises': [
             {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
             {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
@@ -1069,24 +1069,24 @@ class Storage {
         {
           'day': 4,
           'label': '肩部 + 核心',
-          'muscle': '�?,
+          'muscle': '肩',
           'exercises': [
             {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-            {'id': 'e12', 'name': '侧平�?, 'sets': 4, 'reps': '12-15', 'restTime': 60},
-            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60�?, 'restTime': 45},
+            {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'restTime': 60},
+            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'restTime': 45},
             {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 45},
           ],
         },
         {
           'day': 5,
           'label': '胸部 + 背部',
-          'muscle': '�?�?,
+          'muscle': '胸/背',
           'exercises': <Map<String, dynamic>>[],
         },
         {
           'day': 6,
           'label': '腿部 + 手臂',
-          'muscle': '�?手臂',
+          'muscle': '腿/手臂',
           'exercises': <Map<String, dynamic>>[],
         },
       ],
@@ -1095,13 +1095,13 @@ class Storage {
     addPlan({
       'name': '新手入门计划',
       'type': '全身训练',
-      'frequency': '3�?�?,
+      'frequency': '3天/周',
       'difficulty': '入门',
       'totalWeeks': 4,
       'week': 4,
       'status': 'done',
       'progress': 100,
-      'badge': '已完�?,
+      'badge': '已完成',
       'days': [
         {
           'day': 1,
@@ -1130,7 +1130,7 @@ class Storage {
           'exercises': [
             {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
             {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30�?, 'restTime': 30},
+            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'restTime': 30},
           ],
         },
       ],

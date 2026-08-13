@@ -60,7 +60,15 @@ dependencies:
   timezone: ^0.9.4
   image_gallery_saver: ^2.0.3
   audioplayers: ^4.0.0
-  image_picker: ^1.0.4
+  # 使用 OpenHarmony 适配版 image_picker（官方 pub.dev 版本无 OHOS 平台实现，
+  # 在 HarmonyOS 设备上 pickImage 会抛 MissingPluginException）
+  image_picker:
+    git:
+      url: https://gitcode.com/CPF-Flutter/flutter_packages.git
+      path: packages/image_picker/image_picker
+      ref: image_picker-v1.1.2-ohos-1.0.0
+  # 纯 Dart 二维码解码（扫码兜底：从相册选择二维码图片导入，兼容 OHOS）
+  zxing2: 0.2.0
   fl_chart: ^0.61.0
 #  permission_handler: ^11.0.1
 #  permission_handler_ohos: ^0.0.8

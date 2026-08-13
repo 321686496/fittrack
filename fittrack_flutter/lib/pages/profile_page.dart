@@ -1227,9 +1227,9 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
               final action = m['action'] as String? ?? '';
 
               if (action == 'privacy') {
-                _showPrivacyInfo();
+                context.push('/privacy-security');
               } else if (action == 'help') {
-                _showHelpInfo();
+                context.push('/help-feedback');
               } else if (page.isNotEmpty) {
                 switch (page) {
                   case 'gym-card':
@@ -1265,20 +1265,6 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  void _showPrivacyInfo() {
-    InfoDialog.show(
-      context,
-      title: '隐私与安全',
-      content:
-        'LiftTrack 尊重您的隐私：\n\n'
-        '• 所有数据仅存储在本地设备\n'
-        '• 不会上传任何个人信息到服务器\n'
-        '• 通知权限仅用于训练提醒\n'
-        '• 您可以随时在设置中清除所有数据',
-      icon: Icons.security_outlined,
-    );
-  }
-
   TimeOfDay _parseTimeOfDay(String time) {
     final parts = time.split(':');
     return TimeOfDay(
@@ -1287,24 +1273,6 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     );
   }
 
-  void _showHelpInfo() {
-    InfoDialog.show(
-      context,
-      title: '帮助与反馈',
-      content:
-        '使用帮助：\n\n'
-        '1. 创建计划：在"计划"页面点击 + 号创建训练计划\n'
-        '2. 开始训练：选择计划后点击"开始训练"按钮\n'
-        '3. 休息提醒：训练中休息倒计时结束后会振动并通知提醒\n'
-        '4. 自定义设置：在"设置"中调整默认休息时间、组数等\n\n'
-        '常见问题：\n\n'
-        '• 休息提醒未收到？请检查通知权限是否已开启\n'
-        '• 后台休息提醒？从后台切回应用时会立即提醒\n'
-        '• 数据丢失？数据保存在本地，卸载应用会清除数据\n\n'
-        '如有问题或建议，欢迎反馈！',
-      icon: Icons.help_outline,
-    );
-  }
 }
 
 /// 身体数据字段趋势方向

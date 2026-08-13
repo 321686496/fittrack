@@ -15,6 +15,7 @@
     "tags": ["新手友好", "HIIT", "燃脂"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 24-30，体脂率 25-35%，希望减脂塑形",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -67,6 +68,7 @@
     "tags": ["精品", "全身燃脂", "新手友好"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 23-30，体脂率 25-32%，健身经验 0-6 个月",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -130,6 +132,7 @@
     "tags": ["三分化", "新手友好", "保留肌肉"],
     "recommendedFrequency": 3,
     "suitableFor": "BMI 23-29，体脂率 24-32%，健身经验 0-6 个月",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -182,6 +185,7 @@
     "tags": ["精品", "HIIT", "Tabata"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 23-29，体脂率 22-30%，健身经验 3-12 个月",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -245,6 +249,7 @@
     "tags": ["循环训练", "全身减脂", "初级"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 23-29，体脂率 22-30%，健身经验 3-12 个月",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -308,6 +313,7 @@
     "tags": ["精品", "四分化", "力量减脂"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 23-28，体脂率 22-28%，健身经验 6-12 个月",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -371,6 +377,7 @@
     "tags": ["精品", "Tabata", "EPOC"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 22-28，体脂率 20-28%，健身经验 1-2 年",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -434,6 +441,7 @@
     "tags": ["复合动作", "中级", "代谢训练"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 22-28，体脂率 20-28%，健身经验 1-2 年",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -497,6 +505,7 @@
     "tags": ["精品", "极限燃脂", "CrossFit"],
     "recommendedFrequency": 4,
     "suitableFor": "BMI 21-27，体脂率 18-25%，健身经验 2 年以上",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -560,6 +569,7 @@
     "tags": ["高级", "减脂塑形", "保留肌肉"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 21-27，体脂率 18-25%，健身经验 2 年以上",
+    "gender": "all",
     "days": [
       {
         "day": 1,
@@ -623,6 +633,7 @@
     "tags": ["精品", "极限减脂", "力量+有氧"],
     "recommendedFrequency": 5,
     "suitableFor": "BMI 22-28，体脂率 20-28%，健身经验 1-2 年，减脂平台期",
+    "gender": "all",
     "days": [
       {
         "day": 1,

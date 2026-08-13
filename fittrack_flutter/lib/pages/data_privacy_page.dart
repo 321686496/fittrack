@@ -12,22 +12,13 @@ class DataPrivacyPage extends StatefulWidget {
 }
 
 class _DataPrivacyPageState extends State<DataPrivacyPage> {
-  bool _anonStatsOptIn = false;
   bool _pushEnabled = true;
 
   @override
   void initState() {
     super.initState();
     final s = Storage.getSettings();
-    _anonStatsOptIn = s['anonStatsOptIn'] ?? false;
     _pushEnabled = s['smartPushEnabled'] ?? true;
-  }
-
-  Future<void> _toggleAnonStats(bool v) async {
-    setState(() => _anonStatsOptIn = v);
-    final s = Storage.getSettings();
-    s['anonStatsOptIn'] = v;
-    Storage.saveSettings(s);
   }
 
   Future<void> _togglePush(bool v) async {
@@ -95,14 +86,6 @@ class _DataPrivacyPageState extends State<DataPrivacyPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _section('数据授权'),
-          SwitchListTile(
-            title: const Text('参与全国训练排行榜'),
-            subtitle: const Text('仅上传脱敏后的总训练数据（日期、总重量、总时长），不包含任何个人信息和训练动作细节'),
-            value: _anonStatsOptIn,
-            onChanged: _toggleAnonStats,
-          ),
-          const Divider(),
           _section('通知'),
           SwitchListTile(
             title: const Text('智能推送训练提醒'),
@@ -123,15 +106,6 @@ class _DataPrivacyPageState extends State<DataPrivacyPage> {
             title: const Text('清除全部数据', style: TextStyle(color: Colors.red)),
             subtitle: const Text('不可恢复，请谨慎操作'),
             onTap: _showClearDataDialog,
-          ),
-          const Divider(),
-          _section('账号'),
-          ListTile(
-            leading: const Icon(Icons.person_off_outlined),
-            title: const Text('账号注销'),
-            subtitle: const Text('敬请期待（Phase 3 接入服务器后启用）'),
-            enabled: false,
-            trailing: const Icon(Icons.chevron_right),
           ),
         ],
       ),

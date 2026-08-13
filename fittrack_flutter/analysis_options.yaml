@@ -9,6 +9,12 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # 第三方 vendored 插件（Linux 通知插件与当前插件接口版本不匹配，
+    # 仅影响 Linux 目标；排除后不再干扰主工程静态检查）
+    - local_packages/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
