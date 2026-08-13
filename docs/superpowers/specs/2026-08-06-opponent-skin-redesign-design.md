@@ -25,10 +25,10 @@
 | Seedream (GenerateImage) | ✅ 可用 | 输出 1920×1920 JPG，需后处理抠图 |
 | Seedance (GenerateVideo) | ❌ 工具集中不可用 | 本会话无法调用，视频生成待后续手动执行 |
 
-由于 Seedream 输出 JPG（无 alpha 通道），采用「洋红色键背景 + Python 色键抠图」方案：
-1. 生成时在 prompt 中要求纯洋红 (#FF00FF) 背景
+由于 Seedream 输出 JPG（无 alpha 通道），采用「纯色键背景 + Python 色键抠图」方案：
+1. 生成时在 prompt 中要求纯色背景（实测为红/玫红/洋红系，非纯 #FF00FF）
 2. 用 [scripts/cutout_opponent_sprites.py](../../../scripts/cutout_opponent_sprites.py) 做 chroma key 抠图
-3. 算法：`magenta_score = (R-G)+(B-G)`，硬背景 (>150) 全透明，软过渡 (80-150) 抗锯齿，边缘绿色去污染
+3. 算法：四角采样取中位数背景色 → 按到背景色的欧氏距离生成软过渡 alpha → 半透明边缘反预乘去污 + 邻近去饱和 → alpha 轻微腐蚀去红边
 4. 输出 512×512 RGBA PNG，覆盖旧素材（旧素材自动备份至 `_backup_old/`）
 
 ## 4. 4 个皮肤的新设定
@@ -114,16 +114,17 @@ fittrack_flutter/assets/opponent/
 
 ## 6. 抠图处理流程
 
-1. **生成阶段**：Seedream 生成 1920×1920 JPG，背景为纯洋红 (#FF00FF)
+1. **生成阶段**：Seedream 生成 1920×1920 JPG，背景为纯色（红/玫红/洋红系）
    - prompt 显式要求 "solid pure magenta (#FF00FF) flat fill, fully saturated, no gradient, no texture - chroma key background for cutout"
-   - 实测背景像素 R∈[232,255], G∈[60,95], B∈[170,245]，有渐变但均在洋红色域
+   - 实测背景像素 R∈[199,254], G∈[16,100], B∈[84,233]，有渐变但均在红/玫红/洋红色域
 2. **抠图阶段**：[scripts/cutout_opponent_sprites.py](../../../scripts/cutout_opponent_scripts.py) 用 numpy+Pillow 处理
-   - `magenta_score = (R-G) + (B-G)` 度量洋红程度
-   - 硬背景 (>150 且 R/B>150) → alpha=0
-   - 软过渡 (80-150) → alpha 线性渐变（抗锯齿）
-   - 边缘像素 G 通道减半（绿色去污染，去除洋红溢出）
+   - 四角区域取中位数颜色作为背景色（每张独立检测，抗渐变/色偏）
+   - 按到背景色的欧氏距离生成 alpha：容差内全透明，容差-羽化带线性过渡
+   - 半透明边缘反预乘恢复前景色（覆盖率足够时），低覆盖率像素完全去饱和
+   - 完全不透明但贴近背景的像素按距离去饱和（清除残余红色描边）
+   - alpha 做 1-2 像素腐蚀，彻底移除最外圈背景残留
    - LANCZOS 重采样至 512×512
-3. **验证**：12 张 PNG 透明占比 70-95%（面部 70-83% / 服饰 80-85% / 道具 87-95%），符合预期
+3. **验证**：12 张 PNG 透明占比 70-93%（面部 70-83% / 服饰 76-86% / 道具 82-93%），边界品红残留率从 30-60% 降至约 0%，符合预期
 
 ## 7. 代码改动清单
 
