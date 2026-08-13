@@ -5,6 +5,7 @@ import '../data/tutorial_content.dart';
 import 'plan_recommendation_service.dart';
 import '../data/system_plan_library.dart';
 import 'invitation_service.dart';
+import '../utils/gender_filter.dart';
 
 class BannerItem {
   final String type; // teaching / premium / invitation / achievement
@@ -67,7 +68,10 @@ class RecommendationService {
     final items = <BannerItem>[];
 
     // 1. 教学推荐（按目标筛选）
-    final tutorials = TutorialLibrary.getBasic().where((t) => t.goal == goal).take(3).toList();
+    final tutorials = TutorialLibrary.getBasic()
+        .where((t) => t.goal == goal && genderMatchesUser(t.gender))
+        .take(3)
+        .toList();
     for (final t in tutorials) {
       items.add(BannerItem(
         type: 'teaching',

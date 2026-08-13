@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
 import '../data/storage.dart';
 import '../utils/platform_utils.dart';
 
@@ -11,7 +14,7 @@ class SmartPushService {
   static const int _notificationId = 2001;
 
   Future<void> init() async {
-    // Schedule daily 20:00 check (uses Android zonedSchedule or OHOS reminder)
+    // 调度每日 20:00 检查（Android/iOS 本地定时；OHOS 依赖前台触发）
     await scheduleDailyCheck();
   }
 
@@ -38,9 +41,90 @@ class SmartPushService {
   }
 
   Future<void> scheduleDailyCheck() async {
-    // For simplicity in Phase 2: rely on app foreground to trigger check.
-    // Real scheduling would use Android AlarmManager or OHOS reminder.
-    // Implementation: hook into app lifecycle resume event.
+    // 每天 20:00 推送一次"今日未训练"提醒：
+    // - 开关关闭 / 7 天窗口已满 / 今天已训练 → 取消调度
+    // - 一次性调度（不每日重复），App 每次启动/回前台/训练完成时重新评估下一天，
+    //   从而保持"7 天最多 2 次"限频语义
+    try {
+      final s = Storage.getSettings();
+      final enabled = s['smartPushEnabled'] ?? true;
+      if (!enabled) {
+        await _cancelScheduled();
+        return;
+      }
+      if (isOhos) {
+        // OHOS：原生提醒通道与每日训练提醒共用，避免冲突，保留前台/训练完成触发
+        return;
+      }
+      if (_trainedToday(Storage.getRecords())) {
+        await _cancelScheduled();
+        return;
+      }
+      // 7 天窗口已满或今天已推送 → 取消本次调度
+      if (!shouldPushNow()) {
+        await _cancelScheduled();
+        return;
+      }
+
+      final now = DateTime.now();
+      var target = DateTime(now.year, now.month, now.day, 20, 0);
+      final lastPush = s['lastPushDate'] as String? ?? '';
+      if (!now.isBefore(target) || lastPush == Storage.getTodayStr()) {
+        target = target.add(const Duration(days: 1));
+      }
+      await _scheduleAt(target, '今天还没有训练，来一组保持节奏！');
+    } catch (e) {
+      debugPrint('[SmartPush] scheduleDailyCheck error: $e');
+    }
+  }
+
+  bool _trainedToday(List<Map<String, dynamic>> records) {
+    final now = DateTime.now();
+    final todayMidnight =
+        DateTime(now.year, now.month, now.day);
+    return records.any((r) {
+      final ts = r['date'] as int? ?? 0;
+      return ts >= todayMidnight.millisecondsSinceEpoch;
+    });
+  }
+
+  /// Android/iOS：调度一次 20:00 提醒（inexact，兼容无精确闹钟权限）
+  Future<void> _scheduleAt(DateTime target, String message) async {
+    final plugin = FlutterLocalNotificationsPlugin();
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'smart_push_channel',
+        '智能训练提醒',
+        channelDescription: '每日 20:00 的智能训练提醒',
+        importance: Importance.defaultImportance,
+      ),
+      iOS: DarwinNotificationDetails(),
+    );
+    final scheduled = tz.TZDateTime.from(target, tz.local);
+    try {
+      await plugin.zonedSchedule(
+        _notificationId,
+        'LiftTrack 提醒',
+        message,
+        scheduled,
+        details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      debugPrint('[SmartPush] scheduled at $target');
+    } on PlatformException {
+      debugPrint('[SmartPush] schedule failed, skip');
+    }
+  }
+
+  Future<void> _cancelScheduled() async {
+    try {
+      final plugin = FlutterLocalNotificationsPlugin();
+      await plugin.cancel(_notificationId);
+    } catch (e) {
+      debugPrint('[SmartPush] cancel scheduled error: $e');
+    }
   }
 
   Future<void> maybePushNow() async {
@@ -126,6 +210,8 @@ class SmartPushService {
     final s = Storage.getSettings();
     s['lastPushDate'] = Storage.getTodayStr();
     await Storage.saveSettings(s);
+    // 训练完成后重新评估每日调度（今天已训练 → 取消 20:00 提醒）
+    await scheduleDailyCheck();
   }
 }
 

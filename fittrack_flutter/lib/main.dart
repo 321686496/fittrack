@@ -171,6 +171,8 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
       // 应用回到前台时触发智能推送检查（fire-and-forget，
       // maybePushNow 内部已处理所有失败路径）。
       SmartPushService.instance.maybePushNow();
+      // 回到前台时重新评估每日 20:00 智能提醒调度
+      SmartPushService.instance.scheduleDailyCheck();
       // 回到前台时检查健身卡到期提醒（同日只推一次）
       GymCardReminderService.instance.checkAndPush();
       // 回到前台时重新调度每日训练提醒（防止系统杀后台后调度丢失）

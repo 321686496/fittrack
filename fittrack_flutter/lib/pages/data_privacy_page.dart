@@ -61,7 +61,7 @@ class _DataPrivacyPageState extends State<DataPrivacyPage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(ctx, null), child: const Text('取消')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, controller.text == '删除'),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -70,12 +70,18 @@ class _DataPrivacyPageState extends State<DataPrivacyPage> {
         ],
       ),
     );
-    if (result == true) {
-      await Storage.clearAll();
-      if (mounted) {
-        app_router.onThemeChanged?.call(Storage.getSettings()['theme'] ?? 'vitality-sport');
-        context.go('/splash');
+    if (result != true) {
+      // 输入不是"删除"时明确提示，而不是静默退出
+      if (mounted && result == false) {
+        FitToast.error(context, '请输入"删除"两个字以确认清除');
       }
+      return;
+    }
+    await Storage.clearAll();
+    if (mounted) {
+      FitToast.success(context, '全部数据已清除');
+      app_router.onThemeChanged?.call(Storage.getSettings()['theme'] ?? 'vitality-sport');
+      context.go('/splash');
     }
   }
 

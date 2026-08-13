@@ -5,6 +5,7 @@ import '../data/storage.dart';
 import '../data/tutorial_content.dart';
 import '../services/recommendation_service.dart';
 import '../themes/app_themes.dart';
+import '../utils/gender_filter.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tab_refresh_mixin.dart';
@@ -340,7 +341,9 @@ class _TutorialListPageState extends State<TutorialListPage>
     required String subtitle,
     required int take,
   }) {
-    final tutorials = TutorialLibrary.getByType(type);
+    final tutorials = TutorialLibrary.getByType(type)
+        .where((t) => genderMatchesUser(t.gender))
+        .toList();
     final unlocked = _isTypeUnlocked(type);
     final display = tutorials.take(take).toList();
 

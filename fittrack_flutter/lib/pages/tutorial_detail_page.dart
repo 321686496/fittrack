@@ -10,6 +10,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tutorial_share_card.dart';
 import '../widgets/unlock_panel.dart';
+import '../utils/art_assets.dart';
 
 /// v1 教学详情页
 ///
@@ -92,6 +93,22 @@ class TutorialDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 详情内容配图（按教学目标主题）
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 140,
+                      child: Image.asset(
+                        detailArtAsset(tutorial.goal.name),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: colors.bgElevated,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   _buildMetaCard(colors, tutorial),
                   const SizedBox(height: 16),
                   // 按章节渲染（替代旧的 keyPoints/mistakes/breathing 卡片）

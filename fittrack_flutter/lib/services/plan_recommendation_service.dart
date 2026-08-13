@@ -1,6 +1,7 @@
 // lib/services/plan_recommendation_service.dart
 import '../data/storage.dart';
 import '../data/system_plan_library.dart';
+import '../utils/gender_filter.dart';
 
 /// 评分结果（避免使用 Dart 3 record 语法）
 class ScoreResult {
@@ -42,18 +43,25 @@ class PlanRecommendationService {
     final userLevel = _inferFitnessLevel(records, settings);
 
     // 1. 筛选：优先匹配 goal；无 goal 时全候选
+    //    同时按用户问卷性别过滤（未填性别则全部可见）
     List<SystemPlan> candidates;
     if (userGoal.isNotEmpty &&
         kPlanGoals.contains(_mapGoalFromSettings(userGoal))) {
       final mappedGoal = _mapGoalFromSettings(userGoal);
-      candidates = SystemPlanLibrary.instance.getByGoal(mappedGoal);
+      candidates = SystemPlanLibrary.instance
+          .getByGoal(mappedGoal)
+          .where((p) => genderMatchesUser(p.gender))
+          .toList();
       // 候选不足时补充其他目标
       if (candidates.length < 5) {
-        final others = allPlans.where((p) => p.goal != mappedGoal).toList();
+        final others = allPlans
+            .where((p) => p.goal != mappedGoal && genderMatchesUser(p.gender))
+            .toList();
         candidates = [...candidates, ...others];
       }
     } else {
-      candidates = allPlans;
+      candidates =
+          allPlans.where((p) => genderMatchesUser(p.gender)).toList();
     }
 
     // 2. 评分

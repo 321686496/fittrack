@@ -9,3 +9,7 @@ fittrack_flutter2/
 
 # react prototype dependencies
 react-prototype/node_modules/
+
+# Python 缓存
+__pycache__/
+*.pyc

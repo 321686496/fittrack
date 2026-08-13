@@ -145,6 +145,22 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             ],
           ),
           const SizedBox(height: 12),
+          // 详情内容配图（按课程目标主题）
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: double.infinity,
+              height: 132,
+              child: Image.asset(
+                detailArtAsset(course.goal.name),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: colors.bgElevated,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           // 描述
           Text(course.description,
               style:

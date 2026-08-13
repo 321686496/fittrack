@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 /// 帮助与反馈页面（独立页面，替代原"帮助与反馈"弹窗）
 ///
-/// 联系方式：上线前请将下方占位联系方式替换为真实值。
+/// 联系方式统一维护在 lib/data/contact_info.dart
 class HelpFeedbackPage extends StatelessWidget {
   const HelpFeedbackPage({super.key});
-
-  /// 官方联系方式（上线前替换为真实信息）
-  static const List<Map<String, String>> kContactChannels = [
-    {'type': 'qq', 'icon': '群聊', 'label': 'QQ 群', 'value': '123456789', 'hint': '复制群号后到 QQ 搜索加入'},
-    {'type': 'wechat_group', 'icon': '群聊', 'label': '微信群', 'value': '添加客服微信号后邀请进群', 'hint': '扫描二维码或添加客服进群'},
-    {'type': 'wechat', 'icon': '微信', 'label': '客服微信', 'value': 'LiftTrack_Support', 'hint': '添加时备注“LiftTrack 用户”'},
-    {'type': 'email', 'icon': '邮件', 'label': '邮箱', 'value': 'support@lifttrack.cn', 'hint': '反馈问题请附上设备型号与版本'},
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +28,49 @@ class HelpFeedbackPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ── 联系我们（显眼入口）──────────────────────
+                  CardWidget(
+                    onTap: () => context.push('/contact'),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: colors.accentGlow.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.headset_mic_outlined, color: colors.accentGlow, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '联系我们',
+                                  style: TextStyle(
+                                    color: colors.textPrimary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'QQ 群 · 微信群 · 客服微信 · 邮箱',
+                                  style: TextStyle(color: colors.textMuted, fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right, color: colors.textMuted),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   // ── 使用帮助 ──
                   const SectionHeader(title: '使用帮助'),
                   const SizedBox(height: 10),
@@ -68,17 +103,6 @@ class HelpFeedbackPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // ── 联系我们 ──
-                  const SectionHeader(title: '联系我们'),
-                  const SizedBox(height: 10),
-                  CardWidget(
-                    child: Column(
-                      children: kContactChannels.map((c) {
-                        return _buildContactTile(context, colors, c);
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
@@ -158,57 +182,5 @@ class HelpFeedbackPage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildContactTile(BuildContext context, LiftTrackColors colors, Map<String, String> c) {
-    final type = c['type'];
-    final IconData icon;
-    if (type == 'email') {
-      icon = Icons.email_outlined;
-    } else if (type == 'wechat' || type == 'wechat_group') {
-      icon = Icons.chat_bubble_outline;
-    } else {
-      icon = Icons.groups_outlined;
-    }
-    return InkWell(
-      onTap: () => _copyContact(context, c),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: colors.accentGlow.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 20, color: colors.accentGlow),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(c['label']!, style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
-                  Text(c['value']!, style: TextStyle(color: colors.accentGlow, fontSize: 13)),
-                  const SizedBox(height: 2),
-                  Text(c['hint']!, style: TextStyle(color: colors.textMuted, fontSize: 11)),
-                ],
-              ),
-            ),
-            Icon(Icons.copy_rounded, size: 16, color: colors.textMuted),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _copyContact(BuildContext context, Map<String, String> c) async {
-    await Clipboard.setData(ClipboardData(text: c['value']!));
-    if (context.mounted) {
-      FitToast.success(context, '${c['label']} 已复制');
-    }
   }
 }
