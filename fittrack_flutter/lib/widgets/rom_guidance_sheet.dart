@@ -159,7 +159,7 @@ class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.accentGlow,
-                        foregroundColor: Colors.black,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),

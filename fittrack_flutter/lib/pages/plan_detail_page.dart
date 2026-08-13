@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
@@ -349,7 +349,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.black,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),

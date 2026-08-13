@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
@@ -139,7 +139,7 @@ class _NoteListPageState extends State<NoteListPage> {
           _loadNotes();
         },
         backgroundColor: colors.accentGlow,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
         child: const Icon(Icons.add),
       ),

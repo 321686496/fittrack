@@ -72,7 +72,7 @@ class CelebrationDialog {
                   label: const Text('记录今日心得', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -287,7 +287,7 @@ class TutorialDetailPage extends StatelessWidget {
                   label: const Text('解锁本章'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
@@ -584,7 +584,7 @@ class TutorialDetailPage extends StatelessWidget {
                   label: const Text('邀请加速解锁'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),

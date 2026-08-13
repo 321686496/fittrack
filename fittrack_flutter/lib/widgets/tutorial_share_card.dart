@@ -112,7 +112,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
                   label: const Text('立即分享'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),

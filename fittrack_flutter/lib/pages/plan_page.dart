@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -1263,7 +1263,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                       onPressed: _save,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.accentGlow,
-                        foregroundColor: Colors.black,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),

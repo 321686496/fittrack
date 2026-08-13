@@ -9,7 +9,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 class SettingsPage extends StatefulWidget {
-  final void Function(String themeId) onThemeChanged;
+  final void Function(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId}) onThemeChanged;
 
   const SettingsPage({
     super.key,

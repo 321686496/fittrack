@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -129,7 +129,7 @@ class _ExercisePageState extends State<ExercisePage> {
           ? FloatingActionButton(
               onPressed: () => _showAddExerciseDialog(),
               backgroundColor: colors.accentGlow,
-              child: const Icon(Icons.add, color: Colors.white),
+              child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
             )
           : null,
       body: _selectedExercise != null
@@ -388,7 +388,7 @@ class _ExercisePageState extends State<ExercisePage> {
                     label: const Text('添加到计划'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.accentGlow,
-                      foregroundColor: Colors.black,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -776,7 +776,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
                       child: Text(
                         '${i + 1}',
                         style: TextStyle(
-                          color: active ? Colors.black : colors.textMuted,
+                          color: active ? colors.textPrimary : colors.textMuted,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1256,7 +1256,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
                 onPressed: _confirmAdd,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.black,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -1505,7 +1505,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
               onPressed: _onSave,
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
-                foregroundColor: Colors.black,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -1762,7 +1762,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                 child: Text(
                   m,
                   style: TextStyle(
-                    color: active ? Colors.black : colors.textSecondary,
+                    color: active ? colors.textPrimary : colors.textSecondary,
                     fontSize: 12,
                     fontWeight:
                         active ? FontWeight.w600 : FontWeight.normal,

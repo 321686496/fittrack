@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -131,6 +131,9 @@ class LiftTrackApp extends StatefulWidget {
 
 class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver {
   late String _currentThemeId;
+  late bool _followSystem;
+  late String _lightThemeId;
+  late String _darkThemeId;
   late final GoRouter _router;
   bool _romGuidanceShown = false;
 
@@ -138,7 +141,11 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _currentThemeId = Storage.getSettings()['theme'] ?? 'vitality-sport';
+    final settings = Storage.getSettings();
+    _currentThemeId = settings['theme'] ?? 'vitality-sport';
+    _followSystem = settings['followSystem'] ?? false;
+    _lightThemeId = settings['lightThemeId'] ?? 'vitality-sport';
+    _darkThemeId = settings['darkThemeId'] ?? 'iron-forge';
     _router = app_router.createRouter();
     _globalRouter = _router;
     // 设置全局主题变更回调
@@ -178,24 +185,27 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     }
   }
 
-  void _onThemeChanged(String themeId) {
+  void _onThemeChanged(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId}) {
     setState(() {
       _currentThemeId = themeId;
+      if (followSystem != null) _followSystem = followSystem;
+      if (lightThemeId != null) _lightThemeId = lightThemeId;
+      if (darkThemeId != null) _darkThemeId = darkThemeId;
     });
     final settings = Storage.getSettings();
     settings['theme'] = themeId;
+    if (followSystem != null) settings['followSystem'] = followSystem;
+    if (lightThemeId != null) settings['lightThemeId'] = lightThemeId;
+    if (darkThemeId != null) settings['darkThemeId'] = darkThemeId;
     Storage.saveSettings(settings);
-    // 更新桌面卡片主题（通过 PAL 统一推送空闲态，三平台一致）
+    // ??????????? PAL ??????????????
     PlatformServices.widgetCard.pushCardData(
       const WidgetCardData(mode: WidgetCardMode.idle),
     );
   }
 
-  /// Android: 启动后检查 ROM 适配，仅对国产 ROM 且未优化的用户弹出引导
+  /// Android: ????? ROM ??????? ROM ???????????
   Future<void> _checkRomAdaptationOnStartup() async {
-    if (_romGuidanceShown) return;
-    final romService = RomAdaptationService.instance;
-
     final needsGuidance = await romService.needsRomGuidance();
     if (!needsGuidance) return;
 
@@ -251,14 +261,28 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
       } catch (_) {}
     }
   }
-
   @override
   Widget build(BuildContext context) {
+    if (_followSystem) {
+      // ????????????????/?????????
+      return MaterialApp.router(
+        title: 'LiftTrack',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.getTheme(_lightThemeId),
+        darkTheme: AppTheme.getTheme(_darkThemeId),
+        themeMode: ThemeMode.system,
+        routerConfig: _router,
+      );
+    }
+    // ?????????????????
     return MaterialApp.router(
       title: 'LiftTrack',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.getTheme(_currentThemeId),
+      darkTheme: AppTheme.getTheme(_currentThemeId),
+      themeMode: ThemeMode.light,
       routerConfig: _router,
     );
+  }
   }
 }

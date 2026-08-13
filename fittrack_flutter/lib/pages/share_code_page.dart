@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -117,7 +117,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                 label: const Text('生成分享码'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.black,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -342,7 +342,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                 label: const Text('分享'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
@@ -444,7 +444,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               onPressed: _importing ? null : _import,
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),

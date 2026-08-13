@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'data/storage.dart';
@@ -61,7 +61,7 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 // 主题变更回调（由 main.dart 设置）
-void Function(String themeId)? onThemeChanged;
+void Function(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId})? onThemeChanged;
 
 // 当前 tab 索引（供 Shell 使用）
 final ValueNotifier<int> currentTabIndex = ValueNotifier<int>(0);
@@ -281,18 +281,26 @@ GoRouter createRouter() {
         path: '/settings',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => SettingsPage(
-          onThemeChanged: onThemeChanged ?? (_) {},
+          onThemeChanged: (themeId, {followSystem, lightThemeId, darkThemeId}) {
+            onThemeChanged?.call(themeId, followSystem: followSystem, lightThemeId: lightThemeId, darkThemeId: darkThemeId);
+          },
         ),
       ),
       GoRoute(
         path: '/theme-settings',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => ThemeSettingsPage(
-          currentThemeId: state.extra as String? ?? 'vitality-sport',
-          onThemeChanged: (themeId) {
-            onThemeChanged?.call(themeId);
-          },
-        ),
+        builder: (context, state) {
+          final settings = Storage.getSettings();
+          return ThemeSettingsPage(
+            currentThemeId: settings['theme'] ?? 'vitality-sport',
+            followSystem: settings['followSystem'] ?? false,
+            lightThemeId: settings['lightThemeId'] ?? 'vitality-sport',
+            darkThemeId: settings['darkThemeId'] ?? 'iron-forge',
+            onThemeChanged: (themeId, {followSystem, lightThemeId, darkThemeId}) {
+              onThemeChanged?.call(themeId, followSystem: followSystem, lightThemeId: lightThemeId, darkThemeId: darkThemeId);
+            },
+          );
+        },
       ),
       GoRoute(
         path: '/notification-test',

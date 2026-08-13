@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 /// Custom theme extension for LiftTrack extra colors
 @immutable
@@ -1374,6 +1374,28 @@ class AppTheme {
 
 /// 便捷主题访问类
 class LiftTrackTheme {
+  /// ???? ID ??
+  static const List<String> lightThemeIds = [
+    'vitality-sport',
+    'blossom',
+    'silver-care',
+    'fresh-minimal',
+  ];
+
+  /// ???? ID ??
+  static const List<String> darkThemeIds = [
+    'iron-forge',
+    'neon-cyber',
+    'black-gold',
+  ];
+
+  /// ???????????
+  static bool isDarkTheme(String themeId) => darkThemeIds.contains(themeId);
+
+  /// ???????????
+  static bool isLightTheme(String themeId) => lightThemeIds.contains(themeId);
+
+  // ??? API ??
   static ThemeData get dark => AppTheme.getTheme('iron-forge');
   static ThemeData get light => AppTheme.getTheme('vitality-sport');
 }

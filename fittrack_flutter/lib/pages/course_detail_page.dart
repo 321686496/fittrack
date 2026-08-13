@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/course_content.dart';
@@ -168,7 +168,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 label: const Text('解锁全部课程'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
