@@ -33,10 +33,11 @@ class _OpponentRendererState extends State<OpponentRenderer>
   @override
   void initState() {
     super.initState();
-    final skin = OpponentSkinConfig.byId(widget.skinId);
     _idleController = AnimationController(
       vsync: this,
-      duration: skin.idleMotion.duration,
+      // 帧序列按 12fps 播放一整圈所需时长，与动作插值时长解耦，
+      // 避免 97 帧等长序列在 1.2s 内被快速播完
+      duration: frameLoopDuration(widget.skinId, 'idle'),
     );
     if (widget.animate) {
       _idleController.repeat();
@@ -45,7 +46,7 @@ class _OpponentRendererState extends State<OpponentRenderer>
     }
     _trainController = AnimationController(
       vsync: this,
-      duration: skin.trainingMotion.duration,
+      duration: frameLoopDuration(widget.skinId, 'train'),
     );
     _entryController = AnimationController(
       vsync: this,

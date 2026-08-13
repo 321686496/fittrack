@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-对手皮肤精灵素材色键抠图脚本
+对手皮肤精灵素材纯色背景键控抠图脚本
 
-将 _gen/ 目录下带纯洋红 (#FF00FF) 背景的 JPG 素材抠图为透明背景 PNG，
+将 _gen/ 目录下带纯色背景（红/玫红/洋红系）的 JPG 素材抠图为透明背景 PNG，
 输出到 opponent/ 目录覆盖旧素材。
 
-算法：
-  - 计算 magenta_score = (R - G) + (B - G)，洋红区域该值显著为正
-  - 硬背景：magenta_score > 150 且 R > 150 且 B > 150 → alpha=0
-  - 软过渡：80 < magenta_score <= 150 且 R/B > 120 → alpha 线性渐变
-  - 其余区域 → alpha=255
-  - 边缘半透明像素做绿色去污染（reduce green spill）
-  - 最终缩放到 512×512（与现有素材规格一致）
+算法（与 scripts/extract_video_frames.py 同源）:
+  - 从四角区域取中位数颜色作为背景色（每张图独立检测）
+  - 按到背景色的欧氏距离生成 alpha：容差内全透明，容差-羽化带线性过渡
+  - 半透明边缘反预乘去污，低覆盖率像素完全去饱和
+  - 不透明但贴近背景的像素按距离去饱和（清除红色描边）
+  - alpha 做轻微腐蚀，移除最外圈背景残留
+  - 最终缩放到 512x512（与现有素材规格一致）
 
-用法：
+用法:
   python cutout_opponent_sprites.py            # 处理全部 12 张
   python cutout_opponent_sprites.py face_beginner  # 处理单张（按名称前缀）
 """
@@ -38,35 +38,81 @@ ASSET_NAMES = [
     'prop_beginner', 'prop_iron', 'prop_ninja', 'prop_ambassador',
 ]
 
+# 键控参数（按皮肤，与视频帧参数同源；精灵图为 1920x1920 大图，容差更高）
+SKIN_KEY_PARAMS = {
+    'beginner':   dict(tolerance=48, feather=24, spill_exp=0.7, spill_extend=2.6, erode=1),
+    'iron':       dict(tolerance=48, feather=24, spill_exp=0.7, spill_extend=2.6, erode=1),
+    'ninja':      dict(tolerance=48, feather=24, spill_exp=0.6, spill_extend=3.0, erode=2),
+    'ambassador': dict(tolerance=48, feather=24, spill_exp=0.7, spill_extend=2.6, erode=1),
+}
 
-def cutout_magenta(arr: np.ndarray) -> np.ndarray:
-    """对 RGB numpy 数组做洋红色键抠图，返回 RGBA 数组。"""
-    r = arr[:, :, 0].astype(np.int32)
-    g = arr[:, :, 1].astype(np.int32)
-    b = arr[:, :, 2].astype(np.int32)
 
-    magenta_score = (r - g) + (b - g)
+def detect_bg_color(rgb):
+    """取四角区域像素的中位数颜色作为背景色。"""
+    h, w = rgb.shape[:2]
+    s = max(4, min(h, w) // 36)
+    corners = np.concatenate([
+        rgb[:s, :s].reshape(-1, 3),
+        rgb[:s, -s:].reshape(-1, 3),
+        rgb[-s:, :s].reshape(-1, 3),
+        rgb[-s:, -s:].reshape(-1, 3),
+    ]).astype(np.float32)
+    return np.median(corners, axis=0)
 
-    # 硬背景：完全透明
-    is_bg_hard = (magenta_score > 150) & (r > 150) & (b > 150)
-    # 软过渡：边缘抗锯齿
-    is_bg_soft = (magenta_score > 80) & (magenta_score <= 150) & (r > 120) & (b > 120) & (~is_bg_hard)
 
-    alpha = np.full(r.shape, 255, dtype=np.uint8)
-    alpha[is_bg_hard] = 0
+def erode_alpha(alpha8, iters):
+    """对 alpha 蒙版做 3x3 最小值腐蚀，收缩前景轮廓，清除最外圈背景残留。"""
+    for _ in range(iters):
+        a = alpha8.astype(np.int32)
+        eroded = a.copy()
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                eroded = np.minimum(eroded, np.roll(np.roll(a, dy, axis=0), dx, axis=1))
+        alpha8 = np.clip(eroded, 0, 255).astype(np.uint8)
+    return alpha8
 
-    # 软过渡区：magenta_score 从 80→150 时 alpha 从 255→0
-    soft_score = magenta_score[is_bg_soft]
-    soft_alpha = ((150 - soft_score) / 70.0 * 255.0).clip(0, 255).astype(np.uint8)
-    alpha[is_bg_soft] = soft_alpha
 
-    # 绿色去污染：边缘半透明像素的 G 通道减半，去除洋红背景的绿色溢出
+def cutout_solid_bg(rgb, tolerance=48, feather=24, spill_exp=0.7,
+                    spill_extend=2.6, erode=1, unspill_min=0.2):
+    """纯色背景键控：软过渡 alpha + 反预乘去污 + 邻近去饱和 + 边缘腐蚀。"""
+    arr = rgb.astype(np.float32)
+    bg = detect_bg_color(arr)
+    dist = np.sqrt(((arr - bg) ** 2).sum(axis=2))
+    outer = tolerance + feather
+
+    # 1) alpha：容差内全透明，羽化带线性过渡
+    alpha = np.clip((dist - tolerance) / max(feather, 1e-6), 0.0, 1.0)
+
+    r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
+    gray = (r + g + b) / 3.0
     out = arr.copy()
-    edge_mask = is_bg_soft
-    out[edge_mask, 1] = (out[edge_mask, 1].astype(np.int32) * 5 // 10).astype(np.uint8)
+    semi = (alpha > 0) & (alpha < 1)
 
-    rgba = np.dstack([out, alpha])
-    return rgba
+    # 2) 半透明边缘：反预乘恢复前景色（覆盖率足够时）
+    un = semi & (alpha >= unspill_min)
+    a_safe = np.maximum(alpha[un], 1e-3)
+    out[un, 0] = (r[un] - (1 - a_safe) * bg[0]) / a_safe
+    out[un, 1] = (g[un] - (1 - a_safe) * bg[1]) / a_safe
+    out[un, 2] = (b[un] - (1 - a_safe) * bg[2]) / a_safe
+
+    # 3) 覆盖率极低的像素接近背景：直接去饱和
+    low = semi & (alpha < unspill_min)
+    s_low = 0.9 * (1.0 - alpha[low]) ** 0.7
+    out[low, 0] = r[low] + (gray[low] - r[low]) * s_low
+    out[low, 1] = g[low] + (gray[low] - g[low]) * s_low
+    out[low, 2] = b[low] + (gray[low] - b[low]) * s_low
+
+    # 4) 完全不透明但贴近背景的像素：按距离去饱和（清除残余色边）
+    band = outer * spill_extend
+    near = (alpha >= 1) & (dist < band)
+    t = np.clip(1.0 - dist[near] / band, 0.0, 1.0) ** spill_exp
+    out[near, 0] = r[near] + (gray[near] - r[near]) * t
+    out[near, 1] = g[near] + (gray[near] - g[near]) * t
+    out[near, 2] = b[near] + (gray[near] - b[near]) * t
+
+    alpha8 = erode_alpha((alpha * 255).astype(np.uint8), erode)
+    rgba = np.dstack([out, alpha8])
+    return np.clip(rgba, 0, 255).astype(np.uint8)
 
 
 def process_one(name: str, do_backup: bool = True) -> bool:
@@ -91,7 +137,9 @@ def process_one(name: str, do_backup: bool = True) -> bool:
 
     img = Image.open(in_path).convert('RGB')
     arr = np.array(img)
-    rgba = cutout_magenta(arr)
+    skin_key = name.split('_')[1] if len(name.split('_')) > 1 else 'beginner'
+    params = SKIN_KEY_PARAMS.get(skin_key, SKIN_KEY_PARAMS['beginner'])
+    rgba = cutout_solid_bg(arr, **params)
 
     result = Image.fromarray(rgba, 'RGBA')
     # 缩放到目标尺寸（LANCZOS 高质量重采样）
@@ -118,9 +166,8 @@ def main():
     for name in names:
         if process_one(name):
             ok += 1
-    print(f'\n完成：{ok}/{len(names)} 张成功')
-    if do_backup := True:
-        print(f'旧素材备份于: {BACKUP_DIR}')
+    print(f'\n完成: {ok}/{len(names)} 张成功')
+    print(f'旧素材备份于: {BACKUP_DIR}')
 
 
 if __name__ == '__main__':
