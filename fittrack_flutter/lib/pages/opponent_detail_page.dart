@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
@@ -549,7 +549,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
         onPressed: _unlocking ? null : () => _purchaseSkin(good.id),
         style: ElevatedButton.styleFrom(
           backgroundColor: cardTheme?.borderColor ?? colors.accentGlow,
-          foregroundColor: Colors.white,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 4),
           minimumSize: const Size(0, 22),
@@ -650,7 +650,7 @@ class _SkinPreviewSheet extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: cardTheme.borderColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

@@ -281,7 +281,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                   onPressed: () => widget.onConfirm?.call(TimeOfDay(hour: _hour, minute: _minute)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.black,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Text('确认', style: TextStyle(fontWeight: FontWeight.w600)),

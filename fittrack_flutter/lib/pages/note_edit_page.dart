@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
@@ -595,7 +595,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             label: Text(_saving ? '保存中' : '保存'),
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.accentGlow,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50)),

@@ -228,7 +228,7 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
                   onPressed: () => Navigator.of(context).pop(_selectedDate),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

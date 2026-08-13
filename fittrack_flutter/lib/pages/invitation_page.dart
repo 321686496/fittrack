@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../data/storage.dart';
 import '../services/invitation_service.dart';
@@ -191,14 +191,14 @@ class _InvitationPageState extends State<InvitationPage> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                                AlwaysStoppedAnimation<Color>(colors.textPrimary),
                           ),
                         )
                       : const Icon(Icons.share, size: 18),
                   label: Text(_sharing ? '生成中...' : '立即分享'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
-                    foregroundColor: Colors.white,
+                    
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
@@ -620,9 +620,9 @@ class _InvitationPageState extends State<InvitationPage> {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cardTheme.borderColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       disabledBackgroundColor: cardTheme.borderColor.withOpacity(0.4),
-                      disabledForegroundColor: Colors.white70,
+                      disabledForegroundColor: colors.textMuted,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
@@ -859,14 +859,14 @@ class _InvitationPageState extends State<InvitationPage> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(colors.textPrimary),
                         ),
                       )
                     : const Icon(Icons.card_giftcard, size: 18),
                 label: Text(_recording ? '记录中...' : '确认记录'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.white,
+                  
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
@@ -1036,7 +1036,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 onPressed: _activating ? null : _activate,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
-                  foregroundColor: Colors.white,
+                  
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
@@ -1046,7 +1046,7 @@ class _InvitationPageState extends State<InvitationPage> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: colors.textPrimary),
                       )
                     : const Text('立即激活', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
@@ -1102,7 +1102,7 @@ class _InvitationPageState extends State<InvitationPage> {
               label: const Text('生成我的激活凭证'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
-                foregroundColor: Colors.white,
+                
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),

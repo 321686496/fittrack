@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
@@ -207,7 +207,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.accentGlow,
-                        foregroundColor: Colors.white,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),

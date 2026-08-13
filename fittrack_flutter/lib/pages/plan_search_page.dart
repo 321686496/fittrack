@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/system_plan_library.dart';
@@ -418,7 +418,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.accentGlow,
-                        foregroundColor: Colors.black,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(

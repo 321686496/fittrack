@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -461,7 +461,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               onPressed: () => context.go('/plan'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
-                foregroundColor: Colors.black,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
@@ -538,7 +538,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
-                foregroundColor: Colors.black,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),

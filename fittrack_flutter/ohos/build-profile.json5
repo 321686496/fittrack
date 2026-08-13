@@ -48,6 +48,54 @@
           ]
         }
       ]
+    },
+    {
+      "name": "shared_preferences_ohos",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_packages-abe263023cbc77d95ee0a8a2511e8e02903b7a6c/packages/shared_preferences/shared_preferences_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "permission_handler_ohos",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_permission_handler-729c5ae84a1ce255c4c73749e0c0076c129ea386/permission_handler_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sqflite",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_sqflite-c1dd8bfc2c167bcc4a657e7b4d28048fc77d7035/sqflite/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flutter_local_notifications",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/fluttertpc_flutter_local_notifications-4481d9357c0275ea86469e6fbd723313b15fe888/flutter_local_notifications/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../data/storage.dart';
 import '../services/share_code_service.dart';
 import '../themes/app_themes.dart';
@@ -93,7 +93,7 @@ class _PlanPosterPageState extends State<PlanPosterPage> {
               label: const Text('保存海报'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ft.accentGlow,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
               ),

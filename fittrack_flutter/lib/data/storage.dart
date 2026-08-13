@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,8 +6,8 @@ import 'database_helper.dart';
 import 'mock_data.dart';
 
 /// Storage with hybrid persistence:
-/// - Plans & Records: SQLite (via DatabaseHelper) — 结构化大数据
-/// - Settings / Stats / BodyData: SharedPreferences — 简单键值对
+/// - Plans & Records: SQLite (via DatabaseHelper) �?结构化大数据
+/// - Settings / Stats / BodyData: SharedPreferences �?简单键值对
 ///
 /// Call Storage.init() before using any other methods.
 class Storage {
@@ -18,7 +18,7 @@ class Storage {
   // DatabaseHelper 单例
   static final DatabaseHelper _db = DatabaseHelper.instance;
 
-  // SharedPreferences 存储键
+  // SharedPreferences 存储�?
   static const String _keySettings = 'fitplan_settings';
   static const String _keyStats = 'fitplan_stats';
   static const String _keyBodyData = 'fitplan_bodyData';
@@ -27,7 +27,7 @@ class Storage {
   static const String _keyMigrated = 'fittrack_sqlite_migrated';
   static const String _keyNotifications = 'fittrack_notifications';
 
-  // Phase 2 — 全局可观测状态
+  // Phase 2 �?全局可观测状�?
   static final ValueNotifier<bool> isPremiumNotifier = ValueNotifier<bool>(false);
   static final ValueNotifier<List<String>> unlockedAchievementsNotifier =
       ValueNotifier<List<String>>([]);
@@ -39,7 +39,7 @@ class Storage {
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
 
-    // 仅清理即将重载的 key，避免影响 _keyCustomExercises/_keyNotifications 等不在重载循环中的 key
+    // 仅清理即将重载的 key，避免影�?_keyCustomExercises/_keyNotifications 等不在重载循环中�?key
     for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory, _inProgressKey]) {
       _store.remove(key);
     }
@@ -54,10 +54,10 @@ class Storage {
       }
     }
 
-    // 首次启动时，将 SharedPreferences 中的旧 Plans/Records 迁移到 SQLite
+    // 首次启动时，�?SharedPreferences 中的�?Plans/Records 迁移�?SQLite
     await _migrateFromPrefsIfNeeded();
 
-    // Phase 2 — 生成 deviceId 并初始化 isPremium 状态
+    // Phase 2 �?生成 deviceId 并初始化 isPremium 状�?
     final settings = _safeGet(_keySettings, <String, dynamic>{}) as Map<String, dynamic>;
     if (settings['deviceId'] == null || (settings['deviceId'] as String).isEmpty) {
       settings['deviceId'] = _generateUuidV4();
@@ -67,7 +67,7 @@ class Storage {
     isPremiumNotifier.value = settings['isPremium'] ?? false;
   }
 
-  // ── 数据迁移：SharedPreferences → SQLite ──────────────────
+  // ── 数据迁移：SharedPreferences �?SQLite ──────────────────
 
   static Future<void> _migrateFromPrefsIfNeeded() async {
     final migrated = _prefs?.getBool(_keyMigrated) ?? false;
@@ -80,7 +80,7 @@ class Storage {
         final List<dynamic> oldPlans = jsonDecode(oldPlansRaw);
         for (final p in oldPlans) {
           final plan = Map<String, dynamic>.from(p as Map);
-          // 确保有 id
+          // 确保�?id
           if (plan['id'] == null || (plan['id'] as String).isEmpty) {
             plan['id'] = generateId('plan');
           }
@@ -101,7 +101,7 @@ class Storage {
         }
       }
 
-      // 标记迁移完成，并清理旧数据
+      // 标记迁移完成，并清理旧数�?
       await _prefs?.setBool(_keyMigrated, true);
       await _prefs?.remove('${_keyPrefsPrefix}fitplan_plans');
       await _prefs?.remove('${_keyPrefsPrefix}fitplan_records');
@@ -126,7 +126,7 @@ class Storage {
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
-  // Phase 2 — UUID v4 生成（用于 deviceId）
+  // Phase 2 �?UUID v4 生成（用�?deviceId�?
   static String _generateUuidV4() {
     final rng = Random();
     final bytes = List<int>.generate(16, (_) => rng.nextInt(256));
@@ -136,7 +136,7 @@ class Storage {
     return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
   }
 
-  // Phase 2 — 更新 Premium 状态
+  // Phase 2 �?更新 Premium 状�?
   static Future<void> setPremium(bool value, {String source = ''}) async {
     final s = getSettings();
     s['isPremium'] = value;
@@ -185,7 +185,7 @@ class Storage {
     } catch (_) {}
   }
 
-  /// 异步持久化（确保数据写入磁盘）
+  /// 异步持久化（确保数据写入磁盘�?
   static Future<void> _persistKeyAsync(String key) async {
     try {
       await _prefs?.setString('$_keyPrefsPrefix$key', jsonEncode(_store[key]));
@@ -209,7 +209,7 @@ class Storage {
     );
   }
 
-  /// 同步获取缓存的计划列表（需先调用 getPlansAsync 加载）
+  /// 同步获取缓存的计划列表（需先调�?getPlansAsync 加载�?
   static List<Map<String, dynamic>> getPlans() {
     return List<Map<String, dynamic>>.from(
       _plansCache.map((e) => Map<String, dynamic>.from(e)),
@@ -236,15 +236,15 @@ class Storage {
       'currentDayIndex': plan['currentDayIndex'] ?? 0,
     };
     await _db.insertPlan(newPlan);
-    // 同步更新缓存，保证后续 getPlans() 立即拿到新计划
+    // 同步更新缓存，保证后�?getPlans() 立即拿到新计�?
     _plansCache.add(newPlan);
     _plansCacheDirty = true;
-    // 通知数据变更（修复：原 async 版本未通知，导致计划页看不到新增计划）
+    // 通知数据变更（修复：�?async 版本未通知，导致计划页看不到新增计划）
     dataChanged.value = !dataChanged.value;
     return newPlan;
   }
 
-  /// 同步添加（仅更新缓存，异步持久化）
+  /// 同步添加（仅更新缓存，异步持久化�?
   static Map<String, dynamic> addPlan(Map<String, dynamic> plan) {
     final newPlan = <String, dynamic>{
       ...plan,
@@ -257,14 +257,14 @@ class Storage {
     };
     _plansCache.add(newPlan);
     _plansCacheDirty = true;
-    // 异步持久化
+    // 异步持久�?
     _db.insertPlan(newPlan);
     return newPlan;
   }
 
   static Future<Map<String, dynamic>?> updatePlanAsync(String planId, Map<String, dynamic> updates) async {
     final result = await _db.updatePlan(planId, updates);
-    // 同步更新缓存，保证后续 getPlans()/getPlanById() 立即拿到最新值
+    // 同步更新缓存，保证后�?getPlans()/getPlanById() 立即拿到最新�?
     if (result != null) {
       final idx = _plansCache.indexWhere((p) => p['id'] == planId);
       if (idx != -1) {
@@ -274,12 +274,12 @@ class Storage {
           'updateTime': DateTime.now().millisecondsSinceEpoch,
         };
       } else {
-        // 缓存中不存在（例如刚 addPlanAsync 后未刷新），补一条
+        // 缓存中不存在（例如刚 addPlanAsync 后未刷新），补一�?
         _plansCache.add(result);
       }
     }
     _plansCacheDirty = true;
-    // 通知数据变更（修复：原 async 版本未通知）
+    // 通知数据变更（修复：�?async 版本未通知�?
     dataChanged.value = !dataChanged.value;
     return result;
   }
@@ -289,7 +289,7 @@ class Storage {
     if (idx == -1) return null;
     _plansCache[idx] = {..._plansCache[idx], ...updates, 'updateTime': DateTime.now().millisecondsSinceEpoch};
     _plansCacheDirty = true;
-    // 异步持久化
+    // 异步持久�?
     _db.updatePlan(planId, updates);
     // 通知数据变更
     dataChanged.value = !dataChanged.value;
@@ -299,7 +299,7 @@ class Storage {
   static Future<bool> deletePlanAsync(String planId) async {
     await _db.deletePlan(planId);
     _plansCacheDirty = true;
-    // 通知数据变更（修复：原 async 版本未通知）
+    // 通知数据变更（修复：�?async 版本未通知�?
     dataChanged.value = !dataChanged.value;
     return true;
   }
@@ -307,7 +307,7 @@ class Storage {
   static bool deletePlan(String planId) {
     _plansCache.removeWhere((p) => p['id'] == planId);
     _plansCacheDirty = true;
-    // 异步持久化
+    // 异步持久�?
     _db.deletePlan(planId);
     return true;
   }
@@ -373,7 +373,7 @@ class Storage {
     _recordsCacheDirty = true;
     // 通知数据变更
     dataChanged.value = !dataChanged.value;
-    // 异步持久化 + 裁剪
+    // 异步持久�?+ 裁剪
     _db.insertRecord(newRecord);
     _db.trimRecords(500);
     // 更新统计
@@ -409,8 +409,11 @@ class Storage {
       'defaultReps': 10,
       'defaultWeight': 20.0,
       'theme': 'vitality-sport',
+      'followSystem': false,
+      'lightThemeId': 'vitality-sport',
+      'darkThemeId': 'iron-forge',
       'trainingTime': '',
-      // Phase 2 — 新增默认 settings
+      // Phase 2 �?新增默认 settings
       'isPremium': false,
       'premiumSource': '',
       'redeemedCodes': <String>[],
@@ -423,32 +426,32 @@ class Storage {
       'lastPushDate': '',
       'pushCountIn7Days': 0,
       'onboardingV2Done': false,
-      // ── v1 获客留存版 — 教学裂变体系（V1-08）──
+      // ── v1 获客留存�?�?教学裂变体系（V1-08）──
       'activatedInvitationCode': '', // 被邀请人已激活的邀请码
       'invitationActivatedAt': 0, // 激活时间戳
       'inviterIdentity': '', // 邀请人身份哈希前缀
       'myReferralCodes': <String>[], // 邀请人视角：已记录的被邀请人激活码
       'unlockedReferralBadges': <String>[], // 裂变徽章
-      'unlockedAdvancedTutorials': 0, // 已解锁进阶教学数（邀请1人=3个）
-      'unlockedMasterTutorials': false, // 高手教学专题（累计5人）
-      'unlockedOpponentSkin': false, // 专属虚拟对手皮肤（累计5人）
-      'unlockedAmbassadorTitle': false, // "LiftTrack 大使"称号（累计10人）
-      'adFreeReportUnlocked': false, // 永久免广告看训练报告（累计3人）
+      'unlockedAdvancedTutorials': 0, // 已解锁进阶教学数（邀�?�?3个）
+      'unlockedMasterTutorials': false, // 高手教学专题（累�?人）
+      'unlockedOpponentSkin': false, // 专属虚拟对手皮肤（累�?人）
+      'unlockedAmbassadorTitle': false, // "LiftTrack 大使"称号（累�?0人）
+      'adFreeReportUnlocked': false, // 永久免广告看训练报告（累�?人）
       'retentionRewardUnlocked': false, // 7日留存奖励已解锁
-      'advancedStatsTrialUntil': 0, // 7天高级统计体验到期时间
-      // ── v1 获客留存版 — 虚拟对手系统（V1-01）──
+      'advancedStatsTrialUntil': 0, // 7天高级统计体验到期时�?
+      // ── v1 获客留存�?�?虚拟对手系统（V1-01）──
       'virtualOpponentMatched': false, // 是否已完成冷启动匹配
-      'virtualOpponentTier': '', // 匹配层（休闲/规律/活跃/硬核）
-      'virtualOpponentLastAdvance': 0, // 上次对手数据推进时间戳
-      'opponentLastAdvanceDate': '', // 每日推进防重复日期字符串（YYYY-MM-DD）
-      // ── v1 获客留存版 — 新手7天留存链（V1-04）──
-      'retentionChainStage': 0, // 留存链当前阶段（0=未开始,1=D1,2=D2...）
+      'virtualOpponentTier': '', // 匹配层（休闲/规律/活跃/硬核�?
+      'virtualOpponentLastAdvance': 0, // 上次对手数据推进时间�?
+      'opponentLastAdvanceDate': '', // 每日推进防重复日期字符串（YYYY-MM-DD�?
+      // ── v1 获客留存�?�?新手7天留存链（V1-04）──
+      'retentionChainStage': 0, // 留存链当前阶段（0=未开�?1=D1,2=D2...�?
       'retentionChainLastShown': 0, // 上次留存链弹窗时间戳
-      'firstTrainingDate': 0, // 首次训练日期（用于计算 Day N）
-      // ── v1 获客留存版 — 训练彩蛋（V1-03）──
-      'lastEggTriggerDate': '', // 上次彩蛋触发日期（防同日重复）
-      // ── v1 获客留存版 — 计划进度链中断补救（V1-06）──
-      'interruptReminderLastShown': 0, // 上次中断提醒时间戳
+      'firstTrainingDate': 0, // 首次训练日期（用于计�?Day N�?
+      // ── v1 获客留存�?�?训练彩蛋（V1-03）──
+      'lastEggTriggerDate': '', // 上次彩蛋触发日期（防同日重复�?
+      // ── v1 获客留存�?�?计划进度链中断补救（V1-06）──
+      'interruptReminderLastShown': 0, // 上次中断提醒时间�?
       // v1 积分体系
       'points': 0,
       'pointsEarnedTotal': 0,
@@ -457,20 +460,20 @@ class Storage {
       'adsWatchedToday': 0,
       'adsWatchedDate': '',
       'unlockedFeatures': '[]',
-      // 每日训练得积分防重复日期 / 分享计数（成就用）
+      // 每日训练得积分防重复日期 / 分享计数（成就用�?
       'lastTrainingPointsDate': '',
       'shareCount': 0,
-      // ── 每日训练提醒 & 健身卡到期提醒 ──
-      'dailyTrainingReminderEnabled': false, // 每日训练提醒开关
-      'gymCardExpiryReminderEnabled': false, // 健身卡到期提醒开关
-      'gymCardExpiryDaysThreshold': 7,       // 期限卡到期天数阈值（剩余 ≤ N 天提醒）
-      'gymCardLowCountThreshold': 3,         // 次卡剩余次数阈值（剩余 ≤ N 次提醒）
+      // ── 每日训练提醒 & 健身卡到期提�?──
+      'dailyTrainingReminderEnabled': false, // 每日训练提醒开�?
+      'gymCardExpiryReminderEnabled': false, // 健身卡到期提醒开�?
+      'gymCardExpiryDaysThreshold': 7,       // 期限卡到期天数阈值（剩余 �?N 天提醒）
+      'gymCardLowCountThreshold': 3,         // 次卡剩余次数阈值（剩余 �?N 次提醒）
       'lastGymCardReminderDate': '',         // 上次健身卡到期提醒日期（防同日重复推送）
-      'activityColorMode': 'capacity', // 活跃度配色模式：'capacity'（训练容量）或 'duration'（训练时长）
-      'actionGuideCollapsed': false, // 训练页底部动作指导卡片是否收起（默认展开）
-      // ── 休息状态机 + 持久化 ──
+      'activityColorMode': 'capacity', // 活跃度配色模式：'capacity'（训练容量）�?'duration'（训练时长）
+      'actionGuideCollapsed': false, // 训练页底部动作指导卡片是否收起（默认展开�?
+      // ── 休息状态机 + 持久�?──
       'autoEndAfterRest': false, // 休息结束后自动结束（自制力模式）
-      'restOvertimeLimitMultiplier': 3.0, // 静默计时上限倍数（设定时间 × 3）
+      'restOvertimeLimitMultiplier': 3.0, // 静默计时上限倍数（设定时�?× 3�?
     };
     final result = _safeGet(_keySettings, <String, dynamic>{});
     if (result is Map) {
@@ -503,7 +506,7 @@ class Storage {
   static Map<String, dynamic>? getInProgressTraining() {
     final raw = _store[_inProgressKey];
     if (raw == null) {
-      // 尝试从 prefs 加载（首次启动时 _store 可能未加载此 key）
+      // 尝试�?prefs 加载（首次启动时 _store 可能未加载此 key�?
       final prefsRaw = _prefs?.getString('$_keyPrefsPrefix$_inProgressKey');
       if (prefsRaw == null) return null;
       try {
@@ -666,14 +669,14 @@ class Storage {
     return [];
   }
 
-  /// 保存身体数据历史（每次更新前调用）
+  /// 保存身体数据历史（每次更新前调用�?
   static bool saveBodyDataHistory(Map<String, dynamic> oldData) {
     if (oldData.isEmpty) return false;
     final history = getBodyDataHistory();
     final entry = Map<String, dynamic>.from(oldData);
     entry['timestamp'] = DateTime.now().millisecondsSinceEpoch;
     history.add(entry);
-    // 只保留最近 50 条
+    // 只保留最�?50 �?
     if (history.length > 50) {
       history.removeRange(0, history.length - 50);
     }
@@ -786,7 +789,7 @@ class Storage {
     return jsonEncode(data);
   }
 
-  // 同步版本（兼容旧调用）
+  // 同步版本（兼容旧调用�?
   static Map<String, dynamic> exportAllData() {
     return {
       'plans': getPlans(),
@@ -831,10 +834,10 @@ class Storage {
     }
   }
 
-  // 同步版本（兼容旧调用）
+  // 同步版本（兼容旧调用�?
   static bool importData(Map<String, dynamic> data) {
     if (data['plans'] == null || data['records'] == null) return false;
-    // 同步版本仅更新缓存，异步持久化
+    // 同步版本仅更新缓存，异步持久�?
     _plansCache = List<Map<String, dynamic>>.from(
       (data['plans'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
     );
@@ -978,7 +981,7 @@ class Storage {
     return [];
   }
 
-  /// 添加自定义动作
+  /// 添加自定义动�?
   static Map<String, dynamic> addCustomExercise(Map<String, dynamic> exercise) {
     final exercises = getCustomExercises();
     final newExercise = <String, dynamic>{
@@ -996,7 +999,7 @@ class Storage {
     return newExercise;
   }
 
-  /// 删除自定义动作
+  /// 删除自定义动�?
   static bool deleteCustomExercise(String exerciseId) {
     final exercises = getCustomExercises();
     exercises.removeWhere((e) => e['id'] == exerciseId);
@@ -1022,18 +1025,18 @@ class Storage {
     if (hasData()) return null;
 
     final demoPlan = addPlan({
-      'name': '三分化增肌计划',
-      'type': '三分化',
-      'frequency': '6天/周',
+      'name': '三分化增肌计�?,
+      'type': '三分�?,
+      'frequency': '6�?�?,
       'difficulty': '进阶',
       'totalWeeks': 8,
       'week': 4,
-      'badge': '进行中',
+      'badge': '进行�?,
       'days': [
         {
           'day': 1,
-          'label': '胸部 + 三头肌',
-          'muscle': '胸',
+          'label': '胸部 + 三头�?,
+          'muscle': '�?,
           'exercises': [
             {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
             {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
@@ -1043,8 +1046,8 @@ class Storage {
         },
         {
           'day': 2,
-          'label': '背部 + 二头肌',
-          'muscle': '背',
+          'label': '背部 + 二头�?,
+          'muscle': '�?,
           'exercises': [
             {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
             {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
@@ -1057,7 +1060,7 @@ class Storage {
         {
           'day': 3,
           'label': '腿部',
-          'muscle': '腿',
+          'muscle': '�?,
           'exercises': [
             {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
             {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
@@ -1066,24 +1069,24 @@ class Storage {
         {
           'day': 4,
           'label': '肩部 + 核心',
-          'muscle': '肩',
+          'muscle': '�?,
           'exercises': [
             {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-            {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'restTime': 60},
-            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'restTime': 45},
+            {'id': 'e12', 'name': '侧平�?, 'sets': 4, 'reps': '12-15', 'restTime': 60},
+            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60�?, 'restTime': 45},
             {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 45},
           ],
         },
         {
           'day': 5,
           'label': '胸部 + 背部',
-          'muscle': '胸/背',
+          'muscle': '�?�?,
           'exercises': <Map<String, dynamic>>[],
         },
         {
           'day': 6,
           'label': '腿部 + 手臂',
-          'muscle': '腿/手臂',
+          'muscle': '�?手臂',
           'exercises': <Map<String, dynamic>>[],
         },
       ],
@@ -1092,13 +1095,13 @@ class Storage {
     addPlan({
       'name': '新手入门计划',
       'type': '全身训练',
-      'frequency': '3天/周',
+      'frequency': '3�?�?,
       'difficulty': '入门',
       'totalWeeks': 4,
       'week': 4,
       'status': 'done',
       'progress': 100,
-      'badge': '已完成',
+      'badge': '已完�?,
       'days': [
         {
           'day': 1,
@@ -1127,7 +1130,7 @@ class Storage {
           'exercises': [
             {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
             {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'restTime': 30},
+            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30�?, 'restTime': 30},
           ],
         },
       ],
@@ -1140,7 +1143,7 @@ class Storage {
   // App 内通知记录
   // ============================================================
 
-  /// 获取所有通知记录（按时间倒序）
+  /// 获取所有通知记录（按时间倒序�?
   static List<Map<String, dynamic>> getNotifications() {
     final list = _safeGet(_keyNotifications, <dynamic>[]) as List<dynamic>;
     final result = list
@@ -1154,7 +1157,7 @@ class Storage {
     return result;
   }
 
-  /// 新增一条通知记录（最多保留 50 条，超出删除最旧的已读通知）
+  /// 新增一条通知记录（最多保�?50 条，超出删除最旧的已读通知�?
   static void addNotification(Map<String, dynamic> notification) {
     final list = getNotifications();
     list.insert(0, notification);
@@ -1164,7 +1167,7 @@ class Storage {
       if (idx >= 0) {
         list.removeAt(idx);
       } else {
-        // 没有已读通知，删除最后一条
+        // 没有已读通知，删除最后一�?
         list.removeLast();
       }
     }
@@ -1172,7 +1175,7 @@ class Storage {
     _persistKey(_keyNotifications);
   }
 
-  /// 标记单条通知为已读
+  /// 标记单条通知为已�?
   static void markNotificationRead(String id) {
     final list = getNotifications();
     for (final n in list) {
@@ -1185,7 +1188,7 @@ class Storage {
     _persistKey(_keyNotifications);
   }
 
-  /// 标记所有通知为已读
+  /// 标记所有通知为已�?
   static void markAllNotificationsRead() {
     final list = getNotifications();
     for (final n in list) {

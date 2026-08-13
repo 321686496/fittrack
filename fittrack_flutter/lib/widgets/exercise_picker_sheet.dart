@@ -418,7 +418,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.accentGlow,
-                      foregroundColor: Colors.black,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
