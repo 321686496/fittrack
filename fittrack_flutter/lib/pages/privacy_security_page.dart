@@ -28,37 +28,34 @@ class PrivacySecurityPage extends StatelessWidget {
                 children: [
                   // ── 隐私承诺 ──
                   CardWidget(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.shield_outlined, size: 22, color: colors.successColor),
-                              const SizedBox(width: 8),
-                              Text(
-                                'LiftTrack 尊重您的隐私',
-                                style: TextStyle(
-                                  color: colors.textPrimary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.shield_outlined, size: 22, color: colors.successColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              'LiftTrack 尊重您的隐私',
+                              style: TextStyle(
+                                color: colors.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _buildPrivacyItem(colors, Icons.lock_outline, '本地存储', '所有数据仅存储在您的设备本地，不会上传至任何服务器'),
-                          const SizedBox(height: 10),
-                          _buildPrivacyItem(colors, Icons.person_outline, '不收集个人信息', '不收集姓名、手机号、通讯录等个人敏感信息'),
-                          const SizedBox(height: 10),
-                          _buildPrivacyItem(colors, Icons.notifications_outlined, '通知权限', '通知权限仅用于训练提醒，不会用于其他用途'),
-                          const SizedBox(height: 10),
-                          _buildPrivacyItem(colors, Icons.vibration, '振动权限', '振动权限仅用于训练结束时提醒'),
-                          const SizedBox(height: 10),
-                          _buildPrivacyItem(colors, Icons.photo_library_outlined, '相册权限', '仅在您主动选择图片（如自定义动作封面）时使用'),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _buildPrivacyItem(colors, Icons.lock_outline, '本地存储', '所有数据仅存储在您的设备本地，不会上传至任何服务器'),
+                        const SizedBox(height: 8),
+                        _buildPrivacyItem(colors, Icons.person_outline, '不收集个人信息', '不收集姓名、手机号、通讯录等个人敏感信息'),
+                        const SizedBox(height: 8),
+                        _buildPrivacyItem(colors, Icons.notifications_outlined, '通知权限', '通知权限仅用于训练提醒，不会用于其他用途'),
+                        const SizedBox(height: 8),
+                        _buildPrivacyItem(colors, Icons.vibration, '振动权限', '振动权限仅用于训练结束时提醒'),
+                        const SizedBox(height: 8),
+                        _buildPrivacyItem(colors, Icons.photo_library_outlined, '相册权限', '仅在您主动选择图片（如自定义动作封面）时使用'),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),

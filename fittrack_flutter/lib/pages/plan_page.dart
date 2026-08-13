@@ -7,6 +7,7 @@ import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
 import '../services/plan_unlock_service.dart';
 import '../utils/art_assets.dart';
+import '../utils/gender_filter.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/exercise_picker_sheet.dart';
 import '../widgets/page_header.dart';
@@ -179,8 +180,6 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
   // build 内重计算缓存（在 _loadPlans 中预计算）
   List<Map<String, dynamic>> _activePlansCache = const [];
   List<Map<String, dynamic>> _customSortedCache = const [];
-  // 适用人群筛选：'all'=全部人群 / 'male'=男性 / 'female'=女性
-  String _genderFilter = 'all';
 
   @override
   int get tabIndex => 1;
@@ -218,22 +217,14 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
     if (mounted) setState(() {});
   }
 
-  /// 判断计划是否匹配当前性别筛选（'all' 通用计划对所有筛选均可见）
+  /// 判断计划是否匹配用户性别（问卷未填性别时全部可见）
   bool _planMatchesGender(Map<String, dynamic> plan) {
-    if (_genderFilter == 'all') return true;
     final gender = plan['gender'] as String? ?? 'all';
-    return gender == _genderFilter || gender == 'all';
+    return genderMatchesUser(gender);
   }
 
   bool _systemPlanMatchesGender(SystemPlan plan) {
-    if (_genderFilter == 'all') return true;
-    return plan.gender == _genderFilter || plan.gender == 'all';
-  }
-
-  void _setGenderFilter(String value) {
-    if (_genderFilter == value) return;
-    setState(() => _genderFilter = value);
-    _loadPlans();
+    return genderMatchesUser(plan.gender);
   }
 
   List<Map<String, dynamic>> get _activePlans => _activePlansCache;
@@ -297,7 +288,6 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
             title: '训练计划',
             isTabPage: true,
           ),
-          _buildGenderFilter(colors),
           Expanded(
             child: _buildPlanList(colors),
           ),
@@ -314,48 +304,6 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
   }
 
   // ── Plan List View ─────────────────────────────────────────
-
-  Widget _buildGenderFilter(LiftTrackColors colors) {
-    const options = <Map<String, String>>[
-      {'value': 'all', 'label': '全部'},
-      {'value': 'male', 'label': '男性'},
-      {'value': 'female', 'label': '女性'},
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-      child: Row(
-        children: options.map((o) {
-          final selected = _genderFilter == o['value'];
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => _setGenderFilter(o['value']!),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? colors.accentGlow.withOpacity(0.14)
-                      : colors.bgCard,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: selected ? colors.accentGlow : colors.borderColor,
-                  ),
-                ),
-                child: Text(
-                  o['label']!,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: selected ? colors.accentGlow : colors.textSecondary,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
 
   Widget _buildPlanList(LiftTrackColors colors) {
     // 使用 _loadPlans 中预计算的缓存，避免 build 内深拷贝 records

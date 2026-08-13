@@ -158,6 +158,7 @@ class Tutorial {
   final List<Color> coverColors; // 封面渐变双色
   final List<String> recommendedExerciseIds; // 推荐动作ID列表（跳转动作库）
   final String? coverEmoji; // 封面Emoji图标
+  final String gender; // 适用人群：'all' / 'male' / 'female'
   final List<ContentBlock> blocks; // 富文本块（预留字段，当前未使用）
 
   const Tutorial({
@@ -179,6 +180,7 @@ class Tutorial {
     this.coverColors = const [Color(0xFFFF6B35), Color(0xFFFFD700)],
     this.recommendedExerciseIds = const [],
     this.coverEmoji,
+    this.gender = 'all',
     this.blocks = const [],
   });
 
@@ -235,6 +237,7 @@ class Tutorial {
         'coverColors': coverColors.map((c) => c.value).toList(),
         'recommendedExerciseIds': recommendedExerciseIds,
         'coverEmoji': coverEmoji,
+        'gender': gender,
         'blocks': blocks.map((b) => {'type': b.type.name, 'text': b.text}).toList(),
       };
 }

@@ -16,6 +16,23 @@ const Map<String, String> kGoalArtAssets = {
 /// 系统课程封面（按课程 id 定位）
 String courseArtAsset(String courseId) => 'assets/images/art/$courseId.png';
 
+/// 详情内容配图（按目标主题定位）
+String detailArtAsset(String? goal) {
+  switch (goal) {
+    case 'cut':
+      return 'assets/images/art/detail_cut.png';
+    case 'shape':
+      return 'assets/images/art/detail_shape.png';
+    case 'strength':
+      return 'assets/images/art/detail_strength.png';
+    case 'keep':
+    case 'maintain':
+      return 'assets/images/art/detail_keep.png';
+    default:
+      return 'assets/images/art/detail_bulk.png';
+  }
+}
+
 /// 首页 Banner 背景（按 banner type 定位）
 const Map<String, String> kBannerArtAssets = {
   'teaching': 'assets/images/banners/banner_teaching.png',

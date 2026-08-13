@@ -33,6 +33,7 @@ import 'pages/data_privacy_page.dart';
 import 'pages/about_page.dart';
 import 'pages/privacy_security_page.dart';
 import 'pages/help_feedback_page.dart';
+import 'pages/contact_page.dart';
 import 'pages/achievement_page.dart';
 import 'pages/redeem_page.dart';
 import 'pages/invitation_page.dart';
@@ -370,6 +371,11 @@ GoRouter createRouter() {
         path: '/help-feedback',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const HelpFeedbackPage(),
+      ),
+      GoRoute(
+        path: '/contact',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ContactPage(),
       ),
       GoRoute(
         path: '/achievements',
