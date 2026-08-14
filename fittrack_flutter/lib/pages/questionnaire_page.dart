@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../services/daily_reminder_service.dart';
 import '../services/user_profile_generator.dart';
 import '../widgets/common_widgets.dart';
 
@@ -200,6 +201,9 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     settings['trainingTime'] = _trainingTime;
     settings['channelSource'] = _channelSource ?? '';
     Storage.saveSettings(settings);
+    // 问卷页可能设置了训练时间：按当前开关状态重新调度每日提醒
+    // （开关关闭时 reschedule 内部会取消，无副作用）
+    DailyReminderService.instance.reschedule();
 
     // Save body data if height/weight provided
     if (profileData['height'] != 0 || profileData['weight'] != 0) {

@@ -141,12 +141,13 @@ class OhosReminderService {
 
   /// 发布每日训练提醒
   /// [timeStr] 格式 "HH:mm"，如 "18:00"
-  Future<void> scheduleTrainingReminder({
+  /// 返回 true 表示原生侧发布成功（原生侧会校验 publishReminder 结果并回调错误）。
+  Future<bool> scheduleTrainingReminder({
     required String title,
     required String content,
     required String timeStr,
   }) async {
-    if (!isOhos) return;
+    if (!isOhos) return false;
     try {
       await _channel.invokeMethod<void>('scheduleTrainingReminder', {
         'title': title,
@@ -154,8 +155,14 @@ class OhosReminderService {
         'timeStr': timeStr,
       });
       debugPrint('[OhosReminder] scheduleTrainingReminder: $timeStr');
+      return true;
+    } on PlatformException catch (e) {
+      debugPrint(
+          '[OhosReminder] scheduleTrainingReminder failed: ${e.code} - ${e.message}');
+      return false;
     } catch (e) {
       debugPrint('[OhosReminder] scheduleTrainingReminder error: $e');
+      return false;
     }
   }
 
@@ -172,21 +179,32 @@ class OhosReminderService {
 
   /// 调度健身卡到期提醒（后台代理提醒）
   /// [dateStr] 格式 "YYYY-MM-DD"，提醒时间固定为当天 10:00
-  Future<void> scheduleGymCardReminder({
+  /// [notificationId] 系统通知 ID，多张卡需传不同值避免互相覆盖
+  /// 返回 true 表示原生侧发布成功。
+  Future<bool> scheduleGymCardReminder({
     required String title,
     required String content,
     required String dateStr,
+    required int notificationId,
   }) async {
-    if (!isOhos) return;
+    if (!isOhos) return false;
     try {
       await _channel.invokeMethod<void>('scheduleGymCardReminder', {
         'title': title,
         'content': content,
         'dateStr': dateStr,
+        'notificationId': notificationId,
       });
-      debugPrint('[OhosReminder] scheduleGymCardReminder: $dateStr');
+      debugPrint(
+          '[OhosReminder] scheduleGymCardReminder: $dateStr, id=$notificationId');
+      return true;
+    } on PlatformException catch (e) {
+      debugPrint(
+          '[OhosReminder] scheduleGymCardReminder failed: ${e.code} - ${e.message}');
+      return false;
     } catch (e) {
       debugPrint('[OhosReminder] scheduleGymCardReminder error: $e');
+      return false;
     }
   }
 

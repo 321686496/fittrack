@@ -6,6 +6,7 @@ import '../data/storage.dart';
 import '../utils/platform_utils.dart';
 import 'notification_storage_service.dart';
 import 'ohos_reminder_service.dart';
+import 'reminder_schedule_calculator.dart';
 
 /// 每日训练提醒调度服务
 ///
@@ -15,7 +16,8 @@ import 'ohos_reminder_service.dart';
 ///
 /// 调度时机：
 /// - App 启动时（main.dart）
-/// - 设置页开关/时间变更时（reminder_settings_page / profile_page）
+/// - 设置页开关/时间变更时（reminder_settings_page / profile_page / questionnaire_page）
+/// - App 回到前台时（main.dart didChangeAppLifecycleState）
 class DailyReminderService {
   DailyReminderService._();
 
@@ -35,14 +37,25 @@ class DailyReminderService {
     try {
       _plugin = FlutterLocalNotificationsPlugin();
 
-      // Android：先 initialize 注册插件 handler，否则并行初始化时
-      // createNotificationChannel/zonedSchedule 可能因未注册而抛出
-      // MissingPluginException，导致启动期调度静默失败。
       if (!isOhos) {
+        // 必须同时提供 Android 与 iOS/macOS 初始化设置，否则在 iOS 上
+        // initialize() 会抛 ArgumentError，导致 _initialized 永远为 false，
+        // 之后所有 reschedule() 都会静默失效（每日训练提醒在 iOS 上从不调度）。
         const androidSettings =
             AndroidInitializationSettings('@mipmap/ic_launcher');
-        const initSettings = InitializationSettings(android: androidSettings);
+        const darwinSettings = DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        );
+        const initSettings = InitializationSettings(
+          android: androidSettings,
+          iOS: darwinSettings,
+          macOS: darwinSettings,
+        );
         await _plugin!.initialize(initSettings);
+
+        await _requestPermissions();
       }
 
       // 创建 Android 通知渠道（独立于休息提醒渠道）
@@ -64,6 +77,33 @@ class DailyReminderService {
       await reschedule();
     } catch (e) {
       debugPrint('[DailyReminder] init() error: $e');
+    }
+  }
+
+  /// Android 13+ 通知权限、Android 12+ 精确闹钟权限、iOS alert/badge/sound 权限
+  Future<void> _requestPermissions() async {
+    try {
+      final androidPlugin = _plugin!.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin != null) {
+        await androidPlugin.requestNotificationsPermission();
+        // 精确闹钟权限拿不到时由 _scheduleDailyAt 自动降级为 inexact
+        try {
+          await androidPlugin.requestExactAlarmsPermission();
+        } catch (_) {}
+        return;
+      }
+      final iosPlugin = _plugin!.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
+      if (iosPlugin != null) {
+        await iosPlugin.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      }
+    } catch (e) {
+      debugPrint('[DailyReminder] request permissions error: $e');
     }
   }
 
@@ -100,16 +140,16 @@ class DailyReminderService {
 
       if (isOhos) {
         // OHOS：调用原生代理提醒（每日重复由原生侧实现）
-        await OhosReminderService.instance.scheduleTrainingReminder(
+        final ok = await OhosReminderService.instance.scheduleTrainingReminder(
           title: '训练时间到',
           content: '今天也要坚持训练哦，开始你的训练吧！',
           timeStr: timeStr,
         );
-        debugPrint('[DailyReminder] OHOS scheduled at $timeStr');
+        debugPrint('[DailyReminder] OHOS scheduled at $timeStr -> $ok');
       } else {
         // Android/iOS：使用 zonedSchedule 每日重复
         await _scheduleDailyAt(hour, minute);
-        debugPrint('[DailyReminder] Android scheduled at $hour:$minute');
+        debugPrint('[DailyReminder] scheduled at $hour:$minute');
       }
     } catch (e) {
       debugPrint('[DailyReminder] reschedule() error: $e');
@@ -120,19 +160,18 @@ class DailyReminderService {
   Future<void> _scheduleDailyAt(int hour, int minute) async {
     if (_plugin == null) return;
 
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(
+    final now = DateTime.now();
+    final next =
+        nextDailyReminder(now, hour, minute);
+    final scheduled = tz.TZDateTime(
       tz.local,
-      now.year,
-      now.month,
-      now.day,
-      hour,
-      minute,
+      next.year,
+      next.month,
+      next.day,
+      next.hour,
+      next.minute,
+      next.second,
     );
-    // 若时间已过，推到明天
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
-    }
 
     const androidDetails = AndroidNotificationDetails(
       _channelId,
@@ -157,7 +196,7 @@ class DailyReminderService {
             UILocalNotificationDateInterpretation.absoluteTime,
       );
     } on PlatformException {
-      // Android 12+ 上用户可能拒绝精确闹钟权限（exactAllowWhileIdle 会抛
+      // Android 12+ 用户可能拒绝精确闹钟权限（exactAllowWhileIdle 会抛
       // ExactAlarmPermissionException）。降级为 inexactAllowWhileIdle，
       // 避免静默失败导致通知完全不触发。
       debugPrint(
@@ -192,7 +231,7 @@ class DailyReminderService {
   /// 检查今日训练提醒是否已触发，如已触发则写入 App 内通知系统
   ///
   /// 由于 MaxScreenWantAgent 不支持 parameters 字段，无法通过 wantAgent 传递
-  /// notificationType，因此改为在 App 回到前台时检查今日训练时间是否已过，
+  /// notificationType，因此在 App 回到前台时检查今日训练时间是否已过，
   /// 若已过且当日尚未写入通知记录，则补写一条 App 内通知。
   Future<void> checkAndRecordNotification() async {
     try {
