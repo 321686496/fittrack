@@ -175,6 +175,8 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
       SmartPushService.instance.scheduleDailyCheck();
       // 回到前台时检查健身卡到期提醒（同日只推一次）
       GymCardReminderService.instance.checkAndPush();
+      // 回到前台时重新调度健身卡后台提醒（防止系统杀后台/一次性提醒触发后调度丢失）
+      GymCardReminderService.instance.reschedule();
       // 回到前台时重新调度每日训练提醒（防止系统杀后台后调度丢失）
       DailyReminderService.instance.reschedule();
       // 回到前台时检查今日训练提醒是否已触发并补写 App 内通知记录

@@ -27,6 +27,14 @@ const CAPSULE_ICON: string = 'liveview_icon.png';
 // 休息倒计时降级持续通知的 ID（实况窗不可用时使用）
 const REST_FALLBACK_NOTIFICATION_ID: number = 200;
 
+// 每日训练 / 健身卡到期提醒的代理提醒状态持久化
+const REMINDER_PREFS_NAME: string = 'fittrack_reminder_state';
+const KEY_DAILY_REMINDER_IDS: string = 'daily_reminder_ids';
+const KEY_GYM_CARD_REMINDER_IDS: string = 'gym_card_reminder_ids';
+const DAILY_REMINDER_GROUP: string = 'fittrack_daily_training';
+const GYM_CARD_REMINDER_GROUP: string = 'fittrack_gym_card';
+const DAILY_REMINDER_NOTIFICATION_ID: number = 3001;
+
 class FormDataCallHandler implements MethodCallHandler {
   private ability: EntryAbility;
 
@@ -925,21 +933,103 @@ export default class EntryAbility extends FlutterAbility {
     }
   }
 
+  // ============================================================
+  // 每日训练 / 健身卡到期提醒：状态持久化与按组清理
+  // ============================================================
+
+  private getReminderPrefs(): preferences.Preferences {
+    return preferences.getPreferencesSync(this.context, { name: REMINDER_PREFS_NAME });
+  }
+
+  private readReminderIds(key: string): number[] {
+    try {
+      const prefs = this.getReminderPrefs();
+      const raw: string = prefs.getSync(key, '[]') as string;
+      const arr: number[] = JSON.parse(raw) as number[];
+      return arr.filter((n: number) => typeof n === 'number');
+    } catch (e) {
+      console.warn(`[FitTrack] readReminderIds failed: ${key}, ${e}`);
+      return [];
+    }
+  }
+
+  private writeReminderIds(key: string, ids: number[]): void {
+    try {
+      const prefs = this.getReminderPrefs();
+      prefs.putSync(key, JSON.stringify(ids));
+      prefs.flushSync();
+    } catch (e) {
+      console.warn(`[FitTrack] writeReminderIds failed: ${key}, ${e}`);
+    }
+  }
+
+  private persistReminderId(key: string, reminderId: number): void {
+    const ids = this.readReminderIds(key);
+    if (!ids.includes(reminderId)) {
+      ids.push(reminderId);
+      this.writeReminderIds(key, ids);
+    }
+  }
+
+  private async cancelRemindersByIds(ids: number[]): Promise<void> {
+    for (const id of ids) {
+      try {
+        await reminderAgentManager.cancelReminder(id);
+        console.info(`[FitTrack] 代理提醒已取消, id=${id}`);
+      } catch (e) {
+        const err: BusinessError = e as BusinessError;
+        console.warn(`[FitTrack] 取消代理提醒失败(可能已失效): id=${id}, code=${err.code}`);
+      }
+    }
+  }
+
+  /// 取消指定 groupId 的全部有效提醒（覆盖进程重启后内存 id 丢失的情况）
+  private async cancelRemindersByGroup(groupId: string, prefKey: string): Promise<void> {
+    // 1. 清理持久化记录的 id
+    const persisted = this.readReminderIds(prefKey);
+    await this.cancelRemindersByIds(persisted);
+    this.writeReminderIds(prefKey, []);
+    // 2. 扫描系统中仍有效的本组提醒（兼容旧版本/迁移残留）
+    try {
+      const reminders: reminderAgentManager.ReminderInfo[] =
+        await reminderAgentManager.getAllValidReminders();
+      const toCancel: number[] = [];
+      reminders.forEach((info: reminderAgentManager.ReminderInfo) => {
+        const req = info.reminderReq;
+        if (req !== undefined && req !== null && req.groupId === groupId) {
+          toCancel.push(info.reminderId);
+        }
+      });
+      if (toCancel.length > 0) {
+        await this.cancelRemindersByIds(toCancel);
+      }
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.warn(`[FitTrack] getAllValidReminders 失败: code=${err.code}, msg=${err.message}`);
+    }
+  }
+
   /// 发布每日训练提醒（按 HH:mm 每日重复）
   /// 使用 ReminderRequestAlarm 实现每日定点重复（daysOfWeek 1-7 表示每天）
-  scheduleTrainingReminder(title: string, content: string, timeStr: string): void {
-    this.cancelTrainingReminder();
+  /// 发布成功/失败都会通过 [result] 回传，避免 Flutter 侧静默失败。
+  async scheduleTrainingReminder(
+    title: string,
+    content: string,
+    timeStr: string,
+    result: MethodResult
+  ): Promise<void> {
+    await this.cancelRemindersByGroup(DAILY_REMINDER_GROUP, KEY_DAILY_REMINDER_IDS);
 
     // 解析 "HH:mm"
     const parts: string[] = timeStr.split(':');
     if (parts.length !== 2) {
-      console.error(`[FitTrack] scheduleTrainingReminder 时间格式错误: ${timeStr}`);
+      result.error('INVALID_TIME', `时间格式错误: ${timeStr}`, null);
       return;
     }
     const hour: number = parseInt(parts[0], 10);
     const minute: number = parseInt(parts[1], 10);
     if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      console.error(`[FitTrack] scheduleTrainingReminder 时间非法: ${timeStr}`);
+      result.error('INVALID_TIME', `时间非法: ${timeStr}`, null);
       return;
     }
 
@@ -950,8 +1040,6 @@ export default class EntryAbility extends FlutterAbility {
         bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
 
       // ReminderRequestAlarm：闹钟类型，按 hour/minute + daysOfWeek 每日定点重复。
-      // 修复：之前使用 ReminderRequestCalendar 且 repeatMonths/repeatDays 为空，
-      // 按 OHOS 语义空数组表示"不重复只触发一次"，导致每日训练提醒不会每日触发。
       // 闹钟类型 daysOfWeek 为 [1,2,3,4,5,6,7]（1=周一）即每天触发；
       // 且闹钟类型不依赖具体日期，即使当天该时刻已过也会在次日按时触发。
       let reminderRequest: reminderAgentManager.ReminderRequestAlarm = {
@@ -962,7 +1050,8 @@ export default class EntryAbility extends FlutterAbility {
         daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
         title: title,
         content: content,
-        notificationId: 3001,
+        notificationId: DAILY_REMINDER_NOTIFICATION_ID,
+        groupId: DAILY_REMINDER_GROUP,
         // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
         slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
         wantAgent: {
@@ -982,46 +1071,48 @@ export default class EntryAbility extends FlutterAbility {
         ],
       };
 
-      reminderAgentManager.publishReminder(reminderRequest).then((reminderId: number) => {
-        this.trainingReminderId = reminderId;
-        console.info(`[FitTrack] 每日训练提醒发布成功, id=${reminderId}, time=${timeStr}`);
-      }).catch((err: BusinessError) => {
-        console.error(`[FitTrack] 每日训练提醒发布失败: code=${err.code}, msg=${err.message}`);
-      });
+      const reminderId: number = await reminderAgentManager.publishReminder(reminderRequest);
+      this.trainingReminderId = reminderId;
+      this.persistReminderId(KEY_DAILY_REMINDER_IDS, reminderId);
+      console.info(`[FitTrack] 每日训练提醒发布成功, id=${reminderId}, time=${timeStr}`);
+      result.success(reminderId);
     } catch (e) {
       const err: BusinessError = e as BusinessError;
-      console.error(`[FitTrack] scheduleTrainingReminder 异常: code=${err.code}, msg=${err.message}`);
+      console.error(`[FitTrack] 每日训练提醒发布失败: code=${err.code}, msg=${err.message}`);
+      result.error('PUBLISH_FAILED', `code=${err.code}, msg=${err.message}`, null);
     }
   }
 
-  /// 取消每日训练提醒
-  cancelTrainingReminder(): void {
-    if (this.trainingReminderId === -1) {
-      return;
-    }
+  /// 取消每日训练提醒（按 group + 持久化 id 清理，覆盖进程重启后内存 id 丢失）
+  async cancelTrainingReminder(result: MethodResult): Promise<void> {
     try {
-      let id: number = this.trainingReminderId;
+      await this.cancelRemindersByGroup(DAILY_REMINDER_GROUP, KEY_DAILY_REMINDER_IDS);
       this.trainingReminderId = -1;
-      reminderAgentManager.cancelReminder(id).then(() => {
-        console.info(`[FitTrack] 每日训练提醒已取消, id=${id}`);
-      }).catch((err: BusinessError) => {
-        console.error(`[FitTrack] 取消每日训练提醒失败: code=${err.code}, msg=${err.message}`);
-      });
+      console.info('[FitTrack] 每日训练提醒已全部取消');
+      result.success(null);
     } catch (e) {
       const err: BusinessError = e as BusinessError;
       console.error(`[FitTrack] cancelTrainingReminder 异常: code=${err.code}, msg=${err.message}`);
+      result.error('CANCEL_FAILED', `code=${err.code}, msg=${err.message}`, null);
     }
   }
 
   /// 调度健身卡到期提醒（后台代理提醒）
   /// [dateStr] 格式 "YYYY-MM-DD"，提醒时间固定为当天 10:00
-  scheduleGymCardReminder(title: string, content: string, dateStr: string): void {
-    this.cancelGymCardReminder();
-
+  /// [notificationId] 通知 ID，多张卡需传不同值避免互相覆盖
+  /// 发布成功/失败都会通过 [result] 回传，避免 Flutter 侧静默失败。
+  /// 注意：本方法只发布单条提醒，不做取消（批量重排前由 Flutter 侧先调用 cancelGymCardReminder）。
+  async scheduleGymCardReminder(
+    title: string,
+    content: string,
+    dateStr: string,
+    notificationId: number,
+    result: MethodResult
+  ): Promise<void> {
     // 解析 dateStr "YYYY-MM-DD"
     const parts: string[] = dateStr.split('-');
     if (parts.length !== 3) {
-      console.error(`[FitTrack] scheduleGymCardReminder 日期格式错误: ${dateStr}`);
+      result.error('INVALID_DATE', `日期格式错误: ${dateStr}`, null);
       return;
     }
     const year: number = parseInt(parts[0], 10);
@@ -1029,11 +1120,11 @@ export default class EntryAbility extends FlutterAbility {
     const day: number = parseInt(parts[2], 10);
     if (isNaN(year) || isNaN(month) || isNaN(day) ||
       month < 1 || month > 12 || day < 1 || day > 31) {
-      console.error(`[FitTrack] scheduleGymCardReminder 日期非法: ${dateStr}`);
+      result.error('INVALID_DATE', `日期非法: ${dateStr}`, null);
       return;
     }
 
-    console.info(`[FitTrack] 准备发布健身卡到期提醒, date=${dateStr}, time=10:00`);
+    console.info(`[FitTrack] 准备发布健身卡到期提醒, date=${dateStr}, time=10:00, notificationId=${notificationId}`);
 
     try {
       const bundleInfo: bundleManager.BundleInfo =
@@ -1049,7 +1140,8 @@ export default class EntryAbility extends FlutterAbility {
           triggerTimeInSeconds: 60,
           title: title,
           content: content,
-          notificationId: 4001,
+          notificationId: notificationId,
+          groupId: GYM_CARD_REMINDER_GROUP,
           slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
           wantAgent: {
             pkgName: bundleInfo.name,
@@ -1066,17 +1158,15 @@ export default class EntryAbility extends FlutterAbility {
             },
           ],
         };
-        reminderAgentManager.publishReminder(timerRequest).then((reminderId: number) => {
-          this.gymCardReminderId = reminderId;
-          console.info(`[FitTrack] 健身卡到期提醒(倒计时)发布成功, id=${reminderId}`);
-        }).catch((err: BusinessError) => {
-          console.error(`[FitTrack] 健身卡到期提醒(倒计时)发布失败: code=${err.code}, msg=${err.message}`);
-        });
+        const reminderId: number = await reminderAgentManager.publishReminder(timerRequest);
+        this.gymCardReminderId = reminderId;
+        this.persistReminderId(KEY_GYM_CARD_REMINDER_IDS, reminderId);
+        console.info(`[FitTrack] 健身卡到期提醒(倒计时)发布成功, id=${reminderId}`);
+        result.success(reminderId);
         return;
       }
 
       // ReminderRequestCalendar：按指定日历时间触发（一次性，不重复）
-      // 注意：MaxScreenWantAgent 不支持 parameters 字段，wantAgent 只填 pkgName + abilityName
       let reminderRequest: reminderAgentManager.ReminderRequestCalendar = {
         reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
         dateTime: {
@@ -1092,7 +1182,8 @@ export default class EntryAbility extends FlutterAbility {
         repeatDays: [],
         title: title,
         content: content,
-        notificationId: 4001,
+        notificationId: notificationId,
+        groupId: GYM_CARD_REMINDER_GROUP,
         // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
         slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
         wantAgent: {
@@ -1112,34 +1203,29 @@ export default class EntryAbility extends FlutterAbility {
         ],
       };
 
-      reminderAgentManager.publishReminder(reminderRequest).then((reminderId: number) => {
-        this.gymCardReminderId = reminderId;
-        console.info(`[FitTrack] 健身卡代理提醒发布成功, id=${reminderId}, date=${dateStr}`);
-      }).catch((err: BusinessError) => {
-        console.error(`[FitTrack] 健身卡代理提醒发布失败: code=${err.code}, msg=${err.message}`);
-      });
+      const reminderId: number = await reminderAgentManager.publishReminder(reminderRequest);
+      this.gymCardReminderId = reminderId;
+      this.persistReminderId(KEY_GYM_CARD_REMINDER_IDS, reminderId);
+      console.info(`[FitTrack] 健身卡代理提醒发布成功, id=${reminderId}, date=${dateStr}`);
+      result.success(reminderId);
     } catch (e) {
       const err: BusinessError = e as BusinessError;
-      console.error(`[FitTrack] scheduleGymCardReminder 异常: code=${err.code}, msg=${err.message}`);
+      console.error(`[FitTrack] 健身卡代理提醒发布失败: code=${err.code}, msg=${err.message}`);
+      result.error('PUBLISH_FAILED', `code=${err.code}, msg=${err.message}`, null);
     }
   }
 
-  /// 取消健身卡到期提醒
-  cancelGymCardReminder(): void {
-    if (this.gymCardReminderId === -1) {
-      return;
-    }
+  /// 取消全部健身卡到期提醒（按 group 清理，兼容多卡与进程重启）
+  async cancelGymCardReminder(result: MethodResult): Promise<void> {
     try {
-      let id: number = this.gymCardReminderId;
+      await this.cancelRemindersByGroup(GYM_CARD_REMINDER_GROUP, KEY_GYM_CARD_REMINDER_IDS);
       this.gymCardReminderId = -1;
-      reminderAgentManager.cancelReminder(id).then(() => {
-        console.info(`[FitTrack] 健身卡代理提醒已取消, id=${id}`);
-      }).catch((err: BusinessError) => {
-        console.error(`[FitTrack] 取消健身卡代理提醒失败: code=${err.code}, msg=${err.message}`);
-      });
+      console.info('[FitTrack] 健身卡代理提醒已全部取消');
+      result.success(null);
     } catch (e) {
       const err: BusinessError = e as BusinessError;
       console.error(`[FitTrack] cancelGymCardReminder 异常: code=${err.code}, msg=${err.message}`);
+      result.error('CANCEL_FAILED', `code=${err.code}, msg=${err.message}`, null);
     }
   }
 
@@ -1162,13 +1248,11 @@ class ReminderCallHandler implements MethodCallHandler {
         const title = (args['title'] as string) ?? '训练时间到';
         const content = (args['content'] as string) ?? '今天也要坚持训练哦！';
         const timeStr = (args['timeStr'] as string) ?? '';
-        this.ability.scheduleTrainingReminder(title, content, timeStr);
-        result.success(null);
+        this.ability.scheduleTrainingReminder(title, content, timeStr, result);
         break;
       }
       case 'cancelTrainingReminder': {
-        this.ability.cancelTrainingReminder();
-        result.success(null);
+        this.ability.cancelTrainingReminder(result);
         break;
       }
       case 'scheduleGymCardReminder': {
@@ -1176,13 +1260,12 @@ class ReminderCallHandler implements MethodCallHandler {
         const title = (args['title'] as string) ?? '';
         const content = (args['content'] as string) ?? '';
         const dateStr = (args['dateStr'] as string) ?? '';
-        this.ability.scheduleGymCardReminder(title, content, dateStr);
-        result.success(null);
+        const notificationId = (args['notificationId'] as number) ?? 4001;
+        this.ability.scheduleGymCardReminder(title, content, dateStr, notificationId, result);
         break;
       }
       case 'cancelGymCardReminder': {
-        this.ability.cancelGymCardReminder();
-        result.success(null);
+        this.ability.cancelGymCardReminder(result);
         break;
       }
       default:
