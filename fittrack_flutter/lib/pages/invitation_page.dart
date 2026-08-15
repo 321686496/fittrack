@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../data/storage.dart';
 import '../services/invitation_service.dart';
 import '../themes/app_themes.dart';
@@ -9,6 +10,7 @@ import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
 import '../widgets/opponent/opponent_renderer.dart';
 import '../widgets/opponent/opponent_skin_config.dart';
+import 'qr_scan_page.dart';
 
 /// v1.1 邀请有礼页面（4 区段结构）
 ///
@@ -745,30 +747,53 @@ class _InvitationPageState extends State<InvitationPage> {
             style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _receiptController,
-            textCapitalization: TextCapitalization.characters,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
-            ],
-            decoration: InputDecoration(
-              hintText: 'FIT-ACT-XXXXXXXXXX-XXXXXXX',
-              hintStyle: TextStyle(color: colors.textMuted, letterSpacing: 1),
-              filled: true,
-              fillColor: colors.bgSecondary,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _receiptController,
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
+                  ],
+                  decoration: InputDecoration(
+                    hintText: 'FIT-ACT-XXXXXXXXXX-XXXXXXX',
+                    hintStyle: TextStyle(color: colors.textMuted, letterSpacing: 1),
+                    filled: true,
+                    fillColor: colors.bgSecondary,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 14,
+                    letterSpacing: 1,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
-            style: TextStyle(
-              color: colors.textPrimary,
-              fontSize: 14,
-              letterSpacing: 1,
-              fontWeight: FontWeight.w600,
-            ),
+              const SizedBox(width: 10),
+              SizedBox(
+                height: 50,
+                width: 50,
+                child: OutlinedButton(
+                  onPressed: _scanReceipt,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    foregroundColor: colors.accentGlow,
+                    side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Icon(Icons.qr_code_scanner, size: 22),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -878,6 +903,21 @@ class _InvitationPageState extends State<InvitationPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _scanReceipt() async {
+    final raw = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const QrScanPage(title: '扫码识别')),
+    );
+    if (raw == null || raw.isEmpty || !mounted) return;
+
+    final code = raw.trim().toUpperCase();
+    if (!RegExp(r'^FIT-ACT-([A-Z0-9]{17})$').hasMatch(code)) {
+      FitToast.error(context, '未识别到有效的识别码');
+      return;
+    }
+    _receiptController.text = code;
+    await _verifyReceipt();
   }
 
   Future<void> _verifyReceipt() async {
@@ -1005,29 +1045,52 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _activateController,
-              textCapitalization: TextCapitalization.characters,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
-              ],
-              decoration: InputDecoration(
-                hintText: 'FIT-INV-XXXXXX',
-                hintStyle: TextStyle(color: colors.textMuted, letterSpacing: 1),
-                filled: true,
-                fillColor: colors.bgSecondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _activateController,
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'FIT-INV-XXXXXX',
+                      hintStyle: TextStyle(color: colors.textMuted, letterSpacing: 1),
+                      filled: true,
+                      fillColor: colors.bgSecondary,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 16,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              ),
-              style: TextStyle(
-                color: colors.textPrimary,
-                fontSize: 16,
-                letterSpacing: 1,
-                fontWeight: FontWeight.w600,
-              ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: OutlinedButton(
+                    onPressed: _scanInviteCode,
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      foregroundColor: colors.accentGlow,
+                      side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Icon(Icons.qr_code_scanner, size: 22),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1128,6 +1191,26 @@ class _InvitationPageState extends State<InvitationPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 识别码二维码（好友可扫码识别）
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: QrImageView(
+                data: code,
+                version: QrVersions.auto,
+                size: 160,
+                gapless: true,
+                errorStateBuilder: (ctx, err) => Icon(
+                  Icons.error_outline,
+                  color: colors.warningColor,
+                  size: 48,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             SelectableText(
               code,
               textAlign: TextAlign.center,
@@ -1140,7 +1223,7 @@ class _InvitationPageState extends State<InvitationPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              '将此码发给邀请你的好友。好友在「记录邀请成果」中输入确认后，'
+              '将此码发给邀请你的好友。好友在「记录邀请成果」中扫码或输入确认后，'
               '双方均可获得奖励。每次生成均反映你最新的训练数据。',
               style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
             ),
@@ -1163,6 +1246,29 @@ class _InvitationPageState extends State<InvitationPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _scanInviteCode() async {
+    final raw = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const QrScanPage(title: '扫码激活')),
+    );
+    if (raw == null || raw.isEmpty || !mounted) return;
+
+    // 兼容两种扫码内容：海报深链 fittrack://invite?code=XXX 或纯邀请码 XXX
+    var code = raw.trim();
+    final uri = Uri.tryParse(code);
+    if (uri != null && uri.scheme == 'fittrack') {
+      final c = uri.queryParameters['code'];
+      if (c != null && c.isNotEmpty) code = c;
+    }
+    code = code.toUpperCase();
+
+    if (!RegExp(r'^FIT-INV-([A-Z0-9]{6})$').hasMatch(code)) {
+      FitToast.error(context, '未识别到有效的邀请码');
+      return;
+    }
+    _activateController.text = code;
+    await _activate();
   }
 
   Future<void> _activate() async {
