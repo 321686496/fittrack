@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -234,6 +234,7 @@ class Storage {
       'status': plan['status'] ?? 'active',
       'progress': plan['progress'] ?? 0,
       'currentDayIndex': plan['currentDayIndex'] ?? 0,
+      'gender': plan['gender'] ?? 'all',
     };
     await _db.insertPlan(newPlan);
     // 同步更新缓存，保证后�?getPlans() 立即拿到新计�?
@@ -254,6 +255,7 @@ class Storage {
       'status': plan['status'] ?? 'active',
       'progress': plan['progress'] ?? 0,
       'currentDayIndex': plan['currentDayIndex'] ?? 0,
+      'gender': plan['gender'] ?? 'all',
     };
     _plansCache.add(newPlan);
     _plansCacheDirty = true;
