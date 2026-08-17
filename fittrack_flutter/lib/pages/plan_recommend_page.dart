@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
@@ -39,15 +39,6 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
 
   Future<void> _selectPlan(PlanRecommendation rec) async {
     try {
-      // 暂停现有 active 计划（await 确保持久化完成）
-      final existingPlans = Storage.getPlans();
-      for (final p in existingPlans) {
-        if (p['status'] == 'active') {
-          await Storage.updatePlanAsync(
-              p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
-        }
-      }
-
       // 检查是否为精品计划且未解锁
       if (rec.plan.isPremium &&
           !PlanUnlockService.instance.isPlanUnlocked(rec.plan.id)) {
@@ -57,8 +48,24 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
         return;
       }
 
-      // 添加新计划
-      final newPlan = rec.plan.toStoragePlan();
+      // 先进入重量确认页，用户确认/修改后返回 动作id → 重量
+      final weights =
+          await context.push<Map<String, double>>('/plan-weight-confirm',
+              extra: rec.plan);
+      if (!mounted) return;
+      if (weights == null) return; // 用户取消
+
+      // 暂停现有 active 计划（await 确保持久化完成）
+      final existingPlans = Storage.getPlans();
+      for (final p in existingPlans) {
+        if (p['status'] == 'active') {
+          await Storage.updatePlanAsync(
+              p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+        }
+      }
+
+      // 添加新计划（携带确认后的建议重量）
+      final newPlan = rec.plan.toStoragePlan(weights: weights);
       await Storage.addPlanAsync(newPlan);
       Storage.dataChanged.value = !Storage.dataChanged.value;
 
