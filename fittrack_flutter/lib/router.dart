@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'data/storage.dart';
+import 'data/system_plan_library.dart';
 import 'themes/app_themes.dart';
 import 'pages/splash_page.dart';
 import 'pages/onboarding_page.dart';
@@ -56,6 +57,7 @@ import 'pages/plan_library_home_page.dart';
 import 'pages/plan_library_category_page.dart';
 import 'pages/plan_library_detail_page.dart';
 import 'pages/plan_search_page.dart';
+import 'pages/plan_weight_confirm_page.dart';
 import 'pages/max_weight_detail_page.dart';
 import 'pages/opponent_detail_page.dart';
 import 'pages/logo_preview_page.dart';
@@ -274,6 +276,14 @@ GoRouter createRouter() {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => PlanLibraryCategoryPage(
           goal: state.params['goal']!,
+        ),
+      ),
+      GoRoute(
+        path: '/plan-weight-confirm',
+        name: 'planWeightConfirm',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => PlanWeightConfirmPage(
+          plan: state.extra as SystemPlan,
         ),
       ),
       GoRoute(
