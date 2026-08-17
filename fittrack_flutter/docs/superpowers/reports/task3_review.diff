@@ -1,0 +1,55 @@
+﻿diff --git a/fittrack_flutter/lib/data/system_plan_library.dart b/fittrack_flutter/lib/data/system_plan_library.dart
+index d317999..6c9cd49 100644
+--- a/fittrack_flutter/lib/data/system_plan_library.dart
++++ b/fittrack_flutter/lib/data/system_plan_library.dart
+@@ -210,7 +210,8 @@ class SystemPlan {
+   }
+ 
+   /// 转换为 Storage 中存储的 plan 格式（用于"采用此计划"时写入）
+-  Map<String, dynamic> toStoragePlan() {
++  /// [weights] 为 动作id → 重量(kg)，用于填充系统计划自动计算的建议重量
++  Map<String, dynamic> toStoragePlan({Map<String, double>? weights}) {
+     return {
+       'id': 'user_${DateTime.now().millisecondsSinceEpoch}_${id.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}',
+       'name': name,
+@@ -224,7 +225,12 @@ class SystemPlan {
+                 'day': d.day,
+                 'label': d.label,
+                 'muscle': d.muscle,
+-                'exercises': d.exercises.map((e) => e.toJson()).toList(),
++                'exercises': d.exercises.map((e) {
++                  final w = weights?[e.id];
++                  return w != null
++                      ? {...e.toJson(), 'weight': w}
++                      : e.toJson();
++                }).toList(),
+               })
+           .toList(),
+       'week': 1,
+diff --git a/fittrack_flutter/test/weight_recommendation_service_test.dart b/fittrack_flutter/test/weight_recommendation_service_test.dart
+index b2b024f..8892279 100644
+--- a/fittrack_flutter/test/weight_recommendation_service_test.dart
++++ b/fittrack_flutter/test/weight_recommendation_service_test.dart
+@@ -174,6 +174,22 @@ void main() {
+       expect(sug.source, WeightSource.bodyweight);
+     });
+   });
++
++  group('toStoragePlan 重量注入', () {
++    test('注入重量后动作 JSON 含 weight，未注入动作不含', () {
++      final plan = _buildPlan([
++        _day(1, '胸部日', [
++          _ex('ex_001', '杠铃卧推', 4, 10),
++          _ex('ex_002', '卷腹', 3, 20),
++        ]),
++      ]);
++      final storage = plan.toStoragePlan(weights: {'ex_001': 30.0});
++      final days = storage['days'] as List;
++      final exs = (days.first['exercises'] as List).cast<Map<String, dynamic>>();
++      expect(exs[0]['weight'], 30.0);
++      expect(exs[1].containsKey('weight'), isFalse);
++    });
++  });
+ }
+ 
+ // ── 测试辅助 ──────────────────────────────────────────────────
