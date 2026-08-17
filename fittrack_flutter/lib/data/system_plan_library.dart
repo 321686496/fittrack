@@ -210,7 +210,8 @@ class SystemPlan {
   }
 
   /// 转换为 Storage 中存储的 plan 格式（用于"采用此计划"时写入）
-  Map<String, dynamic> toStoragePlan() {
+  /// [weights] 为 动作id → 重量(kg)，用于填充系统计划自动计算的建议重量
+  Map<String, dynamic> toStoragePlan({Map<String, double>? weights}) {
     return {
       'id': 'user_${DateTime.now().millisecondsSinceEpoch}_${id.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}',
       'name': name,
@@ -224,7 +225,12 @@ class SystemPlan {
                 'day': d.day,
                 'label': d.label,
                 'muscle': d.muscle,
-                'exercises': d.exercises.map((e) => e.toJson()).toList(),
+                'exercises': d.exercises.map((e) {
+                  final w = weights?[e.id];
+                  return w != null
+                      ? {...e.toJson(), 'weight': w}
+                      : e.toJson();
+                }).toList(),
               })
           .toList(),
       'week': 1,
