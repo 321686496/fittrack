@@ -10,8 +10,11 @@ import 'reminder_schedule_calculator.dart';
 
 /// 每日训练提醒调度服务
 ///
-/// 根据用户设置（开关 + trainingTime "HH:mm"）调度每日重复提醒：
-/// - Android/iOS：使用 flutter_local_notifications 的 zonedSchedule（每日重复）
+/// 根据用户设置（开关 + trainingTime "HH:mm"）调度每日提醒，时间严格取自
+/// 用户填写的 trainingTime，不写死固定时间：
+/// - Android：zonedSchedule 每日重复触发
+/// - iOS：一次性调度 + 启动/回前台时 reschedule() 重新排下一次
+///   （循环触发在该插件版本上不可靠，见 _scheduleDailyAt）
 /// - OHOS：调用 OhosReminderService.scheduleTrainingReminder()，由原生代理提醒实现
 ///
 /// 调度时机：
@@ -147,7 +150,7 @@ class DailyReminderService {
         );
         debugPrint('[DailyReminder] OHOS scheduled at $timeStr -> $ok');
       } else {
-        // Android/iOS：使用 zonedSchedule 每日重复
+        // Android/iOS：使用 zonedSchedule 调度（iOS 为一次性 + 前台重排）
         await _scheduleDailyAt(hour, minute);
         debugPrint('[DailyReminder] scheduled at $hour:$minute');
       }
@@ -156,13 +159,12 @@ class DailyReminderService {
     }
   }
 
-  /// Android/iOS：使用 flutter_local_notifications 调度每日重复通知
+  /// Android/iOS：使用 flutter_local_notifications 调度每日提醒通知
   Future<void> _scheduleDailyAt(int hour, int minute) async {
     if (_plugin == null) return;
 
     final now = DateTime.now();
-    final next =
-        nextDailyReminder(now, hour, minute);
+    final next = nextDailyReminder(now, hour, minute);
     final scheduled = tz.TZDateTime(
       tz.local,
       next.year,
@@ -181,7 +183,17 @@ class DailyReminderService {
       priority: Priority.high,
       enableVibration: true,
     );
-    const details = NotificationDetails(android: androidDetails);
+    // 必须同时提供 iOS 详情，否则 iOS 上前台横幅/声音展示会被默认关闭
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: DarwinNotificationDetails(),
+    );
+
+    // Android：每日重复触发（可靠，无需反复打开 App）。
+    // iOS：循环触发（matchDateTimeComponents）在该插件版本上不可靠
+    // （GitHub #1343/#1159/#1178），改用一次性调度，由每次启动/回前台时的
+    // reschedule() 重新排下一次，与已验证稳定的 SmartPush 保持一致。
+    final matchDateTimeComponents = isIos ? null : DateTimeComponents.time;
 
     try {
       await _plugin!.zonedSchedule(
@@ -191,7 +203,7 @@ class DailyReminderService {
         scheduled,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time, // 每日按时间重复
+        matchDateTimeComponents: matchDateTimeComponents,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
@@ -208,7 +220,7 @@ class DailyReminderService {
         scheduled,
         details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
+        matchDateTimeComponents: matchDateTimeComponents,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );

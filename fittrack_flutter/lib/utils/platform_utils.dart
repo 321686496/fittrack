@@ -7,3 +7,6 @@ import 'dart:io';
 /// "Unimplemented handling of missing static target"。
 /// 使用 Platform.operatingSystem == 'ohos' 可避免此问题。
 bool get isOhos => Platform.operatingSystem == 'ohos';
+
+/// 是否为 iOS 平台（OHOS 上恒为 false）
+bool get isIos => Platform.isIOS;
