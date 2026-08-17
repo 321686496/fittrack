@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 9;
+  static const int _dbVersion = 10;
 
   Database? _database;
 
@@ -45,6 +45,7 @@ class DatabaseHelper {
         progress INTEGER NOT NULL DEFAULT 0,
         status TEXT NOT NULL DEFAULT 'active',
         badge TEXT NOT NULL DEFAULT '',
+        gender TEXT NOT NULL DEFAULT 'all',
         days TEXT NOT NULL DEFAULT '[]',
         createTime INTEGER NOT NULL,
         updateTime INTEGER NOT NULL,
@@ -270,6 +271,13 @@ class DatabaseHelper {
       // records 表新增 pureDuration 列（纯训练时长，秒精度，不含休息）
       await db.execute(
           'ALTER TABLE records ADD COLUMN pureDuration INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 10) {
+      // plans 表新增 gender 列（适用人群：all/male/female）
+      // 修复：add_plan_page._save() 一直写入 gender，但 schema 缺失导致
+      // INSERT/UPDATE 抛 no such column 异常，表单保存静默失败。
+      await db.execute(
+          "ALTER TABLE plans ADD COLUMN gender TEXT NOT NULL DEFAULT 'all'");
     }
   }
 
