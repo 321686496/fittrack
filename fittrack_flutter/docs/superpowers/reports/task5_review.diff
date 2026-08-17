@@ -1,0 +1,35 @@
+﻿diff --git a/fittrack_flutter/lib/pages/plan_library_detail_page.dart b/fittrack_flutter/lib/pages/plan_library_detail_page.dart
+index 09697c8..cf87689 100644
+--- a/fittrack_flutter/lib/pages/plan_library_detail_page.dart
++++ b/fittrack_flutter/lib/pages/plan_library_detail_page.dart
+@@ -1,4 +1,4 @@
+-﻿// lib/pages/plan_library_detail_page.dart
++// lib/pages/plan_library_detail_page.dart
+ import 'package:flutter/material.dart';
+ import 'package:go_router/go_router.dart';
+ import '../data/storage.dart';
+@@ -525,6 +525,13 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
+ 
+   Future<void> _adoptPlan(SystemPlan plan) async {
+     try {
++      // 先进入重量确认页，用户确认/修改后返回 动作id → 重量
++      final weights =
++          await context.push<Map<String, double>>('/plan-weight-confirm',
++              extra: plan);
++      if (!mounted) return;
++      if (weights == null) return; // 用户取消
++
+       // 暂停现有 active 计划（await 确保持久化完成）
+       final existingPlans = Storage.getPlans();
+       for (final p in existingPlans) {
+@@ -533,8 +540,8 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
+               p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+         }
+       }
+-      // 添加新计划
+-      final newPlan = plan.toStoragePlan();
++      // 添加新计划（携带确认后的建议重量）
++      final newPlan = plan.toStoragePlan(weights: weights);
+       await Storage.addPlanAsync(newPlan);
+       Storage.dataChanged.value = !Storage.dataChanged.value;
+ 
