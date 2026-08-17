@@ -174,6 +174,22 @@ void main() {
       expect(sug.source, WeightSource.bodyweight);
     });
   });
+
+  group('toStoragePlan 重量注入', () {
+    test('注入重量后动作 JSON 含 weight，未注入动作不含', () {
+      final plan = _buildPlan([
+        _day(1, '胸部日', [
+          _ex('ex_001', '杠铃卧推', 4, 10),
+          _ex('ex_002', '卷腹', 3, 20),
+        ]),
+      ]);
+      final storage = plan.toStoragePlan(weights: {'ex_001': 30.0});
+      final days = storage['days'] as List;
+      final exs = (days.first['exercises'] as List).cast<Map<String, dynamic>>();
+      expect(exs[0]['weight'], 30.0);
+      expect(exs[1].containsKey('weight'), isFalse);
+    });
+  });
 }
 
 // ── 测试辅助 ──────────────────────────────────────────────────
