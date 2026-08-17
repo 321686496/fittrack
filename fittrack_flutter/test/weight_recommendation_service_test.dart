@@ -173,6 +173,153 @@ void main() {
       expect(sug.weight, isNull);
       expect(sug.source, WeightSource.bodyweight);
     });
+
+    test('历史名带全角括号后缀「杠铃卧推（5×5）」命中历史重量', () {
+      final service = WeightRecommendationService.instance;
+      final plan = _buildPlan([
+        _day(1, '胸部日', [_ex('ex_001', '杠铃卧推', 4, 10)]),
+      ]);
+      // 旧计划动作名为「杠铃卧推（5×5）」，与系统计划「杠铃卧推」归一化后应一致
+      final oldPlan = _buildUserPlan('user_old_1', [
+        _day(1, '胸部日', [_ex('ex_001', '杠铃卧推（5×5）', 5, 5)]),
+      ]);
+      final result = service.recommendForSystemPlan(
+        plan,
+        records: [
+          {
+            'planId': 'user_old_1',
+            'setRecords': {
+              'ex_001': [
+                {'set': 1, 'weight': 60, 'reps': 5},
+              ],
+            },
+          },
+        ],
+        bodyData: {'height': 175, 'weight': 65},
+        settings: {'fitnessLevel': '新手'},
+        userPlans: [oldPlan],
+      );
+      final sug = result['ex_001']!;
+      expect(sug.source, WeightSource.history);
+      expect(sug.weight, 60.0);
+    });
+
+    test('历史名带半角括号后缀「杠铃卧推(5x5)」命中历史重量', () {
+      final service = WeightRecommendationService.instance;
+      final plan = _buildPlan([
+        _day(1, '胸部日', [_ex('ex_001', '杠铃卧推', 4, 10)]),
+      ]);
+      final oldPlan = _buildUserPlan('user_old_1', [
+        _day(1, '胸部日', [_ex('ex_001', '杠铃卧推(5x5)', 5, 5)]),
+      ]);
+      final result = service.recommendForSystemPlan(
+        plan,
+        records: [
+          {
+            'planId': 'user_old_1',
+            'setRecords': {
+              'ex_001': [
+                {'set': 1, 'weight': 60, 'reps': 5},
+              ],
+            },
+          },
+        ],
+        bodyData: {'height': 175, 'weight': 65},
+        settings: {'fitnessLevel': '新手'},
+        userPlans: [oldPlan],
+      );
+      final sug = result['ex_001']!;
+      expect(sug.source, WeightSource.history);
+      expect(sug.weight, 60.0);
+    });
+
+    test('全角字母差异「ＡＢＣ」vs「ABC」命中历史重量', () {
+      final service = WeightRecommendationService.instance;
+      final plan = _buildPlan([
+        _day(1, '胸部日', [_ex('ex_001', 'ABC', 4, 10)]),
+      ]);
+      final oldPlan = _buildUserPlan('user_old_1', [
+        _day(1, '胸部日', [_ex('ex_001', 'ＡＢＣ', 4, 10)]),
+      ]);
+      final result = service.recommendForSystemPlan(
+        plan,
+        records: [
+          {
+            'planId': 'user_old_1',
+            'setRecords': {
+              'ex_001': [
+                {'set': 1, 'weight': 60, 'reps': 10},
+              ],
+            },
+          },
+        ],
+        bodyData: {'height': 175, 'weight': 65},
+        settings: {'fitnessLevel': '新手'},
+        userPlans: [oldPlan],
+      );
+      final sug = result['ex_001']!;
+      expect(sug.source, WeightSource.history);
+      expect(sug.weight, 60.0);
+    });
+
+    test('中文名 + 全角数字后缀「杠铃卧推２０」vs「杠铃卧推20」命中历史重量', () {
+      final service = WeightRecommendationService.instance;
+      final plan = _buildPlan([
+        _day(1, '胸部日', [_ex('ex_001', '杠铃卧推20', 4, 10)]),
+      ]);
+      final oldPlan = _buildUserPlan('user_old_1', [
+        _day(1, '胸部日', [_ex('ex_001', '杠铃卧推２０', 4, 10)]),
+      ]);
+      final result = service.recommendForSystemPlan(
+        plan,
+        records: [
+          {
+            'planId': 'user_old_1',
+            'setRecords': {
+              'ex_001': [
+                {'set': 1, 'weight': 60, 'reps': 10},
+              ],
+            },
+          },
+        ],
+        bodyData: {'height': 175, 'weight': 65},
+        settings: {'fitnessLevel': '新手'},
+        userPlans: [oldPlan],
+      );
+      final sug = result['ex_001']!;
+      expect(sug.source, WeightSource.history);
+      expect(sug.weight, 60.0);
+    });
+
+    test('归一化后仍不匹配「哑铃弯举」vs「杠铃弯举」回退估算', () {
+      final service = WeightRecommendationService.instance;
+      final plan = _buildPlan([
+        _day(1, '手臂日', [_ex('ex_001', '杠铃弯举', 3, 12)]),
+      ]);
+      final oldPlan = _buildUserPlan('user_old_1', [
+        _day(1, '手臂日', [_ex('ex_001', '哑铃弯举', 3, 12)]),
+      ]);
+      final result = service.recommendForSystemPlan(
+        plan,
+        records: [
+          {
+            'planId': 'user_old_1',
+            'setRecords': {
+              'ex_001': [
+                {'set': 1, 'weight': 20, 'reps': 12},
+              ],
+            },
+          },
+        ],
+        bodyData: {'height': 175, 'weight': 65},
+        settings: {'fitnessLevel': '新手'},
+        userPlans: [oldPlan],
+      );
+      final sug = result['ex_001']!;
+      // 杠铃弯举 → 孤立上肢：65*0.12*1.0*1.0=7.8 → 取整 7.5
+      expect(sug.source, WeightSource.estimate);
+      expect(sug.weight, 7.5);
+    });
   });
 
   group('toStoragePlan 重量注入', () {

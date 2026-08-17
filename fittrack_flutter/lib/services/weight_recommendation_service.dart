@@ -168,6 +168,36 @@ class WeightRecommendationService {
     return result;
   }
 
+  /// 动作名归一化：去空白 → 全角转半角 → 去圆括号后缀，
+  /// 用于历史记录与系统计划动作名的宽松比较，提高历史命中率
+  static String _normalizeName(String name) {
+    // 1. 移除所有空白字符
+    var s = name.replaceAll(RegExp(r'\s+'), '');
+    // 2. 全角 → 半角（全角数字/大小写字母/圆括号/乘号）
+    final buf = StringBuffer();
+    for (final c in s.codeUnits) {
+      if (c >= 0xFF10 && c <= 0xFF19) {
+        buf.writeCharCode(c - 0xFF10 + 0x30); // 全角数字 ０-９ → 0-9
+      } else if (c >= 0xFF21 && c <= 0xFF3A) {
+        buf.writeCharCode(c - 0xFF21 + 0x41); // 全角大写 Ａ-Ｚ → A-Z
+      } else if (c >= 0xFF41 && c <= 0xFF5A) {
+        buf.writeCharCode(c - 0xFF41 + 0x61); // 全角小写 ａ-ｚ → a-z
+      } else if (c == 0xFF08) {
+        buf.write('('); // 全角左括号 （
+      } else if (c == 0xFF09) {
+        buf.write(')'); // 全角右括号 ）
+      } else if (c == 0x00D7) {
+        buf.write('x'); // 乘号 × → x
+      } else {
+        buf.writeCharCode(c);
+      }
+    }
+    s = buf.toString();
+    // 3. 去除成对的圆括号内容（半角/全角），如（5×5）→ ''
+    s = s.replaceAll(RegExp(r'[（(][^（()）]*[）)]'), '');
+    return s;
+  }
+
   /// 在训练记录中按动作名查找最近一次使用的重量
   /// records 最新在前；通过 userPlans 解析记录 setRecords 的 exId → name
   double? _historyWeight(
@@ -201,7 +231,12 @@ class WeightRecommendationService {
       if (setRecords == null) continue;
       for (final entry in setRecords.entries) {
         final exId = entry.key.toString();
-        if (lookup[exId] != exerciseName) continue;
+        // 名称先归一化再比较，容忍括号后缀/全角半角等差异
+        final historyName = lookup[exId];
+        if (historyName == null ||
+            _normalizeName(historyName) != _normalizeName(exerciseName)) {
+          continue;
+        }
         final sets = entry.value as List? ?? [];
         if (sets.isEmpty) continue;
         final lastSet = sets.last as Map;
