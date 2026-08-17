@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -10,6 +10,7 @@ import '../utils/art_assets.dart';
 import '../utils/gender_filter.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/exercise_picker_sheet.dart';
+import '../widgets/exercise_set_table.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
@@ -1419,6 +1420,8 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
           ...exercises.asMap().entries.map((exEntry) {
             final exIdx = exEntry.key;
             final ex = exEntry.value;
+            final setConfig = ex['setConfig'] as List?;
+            final hasPerSet = setConfig != null && setConfig.length > 1;
             // 格式化重量：整数时不显示小数，null 时显示 -
             final weightVal = ex['weight'];
             String weightStr;
@@ -1443,23 +1446,36 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                       style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 4),
-                    // 4 个小标签 + 删除按钮
-                    Row(
-                      children: [
-                        _buildMiniTag(colors, '${ex['sets']}组'),
-                        const SizedBox(width: 6),
-                        _buildMiniTag(colors, '${ex['reps']}次'),
-                        const SizedBox(width: 6),
-                        _buildMiniTag(colors, '${weightStr}kg'),
-                        const SizedBox(width: 6),
-                        _buildMiniTag(colors, '${ex['restTime']}秒'),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => _removeExercise(dayIndex, exIdx),
-                          child: Icon(Icons.close, size: 14, color: colors.textMuted),
-                        ),
-                      ],
-                    ),
+                    if (hasPerSet) ...[
+                      Row(
+                        children: [
+                          _buildMiniTag(colors, '共${ex['sets']}组 · 逐组设置'),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => _removeExercise(dayIndex, exIdx),
+                            child: Icon(Icons.close, size: 14, color: colors.textMuted),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ExerciseSetTable(setConfig: setConfig!),
+                    ] else
+                      Row(
+                        children: [
+                          _buildMiniTag(colors, '${ex['sets']}组'),
+                          const SizedBox(width: 6),
+                          _buildMiniTag(colors, '${ex['reps']}次'),
+                          const SizedBox(width: 6),
+                          _buildMiniTag(colors, '${weightStr}kg'),
+                          const SizedBox(width: 6),
+                          _buildMiniTag(colors, '${ex['restTime']}秒'),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => _removeExercise(dayIndex, exIdx),
+                            child: Icon(Icons.close, size: 14, color: colors.textMuted),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
