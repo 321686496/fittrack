@@ -1,5 +1,7 @@
 // lib/services/weight_recommendation_service.dart
 // 系统训练计划自动填充重量：动作分类 + 估算公式 + 历史匹配
+import '../data/storage.dart';
+import '../data/system_plan_library.dart';
 
 enum ExerciseCategory {
   compoundPush, // 复合上肢推
@@ -114,4 +116,99 @@ class WeightRecommendationService {
   WeightRecommendationService._();
   static final WeightRecommendationService instance =
       WeightRecommendationService._();
+
+  /// 为系统计划中每个动作生成建议重量
+  /// 参数缺省时从 Storage 读取；records/bodyData/settings/userPlans 可注入便于测试
+  Map<String, ExerciseWeightSuggestion> recommendForSystemPlan(
+    SystemPlan plan, {
+    List<Map<String, dynamic>>? records,
+    Map<String, dynamic>? bodyData,
+    Map<String, dynamic>? settings,
+    List<Map<String, dynamic>>? userPlans,
+  }) {
+    final r = records ?? Storage.getRecords();
+    final bd = bodyData ?? Storage.getBodyData();
+    final st = settings ?? Storage.getSettings();
+    final ups = userPlans ?? Storage.getPlans();
+
+    final bodyWeight =
+        (bd['weight'] as num?)?.toDouble() ?? 0;
+    final effectiveWeight = bodyWeight > 0 ? bodyWeight : _defaultBodyWeight;
+    final fitnessLevel = (st['fitnessLevel'] as String?) ?? '';
+    final gender = (bd['gender'] as String?) ?? '';
+
+    final result = <String, ExerciseWeightSuggestion>{};
+    for (final day in plan.days) {
+      for (final ex in day.exercises) {
+        final category = classifyExercise(ex.name);
+        if (category == ExerciseCategory.bodyweight) {
+          result[ex.id] =
+              const ExerciseWeightSuggestion(source: WeightSource.bodyweight);
+          continue;
+        }
+        final history = _historyWeight(ex.name, r, ups);
+        if (history != null && history > 0) {
+          result[ex.id] = ExerciseWeightSuggestion(
+            weight: history,
+            source: WeightSource.history,
+          );
+        } else {
+          result[ex.id] = ExerciseWeightSuggestion(
+            weight: estimateWeight(
+              bodyWeight: effectiveWeight,
+              category: category,
+              fitnessLevel: fitnessLevel,
+              gender: gender,
+            ),
+            source: WeightSource.estimate,
+          );
+        }
+      }
+    }
+    return result;
+  }
+
+  /// 在训练记录中按动作名查找最近一次使用的重量
+  /// records 最新在前；通过 userPlans 解析记录 setRecords 的 exId → name
+  double? _historyWeight(
+    String exerciseName,
+    List<Map<String, dynamic>> records,
+    List<Map<String, dynamic>> userPlans,
+  ) {
+    final nameByPlan = <String, Map<String, String>>{};
+    for (final p in userPlans) {
+      final pid = p['id']?.toString();
+      if (pid == null) continue;
+      final lookup = <String, String>{};
+      final days = p['days'] as List?;
+      if (days == null) continue;
+      for (final d in days) {
+        final exs = d['exercises'] as List? ?? [];
+        for (final ex in exs) {
+          final id = ex['id']?.toString();
+          final name = ex['name']?.toString();
+          if (id != null && name != null) lookup[id] = name;
+        }
+      }
+      nameByPlan[pid] = lookup;
+    }
+
+    for (final record in records) {
+      final planId = record['planId']?.toString();
+      final lookup = planId != null ? nameByPlan[planId] : null;
+      if (lookup == null) continue;
+      final setRecords = record['setRecords'] as Map?;
+      if (setRecords == null) continue;
+      for (final entry in setRecords.entries) {
+        final exId = entry.key.toString();
+        if (lookup[exId] != exerciseName) continue;
+        final sets = entry.value as List? ?? [];
+        if (sets.isEmpty) continue;
+        final lastSet = sets.last as Map;
+        final w = (lastSet['weight'] as num?)?.toDouble() ?? 0;
+        if (w > 0) return w;
+      }
+    }
+    return null;
+  }
 }
