@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -185,11 +185,16 @@ class _TrainingPageState extends State<TrainingPage>
     }
   }
 
-  /// 真正退出训练页时，将卡片恢复为空闲态。
+  /// 真正退出训练页时，恢复卡片空闲态并清理休息提醒。
   /// 只在用户主动离开（返回按钮 / 系统返回 / 保存返回）时调用，
   /// 不放在 dispose() 中，避免 go_router 页面重建时被误重置。
+  ///
+  /// 修复 Issue：退出训练页前必须取消未触发的休息结束提醒并停止实况窗，
+  /// 否则（尤其 OHOS 原生 reminderAgent 代理提醒）离开后仍会收到"休息结束"通知。
   void _resetWidgetOnExit() {
     PlatformServices.widgetCard.clearCardData();
+    PlatformServices.liveView.stopRestLiveView();
+    RestNotificationService.instance.cancelScheduledNotification();
   }
 
   /// 顶部返回按钮：先恢复卡片空闲态，再返回上一页。

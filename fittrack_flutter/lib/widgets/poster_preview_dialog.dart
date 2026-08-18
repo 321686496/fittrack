@@ -282,9 +282,22 @@ class PosterPreviewDialog {
         // OHOS: 通过 MethodChannel 调用原生系统分享
         await PosterShareService.share(imagePath);
       } else {
+        // iOS：UIActivityViewController 必须提供非零的 sharePositionOrigin，
+        // 否则 iOS 26+ / iPad 会抛 "sharePositionOrigin: argument must be set" 异常。
+        // 这里以当前弹窗的渲染区域作为分享 popover 锚点。
+        Rect? origin;
+        if (isIos) {
+          final box = ctx.findRenderObject() as RenderBox?;
+          if (box != null && box.hasSize) {
+            origin = box.localToGlobal(Offset.zero) & box.size;
+          } else {
+            origin = const Rect.fromLTWH(0, 0, 1, 1);
+          }
+        }
         await Share.shareXFiles(
           [XFile(imagePath)],
           text: 'LiftTrack',
+          sharePositionOrigin: origin,
         );
       }
     } on PlatformException catch (e) {

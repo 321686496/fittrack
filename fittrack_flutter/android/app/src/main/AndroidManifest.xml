@@ -24,6 +24,19 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
 
+    <!-- Android 11+ (API 30+) 包可见性：声明对应用市场 (market://) 与网页 (https://)
+         的可见性，否则无法解析 market:// 意图，评分跳转到应用市场将失效 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="market"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
+    </queries>
+
     <application
         android:label="LiftTrack"
         android:name="${applicationName}"

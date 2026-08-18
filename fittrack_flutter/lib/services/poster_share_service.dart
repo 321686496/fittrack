@@ -37,6 +37,15 @@ class PosterShareService {
     await _channel.invokeMethod('share', imagePath);
   }
 
+  /// 拉起系统分享面板分享纯文本（OHOS 专用）
+  ///
+  /// share_plus 在 OHOS 平台无原生实现，需经由本 MethodChannel
+  /// 调用原生 shareText（ohos.want.action.sendData + text/plain）。
+  /// 注意：仅在 OHOS 平台调用，其他平台会抛 MissingPluginException。
+  static Future<void> shareText(String text) async {
+    await _channel.invokeMethod('shareText', text);
+  }
+
   /// 检查是否已授予写入图片/视频权限（OHOS 专用）
   ///
   /// 返回 true 表示已授权，可直接调用 [saveToGallery]。

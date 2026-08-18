@@ -1,10 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
+import '../services/poster_share_service.dart';
 import '../services/share_code_service.dart';
+import '../utils/platform_utils.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
@@ -260,9 +263,53 @@ class _ShareCodePageState extends State<ShareCodePage> {
   }
 
   Widget _buildGeneratedResult(LiftTrackColors colors) {
+    final shareString = _generatedShareString!;
+    final canRenderQr = shareString.length <= 2900;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 8),
+        // 分享串二维码（数据过大时二维码无法承载，降级为提示 + 纯文本）
+        Center(
+          child: canRenderQr
+              ? Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: QrImageView(
+                    data: shareString,
+                    version: QrVersions.auto,
+                    size: 200,
+                    gapless: true,
+                    errorStateBuilder: (ctx, err) => Icon(
+                      Icons.error_outline,
+                      color: colors.warningColor,
+                      size: 40,
+                    ),
+                  ),
+                )
+              : Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: colors.warningColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colors.warningColor.withOpacity(0.25)),
+                  ),
+                  child: Text(
+                    '计划数据较大（${shareString.length}字符），无法生成二维码。\n请使用「复制分享串」或「分享」按钮发送。',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: colors.warningColor, fontSize: 12, height: 1.5),
+                  ),
+                ),
+        ),
+        const SizedBox(height: 6),
+        Center(
+          child: Text('好友可扫码导入此计划', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+        ),
+        const SizedBox(height: 12),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -361,11 +408,44 @@ class _ShareCodePageState extends State<ShareCodePage> {
     FitToast.success(context, '分享串已复制');
   }
 
-  void _shareString() {
-    Share.share(
-      _generatedShareString!,
-      subject: 'LiftTrack 训练计划分享',
-    );
+  Future<void> _shareString() async {
+    final text = _generatedShareString;
+    if (text == null || text.isEmpty) return;
+
+    // OHOS：share_plus 无原生实现，走自定义 MethodChannel 拉起系统分享面板
+    if (isOhos) {
+      try {
+        await PosterShareService.shareText(text);
+      } catch (_) {
+        if (!mounted) return;
+        Clipboard.setData(ClipboardData(text: text));
+        FitToast.warning(context, '分享面板打开失败，分享串已复制到剪贴板');
+      }
+      return;
+    }
+
+    try {
+      Rect? origin;
+      if (isIos) {
+        // iOS：UIActivityViewController 必须提供非零的 sharePositionOrigin，
+        // 否则 iOS 26+ / iPad 会抛 "sharePositionOrigin: argument must be set" 异常。
+        final box = context.findRenderObject() as RenderBox?;
+        if (box != null && box.hasSize) {
+          origin = box.localToGlobal(Offset.zero) & box.size;
+        } else {
+          origin = const Rect.fromLTWH(0, 0, 1, 1);
+        }
+      }
+      await Share.share(
+        text,
+        subject: 'LiftTrack 训练计划分享',
+        sharePositionOrigin: origin,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      Clipboard.setData(ClipboardData(text: text));
+      FitToast.warning(context, '分享失败，分享串已复制到剪贴板');
+    }
   }
 
   // ── 导入分享码 ──────────────────────────────────────────────

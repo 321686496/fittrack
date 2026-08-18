@@ -17,7 +17,7 @@ void main() {
   test('does not show when neverAsk flag is set', () async {
     final s = Storage.getSettings();
     s['ratingPromptNeverAsk'] = true;
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     expect(RatingPromptSheet.shouldShow(), false);
   });
 
@@ -25,7 +25,7 @@ void main() {
     final s = Storage.getSettings();
     s['ratingPromptLastShown'] =
         DateTime.now().millisecondsSinceEpoch; // today
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     expect(RatingPromptSheet.shouldShow(), false);
   });
 
@@ -41,5 +41,25 @@ void main() {
     });
     await Storage.init();
     expect(RatingPromptSheet.shouldShow(), true);
+  });
+
+  group('storeUriFor', () {
+    test('Android uses market:// with the app package', () {
+      final uri = RatingPromptSheet.storeUriFor(ohos: false, ios: false);
+      expect(uri, 'market://details?id=com.lt.lifttrack');
+    });
+
+    test('OHOS uses store:// AppGallery detail link', () {
+      final uri = RatingPromptSheet.storeUriFor(ohos: true, ios: false);
+      expect(
+        uri,
+        'store://appgallery.huawei.com/app/detail?id=com.fp.fitplan',
+      );
+    });
+
+    test('iOS returns null until App Store id is configured', () {
+      // Apple ID 尚未上架填写，不应发起无效跳转
+      expect(RatingPromptSheet.storeUriFor(ohos: false, ios: true), isNull);
+    });
   });
 }

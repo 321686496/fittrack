@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:zxing2/qrcode.dart';
 import '../data/storage.dart';
 import '../services/share_code_service.dart';
@@ -21,6 +22,51 @@ class _ScanImportPageState extends State<ScanImportPage> {
   bool _processed = false;
   bool _cameraFailed = false;
   bool _picking = false;
+  // 相机权限状态
+  bool _permissionChecked = false;
+  bool _cameraAllowed = false;
+
+  bool get _cameraActive => _permissionChecked && _cameraAllowed && !_cameraFailed;
+
+  @override
+  void initState() {
+    super.initState();
+    _initCameraPermission();
+  }
+
+  /// 启动时申请相机权限（Android/OHOS 需运行时授权）
+  Future<void> _initCameraPermission() async {
+    final allowed = await _requestCameraPermission();
+    if (!mounted) return;
+    setState(() {
+      _permissionChecked = true;
+      _cameraAllowed = allowed;
+    });
+  }
+
+  /// 申请相机权限，返回是否已授权
+  Future<bool> _requestCameraPermission() async {
+    try {
+      final status = await Permission.camera.status;
+      if (status.isGranted) return true;
+      if (status.isPermanentlyDenied) return false;
+      final result = await Permission.camera.request();
+      return result.isGranted;
+    } catch (_) {
+      // 平台未实现（如桌面/测试环境）：不阻塞进入相机，交给相机控件自行失败并走相册兜底
+      return true;
+    }
+  }
+
+  /// 权限被拒后手动重试授权
+  Future<void> _retryPermission() async {
+    final allowed = await _requestCameraPermission();
+    if (!mounted) return;
+    setState(() {
+      _cameraAllowed = allowed;
+      if (allowed) _cameraFailed = false;
+    });
+  }
 
   @override
   void dispose() {
@@ -53,7 +99,11 @@ class _ScanImportPageState extends State<ScanImportPage> {
           Expanded(
             child: Stack(
               children: [
-                if (_cameraFailed)
+                if (!_permissionChecked)
+                  _buildPermissionLoading()
+                else if (!_cameraAllowed)
+                  _buildPermissionDenied()
+                else if (_cameraFailed)
                   _buildCameraFallback()
                 else
                   MobileScanner(
@@ -62,7 +112,7 @@ class _ScanImportPageState extends State<ScanImportPage> {
                     errorBuilder: (context, error, child) => _buildCameraFallback(),
                   ),
                 Center(
-                  child: _cameraFailed
+                  child: !_cameraActive
                       ? const SizedBox.shrink()
                       : Container(
                           width: 250,
@@ -77,7 +127,7 @@ class _ScanImportPageState extends State<ScanImportPage> {
                   bottom: 88,
                   left: 0,
                   right: 0,
-                  child: _cameraFailed
+                  child: !_cameraActive
                       ? const SizedBox.shrink()
                       : Text(
                           '将二维码对准框内即可自动扫描',
@@ -117,6 +167,58 @@ class _ScanImportPageState extends State<ScanImportPage> {
     );
   }
 
+  /// 权限请求中
+  Widget _buildPermissionLoading() {
+    return Container(
+      color: const Color(0xFF111111),
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          CircularProgressIndicator(color: Colors.white70),
+          SizedBox(height: 12),
+          Text('正在申请相机权限...', style: TextStyle(color: Colors.white70, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  /// 相机权限被拒时的引导（保留从相册选图入口）
+  Widget _buildPermissionDenied() {
+    return Container(
+      color: const Color(0xFF111111),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.no_photography_outlined, size: 56, color: Colors.white38),
+          const SizedBox(height: 16),
+          const Text(
+            '需要相机权限',
+            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '用于扫描二维码导入计划。您也可以使用下方"从相册选择二维码图片"导入。',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _retryPermission,
+            icon: const Icon(Icons.lock_open, size: 18),
+            label: const Text('授权相机'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white38),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 相机不可用（无权限 / 平台不支持）时的兜底引导
   Widget _buildCameraFallback() {
     return Container(
@@ -133,10 +235,10 @@ class _ScanImportPageState extends State<ScanImportPage> {
             style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             '请检查相机权限，或使用下方"从相册选择二维码图片"导入',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(

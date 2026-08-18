@@ -70,6 +70,12 @@ dependencies:
   # 纯 Dart 二维码解码（扫码兜底：从相册选择二维码图片导入，兼容 OHOS）
   zxing2: 0.2.0
   fl_chart: ^0.61.0
+  # 跳转应用市场评分（OpenHarmony 适配版，与 shared_preferences 同源的 ohos-tpc 仓库；
+  # 官方 pub.dev 版本无 OHOS 平台实现，在 HarmonyOS 设备上 launchUrl 会抛 MissingPluginException）
+  url_launcher:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/url_launcher/url_launcher"
 #  permission_handler: ^11.0.1
 #  permission_handler_ohos: ^0.0.8
 

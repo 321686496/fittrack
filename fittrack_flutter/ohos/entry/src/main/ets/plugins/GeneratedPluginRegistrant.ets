@@ -4,6 +4,7 @@ import ImagePickerPlugin from 'image_picker_ohos';
 import PermissionHandlerPlugin from 'permission_handler_ohos';
 import SharedPreferencesPlugin from 'shared_preferences_ohos';
 import SqflitePlugin from 'sqflite';
+import UrlLauncherPlugin from 'url_launcher_ohos';
 
 /**
  * Generated file. Do not edit.
@@ -22,6 +23,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new PermissionHandlerPlugin());
       flutterEngine.getPlugins()?.add(new SharedPreferencesPlugin());
       flutterEngine.getPlugins()?.add(new SqflitePlugin());
+      flutterEngine.getPlugins()?.add(new UrlLauncherPlugin());
     } catch (e) {
       Log.e(
         TAG,
