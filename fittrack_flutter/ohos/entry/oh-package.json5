@@ -11,6 +11,7 @@
     "sqflite": "file:../har/sqflite.har",
     "flutter_local_notifications": "file:../har/flutter_local_notifications.har",
     "@ohos/flutter_ohos": "har/flutter.har",
-    "image_picker_ohos": "file:../har/image_picker_ohos.har"
+    "image_picker_ohos": "file:../har/image_picker_ohos.har",
+    "url_launcher_ohos": "file:../har/url_launcher_ohos.har"
   }
 }

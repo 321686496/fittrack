@@ -11,6 +11,17 @@ const Map<String, String> kGoalArtAssets = {
   'keep': 'assets/images/art/goal_keep.png',
   'strength': 'assets/images/art/goal_strength.png',
   'maintain': 'assets/images/art/goal_keep.png',
+  // 肌群目标封面
+  'arms_male': 'assets/images/art/goal_arms_male.png',
+  'arms_female': 'assets/images/art/goal_arms_female.png',
+  'shoulders_male': 'assets/images/art/goal_shoulders_male.png',
+  'shoulders_female': 'assets/images/art/goal_shoulders_female.png',
+  'abs_male': 'assets/images/art/goal_abs_male.png',
+  'abs_female': 'assets/images/art/goal_abs_female.png',
+  'legs_male': 'assets/images/art/goal_legs_male.png',
+  'legs_female': 'assets/images/art/goal_legs_female.png',
+  'back_male': 'assets/images/art/goal_back_male.png',
+  'back_female': 'assets/images/art/goal_back_female.png',
 };
 
 /// 系统课程封面（按课程 id 定位）
@@ -28,6 +39,20 @@ String detailArtAsset(String? goal) {
     case 'keep':
     case 'maintain':
       return 'assets/images/art/detail_keep.png';
+    case 'arms':
+      return 'assets/images/art/detail_arms.png';
+    case 'shoulders':
+      return 'assets/images/art/detail_shoulders.png';
+    case 'abs':
+      return 'assets/images/art/detail_abs.png';
+    case 'legs':
+      return 'assets/images/art/detail_legs.png';
+    case 'back':
+      return 'assets/images/art/detail_back.png';
+    case 'recovery':
+      return 'assets/images/art/detail_recovery.png';
+    case 'hiit':
+      return 'assets/images/art/detail_hiit.png';
     default:
       return 'assets/images/art/detail_bulk.png';
   }
@@ -40,6 +65,9 @@ const Map<String, String> kBannerArtAssets = {
   'plan': 'assets/images/banners/banner_plan.png',
   'achievement': 'assets/images/banners/banner_achievement.png',
   'invitation': 'assets/images/banners/banner_invitation.png',
+  'recovery': 'assets/images/banners/banner_recovery.png',
+  'hiit': 'assets/images/banners/banner_hiit.png',
+  'muscle_group': 'assets/images/banners/banner_muscle_group.png',
 };
 
 String? goalArtAsset(String? goal) =>

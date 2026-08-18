@@ -79,12 +79,12 @@ class CelebrationDialog {
                 ),
               ),
               const SizedBox(height: 10),
-              // 次按钮：返回首页
+              // 次按钮：关闭
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text('返回首页', style: TextStyle(color: colors.textMuted)),
+                  child: Text('关闭', style: TextStyle(color: colors.textMuted)),
                 ),
               ),
             ],

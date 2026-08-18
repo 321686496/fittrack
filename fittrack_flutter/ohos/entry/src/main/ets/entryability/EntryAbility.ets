@@ -6,12 +6,13 @@ import MethodCall from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodCall
 import StandardMethodCodec from '@ohos/flutter_ohos/src/main/ets/plugin/common/StandardMethodCodec';
 import { formProvider } from '@kit.FormKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { preferences } from '@kit.ArkData';
+import { preferences, uniformTypeDescriptor } from '@kit.ArkData';
 import { Want, AbilityConstant, wantAgent, WantAgent, bundleManager, common, abilityAccessCtrl } from '@kit.AbilityKit';
 import { reminderAgentManager } from '@kit.BackgroundTasksKit';
 import { liveViewManager } from '@kit.LiveViewKit';
 import { notificationManager } from '@kit.NotificationKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { systemShare } from '@kit.ShareKit';
 import { fileUri } from '@kit.CoreFileKit';
 import fs from '@ohos.file.fs';
 
@@ -75,6 +76,9 @@ class PosterShareHandler implements MethodCallHandler {
     } else if (call.method === 'share') {
       const srcPath: string = call.args as string;
       this.share(srcPath, result);
+    } else if (call.method === 'shareText') {
+      const text: string = call.args as string;
+      this.shareText(text, result);
     } else if (call.method === 'requestWritePermission') {
       this.requestWritePermission(result);
     } else if (call.method === 'checkWritePermission') {
@@ -174,16 +178,14 @@ class PosterShareHandler implements MethodCallHandler {
     }
   }
 
-  /// 拉起系统分享面板
+  /// 拉起系统分享面板（分享图片）
   ///
-  /// 使用 ohos.want.action.sendData + entity.system.share 实体：
-  /// - action: 'ohos.want.action.sendData' 表示向其他应用发送数据
-  /// - entities: ['entity.system.share'] 表示目标是系统分享面板
-  /// - type: 'image/png' 限定可接收的应用为支持 PNG 图片的应用
-  /// - 'ability.params.stream': [fileUri] 以文件流形式传递图片 URI
-  ///
-  /// 之前未指定 entities 导致系统找不到对应的分享 ability，
-  /// 报错 "the specified ability does not exist"。
+  /// HarmonyOS NEXT 上无法用 startAbility + ohos.want.action.sendData 匹配到
+  /// 一个存在的分享能力（报错 16000019 "No matching ability is found"）。
+  /// 需改用 Share Kit 的 systemShare.ShareController 弹出系统分享面板：
+  /// - SharedRecord.utd：由文件扩展名推导的 UTD 类型
+  /// - SharedRecord.uri：源文件的 file:// URI（需在应用沙箱内）
+  /// - controller.show(context)：以 UIExtension 形式展示系统分享面板
   private async share(srcPath: string, result: MethodResult): Promise<void> {
     try {
       console.info('[FitTrack] share start, srcPath=' + srcPath);
@@ -194,28 +196,64 @@ class PosterShareHandler implements MethodCallHandler {
         return;
       }
 
-      // 将文件路径转换为 file URI，供其他应用访问
       const fileUriStr: string = fileUri.getUriFromPath(srcPath);
       console.info('[FitTrack] share fileUri=' + fileUriStr);
 
-      // 通过 Want 拉起系统分享面板
-      // 关键：必须包含 entities: ['entity.system.share'] 才能匹配系统分享面板
-      const context = this.ability.context as common.UIAbilityContext;
-      const want: Want = {
-        action: 'ohos.want.action.sendData',
-        entities: ['entity.system.share'],
-        type: 'image/png',
-        parameters: {
-          'ability.params.stream': [fileUriStr]
-        }
-      };
+      // 由文件扩展名推导 UTD 类型（如 .png -> general.image.png）
+      const dotIndex: number = srcPath.lastIndexOf('.');
+      const ext: string = dotIndex !== -1 ? srcPath.substring(dotIndex) : '.png';
+      const utd: string = uniformTypeDescriptor.getUniformDataTypeByFilenameExtension(ext) || 'general.file';
 
-      await context.startAbility(want);
-      console.info('[FitTrack] share startAbility success');
+      const record: systemShare.SharedRecord = {
+        utd: utd,
+        uri: fileUriStr,
+        title: 'LiftTrack',
+      };
+      const data: systemShare.SharedData = new systemShare.SharedData(record);
+
+      const context = this.ability.context as common.UIAbilityContext;
+      const controller: systemShare.ShareController = new systemShare.ShareController(data);
+      await controller.show(context, {
+        previewMode: systemShare.SharePreviewMode.DETAIL,
+        selectionMode: systemShare.SelectionMode.SINGLE,
+      });
+      console.info('[FitTrack] share panel shown');
       result.success(null);
     } catch (e) {
       const err: BusinessError = e as BusinessError;
       console.error(`[FitTrack] share failed: code=${err.code}, msg=${err.message}`);
+      result.error('SHARE_FAILED', `分享失败: ${err.message}`, null);
+    }
+  }
+
+  /// 拉起系统分享面板分享纯文本
+  ///
+  /// 与 [share] 相同，改用 Share Kit 分享纯文本（分享串/邀请码等）：
+  /// - SharedRecord.content 传递文本内容（无需授权）
+  /// - utd 使用 text/plain 对应的 UTD 类型
+  private async shareText(text: string, result: MethodResult): Promise<void> {
+    try {
+      console.info('[FitTrack] shareText start, len=' + text.length);
+
+      const utd: string = uniformTypeDescriptor.getUniformDataTypeByMIMEType('text/plain') || 'general.plain-text';
+      const record: systemShare.SharedRecord = {
+        utd: utd,
+        content: text,
+        title: 'LiftTrack 训练计划分享',
+      };
+      const data: systemShare.SharedData = new systemShare.SharedData(record);
+
+      const context = this.ability.context as common.UIAbilityContext;
+      const controller: systemShare.ShareController = new systemShare.ShareController(data);
+      await controller.show(context, {
+        previewMode: systemShare.SharePreviewMode.DEFAULT,
+        selectionMode: systemShare.SelectionMode.SINGLE,
+      });
+      console.info('[FitTrack] shareText panel shown');
+      result.success(null);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] shareText failed: code=${err.code}, msg=${err.message}`);
       result.error('SHARE_FAILED', `分享失败: ${err.message}`, null);
     }
   }
@@ -424,6 +462,12 @@ export default class EntryAbility extends FlutterAbility {
         this.stopRestLiveView();
         this.stopRestFallbackNotification();
         this.cancelRestRefreshTimer();
+
+        // 训练已结束/退出训练页（卡片重置为空闲态）：取消尚未触发的休息结束代理提醒，
+        // 避免离开训练页后仍收到"休息结束"通知。
+        if (mode === 'idle') {
+          this.cancelRestReminder();
+        }
 
         // 仅在用户主动跳过休息时取消代理提醒；
         // 休息自然结束（Dart Timer 触发，restSkipped 未传或为 false）时不取消，
