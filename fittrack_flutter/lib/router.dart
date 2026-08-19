@@ -68,7 +68,7 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 // 主题变更回调（由 main.dart 设置）
-void Function(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId})? onThemeChanged;
+void Function(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId, String? autoDarkMode, String? timedDarkTime})? onThemeChanged;
 
 // 当前 tab 索引（供 Shell 使用）
 final ValueNotifier<int> currentTabIndex = ValueNotifier<int>(0);
@@ -301,8 +301,8 @@ GoRouter createRouter() {
         path: '/settings',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => SettingsPage(
-          onThemeChanged: (themeId, {followSystem, lightThemeId, darkThemeId}) {
-            onThemeChanged?.call(themeId, followSystem: followSystem, lightThemeId: lightThemeId, darkThemeId: darkThemeId);
+          onThemeChanged: (themeId, {followSystem, lightThemeId, darkThemeId, autoDarkMode, timedDarkTime}) {
+            onThemeChanged?.call(themeId, followSystem: followSystem, lightThemeId: lightThemeId, darkThemeId: darkThemeId, autoDarkMode: autoDarkMode, timedDarkTime: timedDarkTime);
           },
         ),
       ),
@@ -313,11 +313,12 @@ GoRouter createRouter() {
           final settings = Storage.getSettings();
           return ThemeSettingsPage(
             currentThemeId: settings['theme'] ?? 'vitality-sport',
-            followSystem: settings['followSystem'] ?? false,
+            autoDarkMode: settings['autoDarkMode'] ?? 'off',
+            timedDarkTime: settings['timedDarkTime'] ?? '18:00',
             lightThemeId: settings['lightThemeId'] ?? 'vitality-sport',
             darkThemeId: settings['darkThemeId'] ?? 'iron-forge',
-            onThemeChanged: (themeId, {followSystem, lightThemeId, darkThemeId}) {
-              onThemeChanged?.call(themeId, followSystem: followSystem, lightThemeId: lightThemeId, darkThemeId: darkThemeId);
+            onThemeChanged: (themeId, {followSystem, lightThemeId, darkThemeId, autoDarkMode, timedDarkTime}) {
+              onThemeChanged?.call(themeId, followSystem: followSystem, lightThemeId: lightThemeId, darkThemeId: darkThemeId, autoDarkMode: autoDarkMode, timedDarkTime: timedDarkTime);
             },
           );
         },

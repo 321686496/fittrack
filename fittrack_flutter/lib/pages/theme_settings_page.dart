@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
@@ -8,15 +8,17 @@ import '../widgets/page_header.dart';
 /// 支持"跟随系统"模式，可分别选择日间/夜间主题
 class ThemeSettingsPage extends StatefulWidget {
   final String currentThemeId;
-  final bool followSystem;
+  final String autoDarkMode;
+  final String timedDarkTime;
   final String lightThemeId;
   final String darkThemeId;
-  final void Function(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId}) onThemeChanged;
+  final void Function(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId, String? autoDarkMode, String? timedDarkTime}) onThemeChanged;
 
   const ThemeSettingsPage({
     super.key,
     required this.currentThemeId,
-    required this.followSystem,
+    required this.autoDarkMode,
+    required this.timedDarkTime,
     required this.lightThemeId,
     required this.darkThemeId,
     required this.onThemeChanged,
@@ -30,7 +32,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   late PageController _pageController;
   int _currentPage = 0;
   late String _selectedThemeId;
-  late bool _followSystem;
+  late String _autoDarkMode;
+  late String _timedDarkTime;
   late String _lightThemeId;
   late String _darkThemeId;
 
@@ -38,7 +41,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   void initState() {
     super.initState();
     _selectedThemeId = widget.currentThemeId;
-    _followSystem = widget.followSystem;
+    _autoDarkMode = widget.autoDarkMode;
+    _timedDarkTime = widget.timedDarkTime;
     _lightThemeId = widget.lightThemeId;
     _darkThemeId = widget.darkThemeId;
     _pageController = PageController(viewportFraction: 0.92);
@@ -58,9 +62,9 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   }
 
   void _selectTheme(String themeId) {
-    if (themeId == _selectedThemeId && !_followSystem) return;
+    if (themeId == _selectedThemeId && _autoDarkMode == 'off') return;
     setState(() => _selectedThemeId = themeId);
-    if (_followSystem) {
+    if (_autoDarkMode != 'off') {
       _saveAndNotify();
     } else {
       final settings = Storage.getSettings();
@@ -68,11 +72,6 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
       Storage.saveSettings(settings);
       widget.onThemeChanged(themeId);
     }
-  }
-
-  void _toggleFollowSystem(bool value) {
-    setState(() => _followSystem = value);
-    _saveAndNotify();
   }
 
   void _setLightTheme(String themeId) {
@@ -87,16 +86,18 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
 
   void _saveAndNotify() {
     final settings = Storage.getSettings();
-    settings['followSystem'] = _followSystem;
+    settings['autoDarkMode'] = _autoDarkMode;
+    settings['timedDarkTime'] = _timedDarkTime;
     settings['lightThemeId'] = _lightThemeId;
     settings['darkThemeId'] = _darkThemeId;
     settings['theme'] = _selectedThemeId;
     Storage.saveSettings(settings);
     widget.onThemeChanged(
       _selectedThemeId,
-      followSystem: _followSystem,
       lightThemeId: _lightThemeId,
       darkThemeId: _darkThemeId,
+      autoDarkMode: _autoDarkMode,
+      timedDarkTime: _timedDarkTime,
     );
   }
 
@@ -117,50 +118,87 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
             onBack: () => context.pop(),
             title: '风格主题',
           ),
-          // ---- 跟随系统开关 ----
-          _buildFollowSystemToggle(colors),
+          // ---- 自动深色模式选择器 ----
+          _buildAutoDarkModeSelector(colors),
           // ---- 内容区 ----
           Expanded(
-            child: _followSystem ? _buildFollowSystemContent(colors) : _buildThemePickerContent(colors),
+            child: _autoDarkMode == 'off' ? _buildThemePickerContent(colors) : _buildFollowSystemContent(colors),
           ),
         ],
       ),
     );
   }
 
-  // ============ 跟随系统开关 ============
+  // ============ 自动深色模式选择器 ============
 
-  Widget _buildFollowSystemToggle(LiftTrackColors colors) {
+  Widget _buildAutoDarkModeSelector(LiftTrackColors colors) {
+    final onChanged = (String? v) {
+      if (v == null) return;
+      setState(() => _autoDarkMode = v);
+      _saveAndNotify();
+    };
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: colors.bgCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colors.borderColor),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.brightness_auto, color: _followSystem ? colors.accentGlow : colors.textMuted, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('跟随系统', style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
-                Text('自动切换日间/夜间模式', style: TextStyle(color: colors.textMuted, fontSize: 12)),
-              ],
-            ),
-          ),
-          Switch(
-            value: _followSystem,
-            onChanged: _toggleFollowSystem,
+          RadioListTile<String>(
+            dense: true,
+            title: const Text('关闭'),
+            subtitle: const Text('始终使用浅色主题'),
+            value: 'off',
+            groupValue: _autoDarkMode,
             activeColor: colors.accentGlow,
+            onChanged: onChanged,
           ),
+          RadioListTile<String>(
+            dense: true,
+            title: const Text('跟随系统'),
+            subtitle: const Text('根据系统设置自动切换日间/夜间'),
+            value: 'system',
+            groupValue: _autoDarkMode,
+            activeColor: colors.accentGlow,
+            onChanged: onChanged,
+          ),
+          RadioListTile<String>(
+            dense: true,
+            title: const Text('定点自动'),
+            subtitle: const Text('到点后自动切换深色模式'),
+            value: 'timed',
+            groupValue: _autoDarkMode,
+            activeColor: colors.accentGlow,
+            onChanged: onChanged,
+          ),
+          if (_autoDarkMode == 'timed')
+            ListTile(
+              dense: true,
+              title: Text('自动开启时间', style: TextStyle(color: colors.textPrimary)),
+              subtitle: Text(_timedDarkTime, style: TextStyle(color: colors.textMuted)),
+              trailing: Icon(Icons.schedule, color: colors.accentGlow),
+              onTap: () => _pickTimedTime(colors),
+            ),
         ],
       ),
     );
+  }
+
+  Future<void> _pickTimedTime(LiftTrackColors colors) async {
+    final parts = _timedDarkTime.split(':');
+    final initialTime = TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 18,
+      minute: int.tryParse(parts[1]) ?? 0,
+    );
+    final picked = await showTimePicker(context: context, initialTime: initialTime);
+    if (picked == null) return;
+    final timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+    setState(() => _timedDarkTime = timeStr);
+    _saveAndNotify();
   }
 
   // ============ 跟随系统模式：分别选择日间/夜间主题 ============
