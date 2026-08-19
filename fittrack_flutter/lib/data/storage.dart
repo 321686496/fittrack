@@ -57,7 +57,18 @@ class Storage {
     // 首次启动时，�?SharedPreferences 中的�?Plans/Records 迁移�?SQLite
     await _migrateFromPrefsIfNeeded();
 
-    // Phase 2 �?生成 deviceId 并初始化 isPremium 状�?
+    // 旧 followSystem 迁移：老用户可能没有 autoDarkMode
+    final rawSettings = _store[_keySettings];
+    if (rawSettings is Map) {
+      final raw = Map<String, dynamic>.from(rawSettings);
+      if (!raw.containsKey('autoDarkMode') && raw.containsKey('followSystem')) {
+        raw['autoDarkMode'] = raw['followSystem'] == true ? 'system' : 'off';
+        _store[_keySettings] = raw;
+        _persistKey(_keySettings);
+      }
+    }
+
+    // Phase 2 ?生成 deviceId 并初始化 isPremium 状?状�?
     final settings = _safeGet(_keySettings, <String, dynamic>{}) as Map<String, dynamic>;
     if (settings['deviceId'] == null || (settings['deviceId'] as String).isEmpty) {
       settings['deviceId'] = _generateUuidV4();
@@ -412,6 +423,9 @@ class Storage {
       'defaultWeight': 20.0,
       'theme': 'vitality-sport',
       'followSystem': false,
+      'autoDarkMode': 'off',       // off | system | timed
+      'timedDarkTime': '18:00',    // "HH:mm" 字符串
+      'nightModePrompted': false,
       'lightThemeId': 'vitality-sport',
       'darkThemeId': 'iron-forge',
       'trainingTime': '',
