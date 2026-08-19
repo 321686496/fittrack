@@ -138,6 +138,8 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   late String _darkThemeId;
   late final GoRouter _router;
   bool _romGuidanceShown = false;
+  bool _nightPromptVisible = false;
+  Timer? _nightPromptTimeout;
 
   @override
   void initState() {
@@ -154,6 +156,9 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     // 设置全局主题变更回调
     app_router.onThemeChanged = _onThemeChanged;
     _restartTimedTimerIfNeeded();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybePromptFirstNightMode();
+    });
     // Android: 启动后延迟检查 ROM 适配
     if (!isOhos) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -191,6 +196,7 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
       if (!isOhos) {
         _checkRomAdaptationOnResume();
       }
+      _maybePromptFirstNightMode();
     }
   }
 
@@ -223,6 +229,86 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     PlatformServices.widgetCard.pushCardData(
       const WidgetCardData(mode: WidgetCardMode.idle),
     );
+  }
+
+  /// 首次进入夜间：若当前处于深色窗口且用户从未被询问过，则弹出夜间模式开关引导。
+  void _maybePromptFirstNightMode() {
+    if (_nightPromptVisible || !mounted) return;
+    final settings = Storage.getSettings();
+    if ((settings['autoDarkMode'] as String? ?? 'off') != 'off') return;
+    if (settings['nightModePrompted'] as bool? ?? false) return;
+    final t = settings['timedDarkTime'] as String? ?? '18:00';
+    if (!LiftTrackTheme.isTimedDarkNow(t)) return;
+
+    final nav = app_router.rootNavigatorKey.currentState;
+    if (nav == null) return;
+    final overlayContext = nav.overlay?.context;
+    if (overlayContext == null) return;
+
+    _nightPromptVisible = true;
+    _nightPromptTimeout = Timer(const Duration(seconds: 8), () {
+      if (app_router.rootNavigatorKey.currentState?.canPop() == true) {
+        app_router.rootNavigatorKey.currentState?.pop(false);
+      }
+    });
+
+    showDialog<bool>(
+      context: overlayContext,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        final colors = Theme.of(dialogContext).extension<LiftTrackColors>()!;
+        return AlertDialog(
+          backgroundColor: colors.bgCard,
+          title: Text('已到夜间，是否开启夜间模式？', style: TextStyle(color: colors.textPrimary)),
+          content: Text('开启后将于每天 $t 自动进入深色模式（可随时在设置中调整）',
+              style: TextStyle(color: colors.textSecondary)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text('暂不', style: TextStyle(color: colors.textMuted)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.accentGlow),
+              child: const Text('开启'),
+            ),
+          ],
+        );
+      },
+    ).then((result) {
+      _nightPromptTimeout?.cancel();
+      _nightPromptTimeout = null;
+      if (!mounted) return;
+      _nightPromptVisible = false;
+      _handleNightPromptResult(result);
+    });
+  }
+
+  void _handleNightPromptResult(bool? result) {
+    if (!mounted) return;
+    final settings = Storage.getSettings();
+    if (result == true) {
+      settings['nightModePrompted'] = true;
+      settings['autoDarkMode'] = 'timed';
+      settings['timedDarkTime'] = settings['timedDarkTime'] as String? ?? '18:00';
+      Storage.saveSettings(settings);
+      // 复用现有处理器更新内存状态、持久化并重启计时器。
+      _onThemeChanged(_currentThemeId,
+          autoDarkMode: 'timed', timedDarkTime: settings['timedDarkTime'] as String);
+    } else {
+      settings['nightModePrompted'] = true;
+      Storage.saveSettings(settings);
+      final nav = app_router.rootNavigatorKey.currentState;
+      if (nav == null) return;
+      final overlayContext = nav.overlay?.context;
+      if (overlayContext == null) return;
+      ScaffoldMessenger.of(overlayContext).showSnackBar(
+        const SnackBar(
+          content: Text('你可在 设置→风格主题 中开启『跟随系统』或『定点自动深色模式』'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   /// timed 模式下：每分钟重算一次深浅主题，实现"到点自动切换"。
