@@ -33,5 +33,11 @@ void main() {
     test('不传 testNow 时用当前时间，不抛异常', () {
       expect(LiftTrackTheme.isTimedDarkNow('18:00'), isA<bool>());
     });
+
+    test('窗口起点 12:00（end=00:00，跨零点分支退化）：12:00 深色、23:59 深色、06:00 浅色', () {
+      expect(LiftTrackTheme.isTimedDarkNow('12:00', testNow: DateTime(2026, 8, 18, 12, 0)), isTrue);
+      expect(LiftTrackTheme.isTimedDarkNow('12:00', testNow: DateTime(2026, 8, 18, 23, 59)), isTrue);
+      expect(LiftTrackTheme.isTimedDarkNow('12:00', testNow: DateTime(2026, 8, 18, 6, 0)), isFalse);
+    });
   });
 }
