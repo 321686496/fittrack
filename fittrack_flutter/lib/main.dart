@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -131,7 +131,9 @@ class LiftTrackApp extends StatefulWidget {
 
 class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver {
   late String _currentThemeId;
-  late bool _followSystem;
+  late String _autoDarkMode;   // 'off' | 'system' | 'timed'
+  late String _timedDarkTime;  // "HH:mm"
+  Timer? _timedRefreshTimer;
   late String _lightThemeId;
   late String _darkThemeId;
   late final GoRouter _router;
@@ -143,13 +145,15 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     WidgetsBinding.instance.addObserver(this);
     final settings = Storage.getSettings();
     _currentThemeId = settings['theme'] ?? 'vitality-sport';
-    _followSystem = settings['followSystem'] ?? false;
+    _autoDarkMode = settings['autoDarkMode'] as String? ?? 'off';
+    _timedDarkTime = settings['timedDarkTime'] as String? ?? '18:00';
     _lightThemeId = settings['lightThemeId'] ?? 'vitality-sport';
     _darkThemeId = settings['darkThemeId'] ?? 'iron-forge';
     _router = app_router.createRouter();
     _globalRouter = _router;
     // 设置全局主题变更回调
     app_router.onThemeChanged = _onThemeChanged;
+    _restartTimedTimerIfNeeded();
     // Android: 启动后延迟检查 ROM 适配
     if (!isOhos) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -161,6 +165,7 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _timedRefreshTimer?.cancel();
     super.dispose();
   }
 
@@ -189,16 +194,28 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     }
   }
 
-  void _onThemeChanged(String themeId, {bool? followSystem, String? lightThemeId, String? darkThemeId}) {
+  void _onThemeChanged(
+    String themeId, {
+    bool? followSystem,
+    String? lightThemeId,
+    String? darkThemeId,
+    String? autoDarkMode,
+    String? timedDarkTime,
+  }) {
     setState(() {
       _currentThemeId = themeId;
-      if (followSystem != null) _followSystem = followSystem;
+      if (followSystem != null) _autoDarkMode = followSystem ? 'system' : 'off';
+      if (autoDarkMode != null) _autoDarkMode = autoDarkMode;
+      if (timedDarkTime != null) _timedDarkTime = timedDarkTime;
       if (lightThemeId != null) _lightThemeId = lightThemeId;
       if (darkThemeId != null) _darkThemeId = darkThemeId;
     });
+    _restartTimedTimerIfNeeded();
     final settings = Storage.getSettings();
     settings['theme'] = themeId;
-    if (followSystem != null) settings['followSystem'] = followSystem;
+    if (followSystem != null) settings['autoDarkMode'] = followSystem ? 'system' : 'off';
+    if (autoDarkMode != null) settings['autoDarkMode'] = autoDarkMode;
+    if (timedDarkTime != null) settings['timedDarkTime'] = timedDarkTime;
     if (lightThemeId != null) settings['lightThemeId'] = lightThemeId;
     if (darkThemeId != null) settings['darkThemeId'] = darkThemeId;
     Storage.saveSettings(settings);
@@ -207,6 +224,28 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
       const WidgetCardData(mode: WidgetCardMode.idle),
     );
   }
+
+  /// timed 模式下：每分钟重算一次深浅主题，实现"到点自动切换"。
+  /// 非 timed 模式：停止定时器，避免无效刷新与资源泄漏。
+  void _restartTimedTimerIfNeeded() {
+    _timedRefreshTimer?.cancel();
+    _timedRefreshTimer = null;
+    if (_autoDarkMode != 'timed') return;
+    _timedRefreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (!mounted) return;
+      setState(() {}); // 触发 rebuild，重新计算 themeMode
+    });
+  }
+
+  ThemeMode _resolveThemeMode() {
+    if (_autoDarkMode == 'system') return ThemeMode.system;
+    if (_autoDarkMode == 'timed') {
+      return LiftTrackTheme.isTimedDarkNow(_timedDarkTime) ? ThemeMode.dark : ThemeMode.light;
+    }
+    return ThemeMode.light; // 'off'
+  }
+
+  bool get _usesDayNightThemes => _autoDarkMode == 'system' || _autoDarkMode == 'timed';
 
   /// Android: ????? ROM ??????? ROM ???????????
   Future<void> _checkRomAdaptationOnStartup() async {
@@ -268,18 +307,18 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   }
   @override
   Widget build(BuildContext context) {
-    if (_followSystem) {
-      // ????????????????/?????????
+    if (_usesDayNightThemes) {
+      // system / timed：日间用 lightThemeId、夜间用 darkThemeId
       return MaterialApp.router(
         title: 'LiftTrack',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.getTheme(_lightThemeId),
         darkTheme: AppTheme.getTheme(_darkThemeId),
-        themeMode: ThemeMode.system,
+        themeMode: _resolveThemeMode(),
         routerConfig: _router,
       );
     }
-    // ?????????????????
+    // off：始终浅色，用用户手选主题
     return MaterialApp.router(
       title: 'LiftTrack',
       debugShowCheckedModeBanner: false,
