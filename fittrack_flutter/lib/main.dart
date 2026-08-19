@@ -171,6 +171,8 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _timedRefreshTimer?.cancel();
+    _nightPromptTimeout?.cancel();
+    _nightPromptTimeout = null;
     super.dispose();
   }
 
@@ -247,6 +249,8 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
 
     _nightPromptVisible = true;
     _nightPromptTimeout = Timer(const Duration(seconds: 8), () {
+      // 仅在弹窗仍可见时按拒绝处理；用户若已点击，.then 中会取消本定时器。
+      if (!_nightPromptVisible) return;
       if (app_router.rootNavigatorKey.currentState?.canPop() == true) {
         app_router.rootNavigatorKey.currentState?.pop(false);
       }
