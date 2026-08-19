@@ -54,7 +54,7 @@
       {"name" :  "ohos.permission.VIBRATE"},
       {"name" :  "ohos.permission.CAMERA",
         "reason": "$string:camera",
-        "usedScene": {"abilities": ["EntryAbility"], "when": "foreground"}},
+        "usedScene": {"abilities": ["EntryAbility"], "when": "inuse"}},
       {"name" :  "ohos.permission.WRITE_IMAGEVIDEO",
         "reason": "$string:writeimagevideo",
         "usedScene": {"abilities": ["EntryAbility"], "when": "always"}}
