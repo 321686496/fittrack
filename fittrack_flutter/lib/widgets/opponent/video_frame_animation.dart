@@ -6,13 +6,15 @@ import 'package:flutter/material.dart';
 /// 一整套动作循环按该帧率逐帧播放，避免被动作时长错误加速。
 const double kFramePlaybackFps = 12.0;
 
-/// 每套皮肤的帧数：idle 待机 / train 训练。
+/// 每套皮肤/角色的帧数：idle 待机 / train 训练。
 /// 数值必须与 assets/opponent/video_frames 下的实际帧数一致。
 const Map<String, Map<String, int>> kFrameCounts = {
   'beginner':   {'idle': 24,  'train': 97},
   'iron':       {'idle': 12,  'train': 37},
   'ninja':      {'idle': 12,  'train': 109},
   'ambassador': {'idle': 12,  'train': 37},
+  'default_male':   {'idle': 24,  'train': 97},
+  'default_female': {'idle': 24,  'train': 96},
 };
 
 const Map<String, String> _skinToAsset = {
@@ -20,9 +22,11 @@ const Map<String, String> _skinToAsset = {
   'skin_iron_warrior': 'iron',
   'skin_cyber_ninja': 'ninja',
   'skin_ambassador': 'ambassador',
+  'default_male': 'default_male',
+  'default_female': 'default_female',
 };
 
-/// skinId -> 素材目录名（beginner/iron/ninja/ambassador）。
+/// skinId/characterId -> 素材目录名。
 String opponentAssetName(String skinId) => _skinToAsset[skinId] ?? 'beginner';
 
 /// 某个模式（idle/train）完整循环一次所需时长：

@@ -142,6 +142,8 @@ class OpponentSkinConfig {
   }
 
   static const List<OpponentSkinConfig> kAllSkins = [
+    defaultMale,
+    defaultFemale,
     skinBeginner,
     skinIronWarrior,
     skinCyberNinja,
@@ -367,6 +369,116 @@ class OpponentSkinConfig {
       badgeEmoji: '📜',
       gradientColors: [Color(0xFF3D4F3F), Color(0xFF2A3830)],
       showShimmer: true,
+    ),
+  );
+
+  // ── default_male（默认男性角色）── 新用户默认角色
+  static const defaultMale = OpponentSkinConfig(
+    id: 'default_male',
+    name: '默认男性角色',
+    pointsCost: '免费',
+    isLimited: false,
+    palette: SkinPalette(
+      primary: Color(0xFF7BA7BC),
+      secondary: Color(0xFFD4DCE1),
+      accent: Color(0xFF5A6B7C),
+      skinTone: Color(0xFFF5DEB3),
+      auraColor: Color(0xFF7BA7BC),
+    ),
+    trainBias: TrainBias(
+      compoundWeight: 0.4,
+      isolationWeight: 0.3,
+      cardioWeight: 0.2,
+      coreWeight: 0.1,
+    ),
+    faceAsset: 'assets/opponent/default_male.png',
+    outfitAsset: null,
+    propAsset: null,
+    idleMotion: MotionSpec(
+      frames: [
+        MotionFrame(t: 0.0, bodyOffset: Offset(0, 0)),
+        MotionFrame(t: 0.5, bodyOffset: Offset(0, -2)),
+        MotionFrame(t: 1.0, bodyOffset: Offset(0, 0)),
+      ],
+      duration: Duration(milliseconds: 2400),
+    ),
+    trainingMotion: MotionSpec(
+      frames: [
+        MotionFrame(t: 0.0, armAngle: -20),
+        MotionFrame(t: 0.5, armAngle: 20),
+        MotionFrame(t: 1.0, armAngle: -20),
+      ],
+      duration: Duration(milliseconds: 1200),
+    ),
+    dialogStyle: DialogStyle(
+      greetings: ['一起开始训练吧！', '今天也要加油~'],
+      trainingTaunts: ['跟着节奏来', '动作要标准'],
+      winQuotes: ['不错嘛，再来一局？', '今天状态很好'],
+      loseQuotes: ['你进步很快', '下次再战'],
+    ),
+    signatureMove: '标准弯举',
+    cardTheme: SkinCardTheme(
+      borderColor: Color(0xFF7BA7BC),
+      glowColor: Color(0xFF7BA7BC),
+      badgeColor: Color(0xFF7BA7BC),
+      badgeEmoji: '💪',
+      gradientColors: [Color(0xFFEBF2F5), Color(0xFFD4E3EB)],
+      showShimmer: false,
+    ),
+  );
+
+  // ── default_female（默认女性角色）── 新用户默认角色
+  static const defaultFemale = OpponentSkinConfig(
+    id: 'default_female',
+    name: '默认女性角色',
+    pointsCost: '免费',
+    isLimited: false,
+    palette: SkinPalette(
+      primary: Color(0xFFB8A9C9),
+      secondary: Color(0xFFE8E0F0),
+      accent: Color(0xFF9B8FB0),
+      skinTone: Color(0xFFFDE3C7),
+      auraColor: Color(0xFFB8A9C9),
+    ),
+    trainBias: TrainBias(
+      compoundWeight: 0.3,
+      isolationWeight: 0.4,
+      cardioWeight: 0.2,
+      coreWeight: 0.1,
+    ),
+    faceAsset: 'assets/opponent/default_female.png',
+    outfitAsset: null,
+    propAsset: null,
+    idleMotion: MotionSpec(
+      frames: [
+        MotionFrame(t: 0.0, bodyOffset: Offset(0, 0)),
+        MotionFrame(t: 0.5, bodyOffset: Offset(0, -2)),
+        MotionFrame(t: 1.0, bodyOffset: Offset(0, 0)),
+      ],
+      duration: Duration(milliseconds: 2400),
+    ),
+    trainingMotion: MotionSpec(
+      frames: [
+        MotionFrame(t: 0.0, armAngle: -20),
+        MotionFrame(t: 0.5, armAngle: 20),
+        MotionFrame(t: 1.0, armAngle: -20),
+      ],
+      duration: Duration(milliseconds: 1200),
+    ),
+    dialogStyle: DialogStyle(
+      greetings: ['一起开始训练吧！', '今天也要元气满满~'],
+      trainingTaunts: ['跟着节奏来', '动作要标准'],
+      winQuotes: ['不错嘛，再来一局？', '今天状态很好'],
+      loseQuotes: ['你进步很快', '下次再战'],
+    ),
+    signatureMove: '标准弯举',
+    cardTheme: SkinCardTheme(
+      borderColor: Color(0xFFB8A9C9),
+      glowColor: Color(0xFFB8A9C9),
+      badgeColor: Color(0xFFB8A9C9),
+      badgeEmoji: '💪',
+      gradientColors: [Color(0xFFF0EBF5), Color(0xFFE0D4EB)],
+      showShimmer: false,
     ),
   );
 }

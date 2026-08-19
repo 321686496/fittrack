@@ -127,6 +127,10 @@ flutter:
     - assets/opponent/video_frames/ninja_train/
     - assets/opponent/video_frames/ambassador_idle/
     - assets/opponent/video_frames/ambassador_train/
+    - assets/opponent/video_frames/default_male_idle/
+    - assets/opponent/video_frames/default_male_train/
+    - assets/opponent/video_frames/default_female_idle/
+    - assets/opponent/video_frames/default_female_train/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

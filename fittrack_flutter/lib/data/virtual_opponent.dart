@@ -158,8 +158,8 @@ class VirtualOpponent {
     );
   }
 
-  /// 当前应用的皮肤 id（运行时计算，不持久化）
-  /// 返回空串表示无皮肤（使用默认 Icon）
+  /// 当前应用的角色 ID（运行时计算，不持久化）
+  /// 返回默认角色 ID（根据用户性别）或已购皮肤 ID
   String get appliedSkinId {
     final settings = Storage.getSettings();
     // 优先：邀请里程碑解锁的限定皮肤
@@ -173,7 +173,10 @@ class VirtualOpponent {
         if (unlocked.contains('good_$id')) return id;
       }
     } catch (_) {}
-    return '';
+    // 默认：根据用户性别返回对应角色
+    final gender = settings['gender'] as String?;
+    if (gender == '女') return 'default_female';
+    return 'default_male'; // 默认男性或未设置性别时
   }
 }
 
