@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 /// Custom theme extension for LiftTrack extra colors
 @immutable
@@ -1398,4 +1398,30 @@ class LiftTrackTheme {
   // ??? API ??
   static ThemeData get dark => AppTheme.getTheme('iron-forge');
   static ThemeData get light => AppTheme.getTheme('vitality-sport');
+
+  /// 判断 [time]（或当前时刻）是否处于"定点夜间（深色）窗口"内。
+  /// [timedDarkTime] 格式 "HH:mm"，窗口以它起点持续 12 小时。
+  /// [testNow] 用于测试注入；生产环境传 null 使用 DateTime.now()。
+  /// 时间解析失败时回退到 18:00。
+  static bool isTimedDarkNow(String timedDarkTime, {DateTime? testNow}) {
+    final parts = timedDarkTime.split(':');
+    int startHour = 18, startMinute = 0;
+    if (parts.length == 2) {
+      startHour = int.tryParse(parts[0]) ?? 18;
+      startMinute = int.tryParse(parts[1]) ?? 0;
+    }
+
+    final now = testNow ?? DateTime.now();
+    final startMinutes = (startHour * 60 + startMinute) % 1440;
+    final nowMinutes = now.hour * 60 + now.minute;
+    final endMinutes = (startMinutes + 720) % 1440; // 窗口持续 12 小时
+
+    if (startMinutes <= endMinutes) {
+      // 不跨零点
+      return nowMinutes >= startMinutes && nowMinutes < endMinutes;
+    } else {
+      // 跨零点
+      return nowMinutes >= startMinutes || nowMinutes < endMinutes;
+    }
+  }
 }
