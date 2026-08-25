@@ -35,6 +35,9 @@ const KEY_GYM_CARD_REMINDER_IDS: string = 'gym_card_reminder_ids';
 const DAILY_REMINDER_GROUP: string = 'fittrack_daily_training';
 const GYM_CARD_REMINDER_GROUP: string = 'fittrack_gym_card';
 const DAILY_REMINDER_NOTIFICATION_ID: number = 3001;
+const SMART_PUSH_GROUP: string = 'fittrack_smart_push';
+const SMART_PUSH_REMINDER_IDS_KEY: string = 'smart_push_reminder_ids';
+const SMART_PUSH_NOTIFICATION_ID: number = 2001;
 
 class FormDataCallHandler implements MethodCallHandler {
   private ability: EntryAbility;
@@ -1053,8 +1056,68 @@ export default class EntryAbility extends FlutterAbility {
     }
   }
 
-  /// 发布每日训练提醒（按 HH:mm 每日重复）
-  /// 使用 ReminderRequestAlarm 实现每日定点重复（daysOfWeek 1-7 表示每天）
+  /// 构造一个 ReminderRequestTimer 倒计时代理提醒请求
+  ///
+  /// 注意：真机上 REMINDER_TYPE_ALARM / REMINDER_TYPE_CALENDAR 两类代理提醒受
+  /// 「代理提醒管控」限制，未通过华为侧管控审批的应用无法用它们弹出通知；
+  /// 而 REMINDER_TYPE_TIMER（倒计时）类型不受此限制（休息提醒即是此类型，已验证可用）。
+  /// 因此每日训练 / 健身卡到期 / 智能提醒统一走倒计时类型：计算距下次触发时刻的秒数，
+  /// 一次性触发；每日/定时类由 Flutter 侧在启动与回前台时反复 reschedule 保持持续。
+  private buildTimerReminder(opts: {
+    triggerTimeInSeconds: number;
+    title: string;
+    content: string;
+    notificationId: number;
+    groupId: string;
+    buttonTitle: string;
+  }): reminderAgentManager.ReminderRequestTimer {
+    // 确保 SOCIAL_COMMUNICATION 槽位存在（代理提醒触发时系统据此发横幅通知）
+    notificationManager.addSlot(notificationManager.SlotType.SOCIAL_COMMUNICATION)
+      .then(() => {
+        console.info('[FitTrack] buildTimerReminder: SOCIAL_COMMUNICATION 槽位已就绪');
+      })
+      .catch(() => {
+        // 槽位已存在时报错属正常，不影响后续发布
+      });
+    const bundleInfo: bundleManager.BundleInfo =
+      bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
+    return {
+      reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
+      triggerTimeInSeconds: opts.triggerTimeInSeconds,
+      title: opts.title,
+      content: opts.content,
+      notificationId: opts.notificationId,
+      groupId: opts.groupId,
+      slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
+      wantAgent: {
+        pkgName: bundleInfo.name,
+        abilityName: 'EntryAbility',
+      },
+      maxScreenWantAgent: {
+        pkgName: bundleInfo.name,
+        abilityName: 'EntryAbility',
+      },
+      actionButton: [
+        {
+          title: opts.buttonTitle,
+          type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
+        },
+      ],
+    };
+  }
+
+  /// 计算距下一次 "HH:mm"（24 小时内）的秒数；若当日该时刻已过则取次日。
+  private secondsToNextHHmm(hour: number, minute: number): number {
+    const now: number = Date.now();
+    let target: number = new Date(new Date().getFullYear(), new Date().getMonth(),
+      new Date().getDate(), hour, minute, 0).getTime();
+    if (target <= now) {
+      target = target + 24 * 60 * 60 * 1000;
+    }
+    return Math.max(60, Math.round((target - now) / 1000));
+  }
+
+  /// 发布每日训练提醒（HH:mm 次日触发一次；每日持续由 Flutter 侧 reschedule 保证）
   /// 发布成功/失败都会通过 [result] 回传，避免 Flutter 侧静默失败。
   async scheduleTrainingReminder(
     title: string,
@@ -1077,43 +1140,20 @@ export default class EntryAbility extends FlutterAbility {
       return;
     }
 
-    console.info(`[FitTrack] 准备发布每日训练提醒, time=${timeStr}`);
+    // 倒计时代理提醒：距下一次 HH:mm 触发（跨过受管控的 ALARM 类型）
+    const triggerTimeInSeconds: number = this.secondsToNextHHmm(hour, minute);
+    console.info(`[FitTrack] 准备发布每日训练提醒, time=${timeStr}, ${triggerTimeInSeconds}s 后触发(倒计时)`);
 
     try {
-      const bundleInfo: bundleManager.BundleInfo =
-        bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
-
-      // ReminderRequestAlarm：闹钟类型，按 hour/minute + daysOfWeek 每日定点重复。
-      // 闹钟类型 daysOfWeek 为 [1,2,3,4,5,6,7]（1=周一）即每天触发；
-      // 且闹钟类型不依赖具体日期，即使当天该时刻已过也会在次日按时触发。
-      let reminderRequest: reminderAgentManager.ReminderRequestAlarm = {
-        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_ALARM,
-        hour: hour,
-        minute: minute,
-        // 每天重复（1=周一 ... 7=周日）
-        daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
-        title: title,
-        content: content,
-        notificationId: DAILY_REMINDER_NOTIFICATION_ID,
-        groupId: DAILY_REMINDER_GROUP,
-        // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
-        slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
-        wantAgent: {
-          pkgName: bundleInfo.name,
-          abilityName: 'EntryAbility',
-        },
-        // 锁屏下也显示通知，确保用户一定能看到
-        maxScreenWantAgent: {
-          pkgName: bundleInfo.name,
-          abilityName: 'EntryAbility',
-        },
-        actionButton: [
-          {
-            title: '开始训练',
-            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
-          },
-        ],
-      };
+      const reminderRequest: reminderAgentManager.ReminderRequestTimer =
+        this.buildTimerReminder({
+          triggerTimeInSeconds: triggerTimeInSeconds,
+          title: title,
+          content: content,
+          notificationId: DAILY_REMINDER_NOTIFICATION_ID,
+          groupId: DAILY_REMINDER_GROUP,
+          buttonTitle: '开始训练',
+        });
 
       const reminderId: number = await reminderAgentManager.publishReminder(reminderRequest);
       this.trainingReminderId = reminderId;
@@ -1170,87 +1210,31 @@ export default class EntryAbility extends FlutterAbility {
 
     console.info(`[FitTrack] 准备发布健身卡到期提醒, date=${dateStr}, time=10:00, notificationId=${notificationId}`);
 
+    // 倒计时代理提醒：距提醒日当天 10:00 触发（跨过受管控的 CALENDAR 类型）。
+    // 若提醒时间已过，则降级为 60 秒后触发，确保当天仍能收到提醒。
     try {
-      const bundleInfo: bundleManager.BundleInfo =
-        bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
-
-      // 若提醒时间（当天 10:00）已过，日历提醒无法触发当天提醒，
-      // 降级为倒计时提醒（1 分钟后触发），确保用户当天仍能收到提醒。
       const targetMs: number = new Date(year, month - 1, day, 10, 0, 0).getTime();
+      const triggerTimeInSeconds: number = Date.now() >= targetMs
+        ? 60
+        : Math.max(60, Math.round((targetMs - Date.now()) / 1000));
       if (Date.now() >= targetMs) {
         console.info('[FitTrack] 健身卡提醒时间已过，降级为 1 分钟后立即提醒');
-        const timerRequest: reminderAgentManager.ReminderRequestTimer = {
-          reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
-          triggerTimeInSeconds: 60,
+      }
+
+      const reminderRequest: reminderAgentManager.ReminderRequestTimer =
+        this.buildTimerReminder({
+          triggerTimeInSeconds: triggerTimeInSeconds,
           title: title,
           content: content,
           notificationId: notificationId,
           groupId: GYM_CARD_REMINDER_GROUP,
-          slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
-          wantAgent: {
-            pkgName: bundleInfo.name,
-            abilityName: 'EntryAbility',
-          },
-          maxScreenWantAgent: {
-            pkgName: bundleInfo.name,
-            abilityName: 'EntryAbility',
-          },
-          actionButton: [
-            {
-              title: '查看',
-              type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
-            },
-          ],
-        };
-        const reminderId: number = await reminderAgentManager.publishReminder(timerRequest);
-        this.gymCardReminderId = reminderId;
-        this.persistReminderId(KEY_GYM_CARD_REMINDER_IDS, reminderId);
-        console.info(`[FitTrack] 健身卡到期提醒(倒计时)发布成功, id=${reminderId}`);
-        result.success(reminderId);
-        return;
-      }
-
-      // ReminderRequestCalendar：按指定日历时间触发（一次性，不重复）
-      let reminderRequest: reminderAgentManager.ReminderRequestCalendar = {
-        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_CALENDAR,
-        dateTime: {
-          year: year,
-          month: month,
-          day: day,
-          hour: 10,
-          minute: 0,
-          second: 0,
-        },
-        // 空数组表示不按月/日重复，仅触发一次
-        repeatMonths: [],
-        repeatDays: [],
-        title: title,
-        content: content,
-        notificationId: notificationId,
-        groupId: GYM_CARD_REMINDER_GROUP,
-        // 使用 SOCIAL_COMMUNICATION 高优先级槽位，确保真机触发时能横幅弹出 + 振动
-        slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
-        wantAgent: {
-          pkgName: bundleInfo.name,
-          abilityName: 'EntryAbility',
-        },
-        // 锁屏下也显示通知
-        maxScreenWantAgent: {
-          pkgName: bundleInfo.name,
-          abilityName: 'EntryAbility',
-        },
-        actionButton: [
-          {
-            title: '查看',
-            type: reminderAgentManager.ActionButtonType.ACTION_BUTTON_TYPE_CLOSE,
-          },
-        ],
-      };
+          buttonTitle: '查看',
+        });
 
       const reminderId: number = await reminderAgentManager.publishReminder(reminderRequest);
       this.gymCardReminderId = reminderId;
       this.persistReminderId(KEY_GYM_CARD_REMINDER_IDS, reminderId);
-      console.info(`[FitTrack] 健身卡代理提醒发布成功, id=${reminderId}, date=${dateStr}`);
+      console.info(`[FitTrack] 健身卡到期提醒发布成功, id=${reminderId}, date=${dateStr}, ${triggerTimeInSeconds}s 后触发`);
       result.success(reminderId);
     } catch (e) {
       const err: BusinessError = e as BusinessError;
@@ -1271,6 +1255,94 @@ export default class EntryAbility extends FlutterAbility {
       console.error(`[FitTrack] cancelGymCardReminder 异常: code=${err.code}, msg=${err.message}`);
       result.error('CANCEL_FAILED', `code=${err.code}, msg=${err.message}`, null);
     }
+  }
+
+  /// 调度智能推送提醒（每日 20:00 倒计时代理提醒，一次性；持续由 Flutter 侧重排）
+  async scheduleSmartPushReminder(
+    title: string,
+    content: string,
+    timeStr: string,
+    result: MethodResult
+  ): Promise<void> {
+    await this.cancelRemindersByGroup(SMART_PUSH_GROUP, SMART_PUSH_REMINDER_IDS_KEY);
+
+    // 解析 "HH:mm"
+    const parts: string[] = timeStr.split(':');
+    if (parts.length !== 2) {
+      result.error('INVALID_TIME', `时间格式错误: ${timeStr}`, null);
+      return;
+    }
+    const hour: number = parseInt(parts[0], 10);
+    const minute: number = parseInt(parts[1], 10);
+    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      result.error('INVALID_TIME', `时间非法: ${timeStr}`, null);
+      return;
+    }
+
+    const triggerTimeInSeconds: number = this.secondsToNextHHmm(hour, minute);
+    console.info(`[FitTrack] 准备发布智能推送提醒, time=${timeStr}, ${triggerTimeInSeconds}s 后触发(倒计时)`);
+
+    try {
+      const reminderRequest: reminderAgentManager.ReminderRequestTimer =
+        this.buildTimerReminder({
+          triggerTimeInSeconds: triggerTimeInSeconds,
+          title: title,
+          content: content,
+          notificationId: SMART_PUSH_NOTIFICATION_ID,
+          groupId: SMART_PUSH_GROUP,
+          buttonTitle: '去训练',
+        });
+
+      const reminderId: number = await reminderAgentManager.publishReminder(reminderRequest);
+      this.persistReminderId(SMART_PUSH_REMINDER_IDS_KEY, reminderId);
+      console.info(`[FitTrack] 智能推送提醒发布成功, id=${reminderId}, time=${timeStr}`);
+      result.success(reminderId);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] 智能推送提醒发布失败: code=${err.code}, msg=${err.message}`);
+      result.error('PUBLISH_FAILED', `code=${err.code}, msg=${err.message}`, null);
+    }
+  }
+
+  /// 取消智能推送提醒（按 group 清理）
+  async cancelSmartPushReminder(result: MethodResult): Promise<void> {
+    try {
+      await this.cancelRemindersByGroup(SMART_PUSH_GROUP, SMART_PUSH_REMINDER_IDS_KEY);
+      console.info('[FitTrack] 智能推送提醒已全部取消');
+      result.success(null);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] cancelSmartPushReminder 异常: code=${err.code}, msg=${err.message}`);
+      result.error('CANCEL_FAILED', `code=${err.code}, msg=${err.message}`, null);
+    }
+  }
+
+  /// 立即发布一条横幅通知（智能推送的前台兜底，App 存活时用）
+  private async publishSmartPushBanner(title: string, content: string): Promise<void> {
+    try {
+      await notificationManager.addSlot(notificationManager.SlotType.SOCIAL_COMMUNICATION).catch(() => {});
+    } catch (_) {}
+    const request: notificationManager.NotificationRequest = {
+      id: SMART_PUSH_NOTIFICATION_ID,
+      content: {
+        notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+        normal: { title: title, text: content },
+      },
+      notificationSlotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
+      isAlertOnce: true,
+    };
+    await notificationManager.publish(request);
+  }
+
+  /// 发布智能推送的立即通知（App 回前台时由 _sendPush 触发）
+  publishSmartPushNow(title: string, content: string): void {
+    this.publishSmartPushBanner(title, content)
+      .then(() => {
+        console.info('[FitTrack] 智能推送立即通知发布成功');
+      })
+      .catch((err: BusinessError) => {
+        console.error(`[FitTrack] 智能推送立即通知发布失败: code=${err.code}, msg=${err.message}`);
+      });
   }
 
 }
@@ -1310,6 +1382,26 @@ class ReminderCallHandler implements MethodCallHandler {
       }
       case 'cancelGymCardReminder': {
         this.ability.cancelGymCardReminder(result);
+        break;
+      }
+      case 'scheduleSmartPushReminder': {
+        const args = call.args as Record<string, Object>;
+        const title = (args['title'] as string) ?? 'LiftTrack 提醒';
+        const content = (args['content'] as string) ?? '';
+        const timeStr = (args['timeStr'] as string) ?? '20:00';
+        this.ability.scheduleSmartPushReminder(title, content, timeStr, result);
+        break;
+      }
+      case 'cancelSmartPushReminder': {
+        this.ability.cancelSmartPushReminder(result);
+        break;
+      }
+      case 'publishSmartPushNow': {
+        const args = call.args as Record<string, Object>;
+        const title = (args['title'] as string) ?? 'LiftTrack 提醒';
+        const content = (args['content'] as string) ?? '';
+        this.ability.publishSmartPushNow(title, content);
+        result.success(null);
         break;
       }
       default:

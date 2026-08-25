@@ -454,7 +454,6 @@ class Storage {
       'unlockedAmbassadorTitle': false, // "LiftTrack 大使"称号（累�?0人）
       'adFreeReportUnlocked': false, // 永久免广告看训练报告（累�?人）
       'retentionRewardUnlocked': false, // 7日留存奖励已解锁
-      'advancedStatsTrialUntil': 0, // 7天高级统计体验到期时�?
       // ── v1 获客留存�?�?虚拟对手系统（V1-01）──
       'virtualOpponentMatched': false, // 是否已完成冷启动匹配
       'virtualOpponentTier': '', // 匹配层（休闲/规律/活跃/硬核�?

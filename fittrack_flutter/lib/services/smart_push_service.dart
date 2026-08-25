@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../data/storage.dart';
 import '../utils/platform_utils.dart';
+import 'ohos_reminder_service.dart';
 
 class SmartPushService {
   static final SmartPushService instance = SmartPushService._();
@@ -52,10 +53,6 @@ class SmartPushService {
         await _cancelScheduled();
         return;
       }
-      if (isOhos) {
-        // OHOS：原生提醒通道与每日训练提醒共用，避免冲突，保留前台/训练完成触发
-        return;
-      }
       if (_trainedToday(Storage.getRecords())) {
         await _cancelScheduled();
         return;
@@ -63,6 +60,16 @@ class SmartPushService {
       // 7 天窗口已满或今天已推送 → 取消本次调度
       if (!shouldPushNow()) {
         await _cancelScheduled();
+        return;
+      }
+
+      if (isOhos) {
+        // OHOS：原生倒计时代理提醒（20:00 触发一次，持续由 App 重新调度保证）
+        await OhosReminderService.instance.scheduleSmartPushReminder(
+          title: 'LiftTrack 提醒',
+          content: '今天还没有训练，来一组保持节奏！',
+          timeStr: '20:00',
+        );
         return;
       }
 
@@ -120,6 +127,10 @@ class SmartPushService {
 
   Future<void> _cancelScheduled() async {
     try {
+      if (isOhos) {
+        await OhosReminderService.instance.cancelSmartPushReminder();
+        return;
+      }
       final plugin = FlutterLocalNotificationsPlugin();
       await plugin.cancel(_notificationId);
     } catch (e) {
@@ -185,7 +196,11 @@ class SmartPushService {
 
   Future<void> _sendPush(String message) async {
     if (isOhos) {
-      // OHOS: rely on OhosReminderService.publishReminder
+      // OHOS：前台兜底立即推送
+      await OhosReminderService.instance.publishSmartPushNow(
+        title: 'LiftTrack 提醒',
+        content: message,
+      );
       return;
     }
     // Android/iOS: use flutter_local_notifications directly

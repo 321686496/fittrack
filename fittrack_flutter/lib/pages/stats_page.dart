@@ -209,12 +209,6 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   // ── Compute personal records ─────────────────────────────────
 
   void _computePersonalRecords() {
-    // Build exercise id -> name lookup
-    final exLookup = <String, String>{};
-    for (final ex in MockData.exercises) {
-      exLookup[ex['id'] as String] = ex['name'] as String;
-    }
-
     final allSets = <Map<String, dynamic>>[];
 
     for (final r in _records) {
@@ -229,14 +223,14 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
       for (final entry in sr.entries) {
         final exId = entry.key.toString();
-        final exName = exLookup[exId] ?? exId;
         final sets = entry.value as List<dynamic>? ?? [];
         for (final s in sets) {
           final sm = s as Map<dynamic, dynamic>;
           final weight = (sm['weight'] as num?) ?? 0;
           if (weight.toDouble() > 0) {
             allSets.add({
-              'name': exName,
+              // 个人记录显示动作代码（关键字/id），而非动作名称
+              'name': exId,
               'weight': weight.toDouble(),
               'reps': (sm['reps'] as num?) ?? 0,
               'date': dateStr,

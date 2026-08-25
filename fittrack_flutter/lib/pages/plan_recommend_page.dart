@@ -187,7 +187,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                               bool success = false;
                               switch (result) {
                                 case InvitationResult.success:
-                                  msg = '激活成功！已获得7天高级统计全开放体验';
+                                  msg = '激活成功！已获得 50 积分奖励';
                                   success = true;
                                   break;
                                 case InvitationResult.invalidFormat:

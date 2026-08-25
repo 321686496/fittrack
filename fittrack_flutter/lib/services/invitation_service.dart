@@ -483,14 +483,6 @@ class InvitationService {
     Storage.saveSettings(settings);
   }
 
-  /// 被邀请人7天高级统计体验是否仍有效
-  bool isAdvancedStatsTrialActive() {
-    final settings = Storage.getSettings();
-    final until = settings['advancedStatsTrialUntil'] as int?;
-    if (until == null) return false;
-    return DateTime.now().millisecondsSinceEpoch < until;
-  }
-
   /// v1 全免费策略下，高级统计始终开放；
   /// 此方法保留供 v2 启用 Pro 时使用。
   bool isAdvancedStatsAvailable() {
