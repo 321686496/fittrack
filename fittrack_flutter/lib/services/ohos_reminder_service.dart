@@ -218,4 +218,58 @@ class OhosReminderService {
       debugPrint('[OhosReminder] cancelGymCardReminder error: $e');
     }
   }
+
+  /// 调度智能推送提醒（每日 20:00 倒计时代理提醒）
+  /// [timeStr] 格式 "HH:mm"，为下次触发时刻；每次调度会先清空旧调度。
+  Future<bool> scheduleSmartPushReminder({
+    required String title,
+    required String content,
+    required String timeStr,
+  }) async {
+    if (!isOhos) return false;
+    try {
+      await _channel.invokeMethod<void>('scheduleSmartPushReminder', {
+        'title': title,
+        'content': content,
+        'timeStr': timeStr,
+      });
+      debugPrint('[OhosReminder] scheduleSmartPushReminder: $timeStr');
+      return true;
+    } on PlatformException catch (e) {
+      debugPrint(
+          '[OhosReminder] scheduleSmartPushReminder failed: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      debugPrint('[OhosReminder] scheduleSmartPushReminder error: $e');
+      return false;
+    }
+  }
+
+  /// 取消智能推送提醒
+  Future<void> cancelSmartPushReminder() async {
+    if (!isOhos) return;
+    try {
+      await _channel.invokeMethod<void>('cancelSmartPushReminder');
+      debugPrint('[OhosReminder] cancelSmartPushReminder success');
+    } catch (e) {
+      debugPrint('[OhosReminder] cancelSmartPushReminder error: $e');
+    }
+  }
+
+  /// 立即发布智能推送通知（App 存活时兜底）
+  Future<void> publishSmartPushNow({
+    required String title,
+    required String content,
+  }) async {
+    if (!isOhos) return;
+    try {
+      await _channel.invokeMethod<void>('publishSmartPushNow', {
+        'title': title,
+        'content': content,
+      });
+      debugPrint('[OhosReminder] publishSmartPushNow sent');
+    } catch (e) {
+      debugPrint('[OhosReminder] publishSmartPushNow error: $e');
+    }
+  }
 }

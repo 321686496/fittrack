@@ -1025,9 +1025,8 @@ class _InvitationPageState extends State<InvitationPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '7天高级统计体验'
-              '${InvitationService.instance.isAdvancedStatsTrialActive() ? "（生效中）" : "（已过期）"}\n'
-              'v1 全部统计功能已免费开放',
+              '激活奖励：50 积分已到账\n'
+              '积分可立即用于解锁教学章节或购买皮肤',
               style: TextStyle(
                 color: colors.textMuted,
                 fontSize: 12,
@@ -1288,7 +1287,7 @@ class _InvitationPageState extends State<InvitationPage> {
     bool success = false;
     switch (result) {
       case InvitationResult.success:
-        msg = '激活成功！已获得7天高级统计全开放体验';
+        msg = '激活成功！已获得 50 积分奖励';
         success = true;
         break;
       case InvitationResult.invalidFormat:

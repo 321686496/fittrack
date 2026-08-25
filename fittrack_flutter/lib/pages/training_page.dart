@@ -984,12 +984,57 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   Future<void> _shareTrainingCard(int totalWeight, int duration) async {
+    // 计算本周虚拟对手 PK 结果（仅在已配置对手时返回，无对手则海报省略 PK 横幅）
+    Map<String, dynamic>? pk;
+    try {
+      final settings = Storage.getSettings();
+      final opponentJson =
+          settings['virtualOpponentData'] as Map<String, dynamic>?;
+      if (opponentJson != null) {
+        final opponent =
+            VirtualOpponent.fromJson(Map<String, dynamic>.from(opponentJson));
+        final records = Storage.getRecords();
+        final now = DateTime.now();
+        final weekStart = now.subtract(Duration(days: now.weekday - 1));
+        final weekStartMs =
+            DateTime(weekStart.year, weekStart.month, weekStart.day)
+                .millisecondsSinceEpoch;
+        int userWeeklyTrainings = 0;
+        for (final r in records) {
+          final ts = r['date'] as int? ?? r['createTime'] as int?;
+          if (ts != null && ts >= weekStartMs) userWeeklyTrainings++;
+        }
+        final outcome = VirtualOpponentEngine.instance.computeOutcome(
+          userWeeklyTrainings,
+          opponent,
+        );
+        final percentile = VirtualOpponentEngine.instance.computePercentile(
+          userWeeklyTrainings,
+          opponent.tier,
+        );
+        pk = {
+          'nickname': opponent.nickname,
+          'userWeeklyTrainings': userWeeklyTrainings,
+          'opponentWeeklyTrainings': opponent.weeklyTrainings,
+          'userWon': outcome.userScore > outcome.opponentScore,
+          'percentile': percentile,
+        };
+      }
+    } catch (_) {
+      pk = null; // PK 数据异常时不阻塞海报生成
+    }
+
     final record = <String, dynamic>{
-      'name': _dayConfig?['label'] ?? '训练',
+      // 海报主标题优先使用计划名（训练名称），否则退回训练日标签
+      'name': _plan?['name'] ?? _dayConfig?['label'] ?? '训练',
+      'dayLabel': _dayConfig?['label'],
       'totalWeight': totalWeight,
       'totalSets': _completedSets,
+      'exerciseCount': _exercises.length,
+      'completionRate': _overallProgress,
       'duration': duration * 60, // minutes → seconds for ShareCardFrame
       'date': DateTime.now().millisecondsSinceEpoch,
+      'pk': pk,
     };
     try {
       await PosterCaptureHelper.captureAndPreview(
