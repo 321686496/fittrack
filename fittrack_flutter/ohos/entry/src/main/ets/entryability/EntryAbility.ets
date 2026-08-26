@@ -39,6 +39,18 @@ const SMART_PUSH_GROUP: string = 'fittrack_smart_push';
 const SMART_PUSH_REMINDER_IDS_KEY: string = 'smart_push_reminder_ids';
 const SMART_PUSH_NOTIFICATION_ID: number = 2001;
 
+/// 倒计时代理提醒的构造参数
+/// ArkTS 不允许用对象字面量作为函数参数的类型声明（arkts-no-obj-literals-as-types），
+/// 因此抽成显式 interface，供 [buildTimerReminder] 使用。
+interface TimerReminderOptions {
+  triggerTimeInSeconds: number;
+  title: string;
+  content: string;
+  notificationId: number;
+  groupId: string;
+  buttonTitle: string;
+}
+
 class FormDataCallHandler implements MethodCallHandler {
   private ability: EntryAbility;
 
@@ -1063,14 +1075,7 @@ export default class EntryAbility extends FlutterAbility {
   /// 而 REMINDER_TYPE_TIMER（倒计时）类型不受此限制（休息提醒即是此类型，已验证可用）。
   /// 因此每日训练 / 健身卡到期 / 智能提醒统一走倒计时类型：计算距下次触发时刻的秒数，
   /// 一次性触发；每日/定时类由 Flutter 侧在启动与回前台时反复 reschedule 保持持续。
-  private buildTimerReminder(opts: {
-    triggerTimeInSeconds: number;
-    title: string;
-    content: string;
-    notificationId: number;
-    groupId: string;
-    buttonTitle: string;
-  }): reminderAgentManager.ReminderRequestTimer {
+  private buildTimerReminder(opts: TimerReminderOptions): reminderAgentManager.ReminderRequestTimer {
     // 确保 SOCIAL_COMMUNICATION 槽位存在（代理提醒触发时系统据此发横幅通知）
     notificationManager.addSlot(notificationManager.SlotType.SOCIAL_COMMUNICATION)
       .then(() => {
