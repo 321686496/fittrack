@@ -4,10 +4,10 @@
 LiftTrack 美术资源批量生成脚本（调用 scripts/gen_image.py 的 MaaS 平台接口）
 
 生成资源：
-  - 5 张首页 Banner 背景（assets/images/banners/）  横版 16:9
-  - 5 张计划目标封面（assets/images/art/goal_*.png） 正方形 1:1
-  - 7 张系统课程封面（assets/images/art/course_*.png） 正方形 1:1
-  - 5 张详情内容配图（assets/images/art/detail_*.png） 正方形 1:1
+  - 8 张首页 Banner 背景（assets/images/banners/）  横版 16:9
+  - 15 张计划目标封面（assets/images/art/goal_*.png） 正方形 1:1
+  - 15 张系统课程封面（assets/images/art/course_*.png） 正方形 1:1
+  - 12 张详情内容配图（assets/images/art/detail_*.png） 正方形 1:1
 
 用法:
     python scripts/batch_generate_art.py [--model qwen-image-3.0-pro] [--only banners|covers|courses|details]
@@ -46,7 +46,7 @@ BANNER_STYLE = (
     "cinematic left-to-right lighting falloff" + ", " + STYLE
 )
 
-# ── 首页 Banner 背景（5 张）──────────────────────────────────────
+# ── 首页 Banner 背景（8 张）──────────────────────────────────────
 BANNERS = {
     "banner_teaching": (
         "fitness education banner background, an open anatomy book with glowing 3D muscle diagrams "
@@ -78,9 +78,26 @@ BANNERS = {
         "celebration and gift mood, "
         + BANNER_STYLE
     ),
+    # ── 新增 Banner ─
+    "banner_recovery": (
+        "recovery and rehabilitation banner background, a foam roller and stretching band on a dark platform "
+        "with soft lavender and light blue gradient glow, calm healing mood, "
+        + BANNER_STYLE
+    ),
+    "banner_hiit": (
+        "HIIT high intensity fat burning banner background, battle ropes and jump rope on dark gym floor "
+        "with electric blue and neon green gradient glow, explosive energy particles, "
+        "high intensity atmosphere, "
+        + BANNER_STYLE
+    ),
+    "banner_muscle_group": (
+        "muscle group training banner background, a set of dumbbells and resistance bands arranged on a dark platform "
+        "with vibrant multi-color gradient glow (orange, blue, green), diverse training equipment mood, "
+        + BANNER_STYLE
+    ),
 }
 
-# ── 目标主题封面（5 张，训练计划/教程共用）────────────────────────
+# ── 目标主题封面（15 张，训练计划/教程共用）────────────────────────
 GOALS = {
     "goal_bulk": (
         "muscle building cover art, a powerful 3D barbell with heavy weight plates and dumbbells, "
@@ -108,9 +125,64 @@ GOALS = {
         "deep blue background with cyan and indigo gradient glow, "
         "raw technical power atmosphere, centered square composition, " + STYLE
     ),
+    # ── 肌群目标封面：手臂 ──
+    "goal_arms_male": (
+        "male arm training cover art, a pair of heavy chrome dumbbells with knurled grip on a dark steel platform, "
+        "dark charcoal background with intense orange and red gradient glow, "
+        "powerful masculine energy, centered square composition, " + STYLE
+    ),
+    "goal_arms_female": (
+        "female arm training cover art, a pair of sleek light dumbbells with smooth finish on a dark platform, "
+        "dark charcoal background with soft pink and rose gold gradient glow, "
+        "elegant feminine energy, centered square composition, " + STYLE
+    ),
+    # ── 肌群目标封面：肩膀 ──
+    "goal_shoulders_male": (
+        "male shoulder training cover art, a pair of heavy kettlebells on a dark platform, "
+        "dark charcoal background with deep blue and violet gradient glow, "
+        "powerful masculine energy, centered square composition, " + STYLE
+    ),
+    "goal_shoulders_female": (
+        "female shoulder training cover art, a pair of light kettlebells on a dark platform, "
+        "dark charcoal background with soft lavender and pink gradient glow, "
+        "elegant feminine energy, centered square composition, " + STYLE
+    ),
+    # ── 肌群目标封面：腹部 ──
+    "goal_abs_male": (
+        "male abs training cover art, a medicine ball on a dark platform with energy ring effects, "
+        "dark charcoal background with electric blue and green gradient glow, "
+        "powerful masculine energy, centered square composition, " + STYLE
+    ),
+    "goal_abs_female": (
+        "female abs training cover art, a light medicine ball on a dark platform with soft glow, "
+        "dark charcoal background with soft mint and teal gradient glow, "
+        "elegant feminine energy, centered square composition, " + STYLE
+    ),
+    # ── 肌群目标封面：腿部 ──
+    "goal_legs_male": (
+        "male leg training cover art, a heavy barbell with large weight plates on a dark gym platform, "
+        "dark charcoal background with deep amber and copper gradient glow, "
+        "powerful grounded masculine energy, centered square composition, " + STYLE
+    ),
+    "goal_legs_female": (
+        "female leg training cover art, a pair of sleek dumbbells beside a resistance band on a dark platform, "
+        "dark charcoal background with pink and magenta gradient glow with soft violet accents, "
+        "elegant feminine energy, centered square composition, " + STYLE
+    ),
+    # ── 肌群目标封面：背部 ──
+    "goal_back_male": (
+        "male back training cover art, a pull-up bar with heavy resistance bands on a dark platform, "
+        "dark charcoal background with deep blue and indigo gradient glow, "
+        "powerful masculine energy, centered square composition, " + STYLE
+    ),
+    "goal_back_female": (
+        "female back training cover art, a sleek pull-up bar with light resistance bands on a dark platform, "
+        "dark charcoal background with soft purple and rose gradient glow, "
+        "elegant feminine energy, centered square composition, " + STYLE
+    ),
 }
 
-# ── 系统课程封面（7 张）──────────────────────────────────────────
+# ── 系统课程封面（15 张）──────────────────────────────────────────
 COURSES = {
     "course_beginner_bulk": (
         "beginner muscle building course cover, friendly 3D dumbbells with a glowing upward growth arrow, "
@@ -147,9 +219,50 @@ COURSES = {
         "emerald and mint gradient on dark background, calm healthy mood, "
         "centered square composition, " + STYLE
     ),
+    # ─ 新增课程封面 ──
+    "course_beginner_arms": (
+        "beginner arm training course cover, a single light dumbbell on a clean dark platform, "
+        "soft cyan and teal gradient glow, gentle and approachable mood, "
+        "beginner-friendly atmosphere, centered square composition, " + STYLE
+    ),
+    "course_beginner_abs": (
+        "beginner core abs training course cover, a yoga mat rolled up with a small medicine ball on a dark platform, "
+        "soft green and mint gradient glow, calm and approachable mood, "
+        "beginner-friendly atmosphere, centered square composition, " + STYLE
+    ),
+    "course_advanced_arms": (
+        "advanced arm training course cover, heavy chrome dumbbells with knurled grip on a dark steel platform, "
+        "intense orange and red gradient glow, powerful and aggressive mood, "
+        "advanced training atmosphere, centered square composition, " + STYLE
+    ),
+    "course_advanced_back": (
+        "advanced back training course cover, a heavy barbell with large weight plates on a dark gym platform, "
+        "deep blue and violet gradient glow, powerful and intense mood, "
+        "advanced training atmosphere, centered square composition, " + STYLE
+    ),
+    "course_recovery": (
+        "recovery and rehabilitation training course cover, a foam roller and a stretching band on a dark platform, "
+        "soft lavender and light blue gradient glow, calm and healing mood, "
+        "gentle recovery atmosphere, centered square composition, " + STYLE
+    ),
+    "course_hiit_fatburn": (
+        "HIIT high intensity interval training course cover, a battle rope coiled on a dark gym floor with a jump rope beside it, "
+        "electric blue and neon green gradient glow, explosive energy mood, "
+        "high intensity atmosphere, centered square composition, " + STYLE
+    ),
+    "course_female_shape": (
+        "female body shaping course cover, elegant pink dumbbells with a resistance loop band on a dark platform, "
+        "soft rose gold and pink gradient glow, feminine and empowering mood, "
+        "body sculpting atmosphere, centered square composition, " + STYLE
+    ),
+    "course_legs_power": (
+        "leg day training course cover, a squat rack barbell with weight plates on a dark gym platform, "
+        "deep amber and copper gradient glow, powerful and grounded mood, "
+        "lower body strength atmosphere, centered square composition, " + STYLE
+    ),
 }
 
-# ── 详情内容配图（5 张）──────────────────────────────────────────
+# ── 详情内容配图（12 张）──────────────────────────────────────────
 DETAILS = {
     "detail_bulk": (
         "muscle building knowledge illustration, an anatomy-inspired 3D muscle figure with a dumbbell, "
@@ -175,6 +288,36 @@ DETAILS = {
         "healthy lifestyle illustration, a 3D glowing running heart with a sunrise, "
         "dark background with emerald-mint gradient glow, premium infographic style, "
         "centered square composition, " + STYLE
+    ),
+    # ── 新增详情配图：各肌群 ──
+    "detail_arms": (
+        "arm muscle training detail content image, a close-up of a chrome dumbbell with warm orange and gold gradient glow, "
+        "muscle fiber texture subtle overlay, centered square composition, " + STYLE
+    ),
+    "detail_shoulders": (
+        "shoulder training detail content image, a pair of kettlebells on a dark platform with blue and purple gradient glow, "
+        "dynamic energy particles, centered square composition, " + STYLE
+    ),
+    "detail_abs": (
+        "abdominal core training detail content image, a medicine ball on a dark platform with green and teal gradient glow, "
+        "energy ring effects, centered square composition, " + STYLE
+    ),
+    "detail_legs": (
+        "leg training detail content image, a heavy barbell plate on a dark gym floor with deep amber and copper gradient glow, "
+        "powerful grounded mood, centered square composition, " + STYLE
+    ),
+    "detail_back": (
+        "back training detail content image, a pull-up bar with resistance bands on a dark platform, "
+        "deep blue and violet gradient glow, strength and power mood, centered square composition, " + STYLE
+    ),
+    "detail_recovery": (
+        "recovery and rehabilitation training detail content image, a foam roller and massage ball on a dark platform, "
+        "soft lavender and light blue gradient glow, calm healing mood, centered square composition, " + STYLE
+    ),
+    "detail_hiit": (
+        "HIIT high intensity fat burning training detail content image, a battle rope coiled on dark gym floor "
+        "with electric blue and neon green gradient glow, explosive energy particles, "
+        "high intensity atmosphere, centered square composition, " + STYLE
     ),
 }
 
