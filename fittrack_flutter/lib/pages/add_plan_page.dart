@@ -573,7 +573,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
             child: Image.asset(
-              goalArtAsset(plan.goal) ?? '',
+              plan.coverImage ?? goalArtAsset(plan.goal) ?? '',
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 decoration: BoxDecoration(

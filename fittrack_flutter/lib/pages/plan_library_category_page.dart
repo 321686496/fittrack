@@ -1,4 +1,4 @@
-﻿// lib/pages/plan_library_category_page.dart
+// lib/pages/plan_library_category_page.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/system_plan_library.dart';
@@ -221,7 +221,7 @@ class _PlanListCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
-                goalArtAsset(plan.goal) ?? '',
+                plan.coverImage ?? goalArtAsset(plan.goal) ?? '',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   decoration: BoxDecoration(

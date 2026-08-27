@@ -3,7 +3,7 @@ import '../data/legal/legal_content.dart';
 
 /// 隐私政策页面（完整法律文本，从"设置"入口进入）
 ///
-/// 与 onboarding 流程使用的 [_PrivacyPolicyPage]（私有，带同意/拒绝按钮）不同，
+/// 与启动流程使用的同意弹窗（splash 页，带同意/拒绝按钮）不同，
 /// 本页面仅用于展示完整隐私政策文本，路由为 /privacy-full。
 class PrivacyPolicyPage extends StatefulWidget {
   const PrivacyPolicyPage({super.key});

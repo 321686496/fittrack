@@ -1087,7 +1087,10 @@ export default class EntryAbility extends FlutterAbility {
       title: opts.title,
       content: opts.content,
       notificationId: opts.notificationId,
-      groupId: opts.groupId,
+      // 注意：ReminderRequestTimer 在真机上不支持 groupId 字段。加上会导致
+      // publishReminder 被系统拒绝（返回错误），出现"调度成功返回 true、
+      // 提醒却永不触发"的情况。取消/清理统一走持久化的 reminderId，
+      // 与已验证可用的休息提醒保持完全一致的结构。
       slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
       wantAgent: {
         pkgName: bundleInfo.name,

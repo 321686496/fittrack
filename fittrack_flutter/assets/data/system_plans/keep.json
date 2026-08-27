@@ -530,5 +530,113 @@
         ]
       }
     ]
+  },
+  {
+    "id": "keep_senior_gentle_1",
+    "name": "中老年温和活力保持计划",
+    "goal": "keep",
+    "difficulty": "beginner",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 12,
+    "defaultRestTime": 90,
+    "description": "专为 45 岁以上人群设计的低冲击健康保持计划，以温和力量、平衡训练与关节活动度为主。动作全程低冲击、安全可控，兼顾心肺、肌肉量与平衡能力，帮助中老年朋友保持活力、预防跌倒、延缓肌肉流失。",
+    "coverImage": "assets/images/art/plan_senior_health.png",
+    "coverEmoji": "🕊️",
+    "coverColors": ["#C5D8B5", "#8FA39B"],
+    "tags": ["中老年", "低冲击", "防跌倒"],
+    "recommendedFrequency": 3,
+    "suitableFor": "45 岁以上，希望保持活力与健康的健身人士",
+    "gender": "all",
+    "days": [
+      {
+        "day": 1,
+        "label": "温和力量",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_senior_010", "name": "靠墙深蹲", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_senior_011", "name": "座椅起立", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_senior_012", "name": "弹力带划船", "sets": 3, "reps": 15, "restTime": 90},
+          {"id": "ex_senior_013", "name": "肩部绕环", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "平衡与关节",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_senior_020", "name": "单腿站姿", "sets": 3, "reps": 30, "restTime": 60},
+          {"id": "ex_senior_021", "name": "脚跟行走", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_senior_022", "name": "提踵", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_senior_023", "name": "坐姿核心收缩", "sets": 3, "reps": 15, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "低冲击有氧",
+        "muscle": "心肺",
+        "exercises": [
+          {"id": "ex_senior_030", "name": "原地踏步", "sets": 4, "reps": 60, "restTime": 60},
+          {"id": "ex_senior_031", "name": "靠墙俯卧撑", "sets": 3, "reps": 12, "restTime": 90},
+          {"id": "ex_senior_032", "name": "坐姿侧伸展", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_senior_033", "name": "深呼吸放松", "sets": 3, "reps": 10, "restTime": 60}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "keep_home_beginner_1",
+    "name": "居家零器械新手入门计划",
+    "goal": "keep",
+    "difficulty": "beginner",
+    "trainingType": "full_body",
+    "isPremium": false,
+    "pointsCost": 0,
+    "totalWeeks": 8,
+    "defaultRestTime": 75,
+    "description": "完全无需器械的居家入门计划，利用自身体重随时随地完成训练。动作简单安全，覆盖全身主要肌群，帮助零基础新手建立训练习惯、唤醒身体机能，为进阶训练打下坚实基础。",
+    "coverImage": "assets/images/art/plan_home_beginner.png",
+    "coverEmoji": "🏠",
+    "coverColors": ["#D5C8E0", "#A88FC7"],
+    "tags": ["居家", "零器械", "新手友好"],
+    "recommendedFrequency": 3,
+    "suitableFor": "零基础新手，居家或在外想轻松开始健身",
+    "gender": "all",
+    "days": [
+      {
+        "day": 1,
+        "label": "全身激活",
+        "muscle": "全身",
+        "exercises": [
+          {"id": "ex_home_010", "name": "开合跳", "sets": 3, "reps": 30, "restTime": 60},
+          {"id": "ex_home_011", "name": "深蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_home_012", "name": "跪姿俯卧撑", "sets": 3, "reps": 10, "restTime": 75},
+          {"id": "ex_home_013", "name": "平板支撑", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 2,
+        "label": "下半身力量",
+        "muscle": "腿部",
+        "exercises": [
+          {"id": "ex_home_020", "name": "箭步蹲", "sets": 3, "reps": 12, "restTime": 75},
+          {"id": "ex_home_021", "name": "臀桥", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_home_022", "name": "侧弓步", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_home_023", "name": "靠墙静蹲", "sets": 3, "reps": 30, "restTime": 60}
+        ]
+      },
+      {
+        "day": 3,
+        "label": "核心与上肢",
+        "muscle": "核心",
+        "exercises": [
+          {"id": "ex_home_030", "name": "卷腹", "sets": 3, "reps": 15, "restTime": 60},
+          {"id": "ex_home_031", "name": "超人式", "sets": 3, "reps": 12, "restTime": 60},
+          {"id": "ex_home_032", "name": "仰卧骑车", "sets": 3, "reps": 20, "restTime": 60},
+          {"id": "ex_home_033", "name": "死虫式", "sets": 3, "reps": 12, "restTime": 60}
+        ]
+      }
+    ]
   }
 ]
