@@ -13,3 +13,6 @@ react-prototype/node_modules/
 # Python 缓存
 __pycache__/
 *.pyc
+
+# 中间处理图片产物
+scripts/*.png

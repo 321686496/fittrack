@@ -478,7 +478,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
-                goalArtAsset(plan.goal) ?? '',
+                plan.coverImage ?? goalArtAsset(plan.goal) ?? '',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   decoration: BoxDecoration(

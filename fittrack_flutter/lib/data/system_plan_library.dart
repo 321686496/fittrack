@@ -159,6 +159,7 @@ class SystemPlan {
   final int recommendedFrequency;
   final String suitableFor;
   final String gender;
+  final String? coverImage; // 专属封面（可选），为空回退 goalArtAsset(goal)
   final List<SystemPlanDay> days;
 
   const SystemPlan({
@@ -178,6 +179,7 @@ class SystemPlan {
     required this.recommendedFrequency,
     required this.suitableFor,
     this.gender = 'all',
+    this.coverImage,
     required this.days,
   });
 
@@ -203,6 +205,7 @@ class SystemPlan {
       recommendedFrequency: (json['recommendedFrequency'] as num).toInt(),
       suitableFor: json['suitableFor'] as String? ?? '',
       gender: json['gender'] as String? ?? 'all',
+      coverImage: json['coverImage'] as String?,
       days: (json['days'] as List)
           .map((e) => SystemPlanDay.fromJson(e as Map<String, dynamic>))
           .toList(),
