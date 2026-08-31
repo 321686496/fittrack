@@ -76,6 +76,7 @@ class CourseLibrary {
           content: '认识健身房区域划分与基础礼仪。\n\n器械区：固定器械适合新手找到发力感，自由重量区（杠铃/哑铃）适合进阶训练。\n\n有氧区：跑步机、椭圆机、划船机，用于热身和减脂。\n\n力量区：深蹲架、卧推架、硬拉台，是增肌训练的核心区域。\n\n礼仪提示：用完器械归位、自带毛巾、不长时间占用热门器械。',
           imageEmojis: ['🏋️', '🏃', '🚴', '🤝'],
           blocks: [
+            ContentBlock.image('assets/images/art/ch1_intro.png', '示意图'),
             ContentBlock.heading('为什么走进健身房是第一步'),
             ContentBlock.paragraph('很多人在开始健身之旅时，会在家用器械和去健身房之间犹豫。事实上，健身房提供了家用无法替代的优势：完整的器械配置让你能刺激每一块肌肉；训练氛围让你更容易进入状态；更重要的是，镜子里的自己和身旁的训练者，会成为你坚持的动力。本章将带你认识健身房的区域划分、器材分类与基础礼仪，让你第一次走进健身房就能从容不迫。'),
             ContentBlock.heading('健身房区域划分'),
@@ -98,6 +99,7 @@ class CourseLibrary {
           imageEmojis: ['🔒', '⚖️', '🛡️'],
           recommendedExerciseIds: ['tut_basic_bench_press', 'tut_basic_squat'],
           blocks: [
+            ContentBlock.image('assets/images/art/ch2_equipment.png', '示意图'),
             ContentBlock.heading('杠铃与哑铃的本质区别'),
             ContentBlock.paragraph('杠铃和哑铃是自由重量训练的两大核心工具，但它们各有侧重。杠铃采用双手握持的对称结构，能加载极大重量，对神经肌肉系统的募集刺激最强，特别适合深蹲、卧推、硬拉这类多关节复合动作，是力量和围度增长的首选工具。哑铃则活动范围更自由，允许手腕和肘部自然转动，对关节更友好，能单侧训练以修正左右不平衡，适合作为杠铃动作的补充或某些动作的替代。两者并非替代关系，而是互补——好的训练计划会同时使用杠铃和哑铃。'),
             ContentBlock.heading('固定器械的角色定位'),
@@ -118,6 +120,7 @@ class CourseLibrary {
           imageEmojis: ['📋', '📈', '🔥'],
           recommendedExerciseIds: ['tut_basic_pull_up'],
           blocks: [
+            ContentBlock.image('assets/images/art/ch3_plan.png', '示意图'),
             ContentBlock.heading('训练频率与分化'),
             ContentBlock.paragraph('训练频率不是越多越好，而是要匹配身体的恢复能力。新手建议每周 3 次全身训练（如周一三五），每次覆盖大肌群；进阶者可选上下肢分化每周 4 次，给每个肌群更高容量刺激。频率比单次容量更重要——肌肉蛋白合成信号在训练后 24-48 小时达到峰值，规律刺激才能持续增长。两次训练同一肌群的间隔不应超过 72 小时，否则合成信号衰减，影响长期进步。'),
             ContentBlock.heading('训练容量与强度'),
@@ -138,6 +141,7 @@ class CourseLibrary {
           content: '热量盈余：每日摄入比消耗多300-500大卡，体重每周增0.25-0.5kg为宜。\n\n蛋白质：每公斤体重1.6-2.2克，分散到4-5餐摄入。\n\n碳水：训练前后补充碳水，提供训练能量并促进恢复。\n\n脂肪：占总热量20-30%，优选不饱和脂肪。\n\n补水：每日2-3升水，训练时少量多次补充。',
           imageEmojis: ['🍗', '🍚', '💧'],
           blocks: [
+            ContentBlock.image('assets/images/art/ch4_diet.png', '示意图'),
             ContentBlock.heading('热量盈余的核心原理'),
             ContentBlock.paragraph('增肌的本质是肌肉蛋白质合成速率大于分解速率，这需要两个条件：足够的训练刺激和热量盈余。每日摄入比消耗多 300-500 大卡是合理范围，体重每周增 0.25-0.5kg 为宜——增重过快主要是脂肪堆积，反而影响胰岛素敏感性。肌肉合成的速率有上限，自然训练者每月最多增加 0.5-1kg 纯肌肉，超出的体重都是脂肪。急于求成只会让你后期花更多时间减脂。'),
             ContentBlock.heading('蛋白质摄入策略'),
@@ -156,6 +160,7 @@ class CourseLibrary {
           content: '睡眠：每晚7-9小时，肌肉在睡眠中修复生长。\n\n主动恢复：休息日做轻度有氧或拉伸，促进血液循环。\n\n deload周：每4-6周安排一次减量周，重量降至平时的60%，让身体充分恢复。\n\n进阶方向：完成本课程后，可学习分化训练（推拉腿）、力量计划（5x5）等进阶内容。\n\n记住：增肌是马拉松不是短跑，坚持比完美计划更重要。',
           imageEmojis: ['😴', '🧘', '🎯'],
           blocks: [
+            ContentBlock.image('assets/images/art/ch5_recovery.png', '示意图'),
             ContentBlock.heading('睡眠是最重要的恢复手段'),
             ContentBlock.paragraph('训练只是给肌肉一个生长的信号，真正的修复和生长发生在睡眠中。生长激素的分泌在深睡眠期达到峰值，肌肉蛋白合成速率也显著提升。每晚 7-9 小时是增肌者的底线，少于 6 小时直接削弱训练收益。睡眠不足会降低睾酮、提升皮质醇、影响食欲调控激素（瘦素下降、饥饿素上升），让你更容易暴食、训练无力、肌肉流失。'),
             ContentBlock.callout('连续睡眠不足 6 小时一周，睾酮水平可下降 10-15%，相当于衰老 10 岁。睡眠是不可替代的恢复手段', 'warning'),
@@ -189,6 +194,7 @@ class CourseLibrary {
           content: '减脂核心原理：热量消耗 > 热量摄入。\n\n合理缺口：每日300-500大卡缺口，每周减0.5-1磅脂肪。\n\n过大缺口的风险：肌肉流失、代谢下降、内分泌紊乱。\n\n计算TDEE：用公式或App估算每日总消耗，再减去缺口值得到目标摄入。\n\n记录饮食：前2周记录所有入口食物，建立热量直觉。',
           imageEmojis: ['📉', '🔢', '📝'],
           blocks: [
+            ContentBlock.image('assets/images/art/cut_ch1_deficit.png', '示意图'),
             ContentBlock.heading('减脂的唯一真理：热量缺口'),
             ContentBlock.paragraph('不管什么饮食法——低碳、低脂、间歇禁食、生酮——减脂的本质都是热量消耗大于摄入。理解这一点，你就不会被各种花哨的饮食概念迷惑，也不会被某些所谓的神奇减脂食物误导。缺口大小决定减脂速度，但过大的缺口会带来肌肉流失、代谢下降、内分泌紊乱，最终引发暴食反弹。减脂不是越快越好，而是越可持续越好。'),
             ContentBlock.heading('合理缺口范围'),
@@ -207,6 +213,7 @@ class CourseLibrary {
           content: '蛋白质：每公斤体重1.8-2.4克，减脂期保肌肉的关键。\n\n脂肪：占总热量25-30%，不低于每公斤0.8克，维持激素水平。\n\n碳水：剩余热量分配，训练日多碳水、休息日少碳水。\n\n纤维：每日25-30克，蔬菜为主，增加饱腹感。\n\n水分：每日2-3升，饭前喝水可增加饱腹感。',
           imageEmojis: ['🥩', '🥑', '🍞', '🥦'],
           blocks: [
+            ContentBlock.image('assets/images/art/cut_ch2_macros.png', '示意图'),
             ContentBlock.heading('蛋白质——减脂期的守护神'),
             ContentBlock.paragraph('减脂期蛋白质比增肌期更重要。每公斤体重 1.8-2.4 克是合理范围，高蛋白饮食能保肌肉、增饱腹、提升食物热效应——消化蛋白质消耗的热量是碳水的 3 倍。优质来源包括鸡胸肉、鱼虾、鸡蛋清、希腊酸奶、低脂牛奶、瘦牛肉、乳清蛋白粉。每餐保证 25-40 克蛋白质摄入，能在减脂期最大化保留肌肉量，让你减下去的是脂肪而不是肌肉。'),
             ContentBlock.heading('脂肪——不要害怕它'),
@@ -226,6 +233,7 @@ class CourseLibrary {
           content: '优质蛋白：鸡胸肉、鱼虾、蛋白、瘦牛肉、希腊酸奶。\n\n优质碳水：燕麦、糙米、红薯、全麦面包。\n\n优质脂肪：牛油果、坚果、橄榄油、鱼油。\n\n避坑食物：含糖饮料、深加工食品、油炸食品、精制碳水。\n\n外食技巧：选烤/蒸/煮而非炸，酱料分开蘸，先吃菜再吃肉最后吃主食。',
           imageEmojis: ['🍗', '🐟', '🥑', '⚠️'],
           blocks: [
+            ContentBlock.image('assets/images/art/cut_ch3_food.png', '示意图'),
             ContentBlock.heading('优质蛋白清单'),
             ContentBlock.paragraph('鸡胸肉（每 100g 31g 蛋白、165 大卡）是减脂期性价比之王，便宜、易得、好烹饪。鱼虾低脂高蛋白，三文鱼虽脂肪略高但富含 Omega-3，能降低炎症、改善胰岛素敏感性。鸡蛋清是纯蛋白质零碳水的代表，一个蛋清约 3.6g 蛋白。瘦牛肉富含肌酸和铁，适合训练量大的人。希腊酸奶是加餐首选，蛋白含量是普通酸奶的 2-3 倍。'),
             ContentBlock.heading('优质碳水清单'),
@@ -245,6 +253,7 @@ class CourseLibrary {
           content: '平台期原因：代谢适应、水分波动、热量计算误差。\n\n突破策略：重新计算TDEE、增加非运动消耗（NEAT）、安排饮食休息日（refeed）。\n\n不要：盲目继续削减热量至极低水平，会导致暴食反弹。\n\n达到目标后：用2-4周反向饮食，每周增加100大卡直至维持热量。\n\n长期维持：建立可持续的饮食习惯，允许20%的灵活食物，避免非黑即白思维。',
           imageEmojis: ['🔄', '📈', '⚖️'],
           blocks: [
+            ContentBlock.image('assets/images/art/cut_ch4_plateau.png', '示意图'),
             ContentBlock.heading('为什么会遇到平台期'),
             ContentBlock.paragraph('体重下降后基础代谢随之降低——每减 1kg 体重约减少 15-20 大卡 TDEE，10kg 就是 150-200 大卡。同时身体会进入节能模式主动降低 NEAT（非运动消耗），你下意识少动、少抖腿、少走动。再加上水分波动和热量计算误差（多数人会低估 20-30%），平台期是减脂的必然阶段，遇到它不意味着失败，而是身体在适应新体重。'),
             ContentBlock.heading('突破平台期的策略'),
@@ -279,6 +288,7 @@ class CourseLibrary {
           imageEmojis: ['📏', '🎯', '🔍'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press'],
           blocks: [
+            ContentBlock.image('assets/images/art/shape_ch1_assess.png', '示意图'),
             ContentBlock.heading('塑形与增肌减脂的区别'),
             ContentBlock.paragraph('塑形的核心不是单纯追求围度或低体脂，而是肌肉比例与线条的协调。同样的体重，肩腰比 1.6 比 1.2 在视觉上更接近"倒三角"；同样的体脂，腹肌厚度决定能否清晰显形。塑形者需要在保留肌肉的前提下精细管理脂肪，并通过针对性训练调整局部比例——这是中级训练者最常遇到的瓶颈区。'),
             ContentBlock.heading('瓶颈识别四象限'),
@@ -297,6 +307,7 @@ class CourseLibrary {
           imageEmojis: ['📅', '⚖️', '🔄'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_pull_up', 'tut_basic_overhead_press'],
           blocks: [
+            ContentBlock.image('assets/images/art/shape_ch2_split.png', '示意图'),
             ContentBlock.heading('为什么选上下肢分化'),
             ContentBlock.paragraph('塑形者通常已有 6-12 个月训练基础，全身训练的频率已不足以支撑进一步肌肥大。上下肢分化每周 4 次，让每肌群每周获得 2 次高质量刺激，同时保留 48-72 小时恢复窗口。相比五分化（每肌群每周 1 次），上下肢分化在塑形期能提供更稳定的合成信号，避免长时间不刺激导致的肌肉流失风险——这在热量缺口或维持期尤为重要。'),
             ContentBlock.heading('4 天上下肢分化模板'),
@@ -315,6 +326,7 @@ class CourseLibrary {
           imageEmojis: ['🏗️', '💎', '🎯'],
           recommendedExerciseIds: ['tut_basic_lateral_raise', 'tut_basic_dumbbell_fly', 'tut_basic_leg_press'],
           blocks: [
+            ContentBlock.image('assets/images/art/shape_ch3_compound_isolation.png', '示意图'),
             ContentBlock.heading('复合与孤立的分工'),
             ContentBlock.paragraph('复合动作负责整体围度与力量基础，孤立动作负责线条精雕与弱区补强。塑形期两者比例建议 70:30——复合动作占训练主轴，确保整体肌肉量不流失；孤立动作在复合力竭后补足，针对薄弱区域做精雕。只做复合会留下视觉短板（如侧束平坦、上胸薄弱），只做孤立则缺乏整体厚度支撑。'),
             ContentBlock.heading('复合动作的选择与负荷'),
@@ -333,6 +345,7 @@ class CourseLibrary {
           imageEmojis: ['⏱️', '🎚️', '💪'],
           recommendedExerciseIds: ['tut_basic_bicep_curl', 'tut_basic_lateral_raise'],
           blocks: [
+            ContentBlock.image('assets/images/art/shape_ch4_tempo.png', '示意图'),
             ContentBlock.heading('节奏四位数标识法'),
             ContentBlock.paragraph('训练节奏用四位数字表示：离心（下放）- 底部停顿 - 向心（推起）- 顶峰停顿。例如 3-1-1-1 表示 3 秒下放、底部停 1 秒、1 秒推起、顶峰收缩 1 秒，单次动作 6 秒。塑形期通过延长节奏增加张力时间（TUT），在不加重量的前提下提升肌肉刺激，是突破平台的有效手段。'),
             ContentBlock.heading('塑形期节奏方案'),
@@ -351,6 +364,7 @@ class CourseLibrary {
           imageEmojis: ['📈', '🔄', '🔋'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_barbell_row'],
           blocks: [
+            ContentBlock.image('assets/images/art/shape_ch5_microcycle.png', '示意图'),
             ContentBlock.heading('为什么需要微周期化'),
             ContentBlock.paragraph('塑形期身体适应速度快，连续 4 周以上使用相同重量与组数会进入平台。微周期化通过有计划的累加与减量交替，让身体在累加周接受新刺激、在减量周充分恢复，实现螺旋式进步。4 周循环是塑形期的黄金单位——足够长以产生适应、足够短以保持刺激新鲜度。'),
             ContentBlock.heading('4 周微周期模板'),
@@ -383,6 +397,7 @@ class CourseLibrary {
           imageEmojis: ['🧠', '⚡', '🦵'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press', 'tut_basic_deadlift'],
           blocks: [
+            ContentBlock.image('assets/images/art/strength_ch1_principle.png', '示意图'),
             ContentBlock.heading('力量的三要素'),
             ContentBlock.paragraph('力量不是单一因素，而是神经募集能力、肌肉横截面积、技术效率的乘积。神经募集决定你能调动多少运动单位同时发力；肌肉横截面决定单个运动单位能产生多大力量；技术效率决定力量能否高效传递到杠铃。初学者前 8 周的力量增长主要来自神经适应（70%），肌肉增长只占 30%，这就是为什么"练力量但不长围度"在前 2 个月是正常现象。'),
             ContentBlock.heading('力量训练 vs 肌肥大训练'),
@@ -401,6 +416,7 @@ class CourseLibrary {
           imageEmojis: ['🏋️', '📐', '🛡️'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press', 'tut_basic_deadlift'],
           blocks: [
+            ContentBlock.image('assets/images/art/strength_ch2_technique.png', '示意图'),
             ContentBlock.heading('深蹲技术要点'),
             ContentBlock.paragraph('高杠位深蹲：杠铃置于斜方肌上部，双脚与肩同宽，脚尖外展 15-30°。下蹲时膝盖跟踪脚尖方向、髋部同步后移，深度至大腿与地面平行或略低。保持脊柱中立、挺胸、核心加压。站起时同步伸展髋膝，不要先抬臀再起身上身。深蹲的关键是髋膝同步——任何一端先动都会导致杠铃轨迹偏移和力量泄漏。'),
             ContentBlock.heading('卧推技术要点'),
@@ -419,6 +435,7 @@ class CourseLibrary {
           imageEmojis: ['🌬️', '🛡️', '⚡'],
           recommendedExerciseIds: ['tut_basic_plank', 'tut_basic_squat'],
           blocks: [
+            ContentBlock.image('assets/images/art/strength_ch3_breathing_core.png', '示意图'),
             ContentBlock.heading('瓦式呼吸的原理'),
             ContentBlock.paragraph('瓦式呼吸（Valsalva Maneuver）是力量训练的核心呼吸技术：动作前深吸气到腹部（不是胸腔），屏气并主动收紧腹肌如防御拳击，维持腹内压完成一次重复，回到顶部后吐气。腹内压像气柱一样支撑脊柱，显著降低椎间盘负荷。研究显示，正确瓦式呼吸下脊柱伸肌需求降低 30-40%。这就是为什么大重量训练者必须掌握瓦式呼吸。'),
             ContentBlock.heading('核心加压三步法'),
@@ -437,6 +454,7 @@ class CourseLibrary {
           imageEmojis: ['📈', '🎯', '🔄'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press', 'tut_basic_deadlift'],
           blocks: [
+            ContentBlock.image('assets/images/art/strength_ch4_progression.png', '示意图'),
             ContentBlock.heading('线性进阶的基本逻辑'),
             ContentBlock.paragraph('线性进阶（Linear Progression, LP）是初学者最有效的力量增长方法。每次训练主项加 2.5kg（上肢：卧推/推举/划船）或 5kg（下肢：深蹲/硬拉），3 组×5 次为标准训练组。这种简单的加重策略能持续提供渐进超负荷，初学者前 8-12 周可线性增加 30-50% 的力量。StrongLifts 5×5 和 Starting Strength 是经典 LP 方案。'),
             ContentBlock.heading('A/B 训练日交替'),
@@ -469,6 +487,7 @@ class CourseLibrary {
           imageEmojis: ['⚖️', '🧘', '❤️'],
           recommendedExerciseIds: ['tut_basic_plank', 'tut_basic_squat'],
           blocks: [
+            ContentBlock.image('assets/images/art/keep_ch1_principle.png', '示意图'),
             ContentBlock.heading('健康训练的差异化定位'),
             ContentBlock.paragraph('健康导向训练不以最大力量、最大围度、最低体脂为目标，而以"30 年后还能否独立完成日常活动"为终点。研究显示，30 岁后每十年流失 3-8% 肌肉量，60 岁后加速；力量训练能将流失率降至 1-2%。心肺功能、骨密度、关节灵活度同样遵循"用进废退"。健康训练的目标是建立可持续 30 年的训练习惯，而非短期突破。'),
             ContentBlock.heading('四大健康支柱'),
@@ -487,6 +506,7 @@ class CourseLibrary {
           imageEmojis: ['🦵', '🤲', '🛡️'],
           recommendedExerciseIds: ['tut_basic_leg_press', 'tut_basic_lat_pulldown', 'tut_basic_seated_row'],
           blocks: [
+            ContentBlock.image('assets/images/art/keep_ch2_strength.png', '示意图'),
             ContentBlock.heading('为什么要关节友好'),
             ContentBlock.paragraph('30 岁后关节软骨变薄、滑液减少、肩袖肌群退化。杠铃深蹲对腰椎和膝盖的压力、杠铃卧推对肩关节的磨损、传统硬拉对下背的负荷，在长期训练中累积成慢性伤病。健康训练优先选择关节友好的替代动作：器械训练轨迹固定减少稳定肌负担、绳索提供持续张力不冲击关节、哑铃允许自然手腕角度。这不是偷懒，而是延长训练寿命的智慧。'),
             ContentBlock.heading('关节友好动作清单'),
@@ -505,6 +525,7 @@ class CourseLibrary {
           imageEmojis: ['🏃', '❤️', '🚴'],
           recommendedExerciseIds: ['tut_basic_mountain_climber'],
           blocks: [
+            ContentBlock.image('assets/images/art/keep_ch3_cardio.png', '示意图'),
             ContentBlock.heading('心肺功能对健康的核心价值'),
             ContentBlock.paragraph('心肺功能是预测全因死亡率的最强独立指标，超过吸烟、糖尿病、高血压。研究显示，最大摄氧量（VO2max）每提高 3.5 ml/kg/min，心血管疾病死亡风险降低 10-15%。力量训练对心肺的刺激有限，必须配合专门的有氧训练。健康训练者不应忽视有氧，把它视为与力量同等重要的健康支柱。'),
             ContentBlock.heading('WHO 有氧建议'),
@@ -523,6 +544,7 @@ class CourseLibrary {
           imageEmojis: ['🥗', '😴', '🧘'],
           recommendedExerciseIds: ['tut_basic_plank'],
           blocks: [
+            ContentBlock.image('assets/images/art/keep_ch4_lifestyle.png', '示意图'),
             ContentBlock.heading('健康期营养的核心理念'),
             ContentBlock.paragraph('健康期营养不以增肌或减脂为目标，而以"维持稳定的身体成分和代谢健康"为核心。蛋白质 1.2-1.6g/kg 足够保留肌肉量；碳水占总热量 45-55% 提供训练能量；脂肪占 25-30% 维持激素水平。关键是避免极端饮食——生酮、断食、极低热量在短期内可能有效，但长期执行率低、代谢副作用大。均衡饮食 + 适量热量是 30 年可持续的方案。'),
             ContentBlock.heading('营养素分配与时机'),
@@ -555,6 +577,7 @@ class CourseLibrary {
           imageEmojis: ['🔍', '📊', '🎯'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press', 'tut_basic_deadlift'],
           blocks: [
+            ContentBlock.image('assets/images/art/bulk_ch1_assess.png', '示意图'),
             ContentBlock.heading('什么是真正的"高级瓶颈"'),
             ContentBlock.paragraph('高级训练者的瓶颈与初学者完全不同。初学者的瓶颈是"不够练"，高级者的瓶颈是"恢复跟不上"+"刺激不够新"。1.5 年以上训练者肌肉蛋白合成对训练的响应降低 30-50%，同样的训练容量产生的增长效应减弱。这就是为什么高级者需要更精细的周期化、更新的动作刺激、更严格的恢复管理——而不是简单加量。盲目加量在高级阶段只会导致过度训练。'),
             ContentBlock.heading('六维诊断框架'),
@@ -573,6 +596,7 @@ class CourseLibrary {
           imageEmojis: ['📈', '🔄', '🔋'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_barbell_row', 'tut_basic_overhead_press'],
           blocks: [
+            ContentBlock.image('assets/images/art/bulk_ch2_periodization.png', '示意图'),
             ContentBlock.heading('为什么高级者必须周期化'),
             ContentBlock.paragraph('高级训练者的身体适应速度极快，连续 4 周以上使用相同容量与强度必然进入平台。周期化通过有计划的累加与减量交替，让身体在累加周接受新刺激、在减量周超量恢复，实现螺旋式进步。肌肥大周期化的核心是"容量累加 + 强度波动 + 定期减量"，与力量周期化（强度主导）不同。高级者脱离周期化谈增肌，等于在适应曲线上原地踏步。'),
             ContentBlock.heading('4 周肌肥大微周期模板'),
@@ -591,6 +615,7 @@ class CourseLibrary {
           imageEmojis: ['🎯', '🔧', '⚖️'],
           recommendedExerciseIds: ['tut_basic_lateral_raise', 'tut_basic_dumbbell_fly', 'tut_basic_skull_crusher'],
           blocks: [
+            ContentBlock.image('assets/images/art/bulk_ch3_assistance.png', '示意图'),
             ContentBlock.heading('弱链诊断方法'),
             ContentBlock.paragraph('弱链是限制整体进步的薄弱环节。诊断方法：①主项力量比例（深蹲:卧推:硬拉应为 1.5:1:1.8，偏离则为弱链）；②视觉评估（拍照对比各肌群发达度）；③力竭测试（同重量下哪个肌群先力竭）。常见弱链：上胸（平板卧推强但上斜弱）、背阔中部（垂直拉强但水平拉弱）、腘绳肌（深蹲强但硬拉弱）、三角肌中束（肩推强但侧平举弱）。精准诊断是辅助专项化的前提。'),
             ContentBlock.heading('辅助动作选择原则'),
@@ -609,6 +634,7 @@ class CourseLibrary {
           imageEmojis: ['🔥', '⏱️', '💧'],
           recommendedExerciseIds: ['tut_basic_bicep_curl', 'tut_basic_tricep_pushdown', 'tut_basic_lateral_raise'],
           blocks: [
+            ContentBlock.image('assets/images/art/bulk_ch4_metabolic.png', '示意图'),
             ContentBlock.heading('代谢压力的肌肥大机制'),
             ContentBlock.paragraph('肌肥大三大机制：机械张力、肌肉损伤、代谢压力。高级者机械张力的增长趋缓（力量进步慢），代谢压力成为重要的补充刺激。代谢压力通过延长 TUT、缩短组间休息、高次数累积代谢产物（乳酸、氢离子、生长激素），激活肌肥大信号通路。研究显示，代谢压力训练能提升生长激素水平 200-400%，对肌肥大有显著补充作用。但滥用会导致过度训练，必须周期化应用。'),
             ContentBlock.heading('五大代谢压力技术'),
@@ -627,6 +653,7 @@ class CourseLibrary {
           imageEmojis: ['📉', '😴', '🔄'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press'],
           blocks: [
+            ContentBlock.image('assets/images/art/bulk_ch5_deload.png', '示意图'),
             ContentBlock.heading('deload 的本质与必要性'),
             ContentBlock.paragraph('deload 不是偷懒，而是主动恢复策略。高级训练者长期处于高容量高强度训练中，神经系统、结缔组织、激素水平都会累积疲劳。deload 通过降低容量与强度，让身体超量恢复，消化积累的疲劳。跳过 deload 连续训练 8-12 周后必然出现过度训练，那时被迫休息 2-4 周损失远大于主动 deload 1 周。高级者把 deload 视为训练计划的核心组成部分，不是可选项目。'),
             ContentBlock.heading('过度训练的早期信号'),
@@ -645,6 +672,7 @@ class CourseLibrary {
           imageEmojis: ['📅', '🎯', '🧬'],
           recommendedExerciseIds: ['tut_basic_pull_up', 'tut_basic_squat', 'tut_basic_bench_press'],
           blocks: [
+            ContentBlock.image('assets/images/art/bulk_ch6_advanced_split.png', '示意图'),
             ContentBlock.heading('高级分化的选择依据'),
             ContentBlock.paragraph('高级分化的选择不是看"哪个最有效"，而是看"哪个最适合自己"。推拉腿（PPL）每周 6 次适合恢复能力强者；上下肢每周 4 次适合恢复一般者；六分化每周 6 次适合追求极致专项者；五分化每周 5 次适合传统健美偏好。选择依据：①恢复能力（睡眠、营养、压力）；②训练经验（3 年+ 适合高频率）；③生活方式（工作强度、家庭责任）；④基因（肌肉恢复速度）。盲目模仿他人的分化是高级者最常犯的错误。'),
             ContentBlock.heading('四种主流高级分化对比'),
@@ -677,6 +705,7 @@ class CourseLibrary {
           imageEmojis: ['🔥', '📈', '⚡'],
           recommendedExerciseIds: ['tut_basic_mountain_climber', 'tut_basic_push_up'],
           blocks: [
+            ContentBlock.image('assets/images/art/hiit_ch1_epoc.png', '示意图'),
             ContentBlock.heading('HIIT 的核心定义'),
             ContentBlock.paragraph('HIIT（High-Intensity Interval Training，高强度间歇训练）的核心是"高强度运动 + 主动/被动恢复"的交替循环。高强度阶段心率须达到 80-95% 最大心率（220-年龄），恢复阶段降至 60-70%。一个完整 HIIT 通常 4-8 个循环，总时长 15-25 分钟。与 LISS（低强度稳态有氧）相比，HIIT 时间效率高 3-5 倍、EPOC 效应显著、对肌肉量保留更好，但对关节和神经系统压力更大。'),
             ContentBlock.heading('EPOC 效应解析'),
@@ -695,6 +724,7 @@ class CourseLibrary {
           imageEmojis: ['🤸', '💪', '⚡'],
           recommendedExerciseIds: ['tut_basic_mountain_climber', 'tut_basic_push_up', 'tut_basic_squat'],
           blocks: [
+            ContentBlock.image('assets/images/art/hiit_ch2_exercises.png', '示意图'),
             ContentBlock.heading('HIIT 动作的选择标准'),
             ContentBlock.paragraph('HIIT 动作选择决定训练效果与安全。四个标准：①多关节——动用大肌群，心率提升快、热量消耗高；②高强度——能在 20-30 秒内将心率拉到 85%+ 最大心率；③安全可控——力竭状态下动作不变形；④可快速切换——动作间过渡不超过 5 秒，维持心率。符合标准的动作：开合跳、高抬腿、波比跳、登山者、战绳、壶铃摆荡、跳箱。不符合：孤立动作（弯举）、复杂技术动作（抓举）、高冲击动作（连续跳深）。'),
             ContentBlock.heading('五大经典 HIIT 动作'),
@@ -713,6 +743,7 @@ class CourseLibrary {
           imageEmojis: ['⏱️', '📊', '🎯'],
           recommendedExerciseIds: ['tut_basic_mountain_climber'],
           blocks: [
+            ContentBlock.image('assets/images/art/hiit_ch3_protocols.png', '示意图'),
             ContentBlock.heading('Tabata 协议详解'),
             ContentBlock.paragraph('Tabata 是最经典的 HIIT 协议：20 秒高强度（达 95% 最大心率）+ 10 秒休息，循环 8 次，总时长 4 分钟。由日本研究员 Izumi Tabata 设计，研究显示每周 4 次 Tabata + 1 次稳态有氧，6 周后无氧能力提升 28%、VO2max 提升 14%。Tabata 适合时间紧张但追求高效者。但强度极高，不适合初学者。建议先从 30/30 协议开始，4-8 周后再尝试 Tabata。Tabata 通常选 1-2 个动作循环，避免频繁切换影响强度。'),
             ContentBlock.heading('主流 HIIT 协议对比'),
@@ -731,6 +762,7 @@ class CourseLibrary {
           imageEmojis: ['⚖️', '🏋️', '🔥'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press', 'tut_basic_mountain_climber'],
           blocks: [
+            ContentBlock.image('assets/images/art/hiit_ch4_balance.png', '示意图'),
             ContentBlock.heading('干扰效应的本质'),
             ContentBlock.paragraph('HIIT 和力量训练存在"干扰效应"——过量 HIIT 会通过共享神经恢复资源、累积疲劳、激活 AMPK 通路（抑制 mTOR 肌肥大信号）等方式，抑制力量和肌肥大。研究显示，每周 4 次以上高强度有氧使肌肥大效益降低 30%、力量增长降低 18%。减脂期必须平衡：保留力量训练容量至赤字前 60-80%、HIIT 控制在 2-3 次/周、单次不超过 25 分钟。这种平衡让 HIIT 提供代谢刺激，又不损害力量保留。'),
             ContentBlock.heading('力量与 HIIT 的时间安排'),
@@ -749,6 +781,7 @@ class CourseLibrary {
           imageEmojis: ['🛡️', '🤸', '📈'],
           recommendedExerciseIds: ['tut_basic_mountain_climber', 'tut_basic_push_up'],
           blocks: [
+            ContentBlock.image('assets/images/art/hiit_ch5_safety.png', '示意图'),
             ContentBlock.heading('HIIT 热身的标准化流程'),
             ContentBlock.paragraph('HIIT 强度高，热身必须充分。标准流程：①5 分钟轻度有氧（开合跳、慢跑）提升体温；②动态拉伸（腿摆、髋部旋转、手臂环绕）3 分钟激活关节；③动作专项激活（深蹲、俯卧撑、波比跳慢速版本）2 分钟预演动作模式。总热身 10 分钟。充分热身将运动损伤风险降低 50% 以上，同时提升 HIIT 表现——冷启动的肌肉无法达到 85%+ 最大心率。绝不能为节省时间跳过热身。'),
             ContentBlock.heading('HIIT 安全核心原则'),
@@ -780,9 +813,9 @@ class CourseLibrary {
           content: '居家训练不需要健身房，一块瑜伽垫、一面空墙、一把椅子就能开始。本章教你如何打造属于自己的居家训练角，让训练融入日常生活。',
           imageEmojis: ['🏠', '🧘', '🕒'],
           blocks: [
+            ContentBlock.image('assets/images/art/home_ch1_env.png', '示意图'),
             ContentBlock.heading('为什么居家训练更适合新手'),
             ContentBlock.paragraph('很多新手在"要不要办健身卡"上犹豫徘徊。居家训练最大的优势是零门槛——不用通勤、不惧人多、随时可练。它让你把健身的启动成本降到最低，而持续坚持是所有效果的前提。居家训练还能锻炼自律，是建立长期习惯的最佳起点。等你养成了规律训练的习惯，再考虑是否去健身房进阶也不迟。'),
-            ContentBlock.image('assets/images/art/home_beginner_env.png', '居家训练角：一块瑜伽垫 + 一面空墙 + 一把椅子'),
             ContentBlock.heading('居家训练三大必备'),
             ContentBlock.paragraph('居家训练真正需要的只有三样：瑜伽垫（保护关节、防滑）、运动鞋（支撑脚踝、缓冲落地）、毛巾与水（保持清洁与补水）。想增加训练乐趣，还可准备弹力带和哑铃——它们并非必需品，未来按需添置即可。记住，开始永远比装备重要，先动起来，再逐步升级装备。'),
             ContentBlock.callout('新手最容易犯的错是"等装备齐了再开始"。立刻用现成条件动起来，才是最快的入门方式', 'tip'),
@@ -795,6 +828,7 @@ class CourseLibrary {
           imageEmojis: ['🏋️', '🦵', '💪'],
           recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_push_up'],
           blocks: [
+            ContentBlock.image('assets/images/art/home_ch2_bodyweight.png', '示意图'),
             ContentBlock.heading('下肢进阶级三件套'),
             ContentBlock.paragraph('深蹲、箭步蹲、臀桥是居家下肢训练的黄金三件套。深蹲练臀腿整体力量，箭步蹲练单腿稳定与平衡，臀桥专注臀部激活。三者组合能全面刺激下肢，且都无需器械。动作要点：深蹲时膝盖与脚尖同向、下蹲至大腿平行地面；箭步蹲保持躯干直立；臀桥顶峰夹紧臀部 1 秒。'),
             ContentBlock.heading('上肢与核心无需器械'),
@@ -808,6 +842,7 @@ class CourseLibrary {
           content: '每周 3 次、每次 25-30 分钟，是居家新手最可持续的训练频率。本章教你规划时间、安排训练日，并掌握养成健身习惯的实用方法。',
           imageEmojis: ['📅', '⏰', '🔥'],
           blocks: [
+            ContentBlock.image('assets/images/art/home_ch3_schedule.png', '示意图'),
             ContentBlock.heading('每周 3 次的黄金频率'),
             ContentBlock.paragraph('对居家新手来说，每周 3 次、每次 25-30 分钟是最可持续的节奏，例如周一、周三、周五训练，其他时间休息。内容可以是全身循环：热身 5 分钟 + 下肢动作 3 组 + 上肢动作 3 组 + 核心动作 3 组 + 拉伸放松 5 分钟。这样既覆盖全身，又不会过度疲劳。'),
             ContentBlock.heading('把训练变成习惯'),
@@ -821,6 +856,7 @@ class CourseLibrary {
           content: '当基础动作变轻松，就是进阶的时候。本章教你如何调整训练难度、增加容量，以及何时、如何从居家过渡到健身房。',
           imageEmojis: ['📈', '🏋️', '🎯'],
           blocks: [
+            ContentBlock.image('assets/images/art/home_ch4_progress.png', '示意图'),
             ContentBlock.heading('让训练变难的三种方式'),
             ContentBlock.paragraph('同一组动作可以三种方式进阶：①加重——从徒手到背书包、到哑铃、到弹力带；②加量——每组次数或组数增加；③变难——从跪姿俯卧撑到标准俯卧撑、从双脚深蹲到单腿分腿蹲。每次只改变一个变量，避免一次性过度进阶。'),
             ContentBlock.heading('何时考虑去健身房'),
@@ -847,6 +883,7 @@ class CourseLibrary {
           content: '中老年人在开始新运动计划前，应先进行科学的自我健康评估。本章介绍健康自评清单、运动禁忌与安全原则，让你在安全的前提下开始健身。',
           imageEmojis: ['🩺', '✅', '🛡️'],
           blocks: [
+            ContentBlock.image('assets/images/art/senior_ch1_health.png', '示意图'),
             ContentBlock.heading('为什么要先做健康评估'),
             ContentBlock.paragraph('中老年人的身体机能在自然退化，开始运动前进行健康评估至关重要。如果你患有高血压、心脏病、糖尿病、关节病等慢性疾病，或一段时间内有过胸闷、气短、头晕等症状，都应先咨询医生再开始运动。量力而行不是退缩，而是对自己身体最大的负责。'),
             ContentBlock.callout('任何时候感到胸痛、严重气短、头晕，立即停止运动并就医，绝不要硬撑', 'warning'),
@@ -860,9 +897,9 @@ class CourseLibrary {
           content: '力量训练是对抗肌肉流失、骨质疏松的关键。本章介绍安全温和的力量动作，从自身体重和弹力带开始，循序渐进。',
           imageEmojis: ['💪', '🦵', '⚖️'],
           blocks: [
+            ContentBlock.image('assets/images/art/senior_ch2_strength.png', '示意图'),
             ContentBlock.heading('为什么力量对中老年特别重要'),
             ContentBlock.paragraph('从 30 岁起肌肉量以每十年 3-8% 的速度流失，这就是"肌少症"。缺乏肌肉会导致行动迟缓、易疲劳、代谢下降，甚至增加跌倒和骨折风险。规律的力量训练能有效延缓肌肉流失，提升基础代谢与生活质量。力量不是年轻人的专利，而是中老年人最值得的投资。'),
-            ContentBlock.image('assets/images/art/senior_strength.png', '用弹力带进行温和力量训练'),
             ContentBlock.heading('安全温和的力量动作'),
             ContentBlock.bulletList('靠墙深蹲：背靠墙下蹲，保护膝盖又安全\n座椅起立：练腿力与平衡的基础动作\n弹力带划船：练背，改善含胸驼背\n靠墙俯卧撑：练胸臂，减轻手腕负担\n提踵：强化小腿与踝关节稳定性'),
             ContentBlock.callout('每次力量训练 20-30 分钟、每周 2-3 次即可，组间充分休息，宁轻勿重', 'tip'),
@@ -874,11 +911,173 @@ class CourseLibrary {
           content: '跌倒是中老年最常见的意外伤害。本章介绍简单有效的平衡训练方法，强化核心与下肢稳定性，大幅降低跌倒风险。',
           imageEmojis: ['⚖️', '🦶', '🧘'],
           blocks: [
+            ContentBlock.image('assets/images/art/senior_ch3_balance.png', '示意图'),
             ContentBlock.heading('平衡能力是可以练回来的'),
             ContentBlock.paragraph('平衡能力随年龄自然下降，但完全可以通过训练改善。每天花 10 分钟做平衡练习，就能显著提升下肢稳定性与协调性。平衡训练还能强化核心，改善体态，让你走得更稳、站得更久。'),
             ContentBlock.heading('每日 10 分钟平衡训练'),
             ContentBlock.bulletList('单腿站姿：扶墙或椅子，从 10 秒逐步过渡到 30 秒\n脚跟行走：有效强化踝关节与足底\n坐姿站起：模拟日常动作，练腿力与平衡\n闭眼站立：在安全扶持下进阶挑战'),
             ContentBlock.callout('平衡训练务必在扶手或椅子旁进行，确保摔倒时能及时扶住，安全永远是第一位的', 'warning'),
+          ],
+        ),
+      ],
+    ),
+    // ── 课程 10：健身房器械使用指南（免费） ──────────────────────────────
+    Course(
+      id: 'course_gym_equipment',
+      title: '健身房器械使用指南',
+      subtitle: '免费 · 认识器械，练对部位',
+      description: '4 章带你认识健身房最常见器械：自由重量区与固定器械各练哪些部位，如何根据目标选器械，以及安全使用要点。新手进健身房不再无所适从，看图就能找到"练这里的这台器械"。',
+      goal: FitnessGoal.strength,
+      difficulty: TutorialDifficulty.beginner,
+      pointsCost: 0,
+      coverEmoji: '🏋️',
+      coverColors: [Color(0xFFB5C5E0), Color(0xFF8FA3C7)],
+      chapters: [
+        Chapter(
+          id: 'gym_ch1_freeweight',
+          title: '第1章：认识自由重量区',
+          content: '健身房力量区以自由重量为核心。本章介绍深蹲架、卧推架、硬拉台和哑铃区的主流器械，以及每台器械主要练到哪些肌肉。',
+          imageEmojis: ['🏋️', '🦵', '🤜'],
+          recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_bench_press'],
+          blocks: [
+            ContentBlock.image('assets/images/art/gym_ch1_freeweight.png', '示意图'),
+            ContentBlock.heading('自由重量 vs 固定器械'),
+            ContentBlock.paragraph('自由重量器械（杠铃、哑铃、深蹲架、卧推架）靠你的身体主导运动轨迹，能调动更多稳定肌，是增肌、增力的首选；但需要一定控制能力。固定器械轨迹固定、更安全，适合新手找发力感和康复期。下面我们先认识健身房最常见的自由重量区。'),
+            ContentBlock.heading('深蹲架 / 卧推架 / 硬拉台'),
+            ContentBlock.bulletList('深蹲架：主练股四头肌、臀大肌、竖脊肌（扛杠铃下蹲，全身力量之王）\n卧推架：主练胸大肌、三角肌前束、肱三头肌（平板/上斜卧推背）\n硬拉台：主练臀腿、背部、后链（罗马尼亚硬拉/传统硬拉）\n哑铃区：可练全身任意部位，适合单侧与修正不平衡'),
+            ContentBlock.callout('第一次用自由重量务必先空杆/轻重量找感觉，卧推、深蹲要有保护杠或搭档在场', 'warning'),
+          ],
+        ),
+        Chapter(
+          id: 'gym_ch2_machine_upper',
+          title: '第2章：固定器械 · 胸背与上肢',
+          content: '固定器械对新手更友好。本章介绍练胸、练背、练肩练臂的经典固定器械，以及它们各自练到的肌群。',
+          imageEmojis: ['🫁', '🧍', '💪'],
+          recommendedExerciseIds: ['tut_basic_lat_pulldown', 'tut_basic_bench_press'],
+          blocks: [
+            ContentBlock.image('assets/images/art/gym_ch2_machine_upper.png', '示意图'),
+            ContentBlock.heading('练胸：蝴蝶机与坐姿推胸'),
+            ContentBlock.paragraph('蝴蝶机（夹胸机）靠夹臂动作练胸大肌中缝，轨迹安全、上手快；坐姿推胸机则模拟卧推练整块胸。新手建议先坐姿推胸建立胸腔发力感，再用蝴蝶机收缝。'),
+            ContentBlock.heading('练背：高位下拉与坐姿划船'),
+            ContentBlock.bulletList('高位下拉：主练背阔肌，下拉过头，是引体向上的入门替代\n坐姿划船：主练中背部与菱形肌，改善含胸驼背\n坐姿下拉/低拉：练下背与核心稳定\n肩推机 / 蝴蝶机后束：练肩部前中束'),
+            ContentBlock.heading('按部位选器械速查'),
+            ContentBlock.paragraph('肩：坐姿肩推机（前中束）；手臂：绳索下压（三头）、弯举机（二头）；胸：坐姿推胸机、蝴蝶机；背：高位下拉、坐姿划船。记住口诀——"推的练胸肩、拉的练背、悬垂下拉练背阔"，照着这台机器要动的关节就能反推出它练哪里。'),
+          ],
+        ),
+        Chapter(
+          id: 'gym_ch3_machine_leg',
+          title: '第3章：固定器械 · 下肢与核心',
+          content: '下肢是力量的根基。本章介绍练腿、练臀、练核心的固定器械，以及它们各自的肌群与动作要点。',
+          imageEmojis: ['🦵', '🍑', '🧘'],
+          recommendedExerciseIds: ['tut_basic_leg_press', 'tut_basic_squat'],
+          blocks: [
+            ContentBlock.image('assets/images/art/gym_ch3_machine_leg.png', '示意图'),
+            ContentBlock.heading('练腿：腿举机 / 腿弯举 / 腿屈伸'),
+            ContentBlock.bulletList('腿举机：主练股四头肌、臀大肌，轨迹安全适合加重量\n腿弯举：主练腘绳肌（腿后侧），补足深蹲容易忽略的部位\n腿屈伸：孤立股四头肌，适合力竭后的补充\n史密斯架：兼顾深蹲/臀推，轨迹被固定更稳'),
+            ContentBlock.heading('练臀与核心'),
+            ContentBlock.paragraph('罗马凳（背部伸展）练竖脊肌与下背；健身球/药球可做核心训练；绳索卷腹、悬垂举腿练腹发力感。核心不是"只练腹肌"，稳定腰椎才是关键，建议在每次训练最后留 5-10 分钟做核心。'),
+            ContentBlock.callout('下肢力量训练要循序渐进加重量，动作标准优先，膝关节方向始终与脚尖一致', 'warning'),
+          ],
+        ),
+        Chapter(
+          id: 'gym_ch4_choose',
+          title: '第4章：根据目标选器械 + 安全使用',
+          content: '不同目标（增肌/减脂/塑形/健康）对应不同器械策略。本章教你快速制定自己的器械路线图，并掌握安全使用铁律。',
+          imageEmojis: ['🎯', '🧭', '🛡️'],
+          blocks: [
+            ContentBlock.image('assets/images/art/gym_ch4_choose.png', '示意图'),
+            ContentBlock.heading('按目标选器械'),
+            ContentBlock.bulletList('增肌：以自由重量复合动作为主（深蹲、卧推、硬拉、划船）+ 固定器械补充\n减脂：复合动作 + 有氧器械（跑步机/椭圆机/划船机）结合\n塑形：中等重量多次数，侧重臀腿与核心\n健康/新手：先固定器械建立发力感，再过渡自由重量'),
+            ContentBlock.heading('安全使用铁律'),
+            ContentBlock.bulletList('自由重量必须有保护杠或搭档，杠铃片锁紧\n用固定器械先调好座位与轨道，动作全程不锁死关节\n重量选择宁可轻，最后 2-3 次应感到吃力但能保持标准\n每组间留足休息（通常 60-90 秒），不追求一次性力竭\n出现刺痛立即停止，训练前充分热身'),
+            ContentBlock.quote('器械只是工具，练对部位、练得安全，才是健身的正确打开方式。'),
+          ],
+        ),
+      ],
+    ),
+    // ── 课程 11：一对哑铃练全身（免费） ──────────────────────────────
+    Course(
+      id: 'course_dumbbell_fullbody',
+      title: '一对哑铃练全身',
+      subtitle: '免费 · 在家练遍全身 8 大动作',
+      description: '不需要健身房，只要一对哑铃和一块垫子，就能练遍全身。4 章含 8 大动作图解：分清每个动作练哪里、怎么做、多少组。居家新手照着练，一套全身哑铃计划轻松拿下。',
+      goal: FitnessGoal.shape,
+      difficulty: TutorialDifficulty.beginner,
+      pointsCost: 0,
+      coverEmoji: '🔔',
+      coverColors: [Color(0xFFD5C8E0), Color(0xFFA88FC7)],
+      chapters: [
+        Chapter(
+          id: 'db_ch1_pick',
+          title: '第1章：选对哑铃，做好训练准备',
+          content: '一对哑铃就能练全身，但首先要选对重量。本章教你根据自身水平选哑铃、准备场地，并掌握呼吸与热身。',
+          imageEmojis: ['🔔', '🧰', '🔥'],
+          blocks: [
+            ContentBlock.image('assets/images/art/db_ch1_pick.png', '示意图'),
+            ContentBlock.heading('选多重合适'),
+            ContentBlock.paragraph('居家新手建议准备一对可调节哑铃（2.5-15kg）或两档固定重量：一组"中档"用于深蹲、推举等大肌群动作，一组"轻档"用于弯举等小肌群。判断标准：做完一组后感到最后 2-3 次吃力、但动作仍能保持标准，这个重量就是合适的。'),
+            ContentBlock.heading('训练准备'),
+            ContentBlock.bulletList('地面：铺瑜伽垫，保护关节、防滑\n呼吸：发力（举起）时呼气，还原（放下）时吸气，不屏气\n热身：原地踏步/开合跳 3-5 分钟 + 肩袖绕环\n安排：每周 3 次、每次 30-40 分钟，组间休息 60 秒'),
+            ContentBlock.callout('重量宁轻勿重。动作标准、能做全程，比用大重量做半程更有训练价值', 'tip'),
+          ],
+        ),
+        Chapter(
+          id: 'db_ch2_upper',
+          title: '第2章：上半身动作图解',
+          content: '用一对哑铃练胸、背、肩、手臂，4 个经典动作覆盖上半身全部主要肌群，每个动作都有图解。',
+          imageEmojis: ['💪', '🫁', '🔔'],
+          recommendedExerciseIds: ['tut_basic_bench_press', 'tut_basic_curl'],
+          blocks: [
+            ContentBlock.image('assets/images/art/db_ch2_upper.png', '示意图'),
+            ContentBlock.image('assets/images/art/db_bench_press.png', '哑铃卧推：仰卧垫上，双手持铃推起至胸上方 — 主练胸大肌'),
+            ContentBlock.heading('动作 1：哑铃卧推（胸）'),
+            ContentBlock.paragraph('动作要领：仰卧垫上，双脚踩实，双手各持一铃于胸部两侧；呼气将哑铃向上推至两铃靠近，顶峰停 1 秒，再吸气缓慢下放。主练胸大肌、三角肌前束与肱三头肌。每个动作 3 组、每组 10-12 次。'),
+            ContentBlock.image('assets/images/art/db_row.png', '俯身哑铃划船：俯身屈髋，双手持铃沿大腿向髋部拉 — 主练背部'),
+            ContentBlock.heading('动作 2：俯身哑铃划船（背）'),
+            ContentBlock.paragraph('动作要领：双脚与肩同宽，屈髋俯身，背部挺直；双手持铃贴近身体向髋部方向拉，肩胛骨夹紧，再缓慢下放。主练背部、菱形肌与肱二头肌。3 组、每组 12 次。俯身时保持脊柱中立，避免弓腰。'),
+            ContentBlock.image('assets/images/art/db_ohp.png', '哑铃肩上推举：坐或站立，双手推铃过头 — 主练肩部'),
+            ContentBlock.heading('动作 3：哑铃肩上推举（肩）'),
+            ContentBlock.paragraph('动作要领：坐姿或站姿，双手持铃举至耳侧，掌心向前；呼气将哑铃垂直推起过头，直到手臂伸直，再控制下放回耳侧。主练三角肌与肱三头肌。3 组、每组 10-12 次。全程收紧核心，避免腰椎后仰代偿。'),
+            ContentBlock.image('assets/images/art/db_curl.png', '哑铃弯举：手臂自然下垂，屈肘将铃举起 — 主练肱二头肌'),
+            ContentBlock.heading('动作 4：哑铃弯举（手臂）'),
+            ContentBlock.paragraph('动作要领：站姿或坐姿，双手持铃垂于体侧，掌心向前；呼气屈肘将哑铃举起至肩前，顶峰收缩 1 秒，再缓慢下放。主练肱二头肌。3 组、每组 12-15 次。身体不要前后摇晃借力。'),
+          ],
+        ),
+        Chapter(
+          id: 'db_ch3_lower',
+          title: '第3章：下半身动作图解',
+          content: '腿部与臀部是全身力量与塑形的关键。本章用 4 个哑铃动作覆盖臀腿主肌群，均有图解与要点。',
+          imageEmojis: ['🦵', '🍑', '🔔'],
+          recommendedExerciseIds: ['tut_basic_squat', 'tut_basic_lunge'],
+          blocks: [
+            ContentBlock.image('assets/images/art/db_ch3_lower.png', '示意图'),
+            ContentBlock.image('assets/images/art/db_squat.png', '哑铃深蹲：双手持铃于胸前，下蹲臀部低于膝盖 — 主练臀腿'),
+            ContentBlock.heading('动作 1：哑铃深蹲（臀腿）'),
+            ContentBlock.paragraph('动作要领：双脚与肩同宽，双手持铃停于胸前；吸气屈髋屈膝下蹲至大腿平行或略低于地面，膝盖方向与脚尖一致，呼气站起。主练股四头肌、臀大肌。3 组、每组 12-15 次。'),
+            ContentBlock.image('assets/images/art/db_lunge.png', '哑铃箭步蹲：向前迈步下蹲，前后膝各呈 90 度 — 主练臀腿'),
+            ContentBlock.heading('动作 2：哑铃箭步蹲（臀腿）'),
+            ContentBlock.paragraph('动作要领：双手持铃垂于体侧，向前跨出一步，下蹲至前膝约 90 度、后膝接近地面，再蹬地回到原位，还原换腿。主练臀大肌与单腿稳定性。每侧 10-12 次、3 组。保持躯干直立，前膝不过脚尖。'),
+            ContentBlock.image('assets/images/art/db_rdl.png', '罗马尼亚硬拉：屈髋将铃沿腿下滑至小腿中段 — 主练后链'),
+            ContentBlock.heading('动作 3：罗马尼亚硬拉（后链）'),
+            ContentBlock.paragraph('动作要领：双手持铃垂于体前，微屈膝、屈髋，让哑铃沿大腿前侧缓慢下滑至小腿中段，感受大腿后侧与臀部张力，再伸髋拉起回到站立。主练腘绳肌、臀大肌、下背。3 组、每组 10-12 次。背部始终挺直。'),
+            ContentBlock.image('assets/images/art/db_glute_bridge.png', '哑铃臀桥：仰卧屈膝，将铃置髋上，顶髋抬起 — 主练臀部'),
+            ContentBlock.heading('动作 4：哑铃臀桥（臀）'),
+            ContentBlock.paragraph('动作要领：仰卧屈膝，将哑铃放在髋骨上、双手扶住；呼气顶髋向上将臀部推起，顶峰夹紧臀部 1-2 秒，再缓慢下放。主练臀大肌。3 组、每组 15 次。发力时收紧核心，不要用腰代偿。'),
+          ],
+        ),
+        Chapter(
+          id: 'db_ch4_core_plan',
+          title: '第4章：核心动作 + 全身哑铃计划',
+          content: '核心是连接上下半身的桥梁。本章补充核心动作图解，并给你的 8 个哑铃动作编排成一套完整居家训练计划。',
+          imageEmojis: ['🧘', '📋', '🔥'],
+          blocks: [
+            ContentBlock.image('assets/images/art/db_ch4_core_plan.png', '示意图'),
+            ContentBlock.image('assets/images/art/db_russian_twist.png', '哑铃俄罗斯转体：坐姿持铃，左右交替转动躯干 — 主练腹部'),
+            ContentBlock.heading('核心动作：俄罗斯转体（腹）'),
+            ContentBlock.paragraph('动作要领：坐姿微后仰，双手持哑铃于胸前，双脚抬离地面（较难）或踩地；呼气向左右交替转动躯干，让哑铃碰触身体两侧。主练腹内外斜肌与核心旋转力。3 组、每组 20 次（左右各 10）。转动靠核心带动，不是靠摆臂。'),
+            ContentBlock.heading('一套完整的哑铃全身计划'),
+            ContentBlock.bulletList('热身：开合跳 + 关节绕环 5 分钟\n训练（每个动作 3 组，组间休息 60 秒）\n  1. 哑铃深蹲 12-15 次\n  2. 哑铃卧推 10-12 次\n  3. 俯身哑铃划船 12 次\n  4. 哑铃肩上推举 10-12 次\n  5. 罗马尼亚硬拉 10-12 次\n  6. 哑铃箭步蹲 每侧 10 次\n  7. 哑铃臀桥 15 次\n  8. 俄罗斯转体 20 次\n放松：静态拉伸 5 分钟'),
+            ContentBlock.callout('每周练 2-3 次，给肌肉 48 小时恢复；动作标准优先，重量循序渐进', 'tip'),
           ],
         ),
       ],

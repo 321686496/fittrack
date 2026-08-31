@@ -57,8 +57,9 @@ void main() {
         Storage.getGymCardsAsync(),
         Storage.getNotesAsync(),
       ]);
-      // v1 积分体系：预加载积分日志
+      // v1 积分体系：预加载积分日志 + 新用户首用赠送 100 积分
       PointsService.instance.getPointsLog();
+      PointsService.instance.grantWelcomeBonusOnce();
     } catch (e, stack) {
       debugPrint('Storage.init() failed: $e');
       debugPrint('Stack: $stack');

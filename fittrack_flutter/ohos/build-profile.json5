@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\黄sir\\.ohos\\config\\default_ohos_1b24KmXvwUVeq4IoU2WA4kOUP1MGHlvCzcwTBRLE2PM=.cer",
+          "certpath": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BC3FD95A02A57EB1D1FCA071A0AC67C01CAD63425E89C60A953EB04B13D2E3822C78051145A6134",
-          "profile": "C:\\Users\\黄sir\\.ohos\\config\\default_ohos_1b24KmXvwUVeq4IoU2WA4kOUP1MGHlvCzcwTBRLE2PM=.p7b",
+          "keyPassword": "0000001B1F43F2F6CDEBE6342F3CAF76CFD6F594621B258E31E9918DDC33DC40032C15054276941968ECE6",
+          "profile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\黄sir\\.ohos\\config\\default_ohos_1b24KmXvwUVeq4IoU2WA4kOUP1MGHlvCzcwTBRLE2PM=.p12",
-          "storePassword": "0000001BAEEBF49FD04935451F591792809DE581205D42C634B51CFB9B3D9ECAD4B850822C4B93DBDD33A5"
+          "storeFile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p12",
+          "storePassword": "0000001B0B6FD1EBFDC7477E5C14675F44176C1B18C661F59DC2480348C5E2C82B36B5F5C97D610E8A9961"
         }
       }
     ],
@@ -40,6 +40,78 @@
     {
       "name": "entry",
       "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "shared_preferences_ohos",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_packages-abe263023cbc77d95ee0a8a2511e8e02903b7a6c/packages/shared_preferences/shared_preferences_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "image_picker_ohos",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_packages-fd410050c6842717ee1b851ca7640c294de9568c/packages/image_picker/image_picker_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "url_launcher_ohos",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_packages-fd410050c6842717ee1b851ca7640c294de9568c/packages/url_launcher/url_launcher_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "permission_handler_ohos",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_permission_handler-729c5ae84a1ce255c4c73749e0c0076c129ea386/permission_handler_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sqflite",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/flutter_sqflite-c1dd8bfc2c167bcc4a657e7b4d28048fc77d7035/sqflite/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flutter_local_notifications",
+      "srcPath": "../../../../flutter/flutter_pub_cache/git/fluttertpc_flutter_local_notifications-4481d9357c0275ea86469e6fbd723313b15fe888/flutter_local_notifications/ohos",
       "targets": [
         {
           "name": "default",

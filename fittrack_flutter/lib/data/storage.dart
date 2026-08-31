@@ -471,6 +471,7 @@ class Storage {
       'points': 0,
       'pointsEarnedTotal': 0,
       'pointsSpentTotal': 0,
+      'welcomeBonusGranted': false, // 新用户首次使用积分赠送是否已发放
       'lastCheckInDate': '',
       'adsWatchedToday': 0,
       'adsWatchedDate': '',
