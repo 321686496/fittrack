@@ -1,9 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../services/points_service.dart';
 import '../services/ad_service.dart';
 import '../data/storage.dart';
+import '../data/course_content.dart';
+import '../data/system_plan_library.dart';
+import '../data/virtual_goods.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
@@ -54,7 +57,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
       case 'invite':
         return source == 'invite';
       case 'course':
-        return source == 'course_learn';
+        return source == 'course_learn' || source.startsWith('unlock_course_');
       case 'training':
         return source == 'training';
       case 'achievement':
@@ -80,8 +83,65 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
       'training': '每日训练',
       'achievement': '成就解锁',
       'checkIn': '每日签到',
+      'welcome': '新用户奖励',
+      'invited': '邀请好友',
     };
-    return map[source] ?? source;
+    if (map.containsKey(source)) return map[source]!;
+
+    // 解锁 / 购买类消费：解析出具体的课程、计划、皮肤、教学章节名称，展示友好提示
+    if (source.startsWith('unlock_plan_')) {
+      final planId = source.substring('unlock_plan_'.length);
+      final plan = SystemPlanLibrary.instance.getById(planId);
+      return plan != null ? '购买健身计划「${plan.name}」' : '购买健身计划';
+    }
+    if (source.startsWith('unlock_good_')) {
+      final goodId = source.substring('unlock_good_'.length);
+      final good = VirtualGoodsStore.byId(goodId);
+      if (good != null) {
+        final categoryNames = {
+          GoodCategory.opponentSkin: '对手皮肤',
+          GoodCategory.badge: '徽章',
+          GoodCategory.avatarFrame: '头像框',
+          GoodCategory.title: '称号',
+        };
+        return '购买${categoryNames[good.category] ?? '虚拟物品'}「${good.name}」';
+      }
+      return '购买虚拟物品';
+    }
+    if (source.startsWith('unlock_')) {
+      final featureId = source.substring('unlock_'.length);
+      final course = CourseLibrary.getById(featureId);
+      if (course != null) return '购买系统课程「${course.title}」';
+      if (featureId.startsWith('tutorial_')) return '解锁教学章节';
+      return '解锁内容';
+    }
+    return source;
+  }
+
+  /// 消费类记录的详情跳转路由；不可跳转时返回 null。
+  /// 支持：系统课程、精品训练计划、皮肤/虚拟物品、教学章节。
+  String? _detailRouteFor(String source) {
+    if (source.startsWith('unlock_plan_')) {
+      final planId = source.substring('unlock_plan_'.length);
+      return '/plan-library/detail/$planId';
+    }
+    // 皮肤/虚拟物品：进入对手皮肤商店（维持现有跳转入口）
+    if (source.startsWith('unlock_good_')) {
+      return '/opponent-detail';
+    }
+    if (source.startsWith('unlock_')) {
+      final featureId = source.substring('unlock_'.length);
+      if (featureId.startsWith('tutorial_')) {
+        // featureId 形如 tutorial_<tutorialId>_chapter_<chapterId>，取 tutorialId
+        final tutorialPart = featureId.substring('tutorial_'.length);
+        final tutorialId = tutorialPart.split('_chapter_').first;
+        return '/tutorial/$tutorialId';
+      }
+      if (CourseLibrary.getById(featureId) != null) {
+        return '/course/$featureId';
+      }
+    }
+    return null;
   }
 
   IconData _sourceIcon(String source, bool isIncome) {
@@ -101,6 +161,8 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
           return Icons.fitness_center;
         case 'achievement':
           return Icons.emoji_events;
+        case 'welcome':
+          return Icons.card_giftcard;
         default:
           return Icons.add_circle_outline;
       }
@@ -428,79 +490,92 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
     final source = item['source'] as String? ?? '';
     final balance = item['balance'] as int? ?? 0;
     final time = item['time'] as int? ?? 0;
+    final route = _detailRouteFor(source);
+    final linkable = route != null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: colors.bgCard,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colors.borderColor),
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              Container(
-                width: 4,
-                decoration: BoxDecoration(
-                  color: isIncome ? colors.successColor : colors.warningColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    bottomLeft: Radius.circular(12),
+      child: GestureDetector(
+        onTap: linkable ? () => context.push(route) : null,
+        child: Container(
+          decoration: BoxDecoration(
+            color: colors.bgCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colors.borderColor),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: isIncome ? colors.successColor : colors.warningColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36, height: 36,
-                        decoration: BoxDecoration(
-                          color: (isIncome ? colors.successColor : colors.warningColor).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: (isIncome ? colors.successColor : colors.warningColor).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            _sourceIcon(source, isIncome),
+                            size: 18,
+                            color: isIncome ? colors.successColor : colors.warningColor,
+                          ),
                         ),
-                        child: Icon(
-                          _sourceIcon(source, isIncome),
-                          size: 18,
-                          color: isIncome ? colors.successColor : colors.warningColor,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(_sourceLabel(source), style: TextStyle(
+                                color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500,
+                              )),
+                              Text(
+                                linkable ? '${_formatTime(time)} · 点击查看详情' : _formatTime(time),
+                                style: TextStyle(
+                                  color: linkable ? colors.accentGlow : colors.textMuted,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(_sourceLabel(source), style: TextStyle(
-                              color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500,
-                            )),
-                            Text(_formatTime(time), style: TextStyle(
-                              color: colors.textMuted, fontSize: 11,
+                            Text(
+                              '${isIncome ? '+' : ''}$delta',
+                              style: TextStyle(
+                                color: isIncome ? colors.successColor : colors.warningColor,
+                                fontSize: 16, fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text('余额 $balance', style: TextStyle(
+                              color: colors.textMuted, fontSize: 10,
                             )),
                           ],
                         ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '${isIncome ? '+' : ''}$delta',
-                            style: TextStyle(
-                              color: isIncome ? colors.successColor : colors.warningColor,
-                              fontSize: 16, fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text('余额 $balance', style: TextStyle(
-                            color: colors.textMuted, fontSize: 10,
-                          )),
+                        if (linkable) ...[
+                          const SizedBox(width: 6),
+                          Icon(Icons.chevron_right, color: colors.textMuted, size: 18),
                         ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
