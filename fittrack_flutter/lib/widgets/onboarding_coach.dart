@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../data/storage.dart';
-import '../data/mock_data.dart';
+import '../themes/app_themes.dart';
 
 class OnboardingCoach extends StatefulWidget {
-  final VoidCallback onComplete;
+  /// 选择部位并确认时回调，参数为所选部位
+  final ValueChanged<String> onComplete;
   final VoidCallback onSkip;
   const OnboardingCoach({
     required this.onComplete,
@@ -15,112 +16,96 @@ class OnboardingCoach extends StatefulWidget {
 }
 
 class _OnboardingCoachState extends State<OnboardingCoach> {
-  int _step = 0;
   String? _selectedPart;
 
   static const _parts = ['胸', '背', '腿', '肩', '手臂', '核心'];
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black54,
-      child: SafeArea(
-        child: Center(
-          child: Container(
-            margin: const EdgeInsets.all(24),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: _buildStep(),
+    final theme = Theme.of(context);
+    final colors = theme.extension<LiftTrackColors>();
+    // 使用主题可读文本色，避免浅色背景下出现白色文字看不清
+    final textPrimary = colors?.textPrimary ?? theme.colorScheme.onSurface;
+    final textSecondary = colors?.textSecondary ?? theme.colorScheme.onSurfaceVariant;
+    final cardColor = colors?.bgCard ?? theme.colorScheme.surface;
+
+    return Center(
+      child: Material(
+        color: cardColor,
+        elevation: 8,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 420),
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '今天练什么部位？',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '选择想练的部位，为你自动搜索合适的训练计划',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(color: textSecondary),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 10,
+                children: _parts.map((p) {
+                  final selected = _selectedPart == p;
+                  return ChoiceChip(
+                    label: Text(p),
+                    selected: selected,
+                    // 显式指定两种状态颜色，避免浅色背景下文字看不清
+                    backgroundColor:
+                        colors?.bgCard ?? theme.colorScheme.surface,
+                    labelStyle: TextStyle(
+                      color: selected ? theme.colorScheme.onPrimary : textPrimary,
+                    ),
+                    selectedColor: theme.colorScheme.primary,
+                    side: BorderSide(
+                      color: selected
+                          ? theme.colorScheme.primary
+                          : (colors?.borderColor ?? Colors.black12),
+                    ),
+                    onSelected: (_) => setState(() => _selectedPart = p),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: widget.onSkip,
+                    child: Text('跳过', style: TextStyle(color: textSecondary)),
+                  ),
+                  FilledButton(
+                    onPressed: _selectedPart == null ? null : _confirm,
+                    child: const Text('搜索训练计划'),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStep() {
-    switch (_step) {
-      case 0:
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('今天练什么部位？',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              children: _parts.map((p) {
-                return ChoiceChip(
-                  label: Text(p),
-                  selected: _selectedPart == p,
-                  onSelected: (_) => setState(() => _selectedPart = p),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(onPressed: widget.onSkip, child: const Text('跳过')),
-                FilledButton(
-                  onPressed: _selectedPart == null
-                      ? null
-                      : () => setState(() => _step = 1),
-                  child: const Text('下一步'),
-                ),
-              ],
-            ),
-          ],
-        );
-      case 1:
-        final exercises = MockData.exercises
-            .where((e) => _matchesPart(e, _selectedPart))
-            .take(3)
-            .toList();
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('为你推荐 3 个动作', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            ...exercises.map((e) => ListTile(
-                  leading: const Icon(Icons.fitness_center),
-                  title: Text(e['name'] as String? ?? ''),
-                  dense: true,
-                )),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                    onPressed: () => setState(() => _step = 0),
-                    child: const Text('上一步')),
-                FilledButton(
-                  onPressed: _finish,
-                  child: const Text('开始记录'),
-                ),
-              ],
-            ),
-          ],
-        );
-      default:
-        return const SizedBox();
-    }
-  }
-
-  // Resolution 2: MockData.exercises uses 'category' field (e.g. '胸部', '背部'),
-  // NOT 'muscles'. Match against category.
-  bool _matchesPart(Map<String, dynamic> exercise, String? part) {
-    if (part == null) return true;
-    final category = exercise['category'] as String? ?? '';
-    return category.contains(part);
-  }
-
-  void _finish() {
+  void _confirm() {
+    final part = _selectedPart;
+    if (part == null) return;
     final settings = Storage.getSettings();
     settings['onboardingV2Done'] = true;
     Storage.saveSettings(settings);
-    widget.onComplete();
+    widget.onComplete(part);
   }
 }

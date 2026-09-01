@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../services/gym_card_reminder_service.dart';
@@ -24,6 +25,7 @@ class _GymCardPageState extends State<GymCardPage> {
   // 避免 sheet 关闭后 controller 被提前 dispose 引发 _dependents.isEmpty）
   late TextEditingController _nameCtrl;
   late TextEditingController _gymNameCtrl;
+  late TextEditingController _addressCtrl;
   late TextEditingController _priceCtrl;
   late TextEditingController _phoneCtrl;
   late TextEditingController _remarkCtrl;
@@ -38,6 +40,7 @@ class _GymCardPageState extends State<GymCardPage> {
     super.initState();
     _nameCtrl = TextEditingController();
     _gymNameCtrl = TextEditingController();
+    _addressCtrl = TextEditingController();
     _priceCtrl = TextEditingController();
     _phoneCtrl = TextEditingController();
     _remarkCtrl = TextEditingController();
@@ -50,6 +53,7 @@ class _GymCardPageState extends State<GymCardPage> {
   void dispose() {
     _nameCtrl.dispose();
     _gymNameCtrl.dispose();
+    _addressCtrl.dispose();
     _priceCtrl.dispose();
     _phoneCtrl.dispose();
     _remarkCtrl.dispose();
@@ -229,6 +233,7 @@ class _GymCardPageState extends State<GymCardPage> {
     // 清空（添加模式）或填入 existingCard 值（编辑模式）
     _nameCtrl.text = existingCard?['name']?.toString() ?? '';
     _gymNameCtrl.text = existingCard?['gymName']?.toString() ?? '';
+    _addressCtrl.text = existingCard?['address']?.toString() ?? '';
     _priceCtrl.text = existingCard?['price']?.toString() ?? '';
     _phoneCtrl.text = existingCard?['phone']?.toString() ?? '';
     _remarkCtrl.text = existingCard?['remark']?.toString() ?? '';
@@ -307,6 +312,12 @@ class _GymCardPageState extends State<GymCardPage> {
                     controller: _gymNameCtrl,
                     label: '健身房名称',
                     hint: '如：金吉鸟健身(万达店)',
+                  ),
+                  const SizedBox(height: 12),
+                  FitTextField(
+                    controller: _addressCtrl,
+                    label: '详细地址',
+                    hint: '如：XX市XX区XX路88号',
                   ),
                   const SizedBox(height: 12),
                   Text('卡类型', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
@@ -516,6 +527,7 @@ class _GymCardPageState extends State<GymCardPage> {
                         final data = <String, dynamic>{
                           'name': _nameCtrl.text.trim(),
                           'gymName': _gymNameCtrl.text.trim(),
+                          'address': _addressCtrl.text.trim(),
                           'cardType': cardType,
                           'price': double.tryParse(_priceCtrl.text) ?? 0,
                           'startDate': startDate,
@@ -670,6 +682,8 @@ class _GymCardPageState extends State<GymCardPage> {
               ],
               if ((card['phone'] as String? ?? '').isNotEmpty)
                 _buildDetailRow(colors, Icons.phone_outlined, '联系电话', card['phone'] as String),
+              if ((card['address'] as String? ?? '').isNotEmpty)
+                _buildAddressRow(colors, card['address'] as String),
               if ((card['remark'] as String? ?? '').isNotEmpty)
                 _buildDetailRow(colors, Icons.note_outlined, '备注', card['remark'] as String),
 
@@ -812,6 +826,66 @@ class _GymCardPageState extends State<GymCardPage> {
         ],
       ),
     );
+  }
+
+  /// 详细地址行：点击跳转地图搜索该目的地
+  Widget _buildAddressRow(LiftTrackColors colors, String address) {
+    return GestureDetector(
+      onTap: () => _openMap(address),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          children: [
+            Icon(Icons.location_on_outlined, size: 18, color: colors.accentGlow),
+            const SizedBox(width: 10),
+            Text('详细地址', style: TextStyle(color: colors.textSecondary, fontSize: 14)),
+            const Spacer(),
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: colors.accentGlow,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                        decorationColor: colors.accentGlow.withOpacity(0.4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(Icons.open_in_new, size: 14, color: colors.accentGlow),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 跳转到地图并搜索目的地（优先高德，其次系统地图）
+  Future<void> _openMap(String address) async {
+    final query = Uri.encodeComponent(address);
+    // 高德地图搜索直达页
+    final amapUrl = 'https://uri.amap.com/search?keyword=$query&callnative=0';
+    // 系统地图兜底（Android 调起应用选择器）
+    final geoUrl = 'geo:0,0?q=$query';
+    bool launched = false;
+    try {
+      launched = await launchUrl(Uri.parse(amapUrl), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      launched = false;
+    }
+    if (!launched) {
+      await launchUrl(Uri.parse(geoUrl), mode: LaunchMode.externalApplication);
+    }
   }
 
   @override

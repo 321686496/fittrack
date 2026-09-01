@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
@@ -120,7 +120,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (_boundRecord != null) _buildBoundRecordCard(colors),
+                        _buildRecordBindingSection(colors),
                         const SizedBox(height: 14),
                         _buildFeelingSection(colors),
                         const SizedBox(height: 14),
@@ -143,6 +143,229 @@ class _NoteEditPageState extends State<NoteEditPage> {
         ],
       ),
     );
+  }
+
+  // ── 绑定训练记录（可选，可添加/更换/解除） ─────────────────
+
+  Widget _buildRecordBindingSection(LiftTrackColors colors) {
+    final record = _boundRecord;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.bgSecondary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.borderColor.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.link, size: 14, color: colors.accentGlow),
+              const SizedBox(width: 6),
+              Text(
+                '绑定训练记录',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              if (record != null)
+                TextButton(
+                  onPressed: () => setState(() {
+                    _boundRecord = null;
+                    _exerciseOptions = [];
+                  }),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.textMuted,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text('解除', style: TextStyle(fontSize: 12)),
+                )
+              else
+                Text(
+                  '选一次训练，记录当下感受',
+                  style: TextStyle(color: colors.textMuted, fontSize: 11),
+                ),
+            ],
+          ),
+          if (record != null) ...[
+            const SizedBox(height: 10),
+            _buildBoundRecordCard(colors),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _pickRecord,
+                icon: Icon(Icons.swap_horiz, size: 18, color: colors.accentGlow),
+                label: const Text('更换训练记录'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colors.accentGlow,
+                  side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50)),
+                ),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _pickRecord,
+                icon: Icon(Icons.add_link, size: 18, color: colors.accentGlow),
+                label: const Text('选择训练记录'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colors.accentGlow,
+                  side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '未绑定也可直接写自由笔记',
+              style: TextStyle(color: colors.textMuted, fontSize: 11),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 从训练记录中选择一次绑定到当前笔记
+  Future<void> _pickRecord() async {
+    final colors = Theme.of(context).extension<LiftTrackColors>()!;
+    final records = Storage.getRecords();
+    if (records.isEmpty) {
+      FitToast.info(context, '暂无训练记录，先去完成一次训练吧');
+      return;
+    }
+    final sorted = List<Map<String, dynamic>>.from(records)
+      ..sort((a, b) =>
+          (((b['createTime'] as num?)?.toInt() ?? 0) -
+              ((a['createTime'] as num?)?.toInt() ?? 0)));
+
+    final selected = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.bgSecondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: colors.borderColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                children: [
+                  Icon(Icons.history, size: 18, color: colors.accentGlow),
+                  const SizedBox(width: 6),
+                  Text(
+                    '选择本次训练记录',
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: sorted.length,
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, color: colors.borderColor.withOpacity(0.3)),
+                itemBuilder: (ctx, i) {
+                  final r = sorted[i];
+                  return ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colors.accentGlow.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.fitness_center,
+                          color: colors.accentGlow, size: 20),
+                    ),
+                    title: Text(
+                      _recordTitle(r),
+                      style: TextStyle(
+                          color: colors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      _recordSub(r),
+                      style: TextStyle(color: colors.textMuted, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Icon(Icons.chevron_right,
+                        color: colors.textMuted, size: 20),
+                    onTap: () => Navigator.pop(ctx, r),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (selected != null && mounted) {
+      setState(() {
+        _boundRecord = selected;
+        final setRecords = selected['setRecords'];
+        if (setRecords is Map) {
+          _exerciseOptions =
+              setRecords.keys.map((k) => k.toString()).toList();
+        } else {
+          _exerciseOptions = [];
+        }
+      });
+    }
+  }
+
+  String _recordTitle(Map<String, dynamic> r) {
+    final muscles = (r['muscles'] as List?)?.cast<String>() ?? [];
+    final ts = ((r['createTime'] as num?)?.toInt() ?? 0);
+    final d = ts > 0 ? DateTime.fromMillisecondsSinceEpoch(ts) : null;
+    final dateStr = d != null ? '${d.month}月${d.day}日' : '';
+    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : '全身训练';
+    return '$dateStr · $muscleStr';
+  }
+
+  String _recordSub(Map<String, dynamic> r) {
+    final duration = ((r['duration'] ?? 0) as num).toInt();
+    final totalWeight = ((r['totalWeight'] ?? 0) as num).toInt();
+    final totalSets = ((r['totalSets'] ?? 0) as num).toInt();
+    final mins = (duration / 60).round();
+    return '${mins}min · ${totalWeight}kg · $totalSets 组';
   }
 
   // ── 绑定的训练记录摘要 ─────────────────────────────────────
@@ -660,15 +883,14 @@ class _NoteEditPageState extends State<NoteEditPage> {
       'content': _contentCtrl.text.trim(),
       'moodSticker': _moodSticker,
       'isFeatured': _isFeatured,
+      'recordId': _boundRecord?['id'],
     };
 
     if (_existingNote != null) {
       // 更新现有笔记
-      noteMap['recordId'] = _existingNote!.recordId;
       await Storage.updateNoteAsync(_existingNote!.id, noteMap);
     } else {
       // 新建笔记
-      noteMap['recordId'] = widget.recordId;
       Storage.addNote(noteMap);
     }
 

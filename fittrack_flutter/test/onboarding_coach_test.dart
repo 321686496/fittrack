@@ -12,7 +12,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: OnboardingCoach(
-          onComplete: () {},
+          onComplete: (_) {},
           onSkip: () {},
         ),
       ),

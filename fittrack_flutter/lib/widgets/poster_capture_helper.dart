@@ -54,7 +54,11 @@ class PosterCaptureHelper {
             left: 0,
             top: 0,
             width: posterWidth,
-            height: posterHeight,
+            // 不写死 height：Positioned 给子级"宽度固定、高度无界"的松约束。
+            // 海报根组件为 SizedBox(width)+Column(mainAxisSize.min)，会按内容
+            // 自适应出有限高度。注意：不能用 OverflowBox(maxHeight: Infinity)，
+            // 它会把自己尺寸解析成 Infinity 导致 RenderConstrainedOverflowBox
+            // 报"given an infinite size"。直接放 RepaintBoundary 即可。
             child: Material(
               color: Colors.transparent,
               child: RepaintBoundary(
@@ -67,15 +71,18 @@ class PosterCaptureHelper {
           Positioned.fill(
             child: ColoredBox(color: colors.bgSecondary),
           ),
+          // 加载指示：点击分享立即出现 loading，避免"整屏纯色容器"的错觉。
+          // 与海报同帧挂载在同一 OverlayEntry 内，规避 DialogRoute 与海报
+          // entry 同帧插入 overlay 导致的 OHOS paint 竞态。
+          Positioned.fill(
+            child: PosterBusyOverlay(colors: colors),
+          ),
         ],
       ),
     );
 
-    // 插入海报 entry。注意：loading 弹窗不能与海报 entry 同帧插入 overlay。
-    // 海报 entry 与 DialogRoute 的 entries 若同时挂载，首帧 paint 会出现
-    // 尚未 layout 的 PhysicalModel（_defaultClip 的 hasSize 断言失败，OHOS
-    // fork 引擎 paint 竞态），paint 中断导致 RepaintBoundary 永不完成
-    // paint，截图轮询超时。因此先等海报 entry 就绪，再显示 loading 弹窗。
+    // 插入海报 entry。loading 指示(PosterBusyOverlay)已同帧挂在同一 entry 内，
+    // 规避 DialogRoute 与海报 entry 同帧插入 overlay 导致的 OHOS paint 竞态。
     overlay.insert(entry);
 
     // OHOS 引擎 bug 修复：OHOS Flutter 引擎在帧绘制时会重入触发
@@ -100,69 +107,8 @@ class PosterCaptureHelper {
       originalOnError?.call(details);
     };
 
-    bool dialogShown = false;
     try {
-      // 轮询等待 RepaintBoundary 完成 layout + paint。
-      // 必须在 showDialog 之前完成：loading 弹窗（DialogRoute）与海报 entry
-      // 若同帧插入 overlay，首帧 paint 竞态会中断海报 RepaintBoundary 的
-      // paint（见上方注释），导致截图失败。
-      await _waitForBoundaryReady(boundaryKey);
-      if (!context.mounted) return;
-
-      // 海报已就绪，显示 loading 弹窗（确保弹窗显示在遮罩之上）
-      dialogShown = true;
-      showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => WillPopScope(
-          onWillPop: () async => false,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: colors.bgCard,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 静态加载指示器：不使用 CircularProgressIndicator，
-                  // 因为它的持续动画会不断调度帧，导致 overlay 渲染树
-                  // 持续被标记为 needsPaint，使海报 RepaintBoundary 的
-                  // debugNeedsPaint 无法稳定为 false，截图轮询超时。
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: colors.accentGlow,
-                        width: 3,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.hourglass_empty,
-                      color: colors.accentGlow,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '正在生成海报...',
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // showDialog 会触发新帧，可能让 boundary 的 debugNeedsPaint 重新变为
-      // true。在调用 capture 之前再次等待就绪，避免 capture 内部重试耗尽。
+      // 轮询等待 RepaintBoundary 完成 layout + paint
       await _waitForBoundaryReady(boundaryKey);
       if (!context.mounted) return;
 
@@ -177,9 +123,6 @@ class PosterCaptureHelper {
       await AchievementService.instance.recordShare();
       if (!context.mounted) return;
 
-      // 关闭 loading 弹窗
-      Navigator.of(context, rootNavigator: true).pop();
-
       // 弹出预览弹窗
       await PosterPreviewDialog.show(
         context,
@@ -190,11 +133,6 @@ class PosterCaptureHelper {
       debugPrint(' PosterCaptureHelper 海报生成失败: $e\n$st');
       entry.remove();
       if (!context.mounted) return;
-
-      // 仅当 loading 弹窗已显示时才关闭（海报就绪前失败时弹窗尚未出现）
-      if (dialogShown) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
 
       final msg = '海报生成失败：$e';
       if (onError != null) {
@@ -259,5 +197,72 @@ class PosterCaptureHelper {
       if (!needsPaint) return;
     }
     // 超过最大重试次数，仍然继续尝试截图（让 toImage 自行决定）
+  }
+}
+
+/// 海报分享时的居中加载指示卡
+///
+/// 直接挂在分享 OverlayEntry 的 Stack 内（配合 [Positioned.fill] 使用），
+/// 点击分享立即出现 loading，避免"整屏纯色容器填充页面"的观感。
+/// 静态指示器（沙漏）：不使用 CircularProgressIndicator，因为它的持续动画
+/// 会不断调度帧，使海报 RepaintBoundary 的 debugNeedsPaint 无法稳定为 false，
+/// 导致截图轮询超时。
+class PosterBusyOverlay extends StatelessWidget {
+  final LiftTrackColors colors;
+  final String text;
+
+  const PosterBusyOverlay({
+    super.key,
+    required this.colors,
+    this.text = '正在生成海报...',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: colors.accentGlow,
+                  width: 3,
+                ),
+              ),
+              child: Icon(
+                Icons.hourglass_empty,
+                color: colors.accentGlow,
+                size: 22,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              text,
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

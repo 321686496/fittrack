@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../data/training_note.dart';
@@ -238,7 +238,7 @@ class _NoteListPageState extends State<NoteListPage> {
       ),
       child: GestureDetector(
         onTap: () async {
-          await context.push('/note/edit/${note.id}');
+          await context.push('/note/${note.id}');
           _loadNotes();
         },
         onLongPress: () => _showActions(colors, note),
@@ -280,13 +280,20 @@ class _NoteListPageState extends State<NoteListPage> {
                   padding: EdgeInsets.zero,
                   constraints:
                       const BoxConstraints(minWidth: 28, minHeight: 28),
-                  onPressed: () => PosterCaptureHelper.captureAndPreview(
-                    context,
-                    posterWidget: NotePosterContent(note: note),
-                    posterWidth: NotePosterContent.posterWidth,
-                    title: '训练笔记海报',
-                    fileNamePrefix: 'fittrack_note',
-                  ),
+                  onPressed: () {
+                    // 取该笔记绑定的训练记录，让海报展示时长/总重量/组数/部位数据条
+                    final record = note.recordId != null
+                        ? Storage.getRecordById(note.recordId!)
+                        : null;
+                    PosterCaptureHelper.captureAndPreview(
+                      context,
+                      posterWidget:
+                          NotePosterContent(note: note, boundRecord: record),
+                      posterWidth: NotePosterContent.posterWidth,
+                      title: '训练笔记海报',
+                      fileNamePrefix: 'fittrack_note',
+                    );
+                  },
                 ),
                 if (note.isFeatured) ...[
                   const SizedBox(width: 4),
@@ -313,6 +320,8 @@ class _NoteListPageState extends State<NoteListPage> {
                 ],
               ),
             ],
+            // 绑定的训练记录信息
+            ..._buildRecordSection(colors, note),
             // 心得内容
             if (note.content.isNotEmpty) ...[
               const SizedBox(height: 6),
@@ -342,6 +351,78 @@ class _NoteListPageState extends State<NoteListPage> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// 绑定的训练记录横幅：展示肌群 · 时长 · 总重量 · 组数
+  List<Widget> _buildRecordSection(
+      LiftTrackColors colors, TrainingNote note) {
+    if (note.recordId == null) return const [];
+    final record = Storage.getRecordById(note.recordId!);
+    if (record == null) return const [];
+    return [
+      const SizedBox(height: 8),
+      _buildRecordBanner(colors, record),
+    ];
+  }
+
+  /// 绑定的训练记录横幅内容：肌群 · 时长 · 总重量 · 组数
+  Widget _buildRecordBanner(LiftTrackColors colors, Map<String, dynamic> r) {
+    final muscles = (r['muscles'] as List?)?.cast<String>() ?? [];
+    final duration = ((r['duration'] ?? 0) as num).toInt();
+    final totalWeight = ((r['totalWeight'] ?? 0) as num).toInt();
+    final totalSets = ((r['totalSets'] ?? 0) as num).toInt();
+    final mins = (duration / 60).round();
+    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : '全身训练';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.accentGlow.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: colors.accentGlow.withOpacity(0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: colors.accentGlow.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.fitness_center,
+                size: 16, color: colors.accentGlow),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  muscleStr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${mins}min · $totalWeight kg · $totalSets 组',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: colors.textMuted, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.link, size: 14, color: colors.accentGlow),
+        ],
       ),
     );
   }

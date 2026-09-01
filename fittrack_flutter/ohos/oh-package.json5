@@ -15,11 +15,11 @@
   "overrides": {
     "@ohos/flutter_ohos": "file:./har/flutter.har",
     "@ohos/flutter_module": "file:./entry",
-    "shared_preferences_ohos": "../../../../flutter/flutter_pub_cache/git/flutter_packages-abe263023cbc77d95ee0a8a2511e8e02903b7a6c/packages/shared_preferences/shared_preferences_ohos/ohos",
-    "permission_handler_ohos": "../../../../flutter/flutter_pub_cache/git/flutter_permission_handler-729c5ae84a1ce255c4c73749e0c0076c129ea386/permission_handler_ohos/ohos",
-    "sqflite": "../../../../flutter/flutter_pub_cache/git/flutter_sqflite-c1dd8bfc2c167bcc4a657e7b4d28048fc77d7035/sqflite/ohos",
-    "flutter_local_notifications": "../../../../flutter/flutter_pub_cache/git/fluttertpc_flutter_local_notifications-4481d9357c0275ea86469e6fbd723313b15fe888/flutter_local_notifications/ohos",
-    "image_picker_ohos": "../../../../flutter/flutter_pub_cache/git/flutter_packages-fd410050c6842717ee1b851ca7640c294de9568c/packages/image_picker/image_picker_ohos/ohos",
-    "url_launcher_ohos": "../../../../flutter/flutter_pub_cache/git/flutter_packages-fd410050c6842717ee1b851ca7640c294de9568c/packages/url_launcher/url_launcher_ohos/ohos"
+    "shared_preferences_ohos": "file:./har/shared_preferences_ohos.har",
+    "permission_handler_ohos": "file:./har/permission_handler_ohos.har",
+    "sqflite": "file:./har/sqflite.har",
+    "flutter_local_notifications": "file:./har/flutter_local_notifications.har",
+    "image_picker_ohos": "file:./har/image_picker_ohos.har",
+    "url_launcher_ohos": "file:./har/url_launcher_ohos.har"
   }
 }

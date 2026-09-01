@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'data/storage.dart';
 import 'data/system_plan_library.dart';
@@ -50,6 +51,7 @@ import 'pages/course_detail_page.dart';
 import 'pages/chapter_read_page.dart';
 import 'pages/note_list_page.dart';
 import 'pages/note_edit_page.dart';
+import 'pages/note_detail_page.dart';
 import 'pages/points_detail_page.dart';
 import 'pages/plan_library_home_page.dart';
 import 'pages/plan_library_category_page.dart';
@@ -60,6 +62,7 @@ import 'pages/max_weight_detail_page.dart';
 import 'pages/opponent_detail_page.dart';
 import 'pages/logo_preview_page.dart';
 import 'widgets/bottom_nav.dart';
+import 'widgets/common_widgets.dart';
 
 // 全局 NavigatorKey
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -257,7 +260,9 @@ GoRouter createRouter() {
         path: '/plan-search',
         name: 'planSearch',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PlanSearchPage(),
+        builder: (context, state) => PlanSearchPage(
+          initialKeyword: state.extra as String?,
+        ),
       ),
       GoRoute(
         path: '/exercise',
@@ -472,6 +477,12 @@ GoRouter createRouter() {
         builder: (context, state) => const NoteListPage(),
       ),
       GoRoute(
+        path: '/note/:noteId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) =>
+            NoteDetailPage(noteId: state.params['noteId'] ?? ''),
+      ),
+      GoRoute(
         path: '/note/edit',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NoteEditPage(),
@@ -513,6 +524,27 @@ class _AppShellState extends State<AppShell> {
   // 缓存每个 tab 的 child，避免反复创建销毁导致 Ink splash 崩溃
   final List<Widget> _children = List.filled(5, const SizedBox.shrink());
   bool _initialized = false;
+  DateTime? _lastBackPressed;
+
+  /// 首次返回首页时提示用户，再次操作则退出应用。
+  Future<bool> _onWillPop() async {
+    // 若系统 back 无法从这里被吞掉（例如当前已是最上层且无下层页面），
+    // 第一次提示，第二次才真正退出，避免误触直接退出应用。
+    final now = DateTime.now();
+    if (_lastBackPressed != null &&
+        now.difference(_lastBackPressed!) < const Duration(seconds: 2)) {
+      _lastBackPressed = null;
+      SystemNavigator.pop();
+      return false;
+    }
+    _lastBackPressed = now;
+    if (mounted) {
+      FitToast.info(context, '再按一次返回键退出应用');
+    } else {
+      SystemNavigator.pop();
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -526,32 +558,35 @@ class _AppShellState extends State<AppShell> {
       _initialized = true;
     }
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Tab 页面内容，底部留出悬浮导航栏的空间
-          Positioned.fill(
-            bottom: 0,
-            child: IndexedStack(
-              index: widget.currentIndex,
-              children: _children,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            // Tab 页面内容，底部留出悬浮导航栏的空间
+            Positioned.fill(
+              bottom: 0,
+              child: IndexedStack(
+                index: widget.currentIndex,
+                children: _children,
+              ),
             ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: BottomNav(
-              currentIndex: widget.currentIndex,
-              onTap: (index) {
-                const paths = ['/home', '/plan', '/tutorial', '/stats', '/profile'];
-                if (index < paths.length) {
-                  context.go(paths[index]);
-                }
-              },
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: BottomNav(
+                currentIndex: widget.currentIndex,
+                onTap: (index) {
+                  const paths = ['/home', '/plan', '/tutorial', '/stats', '/profile'];
+                  if (index < paths.length) {
+                    context.go(paths[index]);
+                  }
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

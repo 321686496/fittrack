@@ -1,5 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../services/user_profile_generator.dart';
@@ -315,7 +318,11 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
             Row(
               children: [
                 UserProfileGenerator.buildAvatarWidget(
-                  {'emoji': avatarEmoji, 'bgColor': avatarBgColor},
+                  {
+                    'emoji': avatarEmoji,
+                    'bgColor': avatarBgColor,
+                    'avatarPath': settings['avatarPath'] as String? ?? '',
+                  },
                   size: 48,
                   borderWidth: 0,
                 ),
@@ -497,6 +504,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     String selectedLevel = settings['fitnessLevel'] as String? ?? '';
     String selectedEmoji = settings['avatarEmoji'] as String? ?? '💪';
     int selectedBgColor = settings['avatarBgColor'] as int? ?? 0xFFFF6B35;
+    String selectedAvatarPath = settings['avatarPath'] as String? ?? '';
     String trainingTime = settings['trainingTime'] as String? ?? '';
 
     final allAvatars = UserProfileGenerator.getAllAvatars();
@@ -507,6 +515,40 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
+            // 上传自定义头像：将所选图片复制到应用文档目录（OHOS 上
+            // getApplicationDocumentsDirectory 可能抛 MissingPluginException，
+            // 回退到系统临时目录，与 poster_generator 保持一致）
+            Future<void> pickCustomAvatar({required bool useCamera}) async {
+              final picker = ImagePicker();
+              try {
+                final xfile = await picker.pickImage(
+                  source: useCamera ? ImageSource.camera : ImageSource.gallery,
+                  imageQuality: 85,
+                  maxWidth: 512,
+                  maxHeight: 512,
+                );
+                if (xfile == null) return;
+                Directory dir;
+                try {
+                  dir = await getApplicationDocumentsDirectory();
+                } catch (_) {
+                  dir = Directory(Directory.systemTemp.path);
+                }
+                final avatarDir = Directory('${dir.path}/custom_avatars');
+                if (!avatarDir.existsSync()) avatarDir.createSync(recursive: true);
+                final srcPath = xfile.path;
+                final ext = srcPath.contains('.') ? srcPath.split('.').last : 'jpg';
+                final safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].contains(ext) ? ext : 'jpg';
+                final target = '${avatarDir.path}/avatar_${DateTime.now().millisecondsSinceEpoch}.$safeExt';
+                await File(srcPath).copy(target);
+                setSheetState(() => selectedAvatarPath = target);
+              } catch (_) {
+                if (ctx.mounted) {
+                  FitToast.error(ctx, '选择图片失败，请检查相册权限后重试');
+                }
+              }
+            }
+
             return SingleChildScrollView(
               padding: EdgeInsets.only(
                 left: 16, right: 16, top: 16,
@@ -533,31 +575,98 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
-                    children: allAvatars.map((avatar) {
-                      final isSelected = avatar['emoji'] == selectedEmoji && avatar['bgColor'] == selectedBgColor;
-                      return GestureDetector(
-                        onTap: () {
-                          setSheetState(() {
-                            selectedEmoji = avatar['emoji'] as String;
-                            selectedBgColor = avatar['bgColor'] as int;
-                          });
-                        },
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      // 上传入口
+                      GestureDetector(
+                        onTap: () => pickCustomAvatar(useCamera: false),
                         child: Container(
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected ? colors.accentGlow : Colors.transparent,
-                              width: 2,
-                            ),
+                            color: colors.bgCard,
+                            border: Border.all(color: colors.borderColor, width: 2),
                           ),
-                          child: UserProfileGenerator.buildAvatarWidget(
-                            avatar,
-                            size: 48,
-                            borderWidth: 0,
+                          child: const Icon(Icons.add_photo_alternate_outlined, color: Colors.grey, size: 22),
+                        ),
+                      ),
+                      // 当前已上传的自定义头像（可移除）
+                      if (selectedAvatarPath.isNotEmpty)
+                        GestureDetector(
+                          onTap: () => setSheetState(() {}),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: colors.accentGlow,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: Image.file(
+                                    File(selectedAvatarPath),
+                                    width: 44,
+                                    height: 44,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: -4,
+                                top: -4,
+                                child: GestureDetector(
+                                  onTap: () => setSheetState(() {
+                                    selectedAvatarPath = '';
+                                  }),
+                                  child: Container(
+                                    width: 18,
+                                    height: 18,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: colors.warningColor,
+                                      border: Border.all(color: colors.bgCard, width: 2),
+                                    ),
+                                    child: const Icon(Icons.close, size: 12, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    }).toList(),
+                      ...allAvatars.map((avatar) {
+                        final isSelected = (selectedAvatarPath.isEmpty) &&
+                            avatar['emoji'] == selectedEmoji &&
+                            avatar['bgColor'] == selectedBgColor;
+                        return GestureDetector(
+                          onTap: () {
+                            setSheetState(() {
+                              // 选择默认头像时清除自定义头像
+                              selectedEmoji = avatar['emoji'] as String;
+                              selectedBgColor = avatar['bgColor'] as int;
+                              selectedAvatarPath = '';
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected ? colors.accentGlow : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: UserProfileGenerator.buildAvatarWidget(
+                              avatar,
+                              size: 48,
+                              borderWidth: 0,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ],
                   ),
                   const SizedBox(height: 16),
 
@@ -763,6 +872,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                         if (selectedLevel.isNotEmpty) s['fitnessLevel'] = selectedLevel;
                         s['avatarEmoji'] = selectedEmoji;
                         s['avatarBgColor'] = selectedBgColor;
+                        s['avatarPath'] = selectedAvatarPath;
                         s['trainingTime'] = trainingTime;
                         Storage.saveSettings(s);
                         Navigator.of(ctx).pop();

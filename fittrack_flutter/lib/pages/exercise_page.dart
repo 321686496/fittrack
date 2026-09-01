@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,9 +6,11 @@ import 'package:path_provider/path_provider.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/storage.dart';
+import '../data/tutorial_content.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/default_exercise_cover.dart';
 import '../widgets/page_header.dart';
+import '../widgets/tutorial_share_card.dart';
 
 class ExercisePage extends StatefulWidget {
   const ExercisePage({super.key});
@@ -108,6 +110,73 @@ class _ExercisePageState extends State<ExercisePage> {
       maxHeightRatio: 0.85,
       builder: (ctx) => _AddToPlanSheet(exercise: exercise, plans: plans),
     );
+  }
+
+  /// 动作库单个动作分享：转成 [Tutorial] 后弹出 [TutorialShareCardSheet]，
+  /// 复用教学动作分享卡片（带图 TutorialPoster）作为海报。
+  void _shareExercise(Map<String, dynamic> ex) {
+    final id = ex['id'] as String;
+    final steps = (ex['steps'] as List?)?.isNotEmpty == true
+        ? List<Map<String, dynamic>>.from(ex['steps'] as List)
+        : (MockData.exerciseSteps[id] ?? <Map<String, dynamic>>[]);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => TutorialShareCardSheet(
+        tutorial: _exerciseToTutorial(ex),
+        steps: steps,
+      ),
+    );
+  }
+
+  /// 将动作库的 ex Map 转换为 [Tutorial]，供分享卡片/海报使用
+  Tutorial _exerciseToTutorial(Map<String, dynamic> ex) {
+    final id = ex['id'] as String;
+    final muscles = (ex['muscles'] as List?)?.isNotEmpty == true
+        ? List<String>.from(ex['muscles'] as List)
+        : <String>[];
+    final description = (ex['description'] as String?)?.isNotEmpty == true
+        ? ex['description'] as String
+        : (MockData.exerciseDescriptions[id] ?? '暂无描述');
+    // 训练步骤标题作为分享文本要点
+    final steps = (ex['steps'] as List?)?.isNotEmpty == true
+        ? List<Map<String, dynamic>>.from(ex['steps'] as List)
+        : (MockData.exerciseSteps[id] ?? <Map<String, dynamic>>[]);
+    final keyPoints = steps
+        .map((s) => (s['title'] as String?) ?? '')
+        .where((s) => s.isNotEmpty)
+        .toList();
+    if (keyPoints.isEmpty) {
+      keyPoints.addAll(description
+          .split(RegExp(r'[。.]'))
+          .where((s) => s.trim().isNotEmpty)
+          .take(3));
+    }
+    return Tutorial(
+      id: id,
+      name: ex['name'] as String,
+      type: TutorialType.basic,
+      difficulty: TutorialDifficulty.beginner,
+      primaryMuscle: _muscleGroup(muscles),
+      equipment: (ex['equip'] as String?) ?? '无器械',
+      keyPoints: keyPoints,
+      commonMistakes: const <String>[],
+      coachName: 'LiftTrack 教练',
+    );
+  }
+
+  /// 根据肌肉名称（或分类）推断主肌群，用于海报徽标
+  MuscleGroup _muscleGroup(List<String> muscles) {
+    String label = muscles.isNotEmpty ? muscles.first : '';
+    if (label.isEmpty) label = _selectedExercise?['category'] as String? ?? '胸部';
+    if (label.contains('胸')) return MuscleGroup.chest;
+    if (label.contains('背')) return MuscleGroup.back;
+    if (label.contains('腿')) return MuscleGroup.leg;
+    if (label.contains('肩')) return MuscleGroup.shoulder;
+    if (label.contains('手') || label.contains('臂')) return MuscleGroup.arm;
+    if (label.contains('核')) return MuscleGroup.core;
+    return MuscleGroup.chest;
   }
 
   void _showAddExerciseDialog() {
@@ -380,22 +449,41 @@ class _ExercisePageState extends State<ExercisePage> {
                   }).toList(),
                 ),
                 const SizedBox(height: 30),
-                // Add to plan button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showPlanPicker(ex),
-                    icon: const Icon(Icons.add, size: 20),
-                    label: const Text('添加到计划'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.accentGlow,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                // 操作按钮：分享动作 + 添加到计划
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _shareExercise(ex),
+                        icon: const Icon(Icons.share_outlined, size: 18),
+                        label: const Text('分享'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colors.accentGlow,
+                          side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showPlanPicker(ex),
+                        icon: const Icon(Icons.add, size: 20),
+                        label: const Text('添加到计划'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.accentGlow,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

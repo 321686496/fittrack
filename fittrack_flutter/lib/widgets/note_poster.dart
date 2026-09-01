@@ -3,13 +3,12 @@ import '../data/training_note.dart';
 import '../services/invitation_service.dart';
 import 'poster_theme.dart';
 
-/// 训练笔记海报内容组件
+/// 训练笔记海报（海报3，对应 HTML #3）
 ///
-/// 宽度固定 1080，高度随内容自适应。
-/// 使用 [PosterBackground] 跟随用户当前 App 主题。
-/// 调用方通过 [Overlay] + [OverflowBox] 离屏渲染本组件，
-/// 用 [PosterGenerator.capture] 截图为 PNG 后弹出 [PosterPreviewDialog]。
-class NotePosterContent extends StatefulWidget {
+/// 宽度 1080、高度 1920 固定（9:16）。使用 [PosterBackground] 跟随主题。
+/// 布局：品牌头 + 精选徽标、日期/感受、心得标题与正文、四列数据条、
+/// 最满意动作、酸痛部位标签、底部二维码（输入邀请码）。
+class NotePosterContent extends StatelessWidget {
   final TrainingNote note;
   final Map<String, dynamic>? boundRecord;
 
@@ -27,168 +26,153 @@ class NotePosterContent extends StatefulWidget {
     this.posterKey,
   });
 
-  /// 海报宽度常量（高度随内容自适应）
+  /// 海报宽度常量
   static const double posterWidth = 1080.0;
 
-  /// 海报高度常量（用于 Overlay 离屏渲染时的固定尺寸）
+  /// 海报高度常量（9:16）
   static const double posterHeight = 1920.0;
 
   @override
-  State<NotePosterContent> createState() => _NotePosterContentState();
-}
-
-class _NotePosterContentState extends State<NotePosterContent> {
-  late String _inviteCode;
-  late final PosterColors _colors;
-
-  @override
-  void initState() {
-    super.initState();
-    _inviteCode = InvitationService.instance.generateInvitationCode();
-    _colors = PosterColors.fromThemeId(widget.themeId);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final note = widget.note;
-    final hasRecord = widget.boundRecord != null;
+    final colors = PosterColors.fromThemeId(themeId);
+    final hasRecord = boundRecord != null;
+    final inviteCode = InvitationService.instance.generateInvitationCode();
 
-    return PosterBackground(
-      colors: _colors,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 72),
+    // 心得标题 = 首行非空；正文 = 剩余行
+    final lines = note.content
+        .split(RegExp(r'\n'))
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    final title = lines.isNotEmpty ? lines.first : '';
+    final body = lines.length > 1 ? lines.skip(1).join('\n').trim() : '';
+
+    // 日期：YYYY-MM-DD
+    final d = DateTime.fromMillisecondsSinceEpoch(note.createTime);
+    final dateStr =
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    return SizedBox(
+      width: posterWidth,
+      height: posterHeight,
+      child: PosterBackground(
+        colors: colors,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
-            // ── 顶部品牌区 ────────────────────────────
-            Row(
-              children: [
-                PosterBrandHeader(colors: _colors),
-                const Spacer(),
-                if (note.isFeatured)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [_colors.brand, _colors.brandSecondary],
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      '精选',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
+            PosterBrandHeader(
+              colors: colors,
+              subtitle: 'TRAINING NOTE',
+              trailing: note.isFeatured
+                  ? PostBadge(text: '精选', colors: colors)
+                  : null,
             ),
-            const SizedBox(height: 48),
-            // ── 日期 + 感受 ──────────────────────────
+            // ── 日期 + 感受 ──────────────────────
+            SizedBox(height: px(16)),
             Row(
               children: [
                 Icon(Icons.calendar_today,
-                    size: 22, color: _colors.textMuted),
-                const SizedBox(width: 8),
+                    size: px(11), color: colors.textMuted),
+                SizedBox(width: px(8)),
                 Text(
-                  note.dateLabel,
+                  dateStr,
                   style: TextStyle(
-                    color: _colors.textMuted,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
+                    color: colors.textMuted,
+                    fontSize: px(10),
+                    letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: px(8)),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: px(8), vertical: px(3)),
                   decoration: BoxDecoration(
-                    color: _colors.brand.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    color: colors.cardBg,
+                    borderRadius: BorderRadius.circular(px(8)),
                   ),
                   child: Text(
                     '感受 · ${note.feelingLabel}',
                     style: TextStyle(
-                      color: _colors.brand,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
+                      color: colors.brand,
+                      fontSize: px(9),
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 28),
-            // ── 心得文字（核心内容）────────────────────
-            if (note.content.isNotEmpty)
+            // ── 心得标题 + 正文 ──────────────────
+            if (title.isNotEmpty) ...[
+              SizedBox(height: px(14)),
               Text(
-                note.content,
+                title,
                 style: TextStyle(
-                  color: _colors.textPrimary,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w600,
+                  color: colors.textPrimary,
+                  fontSize: px(20),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                  height: 1.3,
+                ),
+              ),
+            ],
+            if (body.isNotEmpty) ...[
+              SizedBox(height: px(8)),
+              Text(
+                body,
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: px(15),
+                  fontWeight: FontWeight.w700,
                   height: 1.5,
                 ),
               ),
-            const SizedBox(height: 36),
-            // ── 训练数据卡片 ─────────────────────────
-            if (hasRecord) ...[
-              _buildTrainingData(),
-              const SizedBox(height: 24),
             ],
-            // ── 最满意动作 ───────────────────────────
-            if (note.bestExercise.isNotEmpty)
+            // ── 训练数据条（4 列等分）────────────
+            if (hasRecord) ...[
+              SizedBox(height: px(16)),
+              _buildNoteBar(colors),
+            ],
+            // ── 最满意动作 ───────────────────────
+            if (note.bestExercise.isNotEmpty) ...[
+              SizedBox(height: px(12)),
               Row(
                 children: [
-                  Icon(Icons.star, size: 26, color: _colors.brand),
-                  const SizedBox(width: 10),
+                  Icon(Icons.star, size: px(14), color: colors.brand),
+                  SizedBox(width: px(10)),
                   Expanded(
                     child: Text(
                       '最满意：${note.bestExercise}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: _colors.textPrimary,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                        fontSize: px(11),
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
                 ],
               ),
-            // ── 酸痛部位 ─────────────────────────────
+            ],
+            // ── 酸痛部位标签 ─────────────────────
             if (note.soreParts.isNotEmpty) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: px(10)),
               Wrap(
-                spacing: 10,
-                runSpacing: 8,
-                children: note.soreParts.take(5).map((p) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _colors.cardBg,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: _colors.cardBorder),
-                    ),
-                    child: Text(
-                      p,
-                      style: TextStyle(
-                        color: _colors.textSecondary,
-                        fontSize: 20,
-                      ),
-                    ),
-                  );
-                }).toList(),
+                spacing: px(6),
+                runSpacing: px(6),
+                children: note.soreParts
+                    .take(5)
+                    .map((p) => PostBadge(text: p, colors: colors))
+                    .toList(),
               ),
             ],
-            const SizedBox(height: 48),
-            // ── 底部二维码 + 邀请码 ──────────────────
+            // ── 底部二维码 ───────────────────────
+            const Spacer(),
             PosterQrFooter(
-              colors: _colors,
-              qrData: 'fittrack://invite?code=$_inviteCode',
+              colors: colors,
+              qrData: 'fittrack://invite?code=$inviteCode',
               hint: '输入邀请码，双方得福利',
+              sub: 'LiftTrack · 训练笔记',
             ),
           ],
         ),
@@ -196,82 +180,76 @@ class _NotePosterContentState extends State<NotePosterContent> {
     );
   }
 
-  // ── 训练数据展示 ───────────────────────────────────────────
-
-  Widget _buildTrainingData() {
-    final r = widget.boundRecord!;
+  /// 训练数据四列条（时长/总重量/组数/部位）
+  Widget _buildNoteBar(PosterColors colors) {
+    final r = boundRecord!;
     final muscles = (r['muscles'] as List?)?.cast<String>() ?? [];
     final duration = ((r['duration'] ?? 0) as num).toInt();
     final totalWeight = ((r['totalWeight'] ?? 0) as num).toInt();
     final totalSets = ((r['totalSets'] ?? 0) as num).toInt();
     final mins = (duration / 60).round();
+    final part = muscles.take(2).join('/');
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.symmetric(horizontal: px(8), vertical: px(12)),
       decoration: BoxDecoration(
-        color: _colors.cardBg,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _colors.cardBorder),
+        color: colors.cardBg,
+        borderRadius: BorderRadius.circular(px(16)),
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: [
+          BoxShadow(color: colors.brand.withOpacity(0.10), blurRadius: px(9)),
+        ],
       ),
       child: Row(
         children: [
-          _buildDataItem('${mins}min', '时长'),
-          _verticalDivider(),
-          _buildDataItem('${totalWeight}kg', '总重量'),
-          _verticalDivider(),
-          _buildDataItem('$totalSets', '组数'),
-          if (muscles.isNotEmpty) ...[
-            _verticalDivider(),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    muscles.take(2).join('/'),
-                    style: TextStyle(
-                      color: _colors.textPrimary,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text('部位',
-                      style:
-                          TextStyle(color: _colors.textMuted, fontSize: 18)),
-                ],
-              ),
-            ),
-          ],
+          _noteCol(colors, '${mins}min', '时长'),
+          _vDivider(colors),
+          _noteCol(colors, '${totalWeight}kg', '总重量'),
+          _vDivider(colors),
+          _noteCol(colors, '$totalSets', '组数'),
+          _vDivider(colors),
+          _noteCol(colors, part.isEmpty ? '—' : part, '部位'),
         ],
       ),
     );
   }
 
-  Widget _buildDataItem(String value, String label) {
+  Widget _noteCol(PosterColors colors, String value, String label) {
     return Expanded(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(value,
-              style: TextStyle(
-                  color: _colors.textPrimary,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(label,
-              style: TextStyle(color: _colors.textMuted, fontSize: 18)),
+          Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: px(13),
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          SizedBox(height: px(4)),
+          Text(
+            label,
+            style: TextStyle(
+              color: colors.textMuted,
+              fontSize: px(8),
+              letterSpacing: 0.5,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _verticalDivider() {
+  Widget _vDivider(PosterColors colors) {
     return Container(
-      width: 1,
-      height: 48,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      color: _colors.cardBorder,
+      width: px(1),
+      height: px(36),
+      margin: EdgeInsets.symmetric(horizontal: px(6)),
+      color: colors.cardBorder,
     );
   }
 }
