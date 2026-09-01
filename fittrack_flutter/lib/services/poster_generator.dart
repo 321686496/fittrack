@@ -32,6 +32,22 @@ class PosterGenerator {
   }) async {
     final boundary = boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
+    // 预解码品牌 logo，避免离屏截图时 Image.asset 仍未解码完成，
+    // 导致海报顶部 logo 处显示为空白/白色圆角矩形。
+    try {
+      final ctx = boundaryKey.currentContext;
+      if (ctx != null) {
+        await precacheImage(
+          const AssetImage('assets/images/logo.png'),
+          ctx,
+        );
+        // precacheImage 只把图放入缓存，不会触发已挂载的 Image.asset
+        // 重新布局/绘制。等两帧，让 logo 的 RenderImage 用新图重绘，
+        // 确保 toImage 截图时 logo 已真实渲染出来。
+        await WidgetsBinding.instance.endOfFrame;
+        await WidgetsBinding.instance.endOfFrame;
+      }
+    } catch (_) {}
     // 等待 paint 完成：
     // - showDialog 触发的新帧会让 debugNeedsPaint 重新变为 true
     // - QrImageView 等异步组件需要额外帧才能完成渲染

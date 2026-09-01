@@ -6,6 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zxing2/qrcode.dart';
 import '../data/storage.dart';
+import '../utils/platform_utils.dart';
 import '../services/share_code_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
@@ -28,14 +29,26 @@ class _ScanImportPageState extends State<ScanImportPage> {
 
   bool get _cameraActive => _permissionChecked && _cameraAllowed && !_cameraFailed;
 
+  /// OHOS 无 mobile_scanner 原生实现，相机扫码不可用，直接走相册兜底
+  bool get _cameraUnsupported => isOhos;
+
   @override
   void initState() {
     super.initState();
     _initCameraPermission();
   }
 
-  /// 启动时申请相机权限（Android/OHOS 需运行时授权）
+  /// 启动时申请相机权限（Android/iOS 运行时授权；OHOS 无相机实现直接走相册兜底）
   Future<void> _initCameraPermission() async {
+    if (isOhos) {
+      if (mounted) {
+        setState(() {
+          _permissionChecked = true;
+          _cameraAllowed = false;
+        });
+      }
+      return;
+    }
     final allowed = await _requestCameraPermission();
     if (!mounted) return;
     setState(() {
@@ -99,7 +112,9 @@ class _ScanImportPageState extends State<ScanImportPage> {
           Expanded(
             child: Stack(
               children: [
-                if (!_permissionChecked)
+                if (_cameraUnsupported)
+                  _buildGalleryFallback()
+                else if (!_permissionChecked)
                   _buildPermissionLoading()
                 else if (!_cameraAllowed)
                   _buildPermissionDenied()
@@ -178,6 +193,50 @@ class _ScanImportPageState extends State<ScanImportPage> {
           CircularProgressIndicator(color: Colors.white70),
           SizedBox(height: 12),
           Text('正在申请相机权限...', style: TextStyle(color: Colors.white70, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  /// 相机不支持平台（OHOS）时的引导：直接指向从相册选择二维码图片
+  Widget _buildGalleryFallback() {
+    return Container(
+      color: const Color(0xFF111111),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.photo_library_outlined, size: 56, color: Colors.white38),
+          const SizedBox(height: 16),
+          const Text(
+            '使用相册扫码',
+            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '当前设备暂不支持相机扫码，请从相册选择二维码图片进行识别导入。',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _picking ? null : _pickQrImage,
+            icon: _picking
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  )
+                : const Icon(Icons.photo_library_outlined, size: 18),
+            label: Text(_picking ? '识别中...' : '从相册选择二维码图片'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+            ),
+          ),
         ],
       ),
     );

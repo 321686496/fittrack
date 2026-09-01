@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiftTrack · 分享海报/卡片 · 莫兰迪统一设计画廊</title>
+<style>
+  /* ============================================================
+     LiftTrack 分享海报统一设计系统（莫兰迪）
+     设计要点：低饱和高级灰调渐变背景 · 柔和拟态卡片 · iPhone式圆角
+              通用组件：品牌头 / 数据卡 / 底部二维码 / 标签
+     ============================================================ */
+  :root, .theme-vitality {
+    --bg-top:#F5EDE8; --bg-bottom:#F1E3DB;
+    --glow:#C4705A;
+    --brand:#C4705A; --brand-2:#D6906F;
+    --t-1:#3E3733; --t-2:#6E655E; --t-3:#A79D94;
+    --card:rgba(196,112,90,.10); --line:rgba(196,112,90,.18);
+    --success:#8FB6A8; --warn:#D9B48A;
+    --iso-hi:rgba(255,255,255,.85); --iso-lo:rgba(180,140,120,.28);
+    --qr-bg:#FFFFFF;
+  }
+  .theme-blossom {
+    --bg-top:#F6ECEF; --bg-bottom:#F1E1E7;
+    --glow:#C68B96;
+    --brand:#C68B96; --brand-2:#D6A1AC;
+    --t-1:#3D3036; --t-2:#6E5A62; --t-3:#A8949B;
+    --card:rgba(198,139,150,.10); --line:rgba(198,139,150,.20);
+    --success:#8FB0A0; --warn:#D6B58A;
+    --iso-hi:rgba(255,255,255,.85); --iso-lo:rgba(198,139,150,.30);
+    --qr-bg:#FFFFFF;
+  }
+  .theme-silvercare {
+    --bg-top:#EFF3EE; --bg-bottom:#E5EDE3;
+    --glow:#7FA08A;
+    --brand:#7FA08A; --brand-2:#93B09B;
+    --t-1:#2E362F; --t-2:#5C685E; --t-3:#97A099;
+    --card:rgba(127,160,138,.12); --line:rgba(127,160,138,.22);
+    --success:#7FA08A; --warn:#D0A868;
+    --iso-hi:rgba(255,255,255,.85); --iso-lo:rgba(127,160,138,.30);
+    --qr-bg:#FFFFFF;
+  }
+  .theme-fresh {
+    --bg-top:#EDF1F5; --bg-bottom:#E2EBF0;
+    --glow:#7E9DAE;
+    --brand:#7E9DAE; --brand-2:#96B4C3;
+    --t-1:#2F3940; --t-2:#5B6A72; --t-3:#96A4AC;
+    --card:rgba(126,157,174,.12); --line:rgba(126,157,174,.22);
+    --success:#7FA08A; --warn:#D0A868;
+    --iso-hi:rgba(255,255,255,.85); --iso-lo:rgba(126,157,174,.30);
+    --qr-bg:#FFFFFF;
+  }
+  .theme-iron {
+    --bg-top:#1D1516; --bg-bottom:#241C1B;
+    --glow:#C08478;
+    --brand:#C08478; --brand-2:#D09A8C;
+    --t-1:#F4ECE9; --t-2:#BBA79F; --t-3:#6E5E5A;
+    --card:rgba(192,132,120,.14); --line:rgba(192,132,120,.28);
+    --success:#8FB6A8; --warn:#D9B48A;
+    --iso-hi:rgba(255,255,255,.10); --iso-lo:rgba(0,0,0,.45);
+    --qr-bg:#FFFFFF;
+  }
+  .theme-neon {
+    --bg-top:#1B1720; --bg-bottom:#221C2C;
+    --glow:#A695B8;
+    --brand:#A695B8; --brand-2:#B9A9CC;
+    --t-1:#F1EBF5; --t-2:#B9AEC4; --t-3:#6E6280;
+    --card:rgba(166,149,184,.14); --line:rgba(166,149,184,.28);
+    --success:#8FB0A0; --warn:#D6B58A;
+    --iso-hi:rgba(255,255,255,.10); --iso-lo:rgba(0,0,0,.45);
+    --qr-bg:#FFFFFF;
+  }
+  .theme-gold {
+    --bg-top:#171512; --bg-bottom:#201B15;
+    --glow:#C9A96A;
+    --brand:#C9A96A; --brand-2:#DEBF7A;
+    --t-1:#F4EFDF; --t-2:#B9AE93; --t-3:#6E6252;
+    --card:rgba(201,169,106,.14); --line:rgba(201,169,106,.30);
+    --success:#8FB0A0; --warn:#DEBF7A;
+    --iso-hi:rgba(255,255,255,.08); --iso-lo:rgba(0,0,0,.45);
+    --qr-bg:#FFFFFF;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",-apple-system,sans-serif;
+    background:linear-gradient(180deg,#F0EDEA,#EAE4DE);
+    color:#3E3733; padding:40px 28px 80px; min-height:100vh;
+  }
+  .page-header { max-width:1240px; margin:0 auto 36px; text-align:center; }
+  .page-header h1 { font-size:30px; font-weight:800; letter-spacing:.5px; }
+  .page-header p { color:#8a8178; margin-top:8px; font-size:14px; letter-spacing:1px; }
+  .theme-bar{
+    max-width:1240px; margin:0 auto 30px; display:flex; flex-wrap:wrap; gap:10px;
+    justify-content:center;
+  }
+  .theme-btn{
+    border:none; cursor:pointer; padding:9px 16px; border-radius:999px;
+    font-size:13px; font-weight:600; color:#4a423c; background:#fff;
+    box-shadow:0 2px 8px rgba(120,100,90,.12); transition:.18s;
+    display:inline-flex; align-items:center; gap:7px;
+  }
+  .theme-btn .dot{ width:12px; height:12px; border-radius:50%; }
+  .theme-btn.active{ color:#fff; box-shadow:0 4px 14px rgba(120,100,90,.28); }
+  .theme-btn.theme-vitality .dot{background:#C4705A}.theme-btn.theme-vitality.active{background:#C4705A}
+  .theme-btn.theme-blossom .dot{background:#C68B96}.theme-btn.theme-blossom.active{background:#C68B96}
+  .theme-btn.theme-silvercare .dot{background:#7FA08A}.theme-btn.theme-silvercare.active{background:#7FA08A}
+  .theme-btn.theme-fresh .dot{background:#7E9DAE}.theme-btn.theme-fresh.active{background:#7E9DAE}
+  .theme-btn.theme-iron .dot{background:#C08478}.theme-btn.theme-iron.active{background:#7A4A41}
+  .theme-btn.theme-neon .dot{background:#A695B8}.theme-btn.theme-neon.active{background:#6E5680}
+  .theme-btn.theme-gold .dot{background:#C9A96A}.theme-btn.theme-gold.active{background:#8A6F35}
+
+  .gallery{
+    max-width:1240px; margin:0 auto;
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:34px;
+  }
+
+  /* 海报基础：9:16 竖版，等比缩放自 1080×1920，手机外框+柔和投影 */
+  .poster-wrap{ display:flex; flex-direction:column; align-items:center; }
+  .poster-note{
+    margin-top:12px; text-align:center; color:#6E655E; font-size:13px; font-weight:600;
+    letter-spacing:1px;
+  }
+  .poster-note small{ display:block; color:#A79D94; font-weight:400; margin-top:3px; letter-spacing:.5px; }
+  .poster{
+    --w:304px; --r:304/640;
+    width:var(--w); aspect-ratio:var(--r);
+    background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+    border-radius:26px; padding:22px 26px;
+    display:flex; flex-direction:column; position:relative; overflow:hidden;
+    box-shadow:0 24px 44px -18px rgba(90,70,60,.28);
+  }
+  .poster::before,.poster::after{ content:""; position:absolute; border-radius:50%; filter:blur(46px); }
+  .poster::before{ width:180px; height:180px; top:-60px; right:-40px;
+    background:radial-gradient(circle,var(--glow)); opacity:.34; }
+  .poster::after{ width:150px; height:150px; bottom:-50px; left:-40px;
+    background:radial-gradient(circle,var(--brand-2)); opacity:.24; }
+  .poster > *{ position:relative; }
+
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-logo{
+    width:26px; height:26px; border-radius:9px; flex:none;
+    background:#fff; display:grid; place-items:center; overflow:hidden;
+    box-shadow:0 4px 10px var(--iso-lo);
+  }
+  .brand-logo img{ width:76%; height:76%; object-fit:contain; display:block; }
+  .brand-name{ line-height:1; }
+  .brand-name b{ font-size:15px; font-weight:800; letter-spacing:1px; color:var(--t-1); }
+  .brand-name span{ display:block; font-size:9px; color:var(--t-3); letter-spacing:2px; }
+  .brand-line{ width:42px; height:3px; border-radius:2px; margin-top:7px;
+    background:linear-gradient(90deg,var(--brand),var(--brand-2)); }
+
+  .badge{
+    padding:3px 10px; border-radius:999px; font-size:10px; font-weight:600; letter-spacing:.5px;
+    background:var(--card); border:1px solid var(--line); color:var(--brand);
+  }
+  .stat{
+    background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 13px;
+    box-shadow:3px 3px 9px var(--iso-lo), -3px -3px 9px var(--iso-hi);
+  }
+  .stat b{ font-size:20px; font-weight:800; color:var(--t-1); line-height:1; display:block; }
+  .stat span{ font-size:9px; color:var(--t-3); letter-spacing:1px; }
+  .stat svg{ margin:0 auto 4px; display:block; }
+
+  .mod{
+    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:7px 9px;
+    display:flex; align-items:center; gap:6px;
+    box-shadow:2px 2px 7px var(--iso-lo), -2px -2px 7px var(--iso-hi);
+  }
+  .mod svg{ flex:none; }
+  .mod .mtxt{ display:flex; flex-direction:column; min-width:0; line-height:1; }
+  .mod .mtxt b{ font-size:10px; font-weight:700; color:var(--t-1); white-space:nowrap; }
+  .mod .mtxt span{ font-size:8px; color:var(--t-3); margin-top:2px; }
+  .ptag{
+    padding:3px 9px; border-radius:999px; font-size:8.5px; font-weight:600; letter-spacing:.5px;
+    background:rgba(255,255,255,.20); color:#fff; border:1px solid rgba(255,255,255,.35);
+  }
+  .grad-txt{
+    background:linear-gradient(90deg,var(--brand),var(--brand-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  .qrf{margin-top:auto; display:flex; align-items:center; gap:11px; padding-top:12px;}
+  .qrbox{
+    width:46px; height:46px; flex:none; border-radius:11px; background:var(--qr-bg);
+    padding:4px; box-shadow:0 4px 10px rgba(0,0,0,.12);
+  }
+  .qrbox svg{ width:100%; height:100%; display:block; }
+  .qr-txt b{ font-size:12px; font-weight:700; color:var(--t-1); display:block; }
+  .qr-txt span{ font-size:9px; color:var(--t-3); letter-spacing:1px; }
+
+  .ring{ width:70px;height:70px;position:relative;flex:none;}
+  .ring svg{ transform:rotate(-90deg);}
+  .ring b{ position:absolute; inset:0; display:grid; place-items:center; font-size:18px; font-weight:800; color:#fff; }
+
+  .hero{
+    border-radius:18px; padding:16px 18px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff; box-shadow:0 12px 22px -8px var(--iso-lo);
+  }
+  .vdiv{ width:1px; height:36px; background:var(--line); }
+  /* 训练笔记数据条：4列等分，数值需适配窄列，避免挤压卡片 */
+  .note-bar{ gap:6px; padding:12px 8px; }
+  .note-bar .col{ flex:1; min-width:0; text-align:center; }
+  .note-bar b{ font-size:13px; white-space:nowrap; display:block; }
+  .note-bar span{ font-size:8px; letter-spacing:.5px; }
+  .content-auto{margin-top:auto;}
+
+  .pk{display:flex;align-items:center;gap:8px;}
+  .pk span{width:30px;font-size:9px;font-weight:600;color:var(--t-2);}
+  .pk .track{flex:1;height:6px;border-radius:999px;background:var(--card);overflow:hidden;}
+  .pk .fill{height:100%;border-radius:999px;background:var(--brand);}
+  .pk em{width:34px;font-style:normal;text-align:right;font-size:9px;color:var(--t-2);}
+
+  .day{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:7px 10px;}
+  .day .idx{width:24px;height:24px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:800;
+    background:var(--brand);color:#fff;}
+  .day.rest .idx{background:rgba(126,157,174,.25);color:#a7c4d2;}
+  .day .txt{flex:1;}
+  .day .txt b{display:block;font-size:12px;font-weight:700;color:var(--t-1);}
+  .day .txt span{font-size:9px;color:var(--t-3);}
+
+  .point{display:flex;gap:7px;align-items:flex-start;}
+  .point svg{flex:none;margin-top:2px;}
+  .point span{font-size:11px;line-height:1.5;color:var(--t-2);}
+
+  /* 动作分享：训练步骤配图卡片 */
+  .step-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px;}
+  .stepcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:8px;
+    display:flex;flex-direction:column;box-shadow:2px 2px 7px var(--iso-lo), -2px -2px 7px var(--iso-hi);}
+  .stepcard .img{aspect-ratio:1;border-radius:9px;overflow:hidden;background:#fff;margin-bottom:7px;}
+  .stepcard .img img{width:100%;height:100%;object-fit:cover;display:block;}
+  .stepcard .cap{display:flex;align-items:center;gap:5px;min-width:0;}
+  .stepnum{flex:none;width:14px;height:14px;border-radius:4px;background:var(--brand);color:#fff;
+    font-size:8px;font-weight:800;display:grid;place-items:center;}
+  .stepcard .cap b{font-size:10px;color:var(--t-1);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .stepcard .desc{font-size:8px;color:var(--t-2);line-height:1.4;margin-top:3px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>LiftTrack · 分享海报 / 卡片 设计稿</h1>
+  <p>莫兰迪统一设计系统 · 柔和拟态 · iPhone 式圆角卡片</p>
+</div>
+
+<div class="theme-bar" id="themeBar"></div>
+
+<div class="gallery" id="gallery">
+
+  <!-- 1. 训练成果分享卡 -->
+  <div class="poster-wrap">
+    <div class="poster">
+      <div class="brand">
+        <div class="brand-logo"><img src="../assets/images/logo.png" alt="LiftTrack"></div>
+        <div class="brand-name"><b>LiftTrack</b><span>TODAY'S ACHIEVEMENT</span></div>
+      </div>
+      <div class="brand-line"></div>
+
+      <div style="margin-top:16px">
+        <div style="font-size:22px;font-weight:800;color:var(--t-1);line-height:1.2;">胸部与三头肌 · 力量日</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="var(--t-3)" stroke-width="2"/><path d="M8 3v4M16 3v4M3 10h18" stroke="var(--t-3)" stroke-width="2"/></svg>
+          <span style="font-size:10px;color:var(--t-3);letter-spacing:.5px;">2026-08-31</span>
+          <span class="badge">第 24 天</span>
+        </div>
+      </div>
+
+      <div class="hero" style="display:flex;align-items:center;gap:16px;margin-top:16px;">
+        <div class="ring">
+          <svg width="70" height="70" viewBox="0 0 70 70">
+            <circle cx="35" cy="35" r="28" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="6"/>
+            <circle cx="35" cy="35" r="28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"
+              stroke-dasharray="176" stroke-dashoffset="18" transform="rotate(-90 35 35)"/>
+          </svg>
+          <b>90%</b>
+        </div>
+        <div style="flex:1;text-align:right;">
+          <div style="font-size:52px;font-weight:900;line-height:1;">8640</div>
+          <div style="font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.85);margin-top:4px;">总重量 (KG)</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px;">
+        <div class="stat" style="padding:11px 12px;"><b style="font-size:18px;">58<small style="font-size:11px;font-weight:600;color:var(--t-3);"> 分钟</small></b><span>训练时长</span></div>
+        <div class="stat" style="padding:11px 12px;"><b style="font-size:18px;">96<small style="font-size:11px;font-weight:600;color:var(--t-3);"> kg</small></b><span>平均重量</span></div>
+        <div class="stat" style="padding:11px 12px;"><b style="font-size:18px;">90<small style="font-size:11px;font-weight:600;color:var(--t-3);"> 组</small></b><span>总组数</span></div>
+        <div class="stat" style="padding:11px 12px;"><b style="font-size:18px;">12<small style="font-size:11px;font-weight:600;color:var(--t-3);"> 个</small></b><span>动作数</span></div>
+      </div>
+
+      <div class="stat" style="margin-top:12px;padding:11px 14px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--brand)"><path d="M12 2l2.9 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z"/></svg>
+          <b style="font-size:12px;color:var(--t-1);">本周PK</b>
+          <span style="margin-left:auto;background:rgba(127,182,168,.18);color:var(--success);padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;">领先</span>
+          <span style="font-size:10px;color:var(--t-2);">我 9次 <span style="color:var(--t-3);margin:0 2px;">|</span> 阿杰 5次</span>
+        </div>
+        <div style="display:flex;height:6px;border-radius:999px;overflow:hidden;background:var(--card);margin-top:8px;">
+          <div style="width:64%;background:var(--brand);"></div><div style="width:36%;background:var(--t-3);"></div>
+        </div>
+      </div>
+
+      <div class="qrf">
+        <div class="qrbox"><svg></svg></div>
+        <div class="qr-txt"><b>扫码开始训练</b><span>LiftTrack · 训练</span></div>
+      </div>
+    </div>
+    <div class="poster-note">01 / 训练成果分享卡<small>完成率环 + 总重量 · PK横幅 · 二维码引导</small></div>
+  </div>
+
+  <!-- 2. 邀请码海报 -->
+  <div class="poster-wrap">
+    <div class="poster">
+      <div class="brand">
+        <div class="brand-logo"><img src="../assets/images/logo.png" alt="LiftTrack"></div>
+        <div class="brand-name"><b>LiftTrack</b><span>INVITE</span></div>
+      </div>
+      <div class="brand-line" style="margin-top:8px;"></div>
+
+      <!-- 主题语 -->
+      <div style="margin-top:11px;">
+        <div style="font-size:22px;font-weight:900;color:var(--t-1);line-height:1.25;letter-spacing:.5px;">好友邀你 <span class="grad-txt">一起变强</span></div>
+        <div style="font-size:11px;color:var(--t-2);margin-top:4px;">激活邀请 · 领新人礼包，马上开练</div>
+      </div>
+
+      <!-- 新人礼包 · 独立大幅主视觉 -->
+      <div style="margin-top:11px;border-radius:20px;padding:10px 14px;color:#fff;position:relative;overflow:hidden;
+        background:linear-gradient(135deg,var(--brand),var(--brand-2));
+        box-shadow:0 16px 32px -12px var(--iso-lo);">
+        <div style="position:absolute;top:-40px;right:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.15);"></div>
+        <div style="position:absolute;bottom:-48px;left:-28px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.11);"></div>
+
+        <div style="position:relative;display:flex;align-items:center;gap:6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15.9v-1.9a2 2 0 01-2-2V13h-2a1 1 0 01-1-1V10a1 1 0 011-1h2V8a3.5 3.5 0 014.5-3.3l-1 .6a1.5 1.5 0 00-2 .9 1 1 0 001 1.4H17a1 1 0 011 1 1 1 0 01-1 1h-3v1a2 2 0 01-1 1.7z"/></svg>
+          <span style="font-size:12px;font-weight:800;letter-spacing:1px;">新人礼包 · 激活即得</span>
+          <span style="margin-left:auto;font-size:11px;font-weight:800;color:var(--brand);background:#fff;padding:5px 13px;border-radius:999px;box-shadow:0 8px 18px rgba(0,0,0,.24);">领新人礼</span>
+        </div>
+
+        <div style="position:relative;display:flex;align-items:flex-end;gap:6px;margin-top:4px;">
+          <span style="font-size:34px;font-weight:900;line-height:1;">+50</span>
+          <span style="font-size:15px;font-weight:800;opacity:.94;margin-bottom:6px;">积分</span>
+          <span style="margin-left:auto;font-size:9.5px;opacity:.92;margin-bottom:7px;">激活即到账 · 直接兑换</span>
+        </div>
+
+        <div style="position:relative;display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;">
+          <span class="ptag" style="padding:2px 8px;font-size:8px;">限定皮肤</span>
+          <span class="ptag" style="padding:2px 8px;font-size:8px;">成就徽章</span>
+          <span class="ptag" style="padding:2px 8px;font-size:8px;">头像框</span>
+          <span class="ptag" style="padding:2px 8px;font-size:8px;">专属称号</span>
+        </div>
+      </div>
+
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:var(--t-1);letter-spacing:1px;"><span style="width:14px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--brand),var(--brand-2));"></span>它解决你训练的痛点</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:7px;text-align:center;">
+        <div class="stat" style="padding:8px 6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="6" rx="2"/><rect x="3" y="15" width="18" height="6" rx="2"/></svg><b style="font-size:10px;">实时训练</b><span>组数一目了然</span></div>
+        <div class="stat" style="padding:8px 6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b style="font-size:10px;">休息提醒</b><span>掌控休息节奏</span></div>
+        <div class="stat" style="padding:8px 6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6 7-11a7 7 0 10-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="11" r="3"/></svg><b style="font-size:10px;">练哪提醒</b><span>今天该练哪</span></div>
+      </div>
+
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:var(--t-1);letter-spacing:1px;"><span style="width:14px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--brand),var(--brand-2));"></span>带你体验完整训练</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;">
+        <div class="mod"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M5 6h.01M5 12h.01M5 18h.01"/></svg><div class="mtxt"><b>训练计划</b><span>分阶段照着练</span></div></div>
+        <div class="mod"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4L8.5 12 14 20M9 4l5.5 8L9 20"/></svg><div class="mtxt"><b>虚拟对手PK</b><span>积分兑限定皮肤</span></div></div>
+        <div class="mod"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 012-2h13v18H6a2 2 0 01-2-2zM8 7h6M8 11h6"/></svg><div class="mtxt"><b>动作教学</b><span>图文分步教学</span></div></div>
+        <div class="mod"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12v7H4a2 2 0 01-2-2v-3M5 12c4 0 4 7 8 7a4 4 0 004-4M5 12V6a2 2 0 012-2h12a2 2 0 012 2v4M15 7a1 1 0 100-2 1 1 0 000 2z"/></svg><div class="mtxt"><b>健身卡</b><span>到期次数提醒</span></div></div>
+        <div class="mod"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M21 7h-5M21 7v5"/></svg><div class="mtxt"><b>数据统计</b><span>进步曲线记录</span></div></div>
+        <div class="mod"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.5 13l-1.5 8 5-3 5 3-1.5-8"/></svg><div class="mtxt"><b>成就徽章</b><span>积分兑徽章称号</span></div></div>
+      </div>
+
+      <div style="margin-top:11px;border:1.5px solid var(--line);border-radius:16px;background:var(--card);padding:9px 13px;display:flex;align-items:center;gap:12px;">
+        <div class="qrbox" style="width:56px;height:56px;padding:5px;flex-shrink:0;"><svg></svg></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;font-weight:800;color:var(--t-1);">扫码 或 输入好友邀请码</div>
+          <div style="font-size:14px;letter-spacing:2px;color:var(--brand);font-weight:800;margin-top:3px;">FIT-INV-8K2Q</div>
+          <div style="font-size:8px;color:var(--t-3);margin-top:2px;">激活即领新人礼包 · 双方都有奖励</div>
+        </div>
+      </div>
+
+      <div style="margin-top:auto;text-align:center;padding-top:10px;">
+        <div style="font-size:11px;font-weight:800;color:var(--t-1);letter-spacing:.5px;line-height:1.4;">别辜负每一次想练的冲动 · 扫码现在开始</div>
+        <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:7px;">
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:8.5px;font-weight:700;color:var(--brand);background:var(--card);border:1px solid var(--line);padding:4px 10px;border-radius:999px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--brand)"><path d="M5 5h6v6H5zm8 0h6v6h-6zM5 13h6v6H5zm8 0h6v6h-6z"/></svg>
+            华为应用市场 · LiftTrack
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:8.5px;font-weight:700;color:var(--brand);background:var(--card);border:1px solid var(--line);padding:4px 10px;border-radius:999px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--brand)"><path d="M17.3 3.4c-.6.7-.9 1.6-.7 2.5.9.1 1.8-.5 2.4-1.2.5-.7.9-1.6.7-2.4-.9-.1-1.8.5-2.4 1.1zM19.6 12.6c.1 2.6 2.1 3.4 2.1 3.4s-1.5 4.1-3.5 4.1c-1 0-1.3-.7-2.6-.7s-1.8.7-2.6.7c-2.3-.1-3.8-3.9-3.8-6 0-3 1.9-4.8 3.4-4.8 1.3 0 1.9.8 2.8.8s1.7-.8 3-.8c4.2 0 1.2 3.3 1.2 3.3z"/></svg>
+            App Store · LiftTrack
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="poster-note">02 / 邀请码海报<small>引导语 · +50积分主视觉 · 痛点与完整训练模块 · 积分用途 · 二维码</small></div>
+  </div>
+
+  <!-- 3. 训练笔记海报 -->
+  <div class="poster-wrap">
+    <div class="poster">
+      <div class="brand">
+        <div class="brand-logo"><img src="../assets/images/logo.png" alt="LiftTrack"></div>
+        <div class="brand-name"><b>LiftTrack</b><span>TRAINING NOTE</span></div>
+        <span class="badge" style="margin-left:auto;">精选</span>
+      </div>
+      <div class="brand-line" style="margin-top:8px;"></div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-top:16px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="var(--t-3)" stroke-width="2"/><path d="M8 3v4M16 3v4M3 10h18" stroke="var(--t-3)" stroke-width="2"/></svg>
+        <span style="font-size:10px;color:var(--t-3);letter-spacing:.5px;">2026-08-31</span>
+        <span style="background:var(--card);color:var(--brand);padding:3px 8px;border-radius:8px;font-size:9px;font-weight:700;">感受 · 充满活力</span>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div style="font-size:20px;font-weight:800;color:var(--t-1);letter-spacing:.5px;">今天拉爆腿！又破纪录</div>
+        <div style="font-size:15px;font-weight:700;color:var(--t-1);line-height:1.5;margin-top:8px;">
+        今天练腿突破了自己，深蹲加到 100kg！虽然很累但一组不落地完成了全部计划，酸爽。
+        </div>
+      </div>
+
+      <div class="stat note-bar" style="display:flex;align-items:center;margin-top:16px;">
+        <div class="col"><b>72min</b><span>时长</span></div>
+        <div class="vdiv"></div>
+        <div class="col"><b>8640kg</b><span>总重量</span></div>
+        <div class="vdiv"></div>
+        <div class="col"><b>90</b><span>组数</span></div>
+        <div class="vdiv"></div>
+        <div class="col"><b>腿/背</b><span>部位</span></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--brand)"><path d="M12 17l-6.2 3.6 1.6-7L2 9.2l7.2-.6L12 2l2.8 6.6 7.2.6-5.4 4.4 1.6 7z"/></svg>
+        <b style="font-size:11px;color:var(--t-1);">最满意：杠铃深蹲</b>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
+        <span class="badge">大腿</span><span class="badge">臀部</span><span class="badge">小腿</span>
+      </div>
+
+      <div class="qrf">
+        <div class="qrbox"><svg></svg></div>
+        <div class="qr-txt"><b>输入邀请码，双方得福利</b><span>LiftTrack · 训练笔记</span></div>
+      </div>
+    </div>
+    <div class="poster-note">03 / 训练笔记海报<small>心得为主 · 数据条 · 酸痛部位标签</small></div>
+  </div>
+
+  <!-- 4. 训练计划海报 -->
+  <div class="poster-wrap">
+    <div class="poster">
+      <div class="brand">
+        <div class="brand-logo"><img src="../assets/images/logo.png" alt="LiftTrack"></div>
+        <div class="brand-name"><b>LiftTrack</b><span>PLAN</span></div>
+      </div>
+      <div class="brand-line" style="margin-top:8px;"></div>
+
+      <div class="stat" style="margin-top:16px;padding:14px 16px;">
+        <div style="font-size:9px;letter-spacing:2px;color:var(--t-3);">训练计划 · PLAN</div>
+        <div style="font-size:17px;font-weight:800;color:var(--t-1);margin-top:5px;">女性曲线雕刻 · 综合计划</div>
+        <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;">
+          <span class="badge">塑形</span><span class="badge">中级</span><span class="badge">每周6练</span><span class="badge">by 梨涡小姐</span>
+        </div>
+      </div>
+
+      <div style="margin-top:13px;display:flex;flex-direction:column;gap:7px;">
+        <div class="day"><span class="idx">1</span><div class="txt"><b>推 · 胸部 三角肌前束</b><span>胸肩推举 · 3个动作 · 9组</span></div></div>
+        <div class="day"><span class="idx">2</span><div class="txt"><b>拉 · 背部 二头肌</b><span>引体向上 · 4个动作 · 12组</span></div></div>
+        <div class="day"><span class="idx">3</span><div class="txt"><b>腿 · 股四头肌 臀</b><span>深蹲 · 4个动作 · 12组</span></div></div>
+        <div class="day rest"><span class="idx">R</span><div class="txt"><b>休息日 · 充分恢复</b><span>拉伸 / 放松</span></div></div>
+      </div>
+
+      <div class="stat" style="display:flex;align-items:center;gap:12px;margin-top:auto;padding:14px;">
+        <div class="qrbox" style="width:52px;height:52px;"><svg></svg></div>
+        <div>
+          <b style="color:var(--t-1);font-size:12px;">扫码导入计划</b>
+          <span style="display:block;color:var(--t-3);font-size:9px;margin-top:3px;">或输入分享码：FITT-8K2Q</span>
+        </div>
+      </div>
+    </div>
+    <div class="poster-note">04 / 训练计划海报<small>深色独立风格 · 计划名 + 标签 + 训练列表</small></div>
+  </div>
+
+  <!-- 5. 健身卡海报 -->
+  <div class="poster-wrap">
+    <div class="poster">
+      <div class="brand">
+        <div class="brand-logo"><img src="../assets/images/logo.png" alt="LiftTrack"></div>
+        <div class="brand-name"><b>LiftTrack</b><span>GYM CARD</span></div>
+        <span class="badge" style="margin-left:auto;">月卡 · 通用</span>
+      </div>
+      <div class="brand-line" style="margin-top:8px;"></div>
+
+      <div style="margin-top:16px;">
+        <div style="font-size:18px;font-weight:800;color:var(--t-1);line-height:1.3;">我在 金吉鸟健身<br>坚持训练</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:7px;color:var(--t-2);font-size:10px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--brand)"><path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 119.5 9 2.5 2.5 0 0112 11.5z"/></svg>
+          上海市静安区 · 南京西路万达店 3F
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:18px;">
+        <div style="font-size:64px;font-weight:900;line-height:1;color:transparent;position:relative;
+          background:linear-gradient(135deg,var(--brand),var(--brand-2));
+          -webkit-background-clip:text;background-clip:text;">
+          42天
+        </div>
+        <div style="font-size:10px;color:var(--t-3);letter-spacing:4px;margin-top:2px;">累计坚持</div>
+      </div>
+
+      <div class="stat" style="margin-top:16px;padding:14px;">
+        <div style="height:8px;border-radius:999px;background:var(--card);overflow:hidden;">
+          <div style="height:100%;width:70%;border-radius:999px;background:linear-gradient(90deg,var(--brand),var(--brand-2));"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;">
+          <b style="font-size:11px;color:var(--t-1);">70% 完成</b>
+          <b style="font-size:11px;color:var(--t-2);">剩余 18 天</b>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px;">
+        <div class="stat" style="padding:12px;text-align:center;">
+          <b style="display:block;font-size:18px;font-weight:800;color:var(--t-1);">36</b>
+          <span style="font-size:9px;color:var(--t-3);letter-spacing:1px;">已完成训练</span>
+        </div>
+        <div class="stat"style="padding:12px;text-align:center;">
+          <b style="display:block;font-size:18px;font-weight:800;color:var(--t-1);">12960</b>
+          <span style="font-size:9px;color:var(--t-3);letter-spacing:1px;">千卡消耗</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:14px;">
+        <span class="badge">月卡</span><span class="badge" style="margin-left:6px;">2026/10/15 到期</span>
+      </div>
+
+      <div class="qrf">
+        <div class="qrbox"><svg></svg></div>
+        <div class="qr-txt"><b>LiftTrack 训练</b><span>坚持 · 看到变化</span></div>
+      </div>
+    </div>
+    <div class="poster-note">05 / 健身卡海报<small>坚持天数大数字 · 进度条</small></div>
+  </div>
+
+  <!-- 6. 教学动作分享卡片 -->
+  <div class="poster-wrap">
+    <div class="poster">
+      <div class="brand">
+        <div class="brand-logo"><img src="../assets/images/logo.png" alt="LiftTrack"></div>
+        <div class="brand-name"><b>LiftTrack</b><span>TUTORIAL</span></div>
+        <span class="badge" style="margin-left:auto;">胸肌</span>
+      </div>
+      <div class="brand-line" style="margin-top:8px;"></div>
+
+      <div style="margin-top:16px;">
+        <div style="font-size:19px;font-weight:800;color:var(--t-1);">杠铃卧推 · 标准动作</div>
+        <div style="font-size:10px;color:var(--t-3);margin-top:4px;">中级 · 杠铃 · 教练 Alex</div>
+      </div>
+
+      <div class="step-grid">
+        <div class="stepcard">
+          <div class="img"><img src="../assets/images/exercises/e1_barbell_bench_press_step1.png" alt="步骤1"></div>
+          <div class="cap"><span class="stepnum">1</span><b>准备姿势</b></div>
+          <div class="desc">仰卧平凳，脚踩实地面，肩胛后缩下沉，挺胸，正握杠铃略宽于肩</div>
+        </div>
+        <div class="stepcard">
+          <div class="img"><img src="../assets/images/exercises/e1_barbell_bench_press_step2.png" alt="步骤2"></div>
+          <div class="cap"><span class="stepnum">2</span><b>离心下放</b></div>
+          <div class="desc">控制杠铃沿垂直轨迹缓慢下放至胸下缘，肘臂约75度，全程保持张力</div>
+        </div>
+        <div class="stepcard">
+          <div class="img"><img src="../assets/images/exercises/e1_barbell_bench_press_step3.png" alt="步骤3"></div>
+          <div class="cap"><span class="stepnum">3</span><b>底端触胸</b></div>
+          <div class="desc">杠铃轻触胸部停顿0.5-1秒，不反弹借力，臀部保持贴凳</div>
+        </div>
+        <div class="stepcard">
+          <div class="img"><img src="../assets/images/exercises/e1_barbell_bench_press_step4.png" alt="步骤4"></div>
+          <div class="cap"><span class="stepnum">4</span><b>向心推起</b></div>
+          <div class="desc">胸肌主动发力沿原轨迹垂直上推，呼气，肩胛稳定不前引</div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--line);margin:14px 0 12px;"></div>
+
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--brand)"><path d="M4 9V7a3 3 0 013-3h10a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3v-2"/><path d="M4 12h8M8 9l-3 3 3 3"/></svg>
+        <div style="flex:1;">
+          <span style="display:block;font-size:9px;color:var(--t-3);">输入邀请码，双方得福利</span>
+          <b style="font-size:14px;letter-spacing:2px;color:var(--brand);font-weight:800;">FIT-INV-8K2Q</b>
+        </div>
+        <div class="qrbox" style="width:40px;height:40px;"><svg></svg></div>
+      </div>
+    </div>
+    <div class="poster-note">06 / 教学动作分享卡片<small>训练步骤配图(i1~4) · 邀请码二维码</small></div>
+  </div>
+
+</div>
+
+<script>
+  /* 生成可读的仿真二维码 */
+  function qr(seed){
+    var cols=9, cell="";
+    for(var y=0;y<cols;y++){ for(var x=0;x<cols;x++){
+      var on=false;
+      var corner=(x<3&&y<3)||(x>=cols-3&&y<3)||(x<3&&y>=cols-3);
+      if(corner){ on=(x===0||y===0||x===cols-1||y===cols-1||x===y||x+y===cols-1); }
+      else { var n=(x*7+y*11+seed)%7; on=(n>2); }
+      cell+=on ? '<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="#3E3733"/>':'';
+    }}
+    return '<svg viewBox="-0.4 -0.4 '+cols+'.8 '+cols+'.8" shape-rendering="crispEdges">'+cell+'</svg>';
+  }
+  document.querySelectorAll('.qrbox svg').forEach(function(el,i){ el.outerHTML=qr(i+3); });
+
+  /* 主题切换 */
+  var themes=[
+    {cls:'theme-vitality',name:'活力运动',dot:'#C4705A'},
+    {cls:'theme-blossom',name:'花开',dot:'#C68B96'},
+    {cls:'theme-silvercare',name:'银发',dot:'#7FA08A'},
+    {cls:'theme-fresh',name:'清新',dot:'#7E9DAE'},
+    {cls:'theme-iron',name:'熔炉',dot:'#C08478',dark:1},
+    {cls:'theme-neon',name:'霓虹',dot:'#A695B8',dark:1},
+    {cls:'theme-gold',name:'黑金',dot:'#C9A96A',dark:1},
+  ];
+  var bar=document.getElementById('themeBar');
+  themes.forEach(function(t){
+    var b=document.createElement('button');
+    b.className='theme-btn'; b.dataset.cls=t.cls;
+    b.innerHTML='<span class="dot" style="background:'+t.dot+'"></span>'+t.name;
+    b.onclick=function(){
+      document.querySelectorAll('.theme-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      var src=getComputedStyle(document.querySelector('.'+t.cls));
+      var vars=['--bg-top','--bg-bottom','--glow','--brand','--brand-2','--t-1','--t-2','--t-3','--card','--line','--success','--warn','--iso-hi','--iso-lo','--qr-bg'];
+      vars.forEach(function(v){ document.documentElement.style.setProperty(v, src.getPropertyValue(v)); });
+    };
+    bar.appendChild(b);
+  });
+  bar.children[0].click();
+</script>
+</body>
+</html>

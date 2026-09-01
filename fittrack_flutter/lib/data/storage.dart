@@ -429,6 +429,8 @@ class Storage {
       'lightThemeId': 'vitality-sport',
       'darkThemeId': 'iron-forge',
       'trainingTime': '',
+      // 自定义头像本地路径（空串表示使用默认 emoji 头像）
+      'avatarPath': '',
       // Phase 2 �?新增默认 settings
       'isPremium': false,
       'premiumSource': '',

@@ -28,6 +28,8 @@ import '../services/platform/live_view_service.dart';
 import '../services/platform/rest_reminder_service.dart';
 import '../services/platform/implementations/ohos_rest_reminder_service.dart';
 import '../services/permission_service.dart';
+import '../router.dart';
+import '../widgets/first_training_feedback_sheet.dart';
 
 /// 休息状态机阶段
 enum RestPhase { idle, resting, restingOvertime }
@@ -980,6 +982,15 @@ class _TrainingPageState extends State<TrainingPage>
     // 返回上一页
     if (mounted) {
       context.go('/home');
+    }
+
+    // 首次训练体验反馈：返回首页后，在首页弹出询问使用感受的弹窗
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FirstTrainingFeedbackSheet.maybeShow(
+          context: rootNavigatorKey.currentContext,
+        );
+      });
     }
   }
 

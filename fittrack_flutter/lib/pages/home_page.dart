@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -101,7 +101,11 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           context: context,
           barrierDismissible: false,
           builder: (_) => OnboardingCoach(
-            onComplete: () => Navigator.pop(context),
+            onComplete: (part) {
+              Navigator.pop(context);
+              // 跳转到计划搜索页并自动搜索所选部位的训练计划
+              context.push('/plan-search', extra: part);
+            },
             onSkip: () {
               final s = Storage.getSettings();
               s['onboardingV2Done'] = true;
