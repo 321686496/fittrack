@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import '../data/training_note.dart';
-import '../services/poster_generator.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
-import '../widgets/poster_preview_dialog.dart';
+import '../widgets/poster_capture_helper.dart';
 
 /// 笔记海报页面
 ///
-/// v1.4 优化：改为 Overlay 离屏渲染模式（与其他海报一致），
-/// NotePosterContent 以 1080×1920 全分辨率渲染，截图更清晰。
+/// 复用 [PosterCaptureHelper.captureAndPreview] 统一的内容自适应截图流程，
+/// NotePosterContent 以 1080 宽全分辨率渲染，截图更清晰。
 /// 页面上只显示 loading 动画，截图完成后弹出 [PosterPreviewDialog]。
 class NotePosterPage extends StatefulWidget {
   final TrainingNote note;
@@ -36,76 +35,27 @@ class _NotePosterPageState extends State<NotePosterPage> {
   }
 
   Future<void> _captureAndShow() async {
-    final boundaryKey = GlobalKey();
-    final overlay = Overlay.of(context);
-    const posterWidth = NotePosterContent.posterWidth;
-    const posterHeight = NotePosterContent.posterHeight;
-    final colors = Theme.of(context).extension<LiftTrackColors>()!;
-
-    // 海报必须渲染在可视区域内：
-    // OHOS fork 引擎不会 paint 完全离屏（负坐标）的 RepaintBoundary，
-    // 导致 debugNeedsPaint 永远为 true，截图轮询超时抛
-    // "RepaintBoundary 尚未完成绘制，请重试"。
-    // 因此海报放在 left:0/top:0（屏上），并用不透明遮罩盖住避免闪现。
-    late OverlayEntry entry;
-    entry = OverlayEntry(
-      builder: (_) => Stack(
-        children: [
-          Positioned(
-            left: 0,
-            top: 0,
-            width: posterWidth,
-            height: posterHeight,
-            child: Material(
-              color: Colors.transparent,
-              child: OverflowBox(
-                minWidth: posterWidth,
-                maxWidth: posterWidth,
-                minHeight: posterHeight,
-                maxHeight: posterHeight,
-                child: RepaintBoundary(
-                  key: boundaryKey,
-                  child: NotePosterContent(
-                    note: widget.note,
-                    boundRecord: widget.boundRecord,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // 不透明遮罩：盖住屏上的海报，视觉上无感
-          Positioned.fill(
-            child: ColoredBox(color: colors.bgSecondary),
-          ),
-        ],
-      ),
-    );
-    overlay.insert(entry);
-
-    // paint 等待已统一收敛到 PosterGenerator.capture 内部，
-    // 此处不再使用固定 50ms 等待（首帧 paint 未完成时调用 toImage 会触发
-    // '!debugNeedsPaint' 断言）。
     try {
-      final imagePath = await PosterGenerator.capture(
-        boundaryKey,
+      await PosterCaptureHelper.captureAndPreview(
+        context,
+        posterWidget: NotePosterContent(
+          note: widget.note,
+          boundRecord: widget.boundRecord,
+        ),
+        posterWidth: NotePosterContent.posterWidth,
+        title: '训练笔记海报',
         fileNamePrefix: 'fittrack_note',
       );
-      entry.remove();
-      if (!mounted) return;
-      setState(() => _capturing = false);
-      await PosterPreviewDialog.show(
-        context,
-        imagePath: imagePath,
-        title: '训练笔记海报',
-      );
-      if (!mounted) return;
-      Navigator.of(context).pop();
     } catch (e) {
-      entry.remove();
-      if (!mounted) return;
-      setState(() => _capturing = false);
-      FitToast.error(context, '海报生成失败：$e');
-      Navigator.of(context).pop();
+      if (mounted) {
+        FitToast.error(context, '海报生成失败：$e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _capturing = false);
+        // 预览弹窗已关闭，返回上一页
+        Navigator.of(context).pop();
+      }
     }
   }
 

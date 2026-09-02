@@ -447,6 +447,10 @@ class PosterQrFooter extends StatelessWidget {
               dataModuleShape: QrDataModuleShape.square,
               color: colors.textPrimary,
             ),
+            // 兜底：数据过长无法编码时，避免渲染成白底空容器
+            errorStateBuilder: (context, error) => Center(
+              child: Icon(Icons.qr_code, size: px(9), color: colors.textMuted),
+            ),
           ),
         ),
         SizedBox(width: px(11)),

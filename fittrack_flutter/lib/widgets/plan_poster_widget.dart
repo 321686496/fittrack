@@ -5,9 +5,9 @@ import 'poster_theme.dart';
 
 /// 训练计划海报（海报4，对应 HTML #4）
 ///
-/// 宽度 1080、高度 2274（对齐 HTML 设计稿 304×640 的宽高比，px() 按 1080/304
-/// 等比放大，高度 = 640 × (1080/304) ≈ 2274，避免内容挤压导致的排版错乱）。
-/// 使用 [PosterBackground] 跟随主题。
+/// 宽度 1080 固定、高度随内容自适应（训练日最多 5 天，行数不固定，不使用
+/// 固定高度，由捕获层按内容实际高度渲染，避免 RenderFlex 溢出或底部空白、
+/// 以及底部二维码被裁剪）。使用 [PosterBackground] 跟随主题。
 /// 布局：品牌头、计划信息卡（名称 + 标签）、训练日列表、底部扫码导入。
 class PlanPosterWidget extends StatelessWidget {
   final Map<String, dynamic> plan;
@@ -28,9 +28,6 @@ class PlanPosterWidget extends StatelessWidget {
   /// 海报宽度常量
   static const double posterWidth = 1080.0;
 
-  /// 海报高度常量
-  static const double posterHeight = 2274.0;
-
   @override
   Widget build(BuildContext context) {
     final colors = PosterColors.fromThemeId(themeId);
@@ -40,14 +37,16 @@ class PlanPosterWidget extends StatelessWidget {
     final frequency = plan['frequency'] as String? ?? '';
     final author = plan['author'] as String?;
 
+    // 固定宽度 + 高度随内容自适应。由捕获层按内容实际高度渲染，
+    // 训练日（最多 5 天）行数不定时既不会 RenderFlex 溢出，也不留底部空白，
+    // 底部扫码二维码始终位于真实内容末尾、不被裁剪。
     return SizedBox(
       width: posterWidth,
-      height: posterHeight,
       child: PosterBackground(
         colors: colors,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
+          mainAxisSize: MainAxisSize.min,
           children: [
             PosterBrandHeader(colors: colors, subtitle: 'PLAN'),
             // ── 计划信息卡 ───────────────────────
@@ -112,7 +111,7 @@ class PlanPosterWidget extends StatelessWidget {
               children: _buildDays(colors),
             ),
             // ── 底部扫码导入 ─────────────────────
-            const Spacer(),
+            SizedBox(height: px(13)),
             _buildFooter(colors),
           ],
         ),
@@ -246,23 +245,30 @@ class PlanPosterWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: shareString.length <= 800
-                ? QrImageView(
-                    data: shareString,
-                    version: QrVersions.auto,
-                    gapless: true,
-                    backgroundColor: Colors.white,
-                    eyeStyle: QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: colors.textPrimary,
-                    ),
-                    dataModuleStyle: QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: colors.textPrimary,
-                    ),
-                  )
-                : Icon(Icons.fitness_center,
+            // 真实分享串 = "FITT-XXXXXX|<base64-json>"，扫码即可导入该计划。
+            // 使用最低纠错级 L + 自适应版本，最大化可编码容量（version 40 字节模式
+            // 约 2953 字节），保证常见计划串能渲染出真实可导入的二维码。
+            // 若分享串仍过长无法编码，交给 errorStateBuilder 兜底显示图标，
+            // 绝不出现"白底空容器"。
+            child: QrImageView(
+              data: shareString,
+              version: QrVersions.auto,
+              errorCorrectionLevel: QrErrorCorrectLevel.L,
+              gapless: true,
+              backgroundColor: Colors.white,
+              eyeStyle: QrEyeStyle(
+                eyeShape: QrEyeShape.square,
+                color: colors.textPrimary,
+              ),
+              dataModuleStyle: QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square,
+                color: colors.textPrimary,
+              ),
+              errorStateBuilder: (context, error) => Center(
+                child: Icon(Icons.fitness_center,
                     size: px(20), color: colors.textPrimary),
+              ),
+            ),
           ),
           SizedBox(width: px(12)),
           Expanded(

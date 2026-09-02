@@ -476,12 +476,8 @@ GoRouter createRouter() {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NoteListPage(),
       ),
-      GoRoute(
-        path: '/note/:noteId',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) =>
-            NoteDetailPage(noteId: state.params['noteId'] ?? ''),
-      ),
+      // 注意：静态路由必须放在动态路由之前，否则 `/note/edit` 会被
+      // `/note/:noteId` 匹配为 noteId='edit'，跳转到详情页而不是编辑页。
       GoRoute(
         path: '/note/edit',
         parentNavigatorKey: rootNavigatorKey,
@@ -500,6 +496,13 @@ GoRouter createRouter() {
           // 编辑现有笔记：加载笔记数据后传入
           return NoteEditPage(noteId: recordId);
         },
+      ),
+      // noteId: note_xxx / UUID（注：必须放在静态路由之后）
+      GoRoute(
+        path: '/note/:noteId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) =>
+            NoteDetailPage(noteId: state.params['noteId'] ?? ''),
       ),
     ],
   );

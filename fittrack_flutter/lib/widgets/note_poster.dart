@@ -5,7 +5,9 @@ import 'poster_theme.dart';
 
 /// 训练笔记海报（海报3，对应 HTML #3）
 ///
-/// 宽度 1080、高度 1920 固定（9:16）。使用 [PosterBackground] 跟随主题。
+/// 宽度 1080 固定、高度随内容自适应（正文/酸痛标签行数可变，不使用固定高度，
+/// 由捕获层 Path B 按内容实际高度渲染，避免 RenderFlex 溢出或底部空白）。
+/// 使用 [PosterBackground] 跟随主题。
 /// 布局：品牌头 + 精选徽标、日期/感受、心得标题与正文、四列数据条、
 /// 最满意动作、酸痛部位标签、底部二维码（输入邀请码）。
 class NotePosterContent extends StatelessWidget {
@@ -29,9 +31,6 @@ class NotePosterContent extends StatelessWidget {
   /// 海报宽度常量
   static const double posterWidth = 1080.0;
 
-  /// 海报高度常量（9:16）
-  static const double posterHeight = 1920.0;
-
   @override
   Widget build(BuildContext context) {
     final colors = PosterColors.fromThemeId(themeId);
@@ -54,12 +53,11 @@ class NotePosterContent extends StatelessWidget {
 
     return SizedBox(
       width: posterWidth,
-      height: posterHeight,
       child: PosterBackground(
         colors: colors,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
+          mainAxisSize: MainAxisSize.min,
           children: [
             PosterBrandHeader(
               colors: colors,
@@ -167,7 +165,6 @@ class NotePosterContent extends StatelessWidget {
               ),
             ],
             // ── 底部二维码 ───────────────────────
-            const Spacer(),
             PosterQrFooter(
               colors: colors,
               qrData: 'fittrack://invite?code=$inviteCode',

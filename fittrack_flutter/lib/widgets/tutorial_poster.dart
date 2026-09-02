@@ -46,6 +46,10 @@ class TutorialPoster extends StatelessWidget {
     final colors = PosterColors.fromThemeId(themeId);
     final t = tutorial;
 
+    // 固定宽度 + 高度随内容自适应（步骤卡片网格/要点行数动态变化）。
+    // 由捕获层 Path B（OverflowBox minHeight:0, maxHeight: 有限大）包裹，
+    // RepaintBoundary 会随内容收缩到真实高度，不会因步骤数/是否有图
+    // 变化而触发 RenderFlex overflow，也不会留下底部大段空白。
     return SizedBox(
       width: posterWidth,
       child: PosterBackground(
@@ -344,6 +348,11 @@ class TutorialPoster extends StatelessWidget {
                 dataModuleStyle: QrDataModuleStyle(
                   dataModuleShape: QrDataModuleShape.square,
                   color: colors.textPrimary,
+                ),
+                // 兜底：数据过长无法编码时，避免渲染成白底空容器
+                errorStateBuilder: (context, error) => Center(
+                  child:
+                      Icon(Icons.qr_code, size: px(9), color: colors.textMuted),
                 ),
               ),
             ),

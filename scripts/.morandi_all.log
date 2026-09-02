@@ -1,0 +1,125 @@
+﻿[生成] course_beginner_bulk (round 1)
+[完成] course_beginner_bulk
+[生成] course_cut_diet (round 1)
+[完成] course_cut_diet
+[生成] course_intermediate_shape (round 1)
+[完成] course_intermediate_shape
+[生成] course_strength_basic (round 1)
+[完成] course_strength_basic
+[生成] course_keep_health (round 1)
+[完成] course_keep_health
+[生成] course_advanced_bulk (round 1)
+[完成] course_advanced_bulk
+[生成] course_hiit_cut (round 1)
+[完成] course_hiit_cut
+[生成] course_home_beginner (round 1)
+[完成] course_home_beginner
+[生成] course_senior_health (round 1)
+[完成] course_senior_health
+[生成] course_gym_equipment (round 1)
+  [失败] HTTP 451: {'error': {'code': 'image_safety', 'message': 'The generated image was filtered by the safety policy. Please adjust your prompt and try again.', 'type': 'invalid_request_error'}}
+[生成] course_gym_equipment (round 2)
+  [失败] HTTP 451: {'error': {'code': 'image_safety', 'message': 'The generated image was filtered by the safety policy. Please adjust your prompt and try again.', 'type': 'invalid_request_error'}}
+[生成] course_gym_equipment (round 3)
+  [失败] HTTP 451: {'error': {'code': 'image_safety', 'message': 'The generated image was filtered by the safety policy. Please adjust your prompt and try again.', 'type': 'invalid_request_error'}}
+[生成] course_gym_equipment (round 4)
+[完成] course_gym_equipment
+[生成] course_dumbbell_fullbody (round 1)
+[完成] course_dumbbell_fullbody
+[生成] ch1_intro (round 1)
+[完成] ch1_intro
+[生成] ch2_equipment (round 1)
+[完成] ch2_equipment
+[生成] ch3_plan (round 1)
+[完成] ch3_plan
+[生成] ch4_diet (round 1)
+[完成] ch4_diet
+[生成] ch5_recovery (round 1)
+[完成] ch5_recovery
+[生成] cut_ch1_deficit (round 1)
+[完成] cut_ch1_deficit
+[生成] cut_ch2_macros (round 1)
+[完成] cut_ch2_macros
+[生成] cut_ch3_food (round 1)
+[完成] cut_ch3_food
+[生成] cut_ch4_plateau (round 1)
+[完成] cut_ch4_plateau
+[生成] shape_ch1_assess (round 1)
+[完成] shape_ch1_assess
+[生成] shape_ch2_split (round 1)
+[完成] shape_ch2_split
+[生成] shape_ch3_compound_isolation (round 1)
+[完成] shape_ch3_compound_isolation
+[生成] shape_ch4_tempo (round 1)
+[完成] shape_ch4_tempo
+[生成] shape_ch5_microcycle (round 1)
+[完成] shape_ch5_microcycle
+[生成] strength_ch1_principle (round 1)
+[完成] strength_ch1_principle
+[生成] strength_ch2_technique (round 1)
+[完成] strength_ch2_technique
+[生成] strength_ch3_breathing_core (round 1)
+[完成] strength_ch3_breathing_core
+[生成] strength_ch4_progression (round 1)
+[完成] strength_ch4_progression
+[生成] keep_ch1_principle (round 1)
+[完成] keep_ch1_principle
+[生成] keep_ch2_strength (round 1)
+[完成] keep_ch2_strength
+[生成] keep_ch3_cardio (round 1)
+[完成] keep_ch3_cardio
+[生成] keep_ch4_lifestyle (round 1)
+[完成] keep_ch4_lifestyle
+[生成] bulk_ch1_assess (round 1)
+[完成] bulk_ch1_assess
+[生成] bulk_ch2_periodization (round 1)
+[完成] bulk_ch2_periodization
+[生成] bulk_ch3_assistance (round 1)
+[完成] bulk_ch3_assistance
+[生成] bulk_ch4_metabolic (round 1)
+[完成] bulk_ch4_metabolic
+[生成] bulk_ch5_deload (round 1)
+[完成] bulk_ch5_deload
+[生成] bulk_ch6_advanced_split (round 1)
+[完成] bulk_ch6_advanced_split
+[生成] hiit_ch1_epoc (round 1)
+[完成] hiit_ch1_epoc
+[生成] hiit_ch2_exercises (round 1)
+[完成] hiit_ch2_exercises
+[生成] hiit_ch3_protocols (round 1)
+[完成] hiit_ch3_protocols
+[生成] hiit_ch4_balance (round 1)
+[完成] hiit_ch4_balance
+[生成] hiit_ch5_safety (round 1)
+[完成] hiit_ch5_safety
+[生成] home_ch1_env (round 1)
+[完成] home_ch1_env
+[生成] home_ch2_bodyweight (round 1)
+[完成] home_ch2_bodyweight
+[生成] home_ch3_schedule (round 1)
+[完成] home_ch3_schedule
+[生成] home_ch4_progress (round 1)
+[完成] home_ch4_progress
+[生成] senior_ch1_health (round 1)
+[完成] senior_ch1_health
+[生成] senior_ch2_strength (round 1)
+[完成] senior_ch2_strength
+[生成] senior_ch3_balance (round 1)
+[完成] senior_ch3_balance
+[生成] gym_ch1_freeweight (round 1)
+[完成] gym_ch1_freeweight
+[生成] gym_ch2_machine_upper (round 1)
+[完成] gym_ch2_machine_upper
+[生成] gym_ch3_machine_leg (round 1)
+[完成] gym_ch3_machine_leg
+[生成] gym_ch4_choose (round 1)
+[完成] gym_ch4_choose
+[生成] db_ch1_pick (round 1)
+[完成] db_ch1_pick
+[生成] db_ch2_upper (round 1)
+[完成] db_ch2_upper
+[生成] db_ch3_lower (round 1)
+[完成] db_ch3_lower
+[生成] db_ch4_core_plan (round 1)
+[完成] db_ch4_core_plan
+全部完成: 成功 59/59

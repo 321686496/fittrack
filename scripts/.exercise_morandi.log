@@ -1,0 +1,86 @@
+﻿[生成] e1_barbell_bench_press_preview (round 1)
+[完成] e1_barbell_bench_press_preview
+[生成] e2_dumbbell_fly_preview (round 1)
+[完成] e2_dumbbell_fly_preview
+[生成] e3_incline_bench_press_preview (round 1)
+[完成] e3_incline_bench_press_preview
+[生成] e4_cable_crossover_preview (round 1)
+[完成] e4_cable_crossover_preview
+[生成] e5_pull-up_preview (round 1)
+[完成] e5_pull-up_preview
+[生成] e6_barbell_row_preview (round 1)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e6_barbell_row_preview (round 2)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e6_barbell_row_preview (round 3)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e6_barbell_row_preview (round 4)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e6_barbell_row_preview (round 5)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e7_lat_pulldown_preview (round 1)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e7_lat_pulldown_preview (round 2)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e7_lat_pulldown_preview (round 3)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e7_lat_pulldown_preview (round 4)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e7_lat_pulldown_preview (round 5)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e8_seated_cable_row_preview (round 1)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e8_seated_cable_row_preview (round 2)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e8_seated_cable_row_preview (round 3)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e8_seated_cable_row_preview (round 4)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e8_seated_cable_row_preview (round 5)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e9_barbell_squat_preview (round 1)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e9_barbell_squat_preview (round 2)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e9_barbell_squat_preview (round 3)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e9_barbell_squat_preview (round 4)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e9_barbell_squat_preview (round 5)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e10_leg_press_preview (round 1)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e10_leg_press_preview (round 2)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e10_leg_press_preview (round 3)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e10_leg_press_preview (round 4)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e10_leg_press_preview (round 5)
+  [失败] HTTP 403: {'error': {'message': 'insufficient balance', 'type': 'billing_error'}}
+[生成] e11_dumbbell_shoulder_press_preview (round 1)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e11_dumbbell_shoulder_press_preview (round 2)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e11_dumbbell_shoulder_press_preview (round 3)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e11_dumbbell_shoulder_press_preview (round 4)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e11_dumbbell_shoulder_press_preview (round 5)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e12_lateral_raise_preview (round 1)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e12_lateral_raise_preview (round 2)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e12_lateral_raise_preview (round 3)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e12_lateral_raise_preview (round 4)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e12_lateral_raise_preview (round 5)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e13_dumbbell_curl_preview (round 1)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e13_dumbbell_curl_preview (round 2)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
+[生成] e13_dumbbell_curl_preview (round 3)
+  [失败] HTTP 403: {'code': 'INSUFFICIENT_BALANCE', 'message': 'Insufficient account balance'}
