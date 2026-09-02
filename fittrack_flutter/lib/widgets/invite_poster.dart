@@ -5,8 +5,8 @@ import 'poster_theme.dart';
 
 /// 邀请码海报（海报2，对应 HTML #2，含底部下载引导）
 ///
-/// 宽度 1080、高度随内容自适应（不再限定固定高度，避免内容竖向溢出）。
-/// 使用 [PosterBackground] 跟随主题。
+/// 宽度 1080 固定、高度随内容自适应（不限定固定高度，避免内容竖向溢出；
+/// 由捕获层 Path B 按内容实际高度渲染）。使用 [PosterBackground] 跟随主题。
 class InvitePoster extends StatelessWidget {
   final String inviteCode;
   final String deepLink;
@@ -464,6 +464,10 @@ class InvitePoster extends StatelessWidget {
               dataModuleStyle: QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.square,
                 color: colors.textPrimary,
+              ),
+              // 兜底：数据过长无法编码时，避免渲染成白底空容器
+              errorStateBuilder: (context, error) => Center(
+                child: Icon(Icons.qr_code, size: px(10), color: colors.textMuted),
               ),
             ),
           ),

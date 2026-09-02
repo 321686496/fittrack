@@ -30,6 +30,16 @@ class PosterGenerator {
     double pixelRatio = 2.0,
     String fileNamePrefix = 'fittrack_poster',
   }) async {
+    // 等待 RepaintBoundary 真正挂载，避免 OverlayEntry 刚插入、首帧尚未
+    // build 时 currentContext 为 null，导致下面第 33 行的 `!` 直接抛
+    // "Null check operator used on a null value"。
+    // 参照可工作的 share_card_service.dart：insert 后 endOfFrame 再截图。
+    // 此处把等待收敛进 capture 内，统一保护所有调用方（动作分享、海报等）。
+    for (int i = 0; i < 30; i++) {
+      if (boundaryKey.currentContext != null) break;
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 30));
+    }
     final boundary = boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
     // 预解码品牌 logo，避免离屏截图时 Image.asset 仍未解码完成，

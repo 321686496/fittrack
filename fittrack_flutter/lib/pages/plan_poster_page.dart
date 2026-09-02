@@ -71,57 +71,51 @@ class _PlanPosterPageState extends State<PlanPosterPage> {
   }
 
   Widget _buildPreview(LiftTrackColors ft) {
-    // 预览：将固定 1080×2274 的海报等比缩放到屏幕宽度以内，
-    // 保持原始宽高比，避免在窄屏上被挤压/裁剪导致布局变形。
-    // 实际截图仍走 PosterCaptureHelper 离屏渲染（固定 1080px 宽度）。
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final availWidth = constraints.maxWidth - 32; // 减去左右 padding
-        final scale = (availWidth / PlanPosterWidget.posterWidth).clamp(0.2, 1.0);
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              SizedBox(
-                width: availWidth > 0 ? availWidth : 1,
-                height: PlanPosterWidget.posterHeight * scale,
-                child: Transform.scale(
-                  scale: scale,
-                  alignment: Alignment.topCenter,
-                  child: SizedBox(
-                    width: PlanPosterWidget.posterWidth,
-                    height: PlanPosterWidget.posterHeight,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: PlanPosterWidget(
-                        plan: _plan!,
-                        shareCode: _shareCode!,
-                        shareString: _shareString!,
-                      ),
-                    ),
+    // 预览：海报高度随内容自适应（训练日数量不定），无法用固定 AspectRatio。
+    // 用 FittedBox(fit: scaleDown) 按屏幕可用宽度等比例缩放即可，无需预知高度：
+    //  - 若 1080 宽 > 屏宽 → 缩放到屏宽，高度等比跟随；
+    //    （FittedBox 内部按 1080 布局拿到内容真实高度，再统一缩放）
+    //  - 若 1080 宽 ≤ 屏宽 → 原样显示，不放大。
+    const w = PlanPosterWidget.posterWidth;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: w,
+                  child: PlanPosterWidget(
+                    plan: _plan!,
+                    shareCode: _shareCode!,
+                    shareString: _shareString!,
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _savePoster,
-                  icon: const Icon(Icons.save_alt, size: 20),
-                  label: const Text('保存海报'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ft.accentGlow,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
+            ),
           ),
-        );
-      },
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _savePoster,
+              icon: const Icon(Icons.save_alt, size: 20),
+              label: const Text('保存海报'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ft.accentGlow,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
     );
   }
 

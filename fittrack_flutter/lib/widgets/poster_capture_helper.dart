@@ -23,15 +23,19 @@ class PosterCaptureHelper {
   /// [context] 调用方 BuildContext
   /// [posterWidget] 海报内容组件（宽度固定，高度自适应）
   /// [posterWidth] 海报宽度（像素）
-  /// [posterHeight] 海报高度（像素，可选；传入时固定高度）
   /// [title] 预览弹窗标题
   /// [fileNamePrefix] 临时文件名前缀
   /// [onError] 截图失败回调（可选）
+  ///
+  /// 全部统一走"内容自适应高度"渲染：海报宽度固定为 [posterWidth]，
+  /// 高度由内容决定（Column mainAxisSize.min 收缩），捕获层按内容实际高度
+  /// 截图。这样各海报（邀请/计划/笔记/动作教学）内容行数动态变化时，
+  /// 既不会 RenderFlex 溢出，也不留底部空白，底部二维码也能完整显示、
+  /// 不被固定高度裁剪。
   static Future<void> captureAndPreview(
     BuildContext context, {
     required Widget posterWidget,
     required double posterWidth,
-    double? posterHeight,
     required String title,
     String fileNamePrefix = 'fittrack_poster',
     void Function(String error)? onError,
@@ -45,7 +49,19 @@ class PosterCaptureHelper {
     // 导致 debugNeedsPaint 永远为 true，截图轮询超时抛
     // "RepaintBoundary 尚未完成绘制，请重试"。
     // 因此海报放在 left:0/top:0（屏上），并用不透明遮罩盖住避免闪现。
-    // 仅固定宽度，高度默认随内容自适应；传入 [posterHeight] 时固定高度。
+    // 仅固定宽度，高度随内容自适应：
+    // Positioned 带确定宽度 + 一个"有限大"的兜底高度，内部用
+    // OverflowBox(minHeight:0, maxHeight: 兜底高) 包裹 RepaintBoundary，
+    // 让海报内容按实际高度 min 收缩（MainAxisSize.min）。
+    //  - 不能给 OverflowBox(maxHeight: Infinity)：会把 OverflowBox 尺寸
+    //    解析成 Infinity → "given an infinite size"。
+    //  - 兜底高只需大于真实内容高度即可，实际 RepaintBoundary 会随内容
+    //    收缩到真实高度，因此固定高度大的海报（动作教学/计划等）也不会
+    //    留底部空白，也不会因设置过高而下端被屏幕/父级钳制。
+    //
+    // 内容自适应海报的兜底高（海报宽度的 5.5 倍）。这是"有限大"的上限，
+    // 只作保险，实际 RepaintBoundary 会随内容 min 收缩到真实高度。
+    final variableMaxHeight = posterWidth * 5.5;
     late OverlayEntry entry;
     entry = OverlayEntry(
       builder: (_) => Stack(
@@ -54,16 +70,19 @@ class PosterCaptureHelper {
             left: 0,
             top: 0,
             width: posterWidth,
-            // 不写死 height：Positioned 给子级"宽度固定、高度无界"的松约束。
-            // 海报根组件为 SizedBox(width)+Column(mainAxisSize.min)，会按内容
-            // 自适应出有限高度。注意：不能用 OverflowBox(maxHeight: Infinity)，
-            // 它会把自己尺寸解析成 Infinity 导致 RenderConstrainedOverflowBox
-            // 报"given an infinite size"。直接放 RepaintBoundary 即可。
+            height: variableMaxHeight,
             child: Material(
               color: Colors.transparent,
-              child: RepaintBoundary(
-                key: boundaryKey,
-                child: posterWidget,
+              child: OverflowBox(
+                minWidth: posterWidth,
+                maxWidth: posterWidth,
+                minHeight: 0,
+                maxHeight: variableMaxHeight,
+                alignment: Alignment.topLeft,
+                child: RepaintBoundary(
+                  key: boundaryKey,
+                  child: posterWidget,
+                ),
               ),
             ),
           ),

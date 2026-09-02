@@ -5,9 +5,7 @@ import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
 import '../data/tutorial_content.dart';
 import '../services/invitation_service.dart';
-import '../services/poster_generator.dart';
 import 'common_widgets.dart';
-import 'poster_preview_dialog.dart';
 import 'poster_capture_helper.dart';
 import 'poster_theme.dart';
 import 'tutorial_poster.dart';
@@ -417,102 +415,28 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
     FitToast.success(context, '已复制到剪贴板');
   }
 
-  /// 海报分享：通过 [Overlay] 离屏渲染 [TutorialPoster]，
-  /// 用 [PosterGenerator.capture] 截图，最后弹出 [PosterPreviewDialog]。
-  ///
-  /// 参考 Task 2 invitation_page._shareCode 的实现模式：
-  /// - [OverlayEntry] + [Positioned] 移出可视区
-  /// - [OverflowBox] 固定 1080×1920 海报尺寸
-  /// - [RepaintBoundary] 包裹海报供截图
-  /// - 多帧等待确保 layout + paint 完成
+  /// 海报分享：复用 [PosterCaptureHelper.captureAndPreview] 的统一离屏渲染
+  /// 流程（与邀请/计划/健身房海报一致），内部已处理：
+  /// - OHOS 屏幕内渲染 + 遮罩（避免纯离屏 RepaintBoundary 不可 paint）
+  /// - 内容自适应高度（Path B，OverflowBox 有限 maxHeight + 收缩截图），
+  ///   步骤数与是否有图动态变化都不再触发 RenderFlex overflow
+  /// - MouseTracker 断言屏蔽、paint 轮询等待、截图、预览弹窗、成就上报
   Future<void> _sharePoster(Tutorial t) async {
     if (_sharing) return;
     setState(() => _sharing = true);
     try {
-      final boundaryKey = GlobalKey();
-      final overlay = Overlay.of(context);
-      const posterWidth = TutorialPoster.posterWidth;
-
-      late OverlayEntry entry;
-      // 海报必须渲染在可视区域内：
-      // OHOS fork 引擎不会 paint 完全离屏（负坐标）的 RepaintBoundary，
-      // 导致 debugNeedsPaint 永远为 true，截图轮询超时抛
-      // "RepaintBoundary 尚未完成绘制，请重试"。
-      // 因此海报放在 left:0/top:0（屏上），并用不透明遮罩盖住避免闪现。
-      // 仅固定宽度，高度随内容自适应（可变高度，能展示全部步骤）。
-      entry = OverlayEntry(
-        builder: (_) => Stack(
-          children: [
-            Positioned(
-              left: 0,
-              top: 0,
-              width: posterWidth,
-              // 高度不写死：Positioned 给松约束，海报按内容自适应出有限高度。
-              // 不能用 OverflowBox(maxHeight: Infinity)——它会把自身尺寸解析为
-              // Infinity，触发 RenderConstrainedOverflowBox "given an infinite size"。
-              child: Material(
-                color: Colors.transparent,
-                child: RepaintBoundary(
-                  key: boundaryKey,
-                  child: TutorialPoster(
-                    tutorial: t,
-                    inviteCode: _inviteCode,
-                    steps: _steps,
-                    qrData: 'fittrack://tutorial?id=${t.id}',
-                  ),
-                ),
-              ),
-            ),
-            // 不透明遮罩：盖住屏上的海报，视觉上无感
-            Positioned.fill(
-              child: ColoredBox(color: colors.bgSecondary),
-            ),
-            // 加载指示：点击分享立即出现 loading，而非"整屏纯色容器"
-            Positioned.fill(
-              child: PosterBusyOverlay(colors: colors),
-            ),
-          ],
+      await PosterCaptureHelper.captureAndPreview(
+        context,
+        posterWidget: TutorialPoster(
+          tutorial: t,
+          inviteCode: _inviteCode,
+          steps: _steps,
+          qrData: 'fittrack://tutorial?id=${t.id}',
         ),
+        posterWidth: TutorialPoster.posterWidth,
+        title: '动作分享海报',
+        fileNamePrefix: 'fittrack_tutorial',
       );
-
-      // OHOS 引擎 bug 修复：OHOS Flutter 引擎在帧绘制时会重入触发
-      // MouseTracker.updateAllDevices，导致 !_debugDuringDeviceUpdate 断言失败。
-      // 临时屏蔽该错误，确保帧绘制正常完成。
-      final originalOnError = FlutterError.onError;
-      FlutterError.onError = (FlutterErrorDetails details) {
-        final errorStr = details.exception.toString();
-        if (errorStr.contains('_debugDuringDeviceUpdate') ||
-            errorStr.contains('MouseTracker')) {
-          return;
-        }
-        originalOnError?.call(details);
-      };
-
-      overlay.insert(entry);
-
-      // paint 等待已统一收敛到 PosterGenerator.capture 内部，
-      // 此处不再使用固定 30ms 等待（首帧 paint 未完成时调用 toImage 会触发
-      // '!debugNeedsPaint' 断言）。
-      try {
-        final imagePath = await PosterGenerator.capture(
-          boundaryKey,
-          fileNamePrefix: 'fittrack_tutorial',
-        );
-        entry.remove();
-        if (!mounted) return;
-        await PosterPreviewDialog.show(
-          context,
-          imagePath: imagePath,
-          title: '动作分享海报',
-        );
-      } catch (e) {
-        entry.remove();
-        if (!mounted) return;
-        FitToast.error(context, '海报生成失败：$e');
-      } finally {
-        // 恢复原始错误处理
-        FlutterError.onError = originalOnError;
-      }
     } finally {
       if (mounted) {
         setState(() => _sharing = false);
