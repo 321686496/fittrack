@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiftTrack · 主题皮肤 · 卡片式作品集</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Noto Sans SC',-apple-system,"PingFang SC",sans-serif;
+    background:#141012;
+    padding:50px 30px;
+  }
+  .canvas{
+    max-width:860px;margin:0 auto;background:#141012;
+    border-radius:36px;padding:40px 36px;
+  }
+
+  /* ===== 竖版页头 ===== */
+  .banner-head{margin-bottom:36px;padding:0 6px;}
+  .banner-head .kicker{font-size:13px;font-weight:700;letter-spacing:5px;color:#FFB98A;margin-bottom:16px;}
+  .banner-head h1{font-size:46px;font-weight:900;color:#FFF;line-height:1.1;letter-spacing:-1px;}
+  .banner-head .sub{font-size:17px;color:#9a8f86;margin-top:14px;line-height:1.6;}
+  .banner-head .sub b{color:#FFB98A;}
+  .banner-head .pips{margin-top:22px;display:flex;gap:6px;}
+  .banner-head .pip{width:40px;height:5px;border-radius:3px;background:#3a2f2a;}
+  .banner-head .pip.on{background:#FF6B35;}
+
+  /* ===== 皮肤墙：2列错落 ===== */
+  .wall{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+
+  .skin-card{
+    background:#201a17;border-radius:24px;
+    padding:14px 12px 16px;position:relative;
+    border:1px solid rgba(255,255,255,.06);
+    transition:transform .25s ease;
+    box-shadow:0 18px 40px rgba(0,0,0,.35);
+    overflow:hidden;
+  }
+  .skin-card.odd{transform:translateY(0);}
+  .skin-card.odd .phone{margin-top:8px;}
+  .skin-card:hover{transform:translateY(-6px);}
+
+  /* 卡片顶部主题色条 */
+  .skin-card .colorbar{height:8px;border-radius:20px;margin-bottom:14px;}
+
+  /* 主题名徽章 */
+  .skin-card .name{
+    display:flex;align-items:center;gap:8px;
+    font-size:15px;font-weight:700;color:#fff;
+    margin-bottom:4px;padding:0 6px;
+  }
+  .skin-card .name .dot{width:9px;height:9px;border-radius:50%;}
+
+  /* 手机屏：保持截图不截断 */
+  .phone{
+    border-radius:16px;overflow:hidden;background:#000;
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 10px 26px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.04);
+    aspect-ratio:9/19.5;
+    display:flex;align-items:flex-start;justify-content:center;
+    position:relative;
+  }
+  .phone img{width:100%;height:100%;object-fit:contain;}
+
+  /* ===== 底部 CTA ===== */
+  .banner-cta{margin-top:34px;text-align:center;}
+  .banner-cta .btn{
+    display:inline-block;background:linear-gradient(135deg,#FF6B35,#FF8C5A);
+    color:#fff;font-weight:700;font-size:17px;letter-spacing:2px;
+    padding:16px 46px;border-radius:40px;
+    box-shadow:0 12px 30px rgba(255,107,53,.4);
+  }
+
+  .actions{margin-top:40px;display:flex;gap:14px;justify-content:center;}
+  .btn{padding:14px 34px;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+  .btn-main{background:#FF6B35;color:#fff;}
+  .btn-ghost{background:#fff;color:#333;border:1px solid #ddd;}
+  .tip{max-width:860px;margin:20px auto 0;color:#8a7f76;font-size:14px;line-height:1.9;text-align:center;}
+
+  @media print{
+    body{background:#fff;padding:0;}
+    .actions,.tip{display:none;}
+    .canvas{border-radius:0;background:#141012;padding:40px 30px;}
+    .skin-card{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- 竖版页头 -->
+  <div class="banner-head">
+    <div class="kicker">THEMES · 主题皮肤</div>
+    <h1>多种主题<br>任你挑选</h1>
+    <div class="sub">从<b>活力橙</b>到<b>柔粉</b>、<b>暗夜紫</b>…<br>换一种主题，换一种训练心情</div>
+    <div class="pips"><span class="pip on"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+  </div>
+
+  <!-- 皮肤墙 -->
+  <div class="wall" id="wall"></div>
+
+  <!-- CTA -->
+  <div class="banner-cta"><span class="btn">现在换肤</span></div>
+
+</div>
+
+<div class="actions">
+  <button class="btn btn-main" onclick="window.print()">打印 / 导出为 PDF</button>
+  <button class="btn btn-ghost" onclick="location.reload()">重新加载</button>
+</div>
+<div class="tip">
+  7 张主题首页来自 assets/ohos/skins/，手机屏用 object-fit:contain 完整展示不裁切。<br>
+  如需加入第 8 套，往下方数组里加一条即可。
+</div>
+
+<script>
+  const skins = [
+    { src:'assets/ohos/skins/28287ac7-b2e3-47b7-84f9-cee669efc21e.png', name:'暗夜紫', color:'#9D4EDD' },
+    { src:'assets/ohos/skins/2a6d8d1e-be3d-412f-a971-1ac6c6b0c99b.png', name:'奢华金', color:'#D4A017' },
+    { src:'assets/ohos/skins/463c0402-6f16-4a89-aa3a-60d8703f5dde.png', name:'清爽蓝', color:'#3B82F6' },
+    { src:'assets/ohos/skins/65e85acd-2184-402a-b0b4-27585b9848e3.png', name:'硬核红', color:'#A04040' },
+    { src:'assets/ohos/skins/6aac62ea-561f-49df-9b5c-5638c832174c.png', name:'活力橙', color:'#FF6B35' },
+    { src:'assets/ohos/skins/a7737bf5-874e-4891-a2cd-847ce5e20762.png', name:'薄荷绿', color:'#2FBF8F' },
+    { src:'assets/ohos/skins/ea748719-226e-4bd8-8e55-82b5084d88d9.png', name:'柔粉',   color:'#F9A8D4' },
+  ];
+
+  const wall = document.getElementById('wall');
+  skins.forEach((s,i)=>{
+    const card = document.createElement('div');
+    card.className = 'skin-card';
+    card.innerHTML = `
+      <div class="colorbar" style="background:linear-gradient(90deg,${s.color},#ff8c5a)"></div>
+      <div class="name"><span class="dot" style="background:${s.color}"></span>${s.name}</div>
+      <div class="phone"><img src="${s.src}" alt="${s.name}"></div>
+    `;
+    wall.appendChild(card);
+  });
+</script>
+
+</body>
+</html>

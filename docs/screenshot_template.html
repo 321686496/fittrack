@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiftTrack · 应用商店截图</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', -apple-system, "PingFang SC", sans-serif;
+    background: #1a1a1a;
+    padding: 60px 40px;
+    min-height: 100vh;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .page-header h1 {
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 12px;
+    letter-spacing: -1px;
+  }
+
+  .page-header p {
+    font-size: 16px;
+    color: #888;
+  }
+
+  .grid {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+
+  @media (max-width: 1400px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; max-width: 420px; }
+  }
+
+  .screenshot-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 19.3;
+    border-radius: 28px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #FFFAF7 0%, #FFF5EE 50%, #FFF0E6 100%);
+    box-shadow:
+      0 30px 80px rgba(255,107,53,0.15),
+      0 8px 24px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .screenshot-card:hover {
+    transform: translateY(-8px);
+    box-shadow:
+      0 40px 100px rgba(255,107,53,0.22),
+      0 12px 32px rgba(0,0,0,0.12);
+  }
+
+  /* 文案区 */
+  .text-zone {
+    padding: 36px 32px 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .text-zone::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,107,53,0.2), transparent);
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #FF6B35;
+    background: rgba(255,107,53,0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .headline {
+    font-size: 28px;
+    font-weight: 900;
+    color: #1a1a1a;
+    line-height: 1.3;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* 手机区 */
+  .phone-zone {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 28px 28px;
+    position: relative;
+  }
+
+  /* 装饰元素 */
+  .phone-zone::before {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .phone-frame {
+    position: relative;
+    width: 85%;
+    max-width: 260px;
+    aspect-ratio: 9 / 19.3;
+    background: #0a0a0a;
+    border-radius: 36px;
+    padding: 8px;
+    box-shadow:
+      0 20px 50px rgba(0,0,0,0.2),
+      0 4px 12px rgba(0,0,0,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    background: #FAFAFA;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .phone-screen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 24px;
+    background: #0a0a0a;
+    border-radius: 0 0 16px 16px;
+    z-index: 5;
+  }
+
+  .placeholder-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    text-align: center;
+    padding: 20px;
+    gap: 12px;
+  }
+
+  .placeholder-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .placeholder-text {
+    font-size: 13px;
+    color: #999;
+  }
+
+  .placeholder-hint {
+    font-size: 11px;
+    color: #bbb;
+  }
+
+  /* 角标 */
+  .card-number {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #FF6B35;
+    z-index: 3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  /* 装饰线 */
+  .deco-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #FF6B35, #FF8C5A, #FFB088);
+    opacity: 0.6;
+  }
+
+  /* 导出按钮 */
+  .actions {
+    max-width: 1600px;
+    margin: 48px auto 0;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .btn {
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .btn-primary {
+    background: #FF6B35;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(255,107,53,0.3);
+  }
+
+  .btn-primary:hover {
+    background: #e55a28;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255,107,53,0.4);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* 使用说明 */
+  .usage {
+    max-width: 1600px;
+    margin: 48px auto 0;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 24px 32px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .usage h3 {
+    color: #fff;
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .usage ol {
+    color: #aaa;
+    padding-left: 20px;
+    line-height: 1.8;
+    font-size: 14px;
+  }
+
+  .usage code {
+    background: rgba(255,107,53,0.15);
+    color: #FF8C5A;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  /* 打印优化 */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page-header, .actions, .usage { display: none; }
+    .grid { gap: 24px; }
+    .screenshot-card { box-shadow: 0 4px 16px rgba(0,0,0,0.1); page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>LiftTrack</h1>
+  <p>应用商店上架截图 · 8 张完整版</p>
+</div>
+
+<div class="grid">
+
+  <!-- 截图 1：实时组数 -->
+  <div class="screenshot-card">
+    <div class="card-number">1</div>
+    <div class="text-zone">
+      <div class="badge">实时训练</div>
+      <div class="headline">练到第几组，不用记</div>
+      <div class="subtitle">边练边点，当前组一按高亮，第几组/重量/次数一目了然</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon"></div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s1.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- 截图 2：休息倒计时 -->
+  <div class="screenshot-card">
+    <div class="card-number">2</div>
+    <div class="text-zone">
+      <div class="badge">休息计时</div>
+      <div class="headline">休息多久，它替你数</div>
+      <div class="subtitle">每组结束自动倒计时，到点震动提醒「该练下一组」</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">️</div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s2.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- 截图 3：今日训练 -->
+  <div class="screenshot-card">
+    <div class="card-number">3</div>
+    <div class="text-zone">
+      <div class="badge">锻炼提醒</div>
+      <div class="headline">今天练哪，它提醒你</div>
+      <div class="subtitle">按计划告诉你今天该练哪个部位，到点还会提醒</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">📋</div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s3.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- 截图 4：训练计划 -->
+  <div class="screenshot-card">
+    <div class="card-number">4</div>
+    <div class="text-zone">
+      <div class="badge">计划库</div>
+      <div class="headline">不知练什么？计划库任你选</div>
+      <div class="subtitle">新手全身 / 增肌塑形 / 居家零器械，跟着练就行</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">📚</div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s4.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- 截图 5：教学模块 -->
+  <div class="screenshot-card">
+    <div class="card-number">5</div>
+    <div class="text-zone">
+      <div class="badge">动作教学</div>
+      <div class="headline">动作不会？手把手教</div>
+      <div class="subtitle">动作图文教程 + 系统课程，练得安全、练得明白</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">🎓</div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s5.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- 截图 6：虚拟对手 -->
+  <div class="screenshot-card">
+    <div class="card-number">6</div>
+    <div class="text-zone">
+      <div class="badge">陪伴坚持</div>
+      <div class="headline">有个对手，陪你坚持</div>
+      <div class="subtitle">为你匹配一个虚拟对手，一起推进，练完还分胜负</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">🥊</div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s6.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- 截图 7：分享海报 -->
+  <div class="screenshot-card">
+    <div class="card-number">7</div>
+    <div class="text-zone">
+      <div class="badge">分享突破</div>
+      <div class="headline">练完生成一张，晒出你的突破</div>
+      <div class="subtitle">一键生成训练海报，分享到朋友圈，记录每一次进步</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">🖼️</div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s7.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+  <!-- 截图 8：邀请有礼 -->
+  <div class="screenshot-card">
+    <div class="card-number">8</div>
+    <div class="text-zone">
+      <div class="badge">邀请裂变</div>
+      <div class="headline">叫上朋友，一起练、一起拿礼</div>
+      <div class="subtitle">邀请好友解锁进阶教程、专属皮肤与惊喜奖励</div>
+    </div>
+    <div class="phone-zone">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">🎁</div>
+            <div class="placeholder-text">请放入真实截图</div>
+            <div class="placeholder-hint">screenshots/s8.png</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deco-line"></div>
+  </div>
+
+</div>
+
+<div class="actions">
+  <button class="btn btn-primary" onclick="window.print()">打印 / 另存为 PDF</button>
+  <button class="btn btn-secondary" onclick="togglePreview()">切换预览模式</button>
+</div>
+
+<div class="usage">
+  <h3>使用步骤</h3>
+  <ol>
+    <li>从模拟器/App 截取 8 个对应页面，保存为 <code>s1.png</code> ~ <code>s8.png</code>，放到同级 <code>screenshots/</code> 文件夹</li>
+    <li>浏览器打开本文件，截图会自动填入手机屏幕</li>
+    <li>点击「打印 / 另存为 PDF」，在打印对话框选择「另存为 PDF」，即可得到上架用 PDF（可用工具转 PNG）</li>
+    <li>或用浏览器截图扩展（如 GoFullPage）直接截取整页</li>
+  </ol>
+</div>
+
+<script>
+  // 自动加载截图
+  document.addEventListener('DOMContentLoaded', () => {
+    for (let i = 1; i <= 8; i++) {
+      const imgPath = `./screenshots/s${i}.png`;
+      const card = document.querySelectorAll('.screenshot-card')[i - 1];
+      const screen = card.querySelector('.phone-screen');
+      const placeholder = screen.querySelector('.placeholder-content');
+
+      const img = new Image();
+      img.onload = () => {
+        placeholder.style.display = 'none';
+        img.style.display = 'block';
+        screen.insertBefore(img, screen.firstChild);
+      };
+      img.onerror = () => {
+        // 截图不存在，保留占位
+      };
+      img.src = imgPath;
+    }
+  });
+
+  function togglePreview() {
+    document.body.style.background =
+      document.body.style.background === 'rgb(26, 26, 26)' ? '#f5f5f5' : '#1a1a1a';
+  }
+</script>
+
+</body>
+</html>

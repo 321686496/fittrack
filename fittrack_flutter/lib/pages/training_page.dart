@@ -155,6 +155,13 @@ class _TrainingPageState extends State<TrainingPage>
 
   @override
   void dispose() {
+    // 无论以何种方式退出训练页（返回按钮 / Android 系统返回 / iOS 侧滑返回 /
+    // 完成训练返回首页），页面 State 被销毁时统一恢复卡片空闲态并清理休息提醒。
+    // 注：不能使用 WillPopScope 拦截系统返回 —— 该组件会注册 scoped willPop
+    // 回调，导致 Flutter 的 _isPopGestureEnabled 返回 false，从而禁用 iOS
+    // 侧滑返回手势。dispose() 是页面被移除时的统一生命周期回调，且本项目的
+    // GoRouter 实例稳定（主题切换不会重建路由），不会因页面重建被误触发。
+    _resetWidgetOnExit();
     WidgetsBinding.instance.removeObserver(this);
     _restTimer?.cancel();
     _persistenceTimer?.cancel();
@@ -188,8 +195,9 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   /// 真正退出训练页时，恢复卡片空闲态并清理休息提醒。
-  /// 只在用户主动离开（返回按钮 / 系统返回 / 保存返回）时调用，
-  /// 不放在 dispose() 中，避免 go_router 页面重建时被误重置。
+  /// 在页面 State 销毁（dispose）时统一调用，覆盖返回按钮 / 系统返回 /
+  /// iOS 侧滑返回 / 完成训练返回首页等所有退出路径。
+  /// 恢复过程中可能被 go_router 重建销毁，多次调用均为幂等操作。
   ///
   /// 修复 Issue：退出训练页前必须取消未触发的休息结束提醒并停止实况窗，
   /// 否则（尤其 OHOS 原生 reminderAgent 代理提醒）离开后仍会收到"休息结束"通知。
@@ -1066,15 +1074,11 @@ class _TrainingPageState extends State<TrainingPage>
 
   @override
   Widget build(BuildContext context) {
-    // 用 WillPopScope 兜底系统返回键：退出训练页时把卡片恢复为空闲态。
-    // 返回 true 放行默认的 pop 行为。
-    return WillPopScope(
-      onWillPop: () async {
-        _resetWidgetOnExit();
-        return true;
-      },
-      child: _buildBody(),
-    );
+    // 直接返回页面内容，不再包裹 WillPopScope：
+    // WillPopScope 会注册 scoped willPop 回调，使 Flutter 判定该路由
+    // "可能被拦截"而禁用 iOS 侧滑返回手势（_isPopGestureEnabled 返回 false）。
+    // 退出清理逻辑已统一迁移到 dispose() 中执行。
+    return _buildBody();
   }
 
   Widget _buildBody() {

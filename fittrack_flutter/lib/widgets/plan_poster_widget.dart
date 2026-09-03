@@ -256,13 +256,14 @@ class PlanPosterWidget extends StatelessWidget {
               errorCorrectionLevel: QrErrorCorrectLevel.L,
               gapless: true,
               backgroundColor: Colors.white,
+              // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
               eyeStyle: QrEyeStyle(
                 eyeShape: QrEyeShape.square,
-                color: colors.textPrimary,
+                color: const Color(0xFF1C1C1E),
               ),
               dataModuleStyle: QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.square,
-                color: colors.textPrimary,
+                color: const Color(0xFF1C1C1E),
               ),
               errorStateBuilder: (context, error) => Center(
                 child: Icon(Icons.fitness_center,

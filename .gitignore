@@ -16,3 +16,6 @@ __pycache__/
 
 # 中间处理图片产物
 scripts/*.png
+
+# 素材临时备份
+.image_backup/

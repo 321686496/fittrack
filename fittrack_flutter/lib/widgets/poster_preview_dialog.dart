@@ -41,9 +41,6 @@ class PosterPreviewDialog {
       barrierDismissible: true,
       builder: (ctx) {
         final ft = Theme.of(ctx).extension<LiftTrackColors>()!;
-        final mediaSize = MediaQuery.of(ctx).size;
-        // 海报图片最大高度 = 屏幕高度 - 标题栏 - 底部按钮区 - 内边距
-        final maxImageHeight = mediaSize.height - 220;
 
         return Dialog(
           backgroundColor: Colors.transparent,
@@ -89,12 +86,12 @@ class PosterPreviewDialog {
                   ),
                 ),
                 // ── 中间：海报图片预览（卡片内嵌套，圆角 + 内边距）
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: maxImageHeight > 0 ? maxImageHeight : 400,
-                    ),
+                // 用 Flexible + SingleChildScrollView 承载图片：即使海报很高
+                // （内容自适应海报）也只会内部滚动，而不会把整列撑出弹窗
+                // 导致 RenderFlex overflow；9:16 固定海报在窗口内完整显示。
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
                       child: Image.file(
