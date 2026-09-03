@@ -457,13 +457,14 @@ class InvitePoster extends StatelessWidget {
               version: QrVersions.auto,
               gapless: true,
               backgroundColor: Colors.white,
+              // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
               eyeStyle: QrEyeStyle(
                 eyeShape: QrEyeShape.square,
-                color: colors.textPrimary,
+                color: const Color(0xFF1C1C1E),
               ),
               dataModuleStyle: QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.square,
-                color: colors.textPrimary,
+                color: const Color(0xFF1C1C1E),
               ),
               // 兜底：数据过长无法编码时，避免渲染成白底空容器
               errorStateBuilder: (context, error) => Center(
@@ -528,14 +529,20 @@ class InvitePoster extends StatelessWidget {
           ),
         ),
         SizedBox(height: px(7)),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _downloadPill(
-                colors, Icons.grid_view_rounded, '华为应用市场 · LiftTrack'),
-            SizedBox(width: px(6)),
-            _downloadPill(colors, Icons.apple, 'App Store · LiftTrack'),
-          ],
+        // 左右并排两个下载按钮（原布局）。为防英文门店名较长时水平溢出，
+        // 用 FittedBox(scaleDown) 包裹：放得下就原比例显示，放不下自动等比缩小，
+        // 始终保持左右排布、不溢出。
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _downloadPill(
+                  colors, Icons.grid_view_rounded, '华为应用市场 · LiftTrack'),
+              SizedBox(width: px(6)),
+              _downloadPill(colors, Icons.apple, 'App Store · LiftTrack'),
+            ],
+          ),
         ),
       ],
     );

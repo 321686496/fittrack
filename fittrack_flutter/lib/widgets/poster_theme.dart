@@ -420,9 +420,9 @@ class PosterQrFooter extends StatelessWidget {
       children: [
         // 二维码
         Container(
-          width: px(46),
-          height: px(46),
-          padding: EdgeInsets.all(px(4)),
+          width: px(50),
+          height: px(50),
+          padding: EdgeInsets.all(px(3)),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(px(11)),
@@ -439,13 +439,15 @@ class PosterQrFooter extends StatelessWidget {
             version: QrVersions.auto,
             gapless: true,
             backgroundColor: Colors.white,
+            // 二维码用近黑色高对比绘制，避免使用主题 textPrimary（部分浅色主题
+            // 下颜色太浅，整体缩小后几乎看不清，也影响扫码）。
             eyeStyle: QrEyeStyle(
               eyeShape: QrEyeShape.square,
-              color: colors.textPrimary,
+              color: const Color(0xFF1C1C1E),
             ),
             dataModuleStyle: QrDataModuleStyle(
               dataModuleShape: QrDataModuleShape.square,
-              color: colors.textPrimary,
+              color: const Color(0xFF1C1C1E),
             ),
             // 兜底：数据过长无法编码时，避免渲染成白底空容器
             errorStateBuilder: (context, error) => Center(
