@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiftTrack · 主题皮肤上架图</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+    background: #111;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 30px 20px;
+  }
+
+  /* ===== 全屏竖版画布（9:16 上架规格比例）===== */
+  .poster {
+    position: relative;
+    width: 900px;
+    height: 1600px;            /* 9:16 */
+    background: radial-gradient(circle at 30% 8%, #2b2326, #151517 78%);
+    overflow: hidden;
+    border-radius: 16px;
+  }
+
+  /* ---- 顶部：标题 + 描述 ---- */
+  .head { text-align: left; padding: 64px 48px 0 48px; }
+  .head .tag {
+    font-size: 15px; letter-spacing: 6px; color: #ffb98a;
+    font-weight: 700; text-transform: uppercase;
+  }
+  .head h1 { font-size: 62px; font-weight: 900; color: #fff; line-height: 1.15; margin-top: 14px; }
+  .head h1 .accent { color: #ff6b35; }
+  .head p { font-size: 17px; color: #c8bab0; line-height: 1.7; margin-top: 16px; max-width: 620px; }
+
+  /* ---- 主体：左右两栏 ---- */
+  .body { position: absolute; left: 0; right: 0; top: 250px; bottom: 60px; }
+
+  /* 左栏：主题色卡列表 */
+  .left {
+    position: absolute; left: 40px; top: 0; bottom: 0;
+    width: 240px;
+    display: flex; flex-direction: column; justify-content: center; gap: 26px;
+    z-index: 5;
+  }
+  .left .item { display: flex; align-items: center; gap: 16px; }
+  .left .dot { width: 26px; height: 26px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255,255,255,.12); flex: none; }
+  .left .name { font-size: 20px; color: #efe4dc; font-weight: 600; letter-spacing: 1px; }
+
+  /* 右栏：扇形卡片区（扇心在右栏下中部）*/
+  .fanwrap {
+    position: absolute; left: 250px; right: 10px; top: 0; bottom: 0;
+    z-index: 1;
+  }
+  .card {
+    position: absolute;
+    left: 0; top: 0;
+    width: 0; height: 0;
+    transform-origin: 50% 100%;   /* 以手机底部中心为定位+旋转轴 */
+  }
+  .card .phone {
+    position: absolute; left: 0; top: 0;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 18px 40px rgba(0,0,0,.55), 0 0 0 3px var(--c);
+    border: 1px solid rgba(255,255,255,.06);
+    transform-origin: 50% 100%;
+  }
+  .card img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+  /* ---- 底部 CTA ---- */
+  .cta {
+    position: absolute; left: 300px; right: 40px; bottom: 52px;
+    height: 74px; border-radius: 37px;
+    background: linear-gradient(135deg,#ff6b35,#ff8a5c);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 3px;
+    box-shadow: 0 10px 30px rgba(255,107,53,.4); z-index: 6;
+  }
+</style>
+</head>
+<body>
+
+  <!-- 提示条 -->
+  <div style="color:#888;font-size:13px;text-align:center;max-width:900px;line-height:1.6;margin-bottom:18px;">
+    布局预览：<b>顶部标题 → 左栏主题色卡 → 右栏<180°纵向扇形</b>。
+    当前为 assets/ohos/skins/ 下 <b id="cnt">7</b> 张主题图，若你有第 8 张皮肤图再补充。
+  </div>
+
+  <div class="poster">
+    <div class="head">
+      <div class="tag">THEMES · 风格主题</div>
+      <h1>多种主题<br><span class="accent">任你挑选</span></h1>
+      <p>每种训练，配一种心情。深色耐看、莫兰迪温柔、活力更燃——0 位杂念，风格随心换。</p>
+    </div>
+
+    <div class="body">
+      <div class="left" id="left"></div>
+      <div class="fanwrap" id="fan"></div>
+    </div>
+
+    <div class="cta">立即切换主题</div>
+  </div>
+
+<script>
+  // (文件, 主题名, 主题色) —— 当前 assets/ohos/skins 下的顺序可对应调整
+  const SKINS = [
+    ["6aac62ea-561f-49df-9b5c-5638c832174c.png","活力运动","#FF6B35"],
+    ["65e85acd-2184-402a-b0b4-27585b9848e3.png","硬核铁馆","#EF4444"],
+    ["ea748719-226e-4bd8-8e55-82b5084d88d9.png","柔美花语","#EC4899"],
+    ["a7737bf5-874e-4891-a2cd-847ce5e20762.png","长者关怀","#059669"],
+    ["463c0402-6f16-4a89-aa3a-60d8703f5dde.png","清新极简","#0EA5E9"],
+    ["28287ac7-b2e3-47b7-84f9-cee669efc21e.png","赛博霓虹","#D946EF"],
+    ["2a6d8d1e-be3d-412f-a971-1ac6c6b0c99b.png","黑金尊享","#F59E0B"],
+  ];
+
+  // ---- 左栏色卡 ----
+  const left = document.getElementById('left');
+  SKINS.forEach(([f,name,color])=>{
+    const it = document.createElement('div');
+    it.className = 'item';
+    it.innerHTML = `<div class="dot" style="background:${color}"></div><div class="name">${name}</div>`;
+    left.appendChild(it);
+  });
+
+  // ---- 右栏纵向扇形 ----
+  const fan = document.getElementById('fan');
+  // 扇心取右栏内偏右的位置，手机向上成<180°扇形
+  const cx = 400;                          // 扇心 x（相对 fanwrap 左侧）
+  const cy = 1180;                         // 扇心 y（相对 fanwrap 顶，向下张开）
+  const R = 300;                           // 手机底部中心到扇心
+  const halfA = 40;                        // 半张角 → 总角 80° < 180（纵向）
+  const baseW = 156;                       // 中心手机宽
+  const RATIO = 1292/588;                  // 手机长宽比
+
+  SKINS.forEach((src,i)=>{
+    const [file,name,color] = src;
+    const a = -halfA + (i/(SKINS.length-1))*(2*halfA);
+    const rad = a*Math.PI/180;
+    // 手机底部中心落点在弧上
+    const bx = cx + R*Math.sin(rad);
+    const by = cy - R*Math.cos(rad);
+    const scale = 1 - 0.30*Math.abs(a)/halfA;
+    const w = Math.round(baseW*scale);
+    const h = Math.round(w*RATIO);
+
+    // .phone 直接定位：left/top 使其底部中心落在 (bx,by)，再绕底中旋转
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--c', color);
+    card.style.zIndex = 80 - Math.abs(a);
+    const inner = document.createElement('div');
+    inner.className = 'phone';
+    inner.style.width = w+'px';
+    inner.style.height = h+'px';
+    inner.style.left = Math.round(bx - w/2)+'px';
+    inner.style.top  = Math.round(by - h)+'px';
+    inner.style.transform = `rotate(${a}deg)`;
+    inner.innerHTML = `<img src="../assets/ohos/skins/${file}" alt="${name}">`;
+    card.appendChild(inner);
+    fan.appendChild(card);
+  });
+
+  document.getElementById('cnt').textContent = SKINS.length;
+</script>
+</body>
+</html>
