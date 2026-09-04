@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.cer",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B1F43F2F6CDEBE6342F3CAF76CFD6F594621B258E31E9918DDC33DC40032C15054276941968ECE6",
-          "profile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p7b",
+          "storeFile": "D:/app/projects/health_training/packagefile/packagefile/ohos/public.p12",
+          "storePassword": "0000001981AF816668D37BEA254A838464D62558907855EC8047ECD9BA44344F149D1F7F593CDA2A8F",
+          "keyAlias": "public",
+          "keyPassword": "000000197791216870613E67B321D617C61B120DF0A1FB2C63DEA91A98552E297ABF4DBA85988C3C00",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_t7zOVMJ19qI0LTQvQORg4vQ7z6Ue4m5Kzk7TohLPHxU=.p12",
-          "storePassword": "0000001B0B6FD1EBFDC7477E5C14675F44176C1B18C661F59DC2480348C5E2C82B36B5F5C97D610E8A9961"
+          "profile": "D:/app/projects/health_training/packagefile/packagefile/ohos/lifttrackpublicRelease.p7b",
+          "certpath": "D:/app/projects/health_training/packagefile/packagefile/ohos/public.cer"
         }
       }
     ],

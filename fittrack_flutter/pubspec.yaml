@@ -115,6 +115,7 @@ flutter:
     - assets/images/
     - assets/images/banners/
     - assets/images/art/
+    - assets/images/contact/
     - assets/images/exercises/
     - assets/data/system_plans/
     - assets/sounds/

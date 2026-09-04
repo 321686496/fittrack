@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiftTrack · 主题皮肤扇形墙（纵向竖排）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+    background: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  .page-head { text-align: center; color: #fff; margin-bottom: 30px; }
+  .page-head h1 { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+  .page-head p { color: #b9aaa0; font-size: 13px; margin-top: 8px; }
+  .page-head .tag { color: #ffb98a; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ===== 纵向扇形（握柄在左，扇面向右张开，竖向）===== */
+  .fan-wrap {
+    position: relative;
+    width: 880px;
+    height: 960px;     /* 竖向视窗 */
+    background: radial-gradient(circle at 12% 50%, #2a2326, #161616 75%);
+    border-radius: 24px;
+    box-shadow: inset 0 0 60px rgba(0,0,0,.5);
+    margin-bottom: 30px;
+  }
+  .fan {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0; height: 0;
+    transform-origin: 0 0;
+  }
+  .card {
+    position: absolute;
+    /* 手机自身不旋转，永远竖屏正立 */
+    transform: var(--t);
+    transform-origin: 50% 100%;   /* 以牌底部中心为定位点 */
+    width: var(--w);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 26px rgba(0,0,0,.45), 0 0 0 2px var(--c);
+  }
+  .card img {
+    display: block; width: 100%; height: auto;
+    aspect-ratio: 588 / 1292; object-fit: cover; object-position: top;
+  }
+
+  /* 说明 */
+  .legend { color: #bbb; font-size: 13px; margin-top: 10px; text-align:center; }
+  .legend .dot { display:inline-block; width:10px;height:10px;border-radius:50%;margin:0 4px 0 10px;vertical-align:middle; }
+</style>
+</head>
+<body>
+
+  <div class="page-head">
+    <div class="tag">THEMES · 风格主题</div>
+    <h1>多种主题 任你挑选</h1>
+    <p>纵向竖排 · 绕底部轴旋转展开 · 总角 90°</p>
+  </div>
+
+  <div class="fan-wrap" id="stage">
+    <!-- CSS JS 动态生成 -->
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+<script>
+  // 7 套主题（文件, 主题名, 主题色）
+  const SKINS = [
+    ["6aac62ea-561f-49df-9b5c-5638c832174c.png","活力运动","#FF6B35"],
+    ["65e85acd-2184-402a-b0b4-27585b9848e3.png","硬核铁馆","#EF4444"],
+    ["ea748719-226e-4bd8-8e55-82b5084d88d9.png","柔美花语","#EC4899"],
+    ["a7737bf5-874e-4891-a2cd-847ce5e20762.png","长者关怀","#059669"],
+    ["463c0402-6f16-4a89-aa3a-60d8703f5dde.png","清新极简","#0EA5E9"],
+    ["28287ac7-b2e3-47b7-84f9-cee669efc21e.png","赛博霓虹","#D946EF"],
+    ["2a6d8d1e-be3d-412f-a971-1ac6c6b0c99b.png","黑金尊享","#F59E0B"],
+  ];
+  const n = SKINS.length;
+  const FULL_ANGLE = 90;           // 总展开角 90°（手机纵向竖排，绕底部轴旋转）
+
+  const stage = document.getElementById('stage');
+  const fan = document.createElement('div');
+  fan.className = 'fan';
+  stage.appendChild(fan);
+
+  // === 纵向立式扇形（扇心在舞台底部中央，手机向上成扇形张开，竖屏）===
+  const stageW = 880;
+  const cx0 = stageW/2, cy0 = 920;         // 扇心：底部中央（握柄）
+  const R = 300;                           // 手机底部轴点到扇心的距离
+  const halfA = 36;                        // 两侧展开角（°）→ 总角72°<180
+  const baseW = 185;                       // 中心（最前）手机宽度
+
+  SKINS.forEach((src,i)=>{
+    const [file,name,color] = src;
+    const a = -halfA + (i/(SKINS.length-1))*(2*halfA);
+    const rad = a*Math.PI/180;
+    // 手机底部中心沿弧（中心最高，两侧降低并外展 = 立式扇形）
+    const bx = cx0 + R*Math.sin(rad);
+    const by = cy0 - R*Math.cos(rad);
+    const scale = 1 - 0.28*Math.abs(a)/halfA;
+    const w = Math.round(baseW*scale);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--c', color);
+    card.style.setProperty('--w', w+'px');
+    card.style.setProperty('--t', `translate(${bx}px, ${by}px) rotate(${a}deg)`);
+    card.style.zIndex = 70 - Math.abs(a);
+    card.innerHTML = `<img src="../assets/ohos/skins/${file}" alt="${name}">`;
+    fan.appendChild(card);
+  });
+
+  // 图例
+  const leg = document.getElementById('legend');
+  SKINS.forEach(([f,name,color])=>{
+    leg.innerHTML += `<span class="dot" style="background:${color}"></span>${name}`;
+  });
+</script>
+
+</body>
+</html>
