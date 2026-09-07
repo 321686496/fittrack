@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
@@ -29,6 +30,37 @@ class RomAdaptationHandler(private val context: Context) : MethodChannel.MethodC
 
         fun getManufacturer(): String {
             return Build.MANUFACTURER ?: ""
+        }
+
+        /**
+         * 是否为 HarmonyOS 设备。
+         * 用于 Android 包(兼容层)跑在鸿蒙机上的场景：手机扫码(mobile_scanner)在鸿蒙
+         * 上无原生实现，应直接走相册兜底，避免弹出相机权限。此处按系统 Build 标记识别，
+         * 仅在确为鸿蒙(HarmonyOS)时返回 true；普通华为 EMUI 安卓机不满足标记，仍走相机。
+         */
+        fun isHarmonyOS(): Boolean {
+            val fingerprint = Build.FINGERPRINT?.lowercase() ?: ""
+            val display = Build.DISPLAY?.lowercase() ?: ""
+            val release = Build.VERSION.RELEASE?.lowercase() ?: ""
+            val incremental = Build.VERSION.INCREMENTAL?.lowercase() ?: ""
+            val marketing = try {
+                Build.VERSION.MARKETING_NAME?.lowercase() ?: ""
+            } catch (_: Exception) {
+                ""
+            }
+            Log.d(
+                "RomAdaptation", "harmony-detect fingerprint=$fingerprint " +
+                    "display=$display release=$release incremental=$incremental " +
+                    "marketing=$marketing manufacturer=${Build.MANUFACTURER} model=${Build.MODEL}"
+            )
+            val hit = listOf(fingerprint, display, release, incremental, marketing)
+                .any { it.contains("harmony") || it.contains("鸿蒙") }
+            // 鸿蒙的发行名称通常直接为 "HarmonyOS"，SDK 版本号带 3/4/5
+            val sdkIsHarmony = release.startsWith("harmonyos")
+            if (hit || sdkIsHarmony) {
+                Log.d("RomAdaptation", "harmony-detect = true")
+            }
+            return hit || sdkIsHarmony
         }
 
         fun getGuidanceTitle(): String {
@@ -74,6 +106,7 @@ class RomAdaptationHandler(private val context: Context) : MethodChannel.MethodC
         when (call.method) {
             "isOemRom" -> result.success(isOemRom())
             "getManufacturer" -> result.success(getManufacturer())
+            "isHarmonyOS" -> result.success(isHarmonyOS())
             "getGuidanceTitle" -> result.success(getGuidanceTitle())
             "getGuidanceSteps" -> result.success(getGuidanceSteps())
             "isIgnoringBatteryOptimizations" -> result.success(isIgnoringBatteryOptimizations())

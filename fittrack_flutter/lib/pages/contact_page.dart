@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../data/contact_info.dart';
 import '../themes/app_themes.dart';
+import '../utils/platform_utils.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
+import '../widgets/poster_preview_dialog.dart';
 
 /// 联系我们页面（独立详情页，展示群二维码与群号等联系方式）
 class ContactPage extends StatelessWidget {
@@ -156,7 +161,7 @@ class ContactPage extends StatelessWidget {
     );
   }
 
-  /// 单个二维码区块：图标 + 标签 + 二维码 + 描述 + 复制按钮
+  /// 单个二维码区块：图标 + 标签 + 二维码（点击放大）+ 描述 + 群号复制
   Widget _buildQrCodeSection(
     BuildContext context,
     LiftTrackColors colors,
@@ -186,23 +191,53 @@ class ContactPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-            width: 120,
-            height: 120,
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: colors.borderColor),
-            ),
-            child: Image.asset(
-              'assets/images/contact/${c.type}_qr.png',
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => QrImageView(
-                data: c.qrData ?? c.value,
-                version: QrVersions.auto,
-                size: 108,
-                gapless: true,
+          GestureDetector(
+            onTap: () => _previewQrCode(context, c),
+            child: Container(
+              width: 120,
+              height: 120,
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colors.borderColor),
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.asset(
+                      'assets/images/contact/${c.type}_qr.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => QrImageView(
+                        data: c.qrData ?? c.value,
+                        version: QrVersions.auto,
+                        size: 108,
+                        gapless: true,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 2,
+                    bottom: 2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.45),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.zoom_in, size: 10, color: Colors.white),
+                          SizedBox(width: 2),
+                          Text('点击放大',
+                              style: TextStyle(
+                                  fontSize: 9, color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -212,22 +247,74 @@ class ContactPage extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(color: colors.textMuted, fontSize: 11, height: 1.3),
           ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => _copyValue(context, c),
-            icon: const Icon(Icons.copy_rounded, size: 14),
-            label: const Text('复制群号', style: TextStyle(fontSize: 12)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: colors.accentGlow,
-              side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          if (c.copyable) ...[
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '群号：${c.value}',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 6),
+            OutlinedButton.icon(
+              onPressed: () => _copyValue(context, c),
+              icon: const Icon(Icons.copy_rounded, size: 14),
+              label: const Text('复制群号', style: TextStyle(fontSize: 12)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.accentGlow,
+                side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  /// 点击二维码：复制到临时目录后弹出全屏预览（支持保存到相册 / 系统分享）
+  Future<void> _previewQrCode(
+    BuildContext context,
+    ContactChannel c,
+  ) async {
+    try {
+      // OHOS: getTemporaryDirectory() throws MissingPluginException.
+      // Fall back to system temp dir (same pattern as poster_generator.dart).
+      Directory dir;
+      if (isOhos) {
+        try {
+          dir = await getTemporaryDirectory();
+        } catch (_) {
+          dir = Directory(Directory.systemTemp.path);
+        }
+      } else {
+        dir = await getTemporaryDirectory();
+      }
+      final data = await rootBundle
+          .load('assets/images/contact/${c.type}_qr.png');
+      final file = File(
+          '${dir.path}/${c.type}_qr_${DateTime.now().millisecondsSinceEpoch}.png');
+      await file.writeAsBytes(data.buffer.asUint8List());
+      if (context.mounted) {
+        await PosterPreviewDialog.show(
+          context,
+          imagePath: file.path,
+          title: '${c.label}二维码',
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        FitToast.info(context, '二维码预览失败，请稍后重试');
+      }
+    }
   }
 
   Widget _buildContactTile(

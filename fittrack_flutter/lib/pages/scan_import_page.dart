@@ -8,6 +8,7 @@ import 'package:zxing2/qrcode.dart';
 import '../data/storage.dart';
 import '../utils/platform_utils.dart';
 import '../services/share_code_service.dart';
+import '../services/rom_adaptation_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 
@@ -26,11 +27,13 @@ class _ScanImportPageState extends State<ScanImportPage> {
   // 相机权限状态
   bool _permissionChecked = false;
   bool _cameraAllowed = false;
+  // 是否仅支持相册扫码（OHOS 或鸿蒙兼容层设备）：直接走相册兜底，不申请相机权限
+  bool _galleryOnly = isOhos;
 
   bool get _cameraActive => _permissionChecked && _cameraAllowed && !_cameraFailed;
 
   /// OHOS 无 mobile_scanner 原生实现，相机扫码不可用，直接走相册兜底
-  bool get _cameraUnsupported => isOhos;
+  bool get _cameraUnsupported => _galleryOnly;
 
   @override
   void initState() {
@@ -38,9 +41,14 @@ class _ScanImportPageState extends State<ScanImportPage> {
     _initCameraPermission();
   }
 
-  /// 启动时申请相机权限（Android/iOS 运行时授权；OHOS 无相机实现直接走相册兜底）
+  /// 启动时申请相机权限（Android/iOS 运行时授权；OHOS 及鸿蒙兼容层直接走相册兜底）
   Future<void> _initCameraPermission() async {
-    if (isOhos) {
+    if (!isOhos) {
+      // Android 包跑在鸿蒙机上时：原生侧识别到鸿蒙则视为相机不可用，避免弹出相机权限
+      final harmony = await RomAdaptationService.instance.isHarmonyOSDevice();
+      if (harmony && mounted) setState(() => _galleryOnly = true);
+    }
+    if (_galleryOnly) {
       if (mounted) {
         setState(() {
           _permissionChecked = true;

@@ -110,65 +110,129 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
+    final scaffoldColor = Theme.of(context).scaffoldBackgroundColor;
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
+          // iPhone 极简渐变：顶部主背景色向柔和次色过渡
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).scaffoldBackgroundColor,
+              scaffoldColor,
               colors.bgSecondary,
             ],
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            ScaleTransition(
-              scale: _pulseAnimation,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: colors.accentGlow.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: colors.accentGlow.withOpacity(0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
+            // 顶部氛围柔光晕（主题色），营造 iOS 启动页光照感
+            Positioned(
+              top: -160,
+              left: -120,
+              child: _buildGlowBlob(
+                size: 360,
+                color: scheme.primary.withOpacity(0.10),
               ),
             ),
-            const SizedBox(height: 24),
-            Text(
-              'LiftTrack',
-              style: TextStyle(
-                color: colors.textPrimary,
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 2,
+            Positioned(
+              bottom: -180,
+              right: -140,
+              child: _buildGlowBlob(
+                size: 380,
+                color: colors.accentSecondary.withOpacity(0.10),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              '你的智能健身伙伴',
-              style: TextStyle(
-                color: colors.textSecondary,
-                fontSize: 14,
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 扁平抽象 logo + 渐变柔光光圈
+                  ScaleTransition(
+                    scale: _pulseAnimation,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          center: const Alignment(0, 0),
+                          radius: 0.9,
+                          colors: [
+                            scheme.primary.withOpacity(0.16),
+                            scheme.primary.withOpacity(0),
+                          ],
+                          stops: const [0.0, 1.0],
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 34),
+                  Text(
+                    'LiftTrack',
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 6,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // 品牌标语（装饰性）——细字、大写、宽间距
+                  Text(
+                    'KEEP MOVING',
+                    style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: 8,
+                    ),
+                  ),
+                  const SizedBox(height: 34),
+                  Text(
+                    '你的智能健身伙伴',
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// 主题色柔光圆斑，用于背景氛围营造
+  Widget _buildGlowBlob({required double size, required Color color}) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [color, color.withOpacity(0)],
+            stops: const [0.0, 1.0],
+          ),
         ),
       ),
     );

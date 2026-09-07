@@ -15,9 +15,10 @@
         "name": "EntryAbility",
         "srcEntry": "./ets/entryability/EntryAbility.ets",
         "description": "$string:EntryAbility_desc",
-        "icon": "$media:icon",
+        "icon": "$media:app_layered_image",
         "label": "$string:EntryAbility_label",
         "startWindowIcon": "$media:icon",
+//        "startWindowBackground": "$media:background",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "skills": [
@@ -52,9 +53,6 @@
       {"name" :  "ohos.permission.INTERNET"},
       {"name" :  "ohos.permission.PUBLISH_AGENT_REMINDER"},
       {"name" :  "ohos.permission.VIBRATE"},
-      {"name" :  "ohos.permission.CAMERA",
-        "reason": "$string:camera",
-        "usedScene": {"abilities": ["EntryAbility"], "when": "inuse"}},
       {"name" :  "ohos.permission.WRITE_IMAGEVIDEO",
         "reason": "$string:writeimagevideo",
         "usedScene": {"abilities": ["EntryAbility"], "when": "always"}}
