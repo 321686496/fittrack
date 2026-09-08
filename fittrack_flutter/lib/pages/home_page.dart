@@ -147,8 +147,46 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     }
   }
 
+  /// 今天最新的训练记录（按日期字符串同天比较，取时间最大的一条）
+  Map<String, dynamic>? _findTodayRecord() {
+    final now = DateTime.now();
+    Map<String, dynamic>? latest;
+    int latestTs = -1;
+    for (final r in _records) {
+      final ts = r['date'] ?? r['createTime'];
+      if (ts is! int) continue;
+      final d = DateTime.fromMillisecondsSinceEpoch(ts);
+      final isToday =
+          d.year == now.year && d.month == now.month && d.day == now.day;
+      if (isToday && ts > latestTs) {
+        latestTs = ts;
+        latest = r;
+      }
+    }
+    return latest;
+  }
+
   Map<String, dynamic>? _computeTodayPlan() {
     final active = _activePlanCache;
+
+    // 今天已有完成的训练：展示已完成状态（含实际训练时长），而不是推进后的下一日内容
+    final todayRecord = _findTodayRecord();
+    if (todayRecord != null) {
+      final muscles = (todayRecord['muscles'] as List?)?.cast<String>() ?? [];
+      final totalSets = (todayRecord['totalSets'] as num?)?.toInt() ?? 0;
+      return {
+        'name': todayRecord['name'] ?? '今日训练',
+        'muscle': muscles.isNotEmpty ? muscles.join(' · ') : '',
+        'duration': (todayRecord['duration'] as num?)?.toInt() ?? 0,
+        'exerciseCount': (todayRecord['exerciseCount'] as num?)?.toInt() ?? 0,
+        'totalSets': totalSets,
+        'totalWeight': (todayRecord['totalWeight'] as num?)?.toInt() ?? 0,
+        'completed': totalSets,
+        'isCompleted': true,
+        'recordId': todayRecord['id'],
+      };
+    }
+
     if (active != null) {
       final days = active['days'] as List? ?? [];
       if (days.isNotEmpty) {
@@ -196,33 +234,56 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   List<Map<String, dynamic>> _computeWeeklyCalendarData() {
     final now = DateTime.now();
     final weekday = now.weekday; // 1=Mon..7=Sun
-    final weekStart = now.subtract(Duration(days: weekday - 1));
+    final weekStartDate = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: weekday - 1)); // 本周一 00:00
     const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
 
-    // 统计本周每天是否有训练记录
+    final active = _activePlanCache;
+    final activePlanId = active?['id'];
+
+    // 统计本周每天是否有训练记录（按日期分桶，避免时刻差导致跨天错位），
+    // 并记录今天是否已完成当前活跃计划的训练
     final trainedDays = <int>{};
+    bool todayTrainedActivePlan = false;
     for (final r in _records) {
       final ts = r['date'] ?? r['createTime'];
-      if (ts is int) {
-        final d = DateTime.fromMillisecondsSinceEpoch(ts);
-        final diff = d.difference(weekStart).inDays;
-        if (diff >= 0 && diff < 7) {
-          trainedDays.add(diff);
+      if (ts is! int) continue;
+      final d = DateTime.fromMillisecondsSinceEpoch(ts);
+      final diff = DateTime(d.year, d.month, d.day).difference(weekStartDate).inDays;
+      if (diff >= 0 && diff < 7) {
+        trainedDays.add(diff);
+        if (diff == weekday - 1 && r['planId'] == activePlanId) {
+          todayTrainedActivePlan = true;
         }
       }
     }
 
     // 从活跃计划获取每日安排 —— 循环训练日序列（基于 currentDayIndex）
-    final active = _activePlanCache;
+    // 锚定"今天"在循环序列中的位置：
+    //  - 今天已完成本计划训练：currentDayIndex 已推进到下一个训练日，今天 = 其前一个训练日
+    //  - 今天未训练：今天 = currentDayIndex
+    // 其余天相对今天的偏移循环取模，保证训练完成后整周日历不前移
     final planDays = <int, Map<String, dynamic>>{};
     if (active != null) {
       final days = active['days'] as List? ?? [];
       if (days.isNotEmpty) {
-        final currentDayIndex = (active['currentDayIndex'] as num?)?.toInt() ?? 0;
-        // 以本周一为起点，按循环序列映射训练日
-        // 周一 = currentDayIndex，周二 = currentDayIndex+1（取模），以此类推
+        final currentDayIndex =
+            ((active['currentDayIndex'] as num?)?.toInt() ?? 0).clamp(0, days.length - 1);
+        final todayOffset = weekday - 1;
+        int todayPlanIdx = currentDayIndex;
+        if (todayTrainedActivePlan) {
+          int prev = (currentDayIndex - 1 + days.length) % days.length;
+          int attempts = 0;
+          while (attempts < days.length) {
+            final dayData = days[prev] as Map<String, dynamic>?;
+            if (dayData == null || dayData['isRest'] != true) break;
+            prev = (prev - 1 + days.length) % days.length;
+            attempts++;
+          }
+          todayPlanIdx = prev;
+        }
         for (int i = 0; i < 7; i++) {
-          final cyclicIdx = (currentDayIndex + i) % days.length;
+          final cyclicIdx = (todayPlanIdx + (i - todayOffset)) % days.length;
           planDays[i] = days[cyclicIdx] as Map<String, dynamic>;
         }
       }
@@ -478,9 +539,12 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   }
 
   Widget _buildTodayPlanCard(LiftTrackColors colors, Map<String, dynamic> plan) {
+    final isCompleted = plan['isCompleted'] == true;
     final completed = plan['completed'] as int? ?? 0;
     final total = plan['exerciseCount'] as int? ?? 1;
-    final progress = total > 0 ? completed / total : 0.0;
+    final progress = isCompleted
+        ? 1.0
+        : (total > 0 ? completed / total : 0.0);
 
     return CardWidget(
       child: Column(
@@ -495,7 +559,14 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                 style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
               ),
               const Spacer(),
-              BadgeWidget(text: progress > 0 ? '进行中' : '待开始', variant: progress > 0 ? BadgeVariant.accent : BadgeVariant.info),
+              BadgeWidget(
+                text: isCompleted
+                    ? '已完成'
+                    : (progress > 0 ? '进行中' : '待开始'),
+                variant: isCompleted
+                    ? BadgeVariant.success
+                    : (progress > 0 ? BadgeVariant.accent : BadgeVariant.info),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -530,7 +601,9 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           ProgressBar(progress: progress),
           const SizedBox(height: 4),
           Text(
-            '$completed/$total 已完成',
+            isCompleted
+                ? '共${plan['totalSets'] ?? 0}组 · 总负重${plan['totalWeight'] ?? 0}kg'
+                : '$completed/$total 已完成',
             style: TextStyle(color: colors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 14),
@@ -538,7 +611,12 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                context.push('/training?planId=${plan['planId'] ?? _activePlan?['id'] ?? 'plan1'}&dayIndex=${plan['dayIndex'] ?? 0}');
+                if (isCompleted) {
+                  // 已完成：跳转记录页查看本次训练详情
+                  context.go('/records');
+                } else {
+                  context.push('/training?planId=${plan['planId'] ?? _activePlan?['id'] ?? 'plan1'}&dayIndex=${plan['dayIndex'] ?? 0}');
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
@@ -546,7 +624,10 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('开始训练', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              child: Text(
+                isCompleted ? '查看记录' : '开始训练',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              ),
             ),
           ),
         ],
