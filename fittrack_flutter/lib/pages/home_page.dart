@@ -169,6 +169,39 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   Map<String, dynamic>? _computeTodayPlan() {
     final active = _activePlanCache;
 
+    // 今天有进行中的训练草稿：优先显示"进行中"
+    // （优先级：进行中草稿 > 今日已完成 > 待开始，
+    //  覆盖当天练完一次又开始第二次的场景；跨天草稿不显示，
+    //  由训练页现有的跨天弹窗处理）
+    final now = DateTime.now();
+    final today = '${now.year}-${now.month}-${now.day}';
+    final inProgress = Storage.getInProgressTraining();
+    if (inProgress != null && inProgress['startedAtDate'] == today) {
+      final setRecords = inProgress['setRecords'] as Map? ?? {};
+      final completedSets = setRecords.values.fold<int>(
+          0, (sum, list) => sum + (list as List).length);
+      final exercises = (inProgress['exercises'] as List?) ?? [];
+      final totalSets = exercises.fold<int>(
+          0, (sum, ex) => sum + (((ex as Map)['sets'] as num?) ?? 0).toInt());
+      final dayConfig = inProgress['dayConfig'] as Map? ?? {};
+      final startedAt =
+          inProgress['startedAt'] as int? ?? now.millisecondsSinceEpoch;
+      final elapsedMin = now
+          .difference(DateTime.fromMillisecondsSinceEpoch(startedAt))
+          .inMinutes;
+      return {
+        'name': dayConfig['label'] ?? inProgress['planName'] ?? '今日训练',
+        'muscle': dayConfig['muscle'] ?? '',
+        'duration': elapsedMin,
+        'exerciseCount': exercises.length,
+        'totalSets': totalSets,
+        'completed': completedSets,
+        'isInProgress': true,
+        'planId': inProgress['planId'],
+        'dayIndex': inProgress['dayIndex'] ?? 0,
+      };
+    }
+
     // 今天已有完成的训练：展示已完成状态（含实际训练时长），而不是推进后的下一日内容
     final todayRecord = _findTodayRecord();
     if (todayRecord != null) {
@@ -203,6 +236,8 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           'muscle': dayData['muscle'] ?? '',
           'duration': 60,
           'exerciseCount': exercises.length,
+          'totalSets': exercises.fold<int>(
+              0, (sum, ex) => sum + ((ex['sets'] as num?) ?? 0).toInt()),
           'completed': 0,
           'planId': active['id'],
           'dayIndex': dayIndex,
