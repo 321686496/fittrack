@@ -28,7 +28,8 @@ class Storage {
   static const String _keyNotifications = 'fittrack_notifications';
 
   // Phase 2 �?全局可观测状�?
-  static final ValueNotifier<bool> isPremiumNotifier = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> isPremiumNotifier =
+      ValueNotifier<bool>(false);
   static final ValueNotifier<List<String>> unlockedAchievementsNotifier =
       ValueNotifier<List<String>>([]);
 
@@ -40,12 +41,24 @@ class Storage {
     _prefs = await SharedPreferences.getInstance();
 
     // 仅清理即将重载的 key，避免影�?_keyCustomExercises/_keyNotifications 等不在重载循环中�?key
-    for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory, _inProgressKey]) {
+    for (final key in [
+      _keySettings,
+      _keyStats,
+      _keyBodyData,
+      _keyBodyDataHistory,
+      _inProgressKey
+    ]) {
       _store.remove(key);
     }
 
     // 加载 SharedPreferences 中的轻量数据
-    for (final key in [_keySettings, _keyStats, _keyBodyData, _keyBodyDataHistory, _inProgressKey]) {
+    for (final key in [
+      _keySettings,
+      _keyStats,
+      _keyBodyData,
+      _keyBodyDataHistory,
+      _inProgressKey
+    ]) {
       final raw = _prefs!.getString('$_keyPrefsPrefix$key');
       if (raw != null) {
         try {
@@ -69,8 +82,10 @@ class Storage {
     }
 
     // Phase 2 ?生成 deviceId 并初始化 isPremium 状?状�?
-    final settings = _safeGet(_keySettings, <String, dynamic>{}) as Map<String, dynamic>;
-    if (settings['deviceId'] == null || (settings['deviceId'] as String).isEmpty) {
+    final settings =
+        _safeGet(_keySettings, <String, dynamic>{}) as Map<String, dynamic>;
+    if (settings['deviceId'] == null ||
+        (settings['deviceId'] as String).isEmpty) {
       settings['deviceId'] = _generateUuidV4();
       _store[_keySettings] = settings;
       _persistKey(_keySettings);
@@ -100,7 +115,8 @@ class Storage {
       }
 
       // 迁移 Records
-      final oldRecordsRaw = _prefs?.getString('${_keyPrefsPrefix}fitplan_records');
+      final oldRecordsRaw =
+          _prefs?.getString('${_keyPrefsPrefix}fitplan_records');
       if (oldRecordsRaw != null && oldRecordsRaw.isNotEmpty) {
         final List<dynamic> oldRecords = jsonDecode(oldRecordsRaw);
         for (final r in oldRecords) {
@@ -236,7 +252,8 @@ class Storage {
     return true;
   }
 
-  static Future<Map<String, dynamic>> addPlanAsync(Map<String, dynamic> plan) async {
+  static Future<Map<String, dynamic>> addPlanAsync(
+      Map<String, dynamic> plan) async {
     final newPlan = <String, dynamic>{
       ...plan,
       'id': plan['id'] ?? generateId('plan'),
@@ -275,7 +292,8 @@ class Storage {
     return newPlan;
   }
 
-  static Future<Map<String, dynamic>?> updatePlanAsync(String planId, Map<String, dynamic> updates) async {
+  static Future<Map<String, dynamic>?> updatePlanAsync(
+      String planId, Map<String, dynamic> updates) async {
     final result = await _db.updatePlan(planId, updates);
     // 同步更新缓存，保证后�?getPlans()/getPlanById() 立即拿到最新�?
     if (result != null) {
@@ -297,10 +315,15 @@ class Storage {
     return result;
   }
 
-  static Map<String, dynamic>? updatePlan(String planId, Map<String, dynamic> updates) {
+  static Map<String, dynamic>? updatePlan(
+      String planId, Map<String, dynamic> updates) {
     final idx = _plansCache.indexWhere((p) => p['id'] == planId);
     if (idx == -1) return null;
-    _plansCache[idx] = {..._plansCache[idx], ...updates, 'updateTime': DateTime.now().millisecondsSinceEpoch};
+    _plansCache[idx] = {
+      ..._plansCache[idx],
+      ...updates,
+      'updateTime': DateTime.now().millisecondsSinceEpoch
+    };
     _plansCacheDirty = true;
     // 异步持久�?
     _db.updatePlan(planId, updates);
@@ -363,7 +386,8 @@ class Storage {
     );
   }
 
-  static Future<bool> saveRecordsAsync(List<Map<String, dynamic>> records) async {
+  static Future<bool> saveRecordsAsync(
+      List<Map<String, dynamic>> records) async {
     await _db.deleteAllRecords();
     for (final record in records) {
       await _db.insertRecord(record);
@@ -395,10 +419,71 @@ class Storage {
   }
 
   static bool deleteRecord(String recordId) {
+    final record = getRecordById(recordId);
     _recordsCache.removeWhere((r) => r['id'] == recordId);
     _recordsCacheDirty = true;
     _db.deleteRecord(recordId);
+    // 删除今日活跃计划的最后一条记录时，回退 currentDayIndex，
+    // 保证首页"今日训练"卡片仍显示今日训练内容而非推进后的下一日
+    if (record != null) {
+      _rollbackActivePlanDayIndex(record);
+    }
     return true;
+  }
+
+  /// 删除记录后回退活跃计划的 currentDayIndex（训练完成时推进逻辑的逆操作）。
+  /// 仅当满足以下全部条件时回退到上一个非休息日：
+  /// 1. 被删记录属于当前活跃计划；
+  /// 2. 被删记录是今天完成的；
+  /// 3. 删除后今天该计划无其他记录（一天多次训练只删一条时不回退）。
+  static void _rollbackActivePlanDayIndex(Map<String, dynamic> deleted) {
+    try {
+      final planId = deleted['planId'] as String?;
+      if (planId == null || planId.isEmpty) return;
+      final plan = _plansCache.firstWhere(
+        (p) => p['id'] == planId && p['status'] == 'active',
+      );
+      final days = plan['days'] as List? ?? [];
+      if (days.isEmpty) return;
+
+      // 被删记录必须是今天的
+      final now = DateTime.now();
+      final ts = deleted['date'] ?? deleted['createTime'];
+      if (ts is! int) return;
+      final d = DateTime.fromMillisecondsSinceEpoch(ts);
+      if (d.year != now.year || d.month != now.month || d.day != now.day) {
+        return;
+      }
+
+      // 今天该计划仍有其他记录 → 不回退
+      final hasOtherTodayRecord = _recordsCache.any((r) {
+        if (r['planId'] != planId) return false;
+        final t = r['date'] ?? r['createTime'];
+        if (t is! int) return false;
+        final rd = DateTime.fromMillisecondsSinceEpoch(t);
+        return rd.year == now.year &&
+            rd.month == now.month &&
+            rd.day == now.day;
+      });
+      if (hasOtherTodayRecord) return;
+
+      // 回退到上一个非休息日（跳过 isRest，逆操作训练完成时的推进）
+      final currentDayIndex = ((plan['currentDayIndex'] as num?)?.toInt() ?? 0)
+          .clamp(0, days.length - 1);
+      int prevDayIndex = (currentDayIndex - 1 + days.length) % days.length;
+      int attempts = 0;
+      while (attempts < days.length) {
+        final dayData = days[prevDayIndex] as Map<String, dynamic>?;
+        if (dayData == null || dayData['isRest'] != true) break;
+        prevDayIndex = (prevDayIndex - 1 + days.length) % days.length;
+        attempts++;
+      }
+      if (prevDayIndex != currentDayIndex) {
+        updatePlan(planId, {'currentDayIndex': prevDayIndex});
+      }
+    } catch (_) {
+      // 无活跃计划等场景：不影响删除操作本身
+    }
   }
 
   static Map<String, dynamic>? getRecordById(String recordId) {
@@ -423,8 +508,8 @@ class Storage {
       'defaultWeight': 20.0,
       'theme': 'vitality-sport',
       'followSystem': false,
-      'autoDarkMode': 'off',       // off | system | timed
-      'timedDarkTime': '18:00',    // "HH:mm" 字符串
+      'autoDarkMode': 'off', // off | system | timed
+      'timedDarkTime': '18:00', // "HH:mm" 字符串
       'nightModePrompted': false,
       'lightThemeId': 'vitality-sport',
       'darkThemeId': 'iron-forge',
@@ -484,10 +569,11 @@ class Storage {
       // ── 每日训练提醒 & 健身卡到期提�?──
       'dailyTrainingReminderEnabled': false, // 每日训练提醒开�?
       'gymCardExpiryReminderEnabled': false, // 健身卡到期提醒开�?
-      'gymCardExpiryDaysThreshold': 7,       // 期限卡到期天数阈值（剩余 �?N 天提醒）
-      'gymCardLowCountThreshold': 3,         // 次卡剩余次数阈值（剩余 �?N 次提醒）
-      'lastGymCardReminderDate': '',         // 上次健身卡到期提醒日期（防同日重复推送）
-      'activityColorMode': 'capacity', // 活跃度配色模式：'capacity'（训练容量）�?'duration'（训练时长）
+      'gymCardExpiryDaysThreshold': 7, // 期限卡到期天数阈值（剩余 �?N 天提醒）
+      'gymCardLowCountThreshold': 3, // 次卡剩余次数阈值（剩余 �?N 次提醒）
+      'lastGymCardReminderDate': '', // 上次健身卡到期提醒日期（防同日重复推送）
+      'activityColorMode':
+          'capacity', // 活跃度配色模式：'capacity'（训练容量）�?'duration'（训练时长）
       'actionGuideCollapsed': false, // 训练页底部动作指导卡片是否收起（默认展开�?
       // ── 休息状态机 + 持久�?──
       'autoEndAfterRest': false, // 休息结束后自动结束（自制力模式）
@@ -567,13 +653,19 @@ class Storage {
   static Map<String, dynamic> updateStats(Map<String, dynamic> newRecord) {
     final stats = getStats();
     stats['totalTrainings'] = (stats['totalTrainings'] ?? 0) + 1;
-    stats['totalDuration'] = (stats['totalDuration'] ?? 0) + (newRecord['duration'] ?? 0);
-    stats['totalWeight'] = (stats['totalWeight'] ?? 0) + (newRecord['totalWeight'] ?? 0);
-    stats['totalSets'] = (stats['totalSets'] ?? 0) + (newRecord['totalSets'] ?? 0);
+    stats['totalDuration'] =
+        (stats['totalDuration'] ?? 0) + (newRecord['duration'] ?? 0);
+    stats['totalWeight'] =
+        (stats['totalWeight'] ?? 0) + (newRecord['totalWeight'] ?? 0);
+    stats['totalSets'] =
+        (stats['totalSets'] ?? 0) + (newRecord['totalSets'] ?? 0);
 
-    final weekKey = getWeekKey(newRecord['date'] ?? DateTime.now().millisecondsSinceEpoch);
+    final weekKey =
+        getWeekKey(newRecord['date'] ?? DateTime.now().millisecondsSinceEpoch);
     List weeklyData = List<Map<String, dynamic>>.from(
-      (stats['weeklyData'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)) ?? [],
+      (stats['weeklyData'] as List?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map)) ??
+          [],
     );
     Map<String, dynamic>? weekData;
     try {
@@ -586,8 +678,10 @@ class Storage {
       weeklyData.add(weekData);
     }
     weekData['trainings'] = (weekData['trainings'] ?? 0) + 1;
-    weekData['duration'] = (weekData['duration'] ?? 0) + (newRecord['duration'] ?? 0);
-    weekData['weight'] = (weekData['weight'] ?? 0) + (newRecord['totalWeight'] ?? 0);
+    weekData['duration'] =
+        (weekData['duration'] ?? 0) + (newRecord['duration'] ?? 0);
+    weekData['weight'] =
+        (weekData['weight'] ?? 0) + (newRecord['totalWeight'] ?? 0);
     if (weeklyData.length > 12) {
       weeklyData.removeRange(0, weeklyData.length - 12);
     }
@@ -596,7 +690,9 @@ class Storage {
     final muscles = newRecord['muscles'];
     if (muscles is List && muscles.isNotEmpty) {
       Map<String, int> muscleData = Map<String, int>.from(
-        (stats['muscleData'] as Map?)?.map((k, v) => MapEntry(k.toString(), v as int)) ?? {},
+        (stats['muscleData'] as Map?)
+                ?.map((k, v) => MapEntry(k.toString(), v as int)) ??
+            {},
       );
       for (final m in muscles) {
         muscleData[m.toString()] = (muscleData[m.toString()] ?? 0) + 1;
@@ -625,11 +721,14 @@ class Storage {
 
     for (final r in records) {
       stats['totalTrainings'] = (stats['totalTrainings'] as int) + 1;
-      stats['totalDuration'] = (stats['totalDuration'] as int) + (r['duration'] ?? 0);
-      stats['totalWeight'] = (stats['totalWeight'] as int) + (r['totalWeight'] ?? 0);
+      stats['totalDuration'] =
+          (stats['totalDuration'] as int) + (r['duration'] ?? 0);
+      stats['totalWeight'] =
+          (stats['totalWeight'] as int) + (r['totalWeight'] ?? 0);
       stats['totalSets'] = (stats['totalSets'] as int) + (r['totalSets'] ?? 0);
 
-      final weekKey = getWeekKey(r['date'] ?? DateTime.now().millisecondsSinceEpoch);
+      final weekKey =
+          getWeekKey(r['date'] ?? DateTime.now().millisecondsSinceEpoch);
       Map<String, dynamic>? weekData;
       try {
         weekData = weeklyData.firstWhere((w) => w['week'] == weekKey);
@@ -637,7 +736,12 @@ class Storage {
         weekData = null;
       }
       if (weekData == null) {
-        weekData = {'week': weekKey, 'trainings': 0, 'duration': 0, 'weight': 0};
+        weekData = {
+          'week': weekKey,
+          'trainings': 0,
+          'duration': 0,
+          'weight': 0
+        };
         weeklyData.add(weekData);
       }
       weekData['trainings'] = (weekData['trainings'] ?? 0) + 1;
@@ -726,7 +830,8 @@ class Storage {
     );
   }
 
-  static Future<Map<String, dynamic>> addGymCardAsync(Map<String, dynamic> card) async {
+  static Future<Map<String, dynamic>> addGymCardAsync(
+      Map<String, dynamic> card) async {
     final newCard = <String, dynamic>{
       ...card,
       'id': card['id'] ?? generateId('gymcard'),
@@ -751,16 +856,22 @@ class Storage {
     return newCard;
   }
 
-  static Future<Map<String, dynamic>?> updateGymCardAsync(String cardId, Map<String, dynamic> updates) async {
+  static Future<Map<String, dynamic>?> updateGymCardAsync(
+      String cardId, Map<String, dynamic> updates) async {
     final result = await _db.updateGymCard(cardId, updates);
     _gymCardsCacheDirty = true;
     return result;
   }
 
-  static Map<String, dynamic>? updateGymCard(String cardId, Map<String, dynamic> updates) {
+  static Map<String, dynamic>? updateGymCard(
+      String cardId, Map<String, dynamic> updates) {
     final idx = _gymCardsCache.indexWhere((c) => c['id'] == cardId);
     if (idx == -1) return null;
-    _gymCardsCache[idx] = {..._gymCardsCache[idx], ...updates, 'updateTime': DateTime.now().millisecondsSinceEpoch};
+    _gymCardsCache[idx] = {
+      ..._gymCardsCache[idx],
+      ...updates,
+      'updateTime': DateTime.now().millisecondsSinceEpoch
+    };
     _gymCardsCacheDirty = true;
     _db.updateGymCard(cardId, updates);
     return _gymCardsCache[idx];
@@ -831,7 +942,8 @@ class Storage {
     );
     await saveRecordsAsync(
       List<Map<String, dynamic>>.from(
-        (data['records'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+        (data['records'] as List)
+            .map((e) => Map<String, dynamic>.from(e as Map)),
       ),
     );
     if (data['settings'] != null) {
@@ -927,7 +1039,8 @@ class Storage {
     );
   }
 
-  static Future<Map<String, dynamic>?> getNoteByRecordId(String recordId) async {
+  static Future<Map<String, dynamic>?> getNoteByRecordId(
+      String recordId) async {
     // 先查缓存
     for (final n in _notesCache) {
       if (n['recordId'] == recordId) {
@@ -956,7 +1069,8 @@ class Storage {
     return newNote;
   }
 
-  static Future<bool> updateNoteAsync(String noteId, Map<String, dynamic> updates) async {
+  static Future<bool> updateNoteAsync(
+      String noteId, Map<String, dynamic> updates) async {
     final idx = _notesCache.indexWhere((n) => n['id'] == noteId);
     if (idx >= 0) {
       _notesCache[idx] = {..._notesCache[idx], ...updates};
@@ -1028,9 +1142,8 @@ class Storage {
 
   /// 获取所有可用动作（内置 + 自定义）
   static List<Map<String, dynamic>> getAllExercises() {
-    final builtIn = MockData.exercises
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    final builtIn =
+        MockData.exercises.map((e) => Map<String, dynamic>.from(e)).toList();
     final custom = getCustomExercises();
     return [...builtIn, ...custom];
   }
@@ -1056,10 +1169,34 @@ class Storage {
           'label': '胸部 + 三头肌',
           'muscle': '胸',
           'exercises': [
-            {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-            {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-            {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-            {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'restTime': 60},
+            {
+              'id': 'e1',
+              'name': '杠铃卧推',
+              'sets': 4,
+              'reps': '8-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e2',
+              'name': '哑铃飞鸟',
+              'sets': 3,
+              'reps': '12',
+              'restTime': 60
+            },
+            {
+              'id': 'e3',
+              'name': '上斜卧推',
+              'sets': 4,
+              'reps': '8-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e4',
+              'name': '绳索夹胸',
+              'sets': 3,
+              'reps': '15',
+              'restTime': 60
+            },
           ],
         },
         {
@@ -1067,12 +1204,48 @@ class Storage {
           'label': '背部 + 二头肌',
           'muscle': '背',
           'exercises': [
-            {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-            {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-            {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'restTime': 75},
-            {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'restTime': 60},
-            {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'restTime': 60},
-            {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'restTime': 60},
+            {
+              'id': 'e5',
+              'name': '引体向上',
+              'sets': 4,
+              'reps': '8-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e6',
+              'name': '杠铃划船',
+              'sets': 4,
+              'reps': '8-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e7',
+              'name': '高位下拉',
+              'sets': 4,
+              'reps': '12',
+              'restTime': 75
+            },
+            {
+              'id': 'e8',
+              'name': '坐姿划船',
+              'sets': 3,
+              'reps': '12',
+              'restTime': 60
+            },
+            {
+              'id': 'e13',
+              'name': '哑铃弯举',
+              'sets': 4,
+              'reps': '10-12',
+              'restTime': 60
+            },
+            {
+              'id': 'e14',
+              'name': '锤式弯举',
+              'sets': 3,
+              'reps': '12',
+              'restTime': 60
+            },
           ],
         },
         {
@@ -1080,8 +1253,20 @@ class Storage {
           'label': '腿部',
           'muscle': '腿',
           'exercises': [
-            {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'restTime': 120},
-            {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'restTime': 90},
+            {
+              'id': 'e9',
+              'name': '杠铃深蹲',
+              'sets': 5,
+              'reps': '5-8',
+              'restTime': 120
+            },
+            {
+              'id': 'e10',
+              'name': '腿举',
+              'sets': 4,
+              'reps': '10-12',
+              'restTime': 90
+            },
           ],
         },
         {
@@ -1089,10 +1274,34 @@ class Storage {
           'label': '肩部 + 核心',
           'muscle': '肩',
           'exercises': [
-            {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'restTime': 90},
-            {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'restTime': 60},
-            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'restTime': 45},
-            {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'restTime': 45},
+            {
+              'id': 'e11',
+              'name': '哑铃推举',
+              'sets': 4,
+              'reps': '8-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e12',
+              'name': '侧平举',
+              'sets': 4,
+              'reps': '12-15',
+              'restTime': 60
+            },
+            {
+              'id': 'e15',
+              'name': '平板支撑',
+              'sets': 3,
+              'reps': '60秒',
+              'restTime': 45
+            },
+            {
+              'id': 'e16',
+              'name': '卷腹',
+              'sets': 3,
+              'reps': '20',
+              'restTime': 45
+            },
           ],
         },
         {
@@ -1126,9 +1335,27 @@ class Storage {
           'label': '全身训练A',
           'muscle': '全身',
           'exercises': [
-            {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-            {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-            {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'restTime': 90},
+            {
+              'id': 'e9',
+              'name': '杠铃深蹲',
+              'sets': 3,
+              'reps': '10-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e1',
+              'name': '杠铃卧推',
+              'sets': 3,
+              'reps': '10-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e5',
+              'name': '引体向上',
+              'sets': 3,
+              'reps': '8-10',
+              'restTime': 90
+            },
           ],
         },
         {
@@ -1136,9 +1363,27 @@ class Storage {
           'label': '全身训练B',
           'muscle': '全身',
           'exercises': [
-            {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-            {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'restTime': 90},
-            {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'restTime': 90},
+            {
+              'id': 'e10',
+              'name': '腿举',
+              'sets': 3,
+              'reps': '10-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e6',
+              'name': '杠铃划船',
+              'sets': 3,
+              'reps': '10-12',
+              'restTime': 90
+            },
+            {
+              'id': 'e11',
+              'name': '哑铃推举',
+              'sets': 3,
+              'reps': '10-12',
+              'restTime': 90
+            },
           ],
         },
         {
@@ -1146,9 +1391,27 @@ class Storage {
           'label': '全身训练C',
           'muscle': '全身',
           'exercises': [
-            {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'restTime': 60},
-            {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'restTime': 75},
-            {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'restTime': 30},
+            {
+              'id': 'e2',
+              'name': '哑铃飞鸟',
+              'sets': 3,
+              'reps': '12',
+              'restTime': 60
+            },
+            {
+              'id': 'e7',
+              'name': '高位下拉',
+              'sets': 3,
+              'reps': '12',
+              'restTime': 75
+            },
+            {
+              'id': 'e15',
+              'name': '平板支撑',
+              'sets': 3,
+              'reps': '30秒',
+              'restTime': 30
+            },
           ],
         },
       ],
@@ -1164,9 +1427,8 @@ class Storage {
   /// 获取所有通知记录（按时间倒序�?
   static List<Map<String, dynamic>> getNotifications() {
     final list = _safeGet(_keyNotifications, <dynamic>[]) as List<dynamic>;
-    final result = list
-        .map((e) => Map<String, dynamic>.from(e as Map))
-        .toList();
+    final result =
+        list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     result.sort((a, b) {
       final ta = a['createdAt'] as int? ?? 0;
       final tb = b['createdAt'] as int? ?? 0;

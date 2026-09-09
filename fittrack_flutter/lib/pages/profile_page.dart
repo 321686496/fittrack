@@ -1355,7 +1355,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                     context.push('/exercise');
                     break;
                   case 'tutorial':
-                    context.push('/tutorial');
+                    context.go('/tutorial');
                     break;
                   case 'note':
                     context.push('/note');

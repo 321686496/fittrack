@@ -68,7 +68,8 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
     if (confirmed == true) {
       Storage.deleteRecord(recordId);
-      if (mounted) context.go('/records');
+      // 返回来源页（列表页会自动刷新，首页也会刷新）
+      if (mounted) context.pop();
     }
   }
 
@@ -84,7 +85,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
           backgroundColor: colors.bgSecondary,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/records'),
+            onPressed: () => context.pop(),
           ),
         ),
         body: Center(
@@ -97,8 +98,8 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                   style: TextStyle(color: colors.textSecondary, fontSize: 16)),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => context.go('/records'),
-                child: const Text('返回记录页'),
+                onPressed: () => context.pop(),
+                child: const Text('返回'),
               ),
             ],
           ),
@@ -132,7 +133,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.go('/records'),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SingleChildScrollView(

@@ -120,7 +120,14 @@ class _RecordsPageState extends State<RecordsPage> {
           PageHeader(
             title: '训练记录',
             isTabPage: false,
-            onBack: () => context.pop(),
+            onBack: () {
+              // 正常 pop 回来源页；若栈内无上级页面则回到首页
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
           ),
           Expanded(
           child: _records.isEmpty
@@ -173,7 +180,7 @@ class _RecordsPageState extends State<RecordsPage> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () => context.push('/plan'),
+                              onPressed: () => context.go('/plan'),
                               child: const Text('开始训练'),
                             ),
                           ),

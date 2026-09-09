@@ -612,8 +612,14 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
             child: ElevatedButton(
               onPressed: () {
                 if (isCompleted) {
-                  // 已完成：跳转记录页查看本次训练详情
-                  context.go('/records');
+                  // 已完成：直接跳转到今日这次训练的记录详情
+                  // 使用 push 保留首页在栈中，返回时回到首页
+                  final recordId = plan['recordId'] as String?;
+                  if (recordId != null && recordId.isNotEmpty) {
+                    context.push('/records/$recordId');
+                  } else {
+                    context.push('/records');
+                  }
                 } else {
                   context.push('/training?planId=${plan['planId'] ?? _activePlan?['id'] ?? 'plan1'}&dayIndex=${plan['dayIndex'] ?? 0}');
                 }

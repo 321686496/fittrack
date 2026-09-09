@@ -33,6 +33,7 @@ import '../widgets/first_training_feedback_sheet.dart';
 
 /// 休息状态机阶段
 enum RestPhase { idle, resting, restingOvertime }
+
 /// 休息结束原因
 enum RestEndReason { manual, autoTimeout, skip }
 
@@ -116,14 +117,16 @@ class _TrainingPageState extends State<TrainingPage>
     WidgetsBinding.instance.addObserver(this);
     _startTime = DateTime.now();
     // 读取持久化的动作指导折叠状态（默认展开）
-    _actionGuideExpanded = !(Storage.getSettings()['actionGuideCollapsed'] as bool? ?? false);
+    _actionGuideExpanded =
+        !(Storage.getSettings()['actionGuideCollapsed'] as bool? ?? false);
     _loadData();
 
     // 检查通知权限，未授予时提示用户
     _checkNotificationPermission();
 
     // 监听通知点击（通过 PAL 统一处理）
-    _restReminderSub = PlatformServices.restReminder.onNotificationClick.listen(_onNotificationClicked);
+    _restReminderSub = PlatformServices.restReminder.onNotificationClick
+        .listen(_onNotificationClicked);
     // 监听实况窗用户操作（skipRest / resume）
     _liveViewSub = PlatformServices.liveView.onUserAction.listen((event) {
       if (!mounted) return;
@@ -240,9 +243,11 @@ class _TrainingPageState extends State<TrainingPage>
   void _onAppResumedFromBackground() {
     final now = DateTime.now();
     if (_restPhase == RestPhase.resting) {
-      if (now.isAfter(_restScheduledEndAt!) || now.isAtSameMomentAs(_restScheduledEndAt!)) {
+      if (now.isAfter(_restScheduledEndAt!) ||
+          now.isAtSameMomentAs(_restScheduledEndAt!)) {
         // 倒计时已结束
-        final autoEnd = Storage.getSettings()['autoEndAfterRest'] as bool? ?? false;
+        final autoEnd =
+            Storage.getSettings()['autoEndAfterRest'] as bool? ?? false;
         if (autoEnd) {
           _endRest(RestEndReason.autoTimeout,
               actualSecondsOverride: _restScheduledSeconds);
@@ -348,6 +353,22 @@ class _TrainingPageState extends State<TrainingPage>
     return currentEx['reps']?.toString() ?? '';
   }
 
+  /// 判断动作是否为自重/有氧类型（无需记录重量）
+  /// 计划动作数据不含类型字段，通过 id 反查动作库（内置 + 自定义）：
+  /// 跑步等有氧类、器械为"自重/无"的动作（引体向上、俯卧撑等）不记录重量
+  bool _isBodyweightExercise(Map<String, dynamic> ex) {
+    final exId = ex['id'] as String?;
+    if (exId == null) return false;
+    for (final lib in Storage.getAllExercises()) {
+      if (lib['id'] == exId) {
+        final category = lib['category'] as String? ?? '';
+        final equip = lib['equip'] as String? ?? '';
+        return category == '跑步' || equip == '自重' || equip == '无';
+      }
+    }
+    return false;
+  }
+
   // ── Actions ──────────────────────────────────────────────────
 
   Future<void> _completeSet() async {
@@ -362,7 +383,7 @@ class _TrainingPageState extends State<TrainingPage>
       'set': _currentSetIdx + 1,
       'weight': weight,
       'reps': reps,
-      'rest': _lastRestActualSeconds,  // 上一组结束后的实际休息秒数
+      'rest': _lastRestActualSeconds, // 上一组结束后的实际休息秒数
     });
 
     final totalSets = (currentEx['sets'] as int?) ?? 0;
@@ -401,9 +422,11 @@ class _TrainingPageState extends State<TrainingPage>
     _restActualStartAt = now;
     _restScheduledEndAt = now.add(Duration(seconds: seconds));
     final multiplier =
-        (Storage.getSettings()['restOvertimeLimitMultiplier'] as num?)?.toDouble() ?? 3.0;
-    _restOvertimeLimitAt = _restScheduledEndAt!.add(
-        Duration(seconds: (seconds * multiplier).round()));
+        (Storage.getSettings()['restOvertimeLimitMultiplier'] as num?)
+                ?.toDouble() ??
+            3.0;
+    _restOvertimeLimitAt = _restScheduledEndAt!
+        .add(Duration(seconds: (seconds * multiplier).round()));
     // 重置上一次休息的结束原因，使 _notifyRestEnd 的"已通知"守卫按周期生效
     _restEndReason = null;
 
@@ -471,7 +494,8 @@ class _TrainingPageState extends State<TrainingPage>
           }
           if (remaining <= 0) {
             // 倒计时结束
-            final autoEnd = Storage.getSettings()['autoEndAfterRest'] as bool? ?? false;
+            final autoEnd =
+                Storage.getSettings()['autoEndAfterRest'] as bool? ?? false;
             if (autoEnd) {
               _endRest(RestEndReason.autoTimeout,
                   actualSecondsOverride: _restScheduledSeconds);
@@ -518,8 +542,8 @@ class _TrainingPageState extends State<TrainingPage>
     }
 
     // 计算实际休息秒数
-    final actualSeconds = actualSecondsOverride
-        ?? (_restActualStartAt != null
+    final actualSeconds = actualSecondsOverride ??
+        (_restActualStartAt != null
             ? DateTime.now().difference(_restActualStartAt!).inSeconds
             : _restScheduledSeconds);
 
@@ -546,8 +570,10 @@ class _TrainingPageState extends State<TrainingPage>
       _restEndReason = reason;
 
       // 推进到下一组/下一动作
-      final currentEx = _currentExIdx < _exercises.length ? _exercises[_currentExIdx] : null;
-      final totalSets = currentEx != null ? (currentEx['sets'] as int?) ?? 0 : 0;
+      final currentEx =
+          _currentExIdx < _exercises.length ? _exercises[_currentExIdx] : null;
+      final totalSets =
+          currentEx != null ? (currentEx['sets'] as int?) ?? 0 : 0;
       if (_currentSetIdx + 1 >= totalSets) {
         // 当前动作最后一组完成，推进到下一个动作
         _currentExIdx++;
@@ -600,23 +626,30 @@ class _TrainingPageState extends State<TrainingPage>
 
   /// 根据计划数据预填重量和次数
   /// 优先使用逐组配置 setConfig[currentSet]，否则回退到动作统一参数
+  /// 自重/有氧动作不预填重量
   void _prefillWeightReps() {
     if (_currentExIdx < _exercises.length) {
       final nextEx = _exercises[_currentExIdx];
+      final isBodyweight = _isBodyweightExercise(nextEx);
+      if (isBodyweight) _weightController.clear();
       // 优先：逐组配置中当前组的参数
       final setConfig = nextEx['setConfig'] as List?;
       if (setConfig != null && _currentSetIdx < setConfig.length) {
         final cfg = Map<String, dynamic>.from(setConfig[_currentSetIdx] as Map);
-        final perSetWeight = (cfg['weight'] as num?)?.toDouble() ?? 0;
+        if (!isBodyweight) {
+          final perSetWeight = (cfg['weight'] as num?)?.toDouble() ?? 0;
+          _weightController.text = perSetWeight > 0 ? '$perSetWeight' : '';
+        }
         final perSetReps = int.tryParse(cfg['reps']?.toString() ?? '') ?? 0;
-        _weightController.text = perSetWeight > 0 ? '$perSetWeight' : '';
         _repsController.text = perSetReps > 0 ? '$perSetReps' : '';
         return;
       }
       // 回退：动作统一参数
-      final planWeight = (nextEx['weight'] as num?)?.toDouble() ?? 0;
+      if (!isBodyweight) {
+        final planWeight = (nextEx['weight'] as num?)?.toDouble() ?? 0;
+        _weightController.text = planWeight > 0 ? '$planWeight' : '';
+      }
       final planReps = int.tryParse(nextEx['reps']?.toString() ?? '') ?? 0;
-      _weightController.text = planWeight > 0 ? '$planWeight' : '';
       _repsController.text = planReps > 0 ? '$planReps' : '';
     } else {
       _weightController.clear();
@@ -642,13 +675,15 @@ class _TrainingPageState extends State<TrainingPage>
         'currentSetIdx': _currentSetIdx,
         'setRecords': _setRecords.map((k, v) => MapEntry(k, v)),
         'restLog': _restLog,
-        'restPhaseSnapshot': _restPhase != RestPhase.idle ? {
-          'phase': _restPhase.name,
-          'scheduledSeconds': _restScheduledSeconds,
-          'actualStartAt': _restActualStartAt?.millisecondsSinceEpoch,
-          'scheduledEndAt': _restScheduledEndAt?.millisecondsSinceEpoch,
-          'overtimeLimitAt': _restOvertimeLimitAt?.millisecondsSinceEpoch,
-        } : null,
+        'restPhaseSnapshot': _restPhase != RestPhase.idle
+            ? {
+                'phase': _restPhase.name,
+                'scheduledSeconds': _restScheduledSeconds,
+                'actualStartAt': _restActualStartAt?.millisecondsSinceEpoch,
+                'scheduledEndAt': _restScheduledEndAt?.millisecondsSinceEpoch,
+                'overtimeLimitAt': _restOvertimeLimitAt?.millisecondsSinceEpoch,
+              }
+            : null,
       };
       await Storage.saveInProgressTraining(data);
     } catch (e) {
@@ -682,8 +717,11 @@ class _TrainingPageState extends State<TrainingPage>
   /// 恢复同天进行中的训练
   void _restoreInProgressTraining(Map<String, dynamic> data) {
     try {
-      _startTime = DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
-      _plan = data['planId'] != null ? Storage.getPlanById(data['planId'] as String) : null;
+      _startTime =
+          DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
+      _plan = data['planId'] != null
+          ? Storage.getPlanById(data['planId'] as String)
+          : null;
       _dayConfig = data['dayConfig'] as Map<String, dynamic>?;
       final exList = _dayConfig?['exercises'] as List<dynamic>? ?? [];
       _exercises = List<Map<String, dynamic>>.from(
@@ -747,7 +785,8 @@ class _TrainingPageState extends State<TrainingPage>
       _restScheduledEndAt = DateTime.fromMillisecondsSinceEpoch(scheduledEndMs);
     }
     if (overtimeLimitMs != null) {
-      _restOvertimeLimitAt = DateTime.fromMillisecondsSinceEpoch(overtimeLimitMs);
+      _restOvertimeLimitAt =
+          DateTime.fromMillisecondsSinceEpoch(overtimeLimitMs);
     }
 
     final phaseStr = snapshot['phase'] as String?;
@@ -759,7 +798,8 @@ class _TrainingPageState extends State<TrainingPage>
       _endRest(RestEndReason.autoTimeout,
           actualSecondsOverride: _restActualStartAt != null
               ? DateTime.fromMillisecondsSinceEpoch(lastPersistedAt)
-                  .difference(_restActualStartAt!).inSeconds
+                  .difference(_restActualStartAt!)
+                  .inSeconds
               : _restScheduledSeconds);
       return;
     }
@@ -790,7 +830,9 @@ class _TrainingPageState extends State<TrainingPage>
     final planName = data['planName'] as String? ?? '训练';
     final startedAtDate = data['startedAtDate'] as String? ?? '';
     final setRecords = data['setRecords'] as Map?;
-    final completedSets = setRecords?.values.fold<int>(0, (sum, list) => sum + (list as List).length) ?? 0;
+    final completedSets = setRecords?.values
+            .fold<int>(0, (sum, list) => sum + (list as List).length) ??
+        0;
 
     showDialog(
       context: context,
@@ -822,13 +864,17 @@ class _TrainingPageState extends State<TrainingPage>
   /// 跨天时将未完成的训练保存为记录
   Future<void> _autoSaveAsIncomplete(Map<String, dynamic> data) async {
     try {
-      final startedAt = DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
+      final startedAt =
+          DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
       final duration = DateTime.now().difference(startedAt).inMinutes;
       final setRecordsRaw = data['setRecords'] as Map?;
-      final setRecords = setRecordsRaw?.map((k, v) =>
-          MapEntry(k as String, List<Map<String, dynamic>>.from(
-              (v as List).map((r) => Map<String, dynamic>.from(r as Map))))) ?? <String, List<Map<String, dynamic>>>{};
-      final completedSets = setRecords.values.fold<int>(0, (sum, list) => sum + list.length);
+      final setRecords = setRecordsRaw?.map((k, v) => MapEntry(
+              k as String,
+              List<Map<String, dynamic>>.from((v as List)
+                  .map((r) => Map<String, dynamic>.from(r as Map))))) ??
+          <String, List<Map<String, dynamic>>>{};
+      final completedSets =
+          setRecords.values.fold<int>(0, (sum, list) => sum + list.length);
 
       Storage.addRecord({
         'name': data['planName'] ?? '未完成训练',
@@ -863,8 +909,8 @@ class _TrainingPageState extends State<TrainingPage>
     Storage.clearInProgressTraining();
 
     final totalDurationSec = DateTime.now().difference(_startTime).inSeconds;
-    final restTotalSec = _restLog.fold<int>(0, (sum, r) =>
-        sum + ((r['actualRestSeconds'] as num?) ?? 0).toInt());
+    final restTotalSec = _restLog.fold<int>(
+        0, (sum, r) => sum + ((r['actualRestSeconds'] as num?) ?? 0).toInt());
     final pureDurationSec = totalDurationSec - restTotalSec;
     final duration = (totalDurationSec / 60).round();
 
@@ -874,8 +920,8 @@ class _TrainingPageState extends State<TrainingPage>
     for (final ex in _exercises) {
       final records = _setRecords[ex['id']] ?? [];
       for (final r in records) {
-        totalWeight +=
-            ((r['weight'] as num?) ?? 0).toInt() * ((r['reps'] as num?) ?? 0).toInt();
+        totalWeight += ((r['weight'] as num?) ?? 0).toInt() *
+            ((r['reps'] as num?) ?? 0).toInt();
       }
       final muscle =
           ex['category'] as String? ?? _dayConfig?['muscle'] as String? ?? '';
@@ -905,7 +951,8 @@ class _TrainingPageState extends State<TrainingPage>
       final planId = _plan!['id'] as String?;
       final days = _plan!['days'] as List?;
       if (planId != null && days != null && days.isNotEmpty) {
-        final currentDayIndex = (_plan!['currentDayIndex'] as num?)?.toInt() ?? 0;
+        final currentDayIndex =
+            (_plan!['currentDayIndex'] as num?)?.toInt() ?? 0;
         // 循环递增到下一个训练日（跳过 isRest 的休息日）
         int nextDayIndex = (currentDayIndex + 1) % days.length;
         int attempts = 0;
@@ -915,7 +962,8 @@ class _TrainingPageState extends State<TrainingPage>
           nextDayIndex = (nextDayIndex + 1) % days.length;
           attempts++;
         }
-        await Storage.updatePlanAsync(planId, {'currentDayIndex': nextDayIndex});
+        await Storage.updatePlanAsync(
+            planId, {'currentDayIndex': nextDayIndex});
         // 更新本地缓存，避免下次进入训练页读到旧值
         _plan!['currentDayIndex'] = nextDayIndex;
       }
@@ -925,7 +973,8 @@ class _TrainingPageState extends State<TrainingPage>
     int earnedPoints = 0;
     if (mounted) {
       final records = Storage.getRecords();
-      final currentRecord = records.isNotEmpty ? records.first : <String, dynamic>{};
+      final currentRecord =
+          records.isNotEmpty ? records.first : <String, dynamic>{};
       final unlockedAchievements =
           await AchievementService.instance.checkAndUnlock(currentRecord);
       // 每日训练得积分（同日防重复）：成就检查之后调用，避免与成就解锁积分交错
@@ -1124,6 +1173,7 @@ class _TrainingPageState extends State<TrainingPage>
     final currentEx = _exercises[_currentExIdx];
     final totalSets = (currentEx['sets'] as int?) ?? 0;
     final records = _setRecords[currentEx['id']] ?? [];
+    final isBodyweight = _isBodyweightExercise(currentEx);
 
     return Scaffold(
       body: Column(
@@ -1144,11 +1194,13 @@ class _TrainingPageState extends State<TrainingPage>
                   children: [
                     Text(
                       '整体进度',
-                      style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                      style:
+                          TextStyle(color: colors.textSecondary, fontSize: 13),
                     ),
                     Text(
                       '$_completedSets/$_totalSets 组',
-                      style: TextStyle(color: colors.textSecondary, fontSize: 13),
+                      style:
+                          TextStyle(color: colors.textSecondary, fontSize: 13),
                     ),
                   ],
                 ),
@@ -1170,7 +1222,8 @@ class _TrainingPageState extends State<TrainingPage>
                 final isCurrent = index == _currentExIdx;
                 final exRecords = _setRecords[ex['id']] ?? [];
                 final exTotalSets = (ex['sets'] as int?) ?? 0;
-                final isDone = exRecords.length >= exTotalSets && exTotalSets > 0;
+                final isDone =
+                    exRecords.length >= exTotalSets && exTotalSets > 0;
 
                 Color bgColor;
                 Color borderColor;
@@ -1235,204 +1288,224 @@ class _TrainingPageState extends State<TrainingPage>
                   CardWidget(
                     padding: const EdgeInsets.all(20),
                     child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      currentEx['name'] as String,
-                      style: TextStyle(
-                        color: colors.textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '第 ${_currentSetIdx + 1}/$totalSets 组',
+                          currentEx['name'] as String,
                           style: TextStyle(
-                            color: colors.accentGlow,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            color: colors.textPrimary,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Text(
-                          '目标: ${_targetRepsForCurrentSet()}次',
-                          style: TextStyle(
-                            color: colors.textSecondary,
-                            fontSize: 14,
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(
+                              '第 ${_currentSetIdx + 1}/$totalSets 组',
+                              style: TextStyle(
+                                color: colors.accentGlow,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              '目标: ${_targetRepsForCurrentSet()}次',
+                              style: TextStyle(
+                                color: colors.textSecondary,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              '休息: ${_getRestTimeForCurrentExercise()}秒',
+                              style: TextStyle(
+                                color: colors.textMuted,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Previous set records
+                        if (records.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            '已完成组',
+                            style: TextStyle(
+                              color: colors.textMuted,
+                              fontSize: 13,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          '休息: ${_getRestTimeForCurrentExercise()}秒',
-                          style: TextStyle(
-                            color: colors.textMuted,
-                            fontSize: 13,
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: records.map((r) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: colors.successColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  isBodyweight
+                                      ? '第${r['set']}组 ×${r['reps']}'
+                                      : '第${r['set']}组 ${r['weight']}kg×${r['reps']}',
+                                  style: TextStyle(
+                                    color: colors.successColor,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
+                        ],
+                        const SizedBox(height: 20),
+                        // Weight & reps input（自重/有氧动作不显示重量输入，次数独占整行）
+                        Row(
+                          children: [
+                            if (!isBodyweight) ...[
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '重量 (kg)',
+                                      style: TextStyle(
+                                        color: colors.textSecondary,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    TextField(
+                                      controller: _weightController,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      style: TextStyle(
+                                          color: colors.textPrimary,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                      decoration: InputDecoration(
+                                        hintText: '输入重量',
+                                        hintStyle:
+                                            TextStyle(color: colors.textMuted),
+                                        filled: true,
+                                        fillColor: colors.bgSecondary,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                              color: colors.borderColor),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                              color: colors.borderColor),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                              color: colors.accentGlow),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 10),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '次数',
+                                    style: TextStyle(
+                                      color: colors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: _repsController,
+                                    keyboardType: TextInputType.number,
+                                    style: TextStyle(
+                                        color: colors.textPrimary,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                    decoration: InputDecoration(
+                                      hintText: '输入次数',
+                                      hintStyle:
+                                          TextStyle(color: colors.textMuted),
+                                      filled: true,
+                                      fillColor: colors.bgSecondary,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: colors.borderColor),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: colors.borderColor),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: colors.accentGlow),
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    // Previous set records
-                    if (records.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        '已完成组',
-                        style: TextStyle(
-                          color: colors.textMuted,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: records.map((r) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: colors.successColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
+                        const SizedBox(height: 24),
+                        // Complete button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _completeSet,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                             child: Text(
-                              '第${r['set']}组 ${r['weight']}kg×${r['reps']}',
-                              style: TextStyle(
-                                color: colors.successColor,
-                                fontSize: 12,
+                              '完成第${_currentSetIdx + 1}组',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    // Weight & reps input
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '重量 (kg)',
-                                style: TextStyle(
-                                  color: colors.textSecondary,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: _weightController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-                                decoration: InputDecoration(
-                                  hintText: '输入重量',
-                                  hintStyle: TextStyle(color: colors.textMuted),
-                                  filled: true,
-                                  fillColor: colors.bgSecondary,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        BorderSide(color: colors.borderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        BorderSide(color: colors.borderColor),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        BorderSide(color: colors.accentGlow),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 10),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '次数',
-                                style: TextStyle(
-                                  color: colors.textSecondary,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              TextField(
-                                controller: _repsController,
-                                keyboardType: TextInputType.number,
-                                style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
-                                decoration: InputDecoration(
-                                  hintText: '输入次数',
-                                  hintStyle: TextStyle(color: colors.textMuted),
-                                  filled: true,
-                                  fillColor: colors.bgSecondary,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        BorderSide(color: colors.borderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        BorderSide(color: colors.borderColor),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        BorderSide(color: colors.accentGlow),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 10),
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    // Complete button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _completeSet,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          '完成第${_currentSetIdx + 1}组',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
+                  ),
+                  // 动作指导卡片（置于训练卡片下方）
+                  if (_exercises.isNotEmpty &&
+                      _currentExIdx < _exercises.length) ...[
+                    const SizedBox(height: 12),
+                    _buildActionGuide(colors),
                   ],
-                ),
-              ),
-                    // 动作指导卡片（置于训练卡片下方）
-                    if (_exercises.isNotEmpty && _currentExIdx < _exercises.length) ...[
-                      const SizedBox(height: 12),
-                      _buildActionGuide(colors),
-                    ],
-                  ],
-                ),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );
@@ -1461,10 +1534,15 @@ class _TrainingPageState extends State<TrainingPage>
         : (exId != null ? (MockData.exerciseDescriptions[exId] ?? '') : '');
     List<String> muscles = (ex['muscles'] as List?)?.isNotEmpty == true
         ? List<String>.from(ex['muscles'] as List)
-        : (exId != null ? (MockData.exerciseMuscles[exId] ?? <String>[]) : <String>[]);
-    List<Map<String, dynamic>> steps = (ex['steps'] as List?)?.isNotEmpty == true
-        ? List<Map<String, dynamic>>.from(ex['steps'] as List)
-        : (exId != null ? (MockData.exerciseSteps[exId] ?? <Map<String, dynamic>>[]) : <Map<String, dynamic>>[]);
+        : (exId != null
+            ? (MockData.exerciseMuscles[exId] ?? <String>[])
+            : <String>[]);
+    List<Map<String, dynamic>> steps =
+        (ex['steps'] as List?)?.isNotEmpty == true
+            ? List<Map<String, dynamic>>.from(ex['steps'] as List)
+            : (exId != null
+                ? (MockData.exerciseSteps[exId] ?? <Map<String, dynamic>>[])
+                : <Map<String, dynamic>>[]);
 
     // ID 匹配失败时，通过动作名称回退查找 MockData
     // 系统计划 JSON 使用 ex_str_xxx 等 ID，与 MockData 的 e1-e21 不一致
@@ -1501,7 +1579,8 @@ class _TrainingPageState extends State<TrainingPage>
     }
 
     final exName = ex['name'] as String? ?? '当前动作';
-    final hasContent = desc.isNotEmpty || muscles.isNotEmpty || steps.isNotEmpty;
+    final hasContent =
+        desc.isNotEmpty || muscles.isNotEmpty || steps.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 8),
@@ -1514,15 +1593,20 @@ class _TrainingPageState extends State<TrainingPage>
               onTap: _toggleActionGuide,
               borderRadius: BorderRadius.circular(12),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   children: [
-                    Icon(Icons.lightbulb_outline, size: 16, color: colors.accentGlow),
+                    Icon(Icons.lightbulb_outline,
+                        size: 16, color: colors.accentGlow),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '动作指导 · $exName',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: colors.textPrimary),
                       ),
                     ),
                     AnimatedRotation(
@@ -1546,110 +1630,190 @@ class _TrainingPageState extends State<TrainingPage>
                 curve: Curves.easeInOut,
                 alignment: Alignment.topCenter,
                 child: _actionGuideExpanded
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const DividerWidget(indent: 14),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-                          child: hasContent
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (desc.isNotEmpty) ...[
-                                    Text('动作说明', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                                    const SizedBox(height: 4),
-                                    Text(desc, style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.5)),
-                                    const SizedBox(height: 10),
-                                  ],
-                                  if (muscles.isNotEmpty) ...[
-                                    Text('目标肌群', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                                    const SizedBox(height: 4),
-                                    Wrap(
-                                      spacing: 6,
-                                      runSpacing: 4,
-                                      children: muscles.map((m) => Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: colors.accentGlow.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(8),
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const DividerWidget(indent: 14),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+                            child: hasContent
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (desc.isNotEmpty) ...[
+                                        Text('动作说明',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: colors.accentGlow)),
+                                        const SizedBox(height: 4),
+                                        Text(desc,
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: colors.textSecondary,
+                                                height: 1.5)),
+                                        const SizedBox(height: 10),
+                                      ],
+                                      if (muscles.isNotEmpty) ...[
+                                        Text('目标肌群',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: colors.accentGlow)),
+                                        const SizedBox(height: 4),
+                                        Wrap(
+                                          spacing: 6,
+                                          runSpacing: 4,
+                                          children: muscles
+                                              .map((m) => Container(
+                                                    padding: const EdgeInsets
+                                                            .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: colors.accentGlow
+                                                          .withOpacity(0.1),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8),
+                                                    ),
+                                                    child: Text(m,
+                                                        style: TextStyle(
+                                                            fontSize: 11,
+                                                            color: colors
+                                                                .accentGlow)),
+                                                  ))
+                                              .toList(),
                                         ),
-                                        child: Text(m, style: TextStyle(fontSize: 11, color: colors.accentGlow)),
-                                      )).toList(),
-                                    ),
-                                    const SizedBox(height: 10),
-                                  ],
-                                  if (steps.isNotEmpty) ...[
-                                    Text('训练步骤', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.accentGlow)),
-                                    const SizedBox(height: 6),
-                                    ...steps.asMap().entries.map((e) {
-                                      final i = e.key;
-                                      final s = e.value;
-                                      final kp = (s['keyPoses'] as List?) ?? [];
-                                      final stepImg = s['image'] as String?;
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 10),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('${i + 1}. ${s['title'] ?? ''}',
-                                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
-                                            if (stepImg != null) ...[
-                                              const SizedBox(height: 6),
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: Image.asset(
-                                                  stepImg,
-                                                  width: double.infinity,
-                                                  height: 120,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (_, __, ___) => Container(
-                                                    width: double.infinity,
-                                                    height: 80,
-                                                    color: colors.bgSecondary,
-                                                    child: Icon(Icons.fitness_center, size: 28, color: colors.textMuted.withOpacity(0.3)),
+                                        const SizedBox(height: 10),
+                                      ],
+                                      if (steps.isNotEmpty) ...[
+                                        Text('训练步骤',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: colors.accentGlow)),
+                                        const SizedBox(height: 6),
+                                        ...steps.asMap().entries.map((e) {
+                                          final i = e.key;
+                                          final s = e.value;
+                                          final kp =
+                                              (s['keyPoses'] as List?) ?? [];
+                                          final stepImg = s['image'] as String?;
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 10),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                    '${i + 1}. ${s['title'] ?? ''}',
+                                                    style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: colors
+                                                            .textPrimary)),
+                                                if (stepImg != null) ...[
+                                                  const SizedBox(height: 6),
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    child: Image.asset(
+                                                      stepImg,
+                                                      width: double.infinity,
+                                                      height: 120,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (_, __, ___) =>
+                                                              Container(
+                                                        width: double.infinity,
+                                                        height: 80,
+                                                        color:
+                                                            colors.bgSecondary,
+                                                        child: Icon(
+                                                            Icons
+                                                                .fitness_center,
+                                                            size: 28,
+                                                            color: colors
+                                                                .textMuted
+                                                                .withOpacity(
+                                                                    0.3)),
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 6),
-                                            ],
-                                            if ((s['desc'] as String?)?.isNotEmpty == true)
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 2, left: 12),
-                                                child: Text(s['desc'],
-                                                    style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.4)),
-                                              ),
-                                            if (kp.isNotEmpty) ...[
-                                              const SizedBox(height: 4),
-                                              ...kp.map((k) => Padding(
-                                                padding: const EdgeInsets.only(left: 24, bottom: 2),
-                                                child: Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text('· ', style: TextStyle(fontSize: 12, color: colors.accentGlow)),
-                                                    Expanded(child: Text(k.toString(),
-                                                        style: TextStyle(fontSize: 11, color: colors.textSecondary))),
-                                                  ],
-                                                ),
-                                              )),
-                                            ],
-                                          ],
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ],
-                              )
-                            : Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  child: Text('暂无动作指导', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
-                                ),
-                              ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox(width: double.infinity),
+                                                  const SizedBox(height: 6),
+                                                ],
+                                                if ((s['desc'] as String?)
+                                                        ?.isNotEmpty ==
+                                                    true)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 2, left: 12),
+                                                    child: Text(s['desc'],
+                                                        style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: colors
+                                                                .textSecondary,
+                                                            height: 1.4)),
+                                                  ),
+                                                if (kp.isNotEmpty) ...[
+                                                  const SizedBox(height: 4),
+                                                  ...kp.map((k) => Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .only(
+                                                                left: 24,
+                                                                bottom: 2),
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text('· ',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color: colors
+                                                                        .accentGlow)),
+                                                            Expanded(
+                                                                child: Text(
+                                                                    k
+                                                                        .toString(),
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            11,
+                                                                        color: colors
+                                                                            .textSecondary))),
+                                                          ],
+                                                        ),
+                                                      )),
+                                                ],
+                                              ],
+                                            ),
+                                          );
+                                        }),
+                                      ],
+                                    ],
+                                  )
+                                : Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      child: Text('暂无动作指导',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: colors.textSecondary)),
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      )
+                    : const SizedBox(width: double.infinity),
               ),
             ),
           ],
@@ -1760,8 +1924,8 @@ class _TrainingPageState extends State<TrainingPage>
                       ? () => _endRest(RestEndReason.manual)
                       : _skipRest,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
                       border: Border.all(color: buttonColor),
                       borderRadius: BorderRadius.circular(10),
@@ -1900,7 +2064,8 @@ class _TrainingPageState extends State<TrainingPage>
                                 Text(
                                   '休息${log['actualRestSeconds']}秒',
                                   style: TextStyle(
-                                      color: colors.textSecondary, fontSize: 13),
+                                      color: colors.textSecondary,
+                                      fontSize: 13),
                                 ),
                               ],
                             ),
@@ -1935,7 +2100,8 @@ class _TrainingPageState extends State<TrainingPage>
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.share_outlined),
                       label: const Text('分享训练成果'),
-                      onPressed: () => _shareTrainingCard(totalWeight, duration),
+                      onPressed: () =>
+                          _shareTrainingCard(totalWeight, duration),
                     ),
                   ),
                   // v1 V1-11: 写训练笔记入口
@@ -1992,20 +2158,22 @@ class _TrainingPageState extends State<TrainingPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _detailRow('平均每组重量',
+                          _detailRow(
+                              '平均每组重量',
                               _completedSets > 0
                                   ? '${(totalWeight / _completedSets).toStringAsFixed(1)} kg'
                                   : '0 kg',
                               colors),
                           const SizedBox(height: 8),
-                          _detailRow('训练密度',
+                          _detailRow(
+                              '训练密度',
                               '${(_completedSets / (duration > 0 ? duration : 1)).toStringAsFixed(2)} 组/分',
                               colors),
                           const SizedBox(height: 8),
-                          _detailRow('完成动作数',
-                              '${_exercises.length} 个', colors),
+                          _detailRow('完成动作数', '${_exercises.length} 个', colors),
                           const SizedBox(height: 8),
-                          _detailRow('平均休息时长',
+                          _detailRow(
+                              '平均休息时长',
                               _restLog.isEmpty
                                   ? '0 秒'
                                   : '${(_restLog.fold<int>(0, (sum, l) => sum + (l['actualRestSeconds'] as num).toInt()) / _restLog.length).round()} 秒',
@@ -2043,16 +2211,19 @@ class _TrainingPageState extends State<TrainingPage>
   /// v1 虚拟对手 PK 对比卡片 —— 训练完成后展示本周 PK 结果
   Widget _buildOpponentPKCard(LiftTrackColors colors) {
     final settings = Storage.getSettings();
-    final opponentJson = settings['virtualOpponentData'] as Map<String, dynamic>?;
+    final opponentJson =
+        settings['virtualOpponentData'] as Map<String, dynamic>?;
     if (opponentJson == null) return const SizedBox.shrink();
 
-    final opponent = VirtualOpponent.fromJson(Map<String, dynamic>.from(opponentJson));
+    final opponent =
+        VirtualOpponent.fromJson(Map<String, dynamic>.from(opponentJson));
     final records = Storage.getRecords();
 
     // 计算用户本周训练次数
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
-    final weekStartMs = DateTime(weekStart.year, weekStart.month, weekStart.day).millisecondsSinceEpoch;
+    final weekStartMs = DateTime(weekStart.year, weekStart.month, weekStart.day)
+        .millisecondsSinceEpoch;
     int userWeeklyTrainings = 0;
     for (final r in records) {
       final ts = r['date'] as int? ?? r['createTime'] as int?;
@@ -2112,7 +2283,10 @@ class _TrainingPageState extends State<TrainingPage>
                 const SizedBox(width: 6),
                 Text(
                   '本周PK · vs ${opponent.nickname}',
-                  style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
                 if (cardTheme != null)
@@ -2125,15 +2299,18 @@ class _TrainingPageState extends State<TrainingPage>
                     ),
                   ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: (userWon ? colors.successColor : colors.warningColor).withOpacity(0.15),
+                    color: (userWon ? colors.successColor : colors.warningColor)
+                        .withOpacity(0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     userWon ? '领先' : '追赶中',
                     style: TextStyle(
-                      color: userWon ? colors.successColor : colors.warningColor,
+                      color:
+                          userWon ? colors.successColor : colors.warningColor,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -2170,9 +2347,15 @@ class _TrainingPageState extends State<TrainingPage>
             ),
             const SizedBox(height: 12),
             // 双方进度条对比
-            _buildPKBar(colors, '我', userWeeklyTrainings, outcome.userScore, colors.accentGlow),
+            _buildPKBar(colors, '我', userWeeklyTrainings, outcome.userScore,
+                colors.accentGlow),
             const SizedBox(height: 8),
-            _buildPKBar(colors, opponent.nickname, opponent.weeklyTrainings, outcome.opponentScore, cardTheme?.glowColor ?? colors.textMuted),
+            _buildPKBar(
+                colors,
+                opponent.nickname,
+                opponent.weeklyTrainings,
+                outcome.opponentScore,
+                cardTheme?.glowColor ?? colors.textMuted),
             const SizedBox(height: 12),
             // 超越百分比
             Row(
@@ -2185,7 +2368,10 @@ class _TrainingPageState extends State<TrainingPage>
                 if (opponent.currentStatus != null)
                   Text(
                     '${opponent.nickname}：${opponent.currentStatus}',
-                    style: TextStyle(color: colors.textMuted, fontSize: 11, fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                        color: colors.textMuted,
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -2197,12 +2383,16 @@ class _TrainingPageState extends State<TrainingPage>
     );
   }
 
-  Widget _buildPKBar(LiftTrackColors colors, String label, int trainings, double score, Color color) {
+  Widget _buildPKBar(LiftTrackColors colors, String label, int trainings,
+      double score, Color color) {
     return Row(
       children: [
         SizedBox(
           width: 60,
-          child: Text(label, style: TextStyle(color: colors.textSecondary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+          child: Text(label,
+              style: TextStyle(color: colors.textSecondary, fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -2219,7 +2409,9 @@ class _TrainingPageState extends State<TrainingPage>
         const SizedBox(width: 8),
         SizedBox(
           width: 30,
-          child: Text('$trainings次', style: TextStyle(color: colors.textSecondary, fontSize: 11), textAlign: TextAlign.end),
+          child: Text('$trainings次',
+              style: TextStyle(color: colors.textSecondary, fontSize: 11),
+              textAlign: TextAlign.end),
         ),
       ],
     );
