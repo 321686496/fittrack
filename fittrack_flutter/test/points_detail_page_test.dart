@@ -60,7 +60,7 @@ void main() {
     // 修复前：invite_milestone_3 显示原始字符串
     expect(find.text('邀请里程碑（第 3 人）'), findsOneWidget);
     // invited 显示为「邀请好友」（积分获取途径区段也含同名文案，≥2 处）
-    expect(find.text('邀请好友'), findsWidgets);
+    expect(find.text('邀请好友'), findsNWidgets(2));
   });
 
   testWidgets('「邀请」筛选器匹配 invited 与 invite_milestone', (tester) async {
@@ -82,7 +82,7 @@ void main() {
     // 修复前：invite 分支不匹配 invited/invite_milestone_* → 空列表
     expect(find.text('暂无该类型记录'), findsNothing);
     expect(find.text('邀请里程碑（第 3 人）'), findsOneWidget);
-    expect(find.text('邀请好友'), findsWidgets);
+    expect(find.text('邀请好友'), findsNWidgets(2));
     // checkIn 条目被过滤（「每日签到」仅剩积分获取途径区段的同名文案 1 处）
     expect(find.text('每日签到'), findsOneWidget);
   });

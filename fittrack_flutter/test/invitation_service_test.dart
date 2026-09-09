@@ -267,6 +267,7 @@ void main() {
           await InvitationService.instance.recordReferralActivation(receipt);
       expect(first.success, true);
       expect(second.success, false);
+      expect(second.totalReferrals, 1); // 失败分支携带当前累计值
       expect(PointsService.instance.points, 100); // 只发一次
       expect(
         (Storage.getSettings()['myReferralCodes'] as List).length,
