@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../data/storage.dart';
 import '../services/invitation_service.dart';
@@ -652,6 +653,7 @@ class _InvitationPageState extends State<InvitationPage> {
     ];
 
     return CardWidget(
+      onTap: () => context.push('/invitation/flow'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -667,6 +669,12 @@ class _InvitationPageState extends State<InvitationPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              const Spacer(),
+              Text(
+                '查看详情',
+                style: TextStyle(color: colors.textMuted, fontSize: 12),
+              ),
+              Icon(Icons.chevron_right, color: colors.textMuted, size: 16),
             ],
           ),
           const SizedBox(height: 16),

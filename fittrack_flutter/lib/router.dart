@@ -37,6 +37,7 @@ import 'pages/contact_page.dart';
 import 'pages/achievement_page.dart';
 import 'pages/redeem_page.dart';
 import 'pages/invitation_page.dart';
+import 'pages/invitation_flow_detail_page.dart';
 import 'pages/share_code_page.dart';
 import 'pages/plan_qr_code_page.dart';
 import 'pages/scan_import_page.dart';
@@ -379,6 +380,11 @@ GoRouter createRouter() {
         path: '/invitation',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const InvitationPage(),
+      ),
+      GoRoute(
+        path: '/invitation/flow',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const InvitationFlowDetailPage(),
       ),
       GoRoute(
         path: '/share-code',
