@@ -43,8 +43,8 @@ void main() {
     test('被邀请人激活应获得 50 积分', () async {
       // 模拟一个合法的邀请码（邀请人身份 ≠ 当前用户身份）
       // 通过 service 自身方法生成一个不同的邀请码
-      final inviterDeviceId = 'inviter_device_seed_123';
-      final inviteeDeviceId = 'invitee_device_seed_456';
+      const inviterDeviceId = 'inviter_device_seed_123';
+      const inviteeDeviceId = 'invitee_device_seed_456';
       // 模拟 inviter 的邀请码：先生成，再用 invitee 身份激活
       // 由于 generateInvitationCode 依赖 deviceId，先设置 inviter 的
       useDeviceId(inviterDeviceId);

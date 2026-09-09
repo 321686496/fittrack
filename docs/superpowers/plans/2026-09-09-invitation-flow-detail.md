@@ -32,7 +32,7 @@
 - Consumes: 现有 `ReferralMilestone` 枚举、`Storage.getSettings()`、`PointsService.addPoints`
 - Produces: `class ReferralRecordOutcome { final bool success; final int totalReferrals; final int pointsEarned; final ReferralMilestone? milestone; }`；`Future<ReferralRecordOutcome> recordReferralActivation(String inviteeCode)` —— Task 3 的 `_recordReceipt` 依赖此签名
 
-- [ ] **Step 1: 修改测试断言（先失败）**
+- [x] **Step 1: 修改测试断言（先失败）**
 
 在 `test/invitation_service_test.dart` 中做以下修改：
 
@@ -151,7 +151,7 @@
     });
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 flutter test test/invitation_service_test.dart
@@ -159,7 +159,7 @@ flutter test test/invitation_service_test.dart
 
 预期：编译错误 `The value of type 'ReferralMilestone?' can't be assigned...` / `ReferralRecordOutcome` 未定义（Result: FAIL）。
 
-- [ ] **Step 3: 实现 ReferralRecordOutcome 并改造三个方法**
+- [x] **Step 3: 实现 ReferralRecordOutcome 并改造三个方法**
 
 在 `lib/services/invitation_service.dart` 的 `ReceiptValidationResult` 类之后（约 61 行后）新增：
 
@@ -293,7 +293,7 @@ class ReferralRecordOutcome {
 
 （后续逻辑 `if (milestone != null) {...}` 不动，Toast 分支化留给 Task 3。）
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 ```bash
 flutter test test/invitation_service_test.dart
@@ -301,7 +301,7 @@ flutter test test/invitation_service_test.dart
 
 预期：全部 PASS（含新增「第 2 次入账非里程碑档位」测试）。
 
-- [ ] **Step 5: 静态检查**
+- [x] **Step 5: 静态检查**
 
 ```bash
 flutter analyze lib/services/invitation_service.dart lib/pages/invitation_page.dart test/invitation_service_test.dart
@@ -309,7 +309,7 @@ flutter analyze lib/services/invitation_service.dart lib/pages/invitation_page.d
 
 预期：No issues found。
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add fittrack_flutter/lib/services/invitation_service.dart fittrack_flutter/lib/pages/invitation_page.dart fittrack_flutter/test/invitation_service_test.dart
@@ -330,7 +330,7 @@ git commit -m "feat: 邀请成果记录返回结构化 ReferralRecordOutcome（�
 - Consumes: `PageHeader(title, subtitle, onBack)`、`CardWidget(child, onTap)`、`LiftTrackColors`
 - Produces: `class InvitationFlowDetailPage extends StatelessWidget`（const 构造）；路由路径 `/invitation/flow`（Task 3 无依赖，仅页面跳转入口）
 
-- [ ] **Step 1: 编写失败的平台渲染测试**
+- [x] **Step 1: 编写失败的平台渲染测试**
 
 新建 `fittrack_flutter/test/invitation_flow_detail_page_test.dart`：
 
@@ -376,7 +376,7 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 flutter test test/invitation_flow_detail_page_test.dart
@@ -384,7 +384,7 @@ flutter test test/invitation_flow_detail_page_test.dart
 
 预期：编译错误 `invitation_flow_detail_page.dart` 不存在（Result: FAIL）。
 
-- [ ] **Step 3: 创建 InvitationFlowDetailPage**
+- [x] **Step 3: 创建 InvitationFlowDetailPage**
 
 新建 `fittrack_flutter/lib/pages/invitation_flow_detail_page.dart`，完整内容：
 
@@ -797,7 +797,7 @@ class _RewardTierData {
 }
 ```
 
-- [ ] **Step 4: 注册路由**
+- [x] **Step 4: 注册路由**
 
 `fittrack_flutter/lib/router.dart`：
 
@@ -817,7 +817,7 @@ import 'pages/invitation_flow_detail_page.dart';
       ),
 ```
 
-- [ ] **Step 5: 流程卡片接入点击入口**
+- [x] **Step 5: 流程卡片接入点击入口**
 
 `fittrack_flutter/lib/pages/invitation_page.dart`：
 
@@ -854,7 +854,7 @@ import 'package:go_router/go_router.dart';
               Icon(Icons.chevron_right, color: colors.textMuted, size: 16),
 ```
 
-- [ ] **Step 6: 运行测试验证通过**
+- [x] **Step 6: 运行测试验证通过**
 
 ```bash
 flutter test test/invitation_flow_detail_page_test.dart
@@ -862,7 +862,7 @@ flutter test test/invitation_flow_detail_page_test.dart
 
 预期：PASS（渲染无布局溢出异常，双视角与奖励对照断言全部命中）。
 
-- [ ] **Step 7: 静态检查**
+- [x] **Step 7: 静态检查**
 
 ```bash
 flutter analyze lib/pages/invitation_flow_detail_page.dart lib/router.dart lib/pages/invitation_page.dart test/invitation_flow_detail_page_test.dart
@@ -870,7 +870,7 @@ flutter analyze lib/pages/invitation_flow_detail_page.dart lib/router.dart lib/p
 
 预期：No issues found。
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add fittrack_flutter/lib/pages/invitation_flow_detail_page.dart fittrack_flutter/lib/router.dart fittrack_flutter/lib/pages/invitation_page.dart fittrack_flutter/test/invitation_flow_detail_page_test.dart
@@ -890,7 +890,7 @@ git commit -m "feat: 邀请流程卡片新增流程详解详情页（双视角�
 - Consumes: Task 1 的 `ReferralRecordOutcome`（`success` / `pointsEarned` / `totalReferrals` 字段）
 - Produces: 无对外新接口（页面内私有方法修复）
 
-- [ ] **Step 1: 编写失败的积分明细测试**
+- [x] **Step 1: 编写失败的积分明细测试**
 
 新建 `fittrack_flutter/test/points_detail_page_test.dart`：
 
@@ -989,7 +989,7 @@ void main() {
 
 注意「每日签到」断言：积分获取途径区段固定渲染 1 处「每日签到」（`_buildWayItem`），修复前筛选「邀请」后列表中的签到条目也消失 → 命中 1 处；若筛选失效未过滤 checkIn → 命中 2 处，断言失败。
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 flutter test test/points_detail_page_test.dart
@@ -997,7 +997,7 @@ flutter test test/points_detail_page_test.dart
 
 预期：第 1 个测试 FAIL（找不到 `邀请里程碑（第 3 人）`，实际渲染原始字符串 `invite_milestone_3`）；第 2 个测试 FAIL（`暂无该类型记录` 出现或「每日签到」命中 2 处）。
 
-- [ ] **Step 3: 修复积分明细标签/筛选/图标**
+- [x] **Step 3: 修复积分明细标签/筛选/图标**
 
 `fittrack_flutter/lib/pages/points_detail_page.dart`：
 
@@ -1039,7 +1039,7 @@ flutter test test/points_detail_page_test.dart
       switch (source) {
 ```
 
-- [ ] **Step 4: 修复 _recordReceipt Toast 分支**
+- [x] **Step 4: 修复 _recordReceipt Toast 分支**
 
 `fittrack_flutter/lib/pages/invitation_page.dart` 的 `_recordReceipt`（约 944-960 行，注意 Task 1 已将头部改为 `final outcome = ...; final milestone = outcome.milestone;` 的临时形态）整体替换为：
 
@@ -1068,7 +1068,7 @@ flutter test test/points_detail_page_test.dart
   }
 ```
 
-- [ ] **Step 5: 运行测试验证通过**
+- [x] **Step 5: 运行测试验证通过**
 
 ```bash
 flutter test test/points_detail_page_test.dart
@@ -1077,7 +1077,7 @@ flutter test test/invitation_service_test.dart
 
 预期：全部 PASS。
 
-- [ ] **Step 6: 全量回归 + 静态检查**
+- [x] **Step 6: 全量回归 + 静态检查**
 
 ```bash
 flutter test
@@ -1086,14 +1086,14 @@ flutter analyze lib/pages/points_detail_page.dart lib/pages/invitation_page.dart
 
 预期：全部测试 PASS（注意：本仓库历史测试基线如有与本任务无关的既有失败，记录失败清单并确认不含本任务涉及文件）；analyze No issues found。
 
-- [ ] **Step 7: 手动验证清单（模拟器）**
+- [x] **Step 7: 手动验证清单（模拟器）**（2026-09-09 OHOS 模拟器 127.0.0.1:5555 实测通过，证据截图 `.superpowers/sdd/verify-shot-06~17.png`）
 
 - 邀请页 →「邀请流程」卡片点击 → 进入 `/invitation/flow` 详情页，双视角时间线、奖励对照、规则说明渲染正常
 - 详情页返回按钮回邀请页
 - 「记录邀请成果」录入第 2 个有效识别码 → Toast 显示「记录成功！已累计邀请 2 人」
 - 积分明细页 → 筛选「邀请」→ 里程碑与被邀请奖励条目可见且显示友好标签
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add fittrack_flutter/lib/pages/invitation_page.dart fittrack_flutter/lib/pages/points_detail_page.dart fittrack_flutter/test/points_detail_page_test.dart
