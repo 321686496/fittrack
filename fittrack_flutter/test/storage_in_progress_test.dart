@@ -37,6 +37,22 @@ void main() {
     expect(Storage.getInProgressTraining(), isNull);
   });
 
+  test('saveInProgressTraining toggles dataChanged notifier', () async {
+    await Storage.init();
+    final before = Storage.dataChanged.value;
+    await Storage.saveInProgressTraining({'planId': 'test'});
+    expect(Storage.dataChanged.value, !before);
+  });
+
+  test('clearInProgressTraining toggles dataChanged notifier', () async {
+    await Storage.init();
+    await Storage.saveInProgressTraining({'planId': 'test'});
+    final before = Storage.dataChanged.value;
+    await Storage.clearInProgressTraining();
+    expect(Storage.dataChanged.value, !before);
+    expect(Storage.getInProgressTraining(), isNull);
+  });
+
   test('settings defaults include autoEndAfterRest and restOvertimeLimitMultiplier', () async {
     await Storage.init();
     final settings = Storage.getSettings();

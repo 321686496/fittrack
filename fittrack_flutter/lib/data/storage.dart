@@ -604,6 +604,8 @@ class Storage {
     data['lastPersistedAt'] = DateTime.now().millisecondsSinceEpoch;
     _store[_inProgressKey] = data;
     _prefs?.setString('$_keyPrefsPrefix$_inProgressKey', jsonEncode(data));
+    // 通知监听方（首页等）刷新"进行中"状态
+    dataChanged.value = !dataChanged.value;
   }
 
   /// 读取进行中的训练数据（同步，从内存缓存）
@@ -629,6 +631,8 @@ class Storage {
   static Future<void> clearInProgressTraining() async {
     _store.remove(_inProgressKey);
     await _prefs?.remove('$_keyPrefsPrefix$_inProgressKey');
+    // 通知监听方（首页等）刷新回"待开始"
+    dataChanged.value = !dataChanged.value;
   }
 
   // ============================================================
