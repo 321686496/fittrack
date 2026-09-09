@@ -104,9 +104,23 @@ void main() {
         if (targetPage == 'training') {
           final handler = OhosReminderService.instance.onTrainingCardAction;
           if (handler != null) {
+            // 训练页在栈中：原地处理（skipRest / 不导航）
             handler(args);
           } else {
-            _globalRouter?.go('/home');
+            // 训练页不在栈中：有今天的草稿则恢复训练页，否则回首页
+            final inProgress = Storage.getInProgressTraining();
+            final now = DateTime.now();
+            final today = '${now.year}-${now.month}-${now.day}';
+            final planId = inProgress?['planId'] as String?;
+            final dayIndex = inProgress?['dayIndex'] as int? ?? 0;
+            if (inProgress != null &&
+                inProgress['startedAtDate'] == today &&
+                planId != null &&
+                planId.isNotEmpty) {
+              _globalRouter?.go('/training?planId=$planId&dayIndex=$dayIndex');
+            } else {
+              _globalRouter?.go('/home');
+            }
           }
         } else if (targetPage == 'home') {
           _globalRouter?.go('/home');

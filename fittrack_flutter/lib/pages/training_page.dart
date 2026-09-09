@@ -28,6 +28,7 @@ import '../services/platform/live_view_service.dart';
 import '../services/platform/rest_reminder_service.dart';
 import '../services/platform/implementations/ohos_rest_reminder_service.dart';
 import '../services/permission_service.dart';
+import '../services/ohos_reminder_service.dart';
 import '../router.dart';
 import '../widgets/first_training_feedback_sheet.dart';
 
@@ -144,6 +145,10 @@ class _TrainingPageState extends State<TrainingPage>
     _persistenceTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       _persistInProgressTraining();
     });
+
+    // OHOS 桌面卡片交互：训练页挂载期间原地处理（skipRest / 回到应用不导航），
+    // 避免卡片点击走 fallback 跳转首页销毁训练页导致数据丢失
+    OhosReminderService.instance.onTrainingCardAction = _onTrainingCardAction;
   }
 
   /// 检查通知权限，未授予时弹窗引导用户去设置
@@ -172,6 +177,8 @@ class _TrainingPageState extends State<TrainingPage>
     // 兜底：系统手势退出时补一次草稿持久化
     // （_trainingDone / _exercises 为空时内部自动跳过；异步 fire-and-forget）
     _persistInProgressTraining();
+    // 注销桌面卡片交互回调（恢复 main.dart fallback 逻辑）
+    OhosReminderService.instance.onTrainingCardAction = null;
     _resetWidgetOnExit();
     WidgetsBinding.instance.removeObserver(this);
     _restTimer?.cancel();
@@ -203,6 +210,19 @@ class _TrainingPageState extends State<TrainingPage>
         _endRest(RestEndReason.manual);
       }
     }
+  }
+
+  /// OHOS 桌面卡片点击（训练页挂载期间）：
+  /// - skipRest：结束休息进入下一组（必须 _isResting 防护——
+  ///   _skipRest 非幂等，空闲时误调会写入错误休息记录并推进组数）
+  /// - resume：仅回到应用，原地不动（原生侧 Want 已拉起应用到前台）
+  void _onTrainingCardAction(Map<String, dynamic> args) {
+    if (!mounted) return;
+    final cardAction = args['cardAction'] as String?;
+    if (cardAction == 'skipRest' && _isResting) {
+      _skipRest();
+    }
+    // 'resume' 及其他：不做导航，保留当前训练页
   }
 
   /// 真正退出训练页时，恢复卡片空闲态并清理休息提醒。
