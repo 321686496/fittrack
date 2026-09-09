@@ -151,7 +151,8 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     // 容量分析数据（仅含有实际组数的动作）
     final volumeData = <Map<String, dynamic>>[];
     for (final entry in setRecords.entries) {
-      final setsList = entry.value as List? ?? [];
+      // 值可能非 List（历史/导入的畸形数据），类型不匹配时按无组数据处理
+      final setsList = entry.value is List ? entry.value as List : const [];
       if (setsList.isEmpty) continue;
       double vol = 0;
       for (final s in setsList) {

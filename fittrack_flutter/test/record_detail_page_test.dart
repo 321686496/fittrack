@@ -172,4 +172,28 @@ void main() {
 
     expect(find.text('容量分析'), findsNothing);
   });
+
+  testWidgets('畸形setRecords值不导致详情页崩溃', (tester) async {
+    final record = Storage.addRecord({
+      'name': '测试训练',
+      'planName': '测试计划',
+      'date': DateTime.now().millisecondsSinceEpoch,
+      'duration': 30,
+      'totalSets': 1,
+      'totalWeight': 100,
+      'exerciseCount': 1,
+      'muscles': ['胸'],
+      'setRecords': {
+        'e1': 'oops',
+      },
+      'restLog': [],
+    });
+
+    await tester.pumpWidget(
+        _wrap(RecordDetailPage(recordId: record['id'] as String)));
+    await tester.pumpAndSettle();
+
+    // 页面正常渲染，不崩溃
+    expect(find.text('测试计划'), findsOneWidget);
+  });
 }
