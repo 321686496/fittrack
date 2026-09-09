@@ -55,7 +55,9 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
       case 'ad':
         return source == 'ad_watched' || source == 'ad';
       case 'invite':
-        return source == 'invite';
+        return source == 'invite' ||
+            source == 'invited' ||
+            source.startsWith('invite_milestone_');
       case 'course':
         return source == 'course_learn' || source.startsWith('unlock_course_');
       case 'training':
@@ -87,6 +89,12 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
       'invited': '邀请好友',
     };
     if (map.containsKey(source)) return map[source]!;
+
+    // 邀请里程碑：invite_milestone_<N> → 友好标签
+    if (source.startsWith('invite_milestone_')) {
+      final n = source.substring('invite_milestone_'.length);
+      return '邀请里程碑（第 $n 人）';
+    }
 
     // 解锁 / 购买类消费：解析出具体的课程、计划、皮肤、教学章节名称，展示友好提示
     if (source.startsWith('unlock_plan_')) {
@@ -146,6 +154,10 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
 
   IconData _sourceIcon(String source, bool isIncome) {
     if (isIncome) {
+      // 邀请里程碑与邀请奖励共用图标
+      if (source.startsWith('invite_milestone_')) {
+        return Icons.card_giftcard;
+      }
       switch (source) {
         case 'daily_check_in':
         case 'checkIn':
@@ -154,6 +166,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
         case 'ad':
           return Icons.ondemand_video;
         case 'invite':
+        case 'invited':
           return Icons.card_giftcard;
         case 'course_learn':
           return Icons.school;

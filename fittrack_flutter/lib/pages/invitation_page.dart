@@ -954,12 +954,16 @@ class _InvitationPageState extends State<InvitationPage> {
     setState(() => _recording = true);
     final outcome =
         await InvitationService.instance.recordReferralActivation(code);
-    final milestone = outcome.milestone;
     if (!mounted) return;
     setState(() => _recording = false);
 
-    if (milestone != null) {
-      FitToast.success(context, '记录成功！积分奖励已到账');
+    if (outcome.success) {
+      if (outcome.pointsEarned > 0) {
+        FitToast.success(context, '记录成功！+${outcome.pointsEarned} 积分已到账');
+      } else {
+        FitToast.success(
+            context, '记录成功！已累计邀请 ${outcome.totalReferrals} 人');
+      }
       _receiptController.clear();
       setState(() => _receiptValidation = null);
       _loadData();
