@@ -86,4 +86,35 @@ void main() {
 
     expect(find.text('未知动作'), findsOneWidget);
   });
+
+  testWidgets('动作卡片展示汇总信息', (tester) async {
+    final record = Storage.addRecord({
+      'name': '测试训练',
+      'planName': '测试计划',
+      'date': DateTime.now().millisecondsSinceEpoch,
+      'duration': 30,
+      'totalSets': 2,
+      'totalWeight': 500,
+      'exerciseCount': 1,
+      'muscles': ['胸'],
+      'setRecords': {
+        'e1': [
+          {'weight': 30, 'reps': 4, 'rest': 90},
+          {'weight': 35, 'reps': 2, 'rest': 90},
+        ],
+      },
+      'restLog': [],
+    });
+
+    await tester.pumpWidget(
+        _wrap(RecordDetailPage(recordId: record['id'] as String)));
+    await tester.pumpAndSettle();
+
+    // 总容量 30×4 + 35×2 = 190
+    expect(find.text('190kg'), findsOneWidget);
+    // 最重组 35kg×2
+    expect(find.text('35kg×2'), findsOneWidget);
+    // 总次数 4 + 2 = 6
+    expect(find.text('6次'), findsOneWidget);
+  });
 }

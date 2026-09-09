@@ -317,6 +317,22 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
       }
     }
 
+    // 汇总统计：总容量 / 最重组 / 总次数
+    double totalVolume = 0;
+    int totalReps = 0;
+    double bestWeight = 0;
+    int bestReps = 0;
+    for (final s in sets) {
+      final w = (s['weight'] as num?)?.toDouble() ?? 0;
+      final r = (s['reps'] as num?)?.toInt() ?? 0;
+      totalVolume += w * r;
+      totalReps += r;
+      if (w > bestWeight || (w == bestWeight && r > bestReps)) {
+        bestWeight = w;
+        bestReps = r;
+      }
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -366,6 +382,28 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             ),
           ),
           Container(height: 1, color: colors.borderColor),
+          if (sets.isNotEmpty)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                      color: colors.borderColor.withOpacity(0.5)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  _buildSummaryStat(
+                      colors, '总容量', '${_fmtKg(totalVolume)}kg'),
+                  _buildSummaryDivider(colors),
+                  _buildSummaryStat(
+                      colors, '最重组', '${_fmtKg(bestWeight)}kg×$bestReps'),
+                  _buildSummaryDivider(colors),
+                  _buildSummaryStat(colors, '总次数', '$totalReps次'),
+                ],
+              ),
+            ),
           if (sets.isNotEmpty)
             ...sets.asMap().entries.map((entry) {
               final idx = entry.key;
@@ -465,6 +503,40 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             ),
         ],
       ),
+    );
+  }
+
+  /// 数值格式化：整数不带小数点，小数保留 1 位
+  String _fmtKg(double v) =>
+      v == v.truncateToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+
+  Widget _buildSummaryStat(
+      LiftTrackColors colors, String label, String value) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(label,
+              style: TextStyle(color: colors.textMuted, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryDivider(LiftTrackColors colors) {
+    return Container(
+      width: 1,
+      height: 26,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      color: colors.borderColor.withOpacity(0.6),
     );
   }
 
