@@ -57,6 +57,33 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     return rem > 0 ? '${h}小时${rem}分钟' : '${h}小时';
   }
 
+  /// 三级反查动作名：自定义动作库 → 计划内嵌动作 → 内置动作
+  Map<String, String> _buildExerciseNameLookup() {
+    final lookup = <String, String>{};
+    for (final ex in Storage.getCustomExercises()) {
+      final id = ex['id']?.toString() ?? '';
+      final name = ex['name']?.toString() ?? '';
+      if (id.isNotEmpty && name.isNotEmpty) lookup[id] = name;
+    }
+    for (final plan in Storage.getPlans()) {
+      final days = plan['days'] as List? ?? [];
+      for (final day in days) {
+        final exercises = (day as Map)['exercises'] as List? ?? [];
+        for (final ex in exercises) {
+          final id = ex['id']?.toString() ?? '';
+          final name = ex['name']?.toString() ?? '';
+          if (id.isNotEmpty && name.isNotEmpty) lookup[id] = name;
+        }
+      }
+    }
+    for (final ex in MockData.exercises) {
+      final id = ex['id']?.toString() ?? '';
+      final name = ex['name']?.toString() ?? '';
+      if (id.isNotEmpty && name.isNotEmpty) lookup[id] = name;
+    }
+    return lookup;
+  }
+
   void _deleteRecord(String recordId) async {
     final confirmed = await ConfirmDialog.show(
       context,
@@ -115,12 +142,9 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     final restLog = record['restLog'] as List? ?? [];
     final pureDuration = record['pureDuration'] as num?;
     // setRecords 的 key 是动作 id，需要解析成动作名展示
-    final exLookup = <String, String>{};
-    for (final ex in MockData.exercises) {
-      exLookup[ex['id'] as String] = ex['name'] as String;
-    }
+    final exLookup = _buildExerciseNameLookup();
     final exerciseNames = setRecords.keys
-        .map((k) => exLookup[k.toString()] ?? k.toString())
+        .map((k) => exLookup[k.toString()] ?? '未知动作')
         .toList();
 
     return Scaffold(
@@ -213,7 +237,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               const SizedBox(height: 12),
               ...setRecords.entries.map((entry) {
                 final exId = entry.key.toString();
-                final exName = exLookup[exId] ?? exId;
+                final exName = exLookup[exId] ?? '未知动作';
                 return _buildExerciseDetailCard(colors, exName, entry.value);
               }),
             ],
@@ -308,7 +332,6 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             decoration: BoxDecoration(
               color: colors.accentGlow.withOpacity(0.06),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              border: Border(bottom: BorderSide(color: colors.borderColor)),
             ),
             child: Row(
               children: [
@@ -342,6 +365,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               ],
             ),
           ),
+          Container(height: 1, color: colors.borderColor),
           if (sets.isNotEmpty)
             ...sets.asMap().entries.map((entry) {
               final idx = entry.key;
