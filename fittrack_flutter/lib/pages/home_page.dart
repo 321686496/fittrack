@@ -575,11 +575,14 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
 
   Widget _buildTodayPlanCard(LiftTrackColors colors, Map<String, dynamic> plan) {
     final isCompleted = plan['isCompleted'] == true;
+    final isInProgress = plan['isInProgress'] == true;
     final completed = plan['completed'] as int? ?? 0;
-    final total = plan['exerciseCount'] as int? ?? 1;
+    final total = plan['exerciseCount'] as int? ?? 1; // 动作数（"X个动作"文案）
+    // 进度统一组维度：已完成组 / 总计划组（与桌面卡片口径一致）
+    final totalSets = (plan['totalSets'] as int?) ?? 0;
     final progress = isCompleted
         ? 1.0
-        : (total > 0 ? completed / total : 0.0);
+        : (totalSets > 0 ? completed / totalSets : 0.0);
 
     return CardWidget(
       child: Column(
@@ -597,10 +600,10 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               BadgeWidget(
                 text: isCompleted
                     ? '已完成'
-                    : (progress > 0 ? '进行中' : '待开始'),
+                    : (isInProgress ? '进行中' : '待开始'),
                 variant: isCompleted
                     ? BadgeVariant.success
-                    : (progress > 0 ? BadgeVariant.accent : BadgeVariant.info),
+                    : (isInProgress ? BadgeVariant.accent : BadgeVariant.info),
               ),
             ],
           ),
@@ -620,7 +623,9 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               Icon(Icons.timer_outlined, size: 16, color: colors.textSecondary),
               const SizedBox(width: 4),
               Text(
-                '${plan['duration'] ?? 0}min',
+                isInProgress
+                    ? '已练 ${plan['duration'] ?? 0}min'
+                    : '${plan['duration'] ?? 0}min',
                 style: TextStyle(color: colors.textSecondary, fontSize: 13),
               ),
               const SizedBox(width: 16),
@@ -635,11 +640,30 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           const SizedBox(height: 12),
           ProgressBar(progress: progress),
           const SizedBox(height: 4),
-          Text(
-            isCompleted
-                ? '共${plan['totalSets'] ?? 0}组 · 总负重${plan['totalWeight'] ?? 0}kg'
-                : '$completed/$total 已完成',
-            style: TextStyle(color: colors.textMuted, fontSize: 12),
+          Row(
+            children: [
+              Text(
+                isCompleted
+                    ? '共${plan['totalSets'] ?? 0}组 · 总负重${plan['totalWeight'] ?? 0}kg'
+                    : '$completed/$totalSets 组已完成',
+                style: TextStyle(color: colors.textMuted, fontSize: 12),
+              ),
+              if (isInProgress) ...[
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => _confirmAbandonTraining(completed),
+                  child: Text(
+                    '放弃',
+                    style: TextStyle(
+                      color: colors.textMuted,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
+                      decorationColor: colors.textMuted,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 14),
           SizedBox(
@@ -656,6 +680,8 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                     context.push('/records');
                   }
                 } else {
+                  // 进行中/待开始：进入训练页（训练页 _checkInProgressTraining
+                  // 自动恢复草稿进度）
                   context.push('/training?planId=${plan['planId'] ?? _activePlan?['id'] ?? 'plan1'}&dayIndex=${plan['dayIndex'] ?? 0}');
                 }
               },
@@ -666,10 +692,38 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(
-                isCompleted ? '查看记录' : '开始训练',
+                isCompleted
+                    ? '查看记录'
+                    : (isInProgress ? '继续训练' : '开始训练'),
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 放弃进行中的训练：确认后清除草稿，卡片经 dataChanged 自动回到"待开始"
+  void _confirmAbandonTraining(int completedSets) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('放弃本次训练？'),
+        content: Text(completedSets > 0
+            ? '已完成 $completedSets 组的记录将被丢弃。'
+            : '当前训练进度将被丢弃。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Storage.clearInProgressTraining();
+            },
+            child: const Text('放弃'),
           ),
         ],
       ),
