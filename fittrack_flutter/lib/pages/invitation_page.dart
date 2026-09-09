@@ -944,8 +944,9 @@ class _InvitationPageState extends State<InvitationPage> {
   Future<void> _recordReceipt() async {
     final code = _receiptController.text.trim().toUpperCase();
     setState(() => _recording = true);
-    final milestone =
+    final outcome =
         await InvitationService.instance.recordReferralActivation(code);
+    final milestone = outcome.milestone;
     if (!mounted) return;
     setState(() => _recording = false);
 

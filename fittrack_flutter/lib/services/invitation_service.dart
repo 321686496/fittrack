@@ -60,6 +60,21 @@ class ReceiptValidationResult {
   });
 }
 
+/// recordReferralActivation 结构化结果
+class ReferralRecordOutcome {
+  final bool success; // 是否成功入账（新识别码/邀请码）
+  final int totalReferrals; // 入账后累计人数（失败时为当前累计值）
+  final int pointsEarned; // 本次发放积分（非里程碑档位为 0）
+  final ReferralMilestone? milestone; // 命中的里程碑（非档位为 null）
+
+  const ReferralRecordOutcome({
+    required this.success,
+    required this.totalReferrals,
+    this.pointsEarned = 0,
+    this.milestone,
+  });
+}
+
 class InvitationService {
   static final InvitationService instance = InvitationService._();
   InvitationService._();
@@ -346,33 +361,50 @@ class InvitationService {
   /// - `FIT-ACT-` 激活识别码：解密使用数据 → 达标判定（有效训练 ≥ 1）
   ///   → 防自邀（身份哈希 ≠ 当前用户）→ 去重 → 入账
   ///
-  /// 返回是否触发新的里程碑。
-  Future<ReferralMilestone?> recordReferralActivation(String inviteeCode) async {
+  /// 返回结构化结果：入账是否成功、累计人数、本次积分、命中里程碑。
+  Future<ReferralRecordOutcome> recordReferralActivation(String inviteeCode) async {
     final code = inviteeCode.trim().toUpperCase();
     if (code.startsWith('FIT-ACT-')) {
       return _recordByReceipt(code);
     }
-    if (!_verifySignature(code)) return null;
+    if (!_verifySignature(code)) return _currentOutcome();
     return _grantMilestone(code);
   }
 
   /// 识别码分支：达标 + 防自邀 + 去重后才入账
-  Future<ReferralMilestone?> _recordByReceipt(String code) async {
+  Future<ReferralRecordOutcome> _recordByReceipt(String code) async {
     final validation = validateActivationReceipt(code);
-    if (validation.result != ReceiptResult.validReached) return null;
+    if (validation.result != ReceiptResult.validReached) {
+      return _currentOutcome();
+    }
     // 防自邀：识别码身份 = 当前用户身份
     if (validation.identity.isNotEmpty &&
         validation.identity == _computeMyIdentity()) {
-      return null;
+      return _currentOutcome();
     }
     return _grantMilestone(code);
   }
 
-  /// 公共入账：写入 myReferralCodes（去重）+ 里程碑积分/徽章/皮肤发放
-  Future<ReferralMilestone?> _grantMilestone(String code) async {
+  /// 失败分支：返回当前累计状态（success=false）
+  ReferralRecordOutcome _currentOutcome() {
     final settings = Storage.getSettings();
     final myList = (settings['myReferralCodes'] as List?)?.cast<String>() ?? [];
-    if (myList.contains(code)) return null;
+    return ReferralRecordOutcome(
+      success: false,
+      totalReferrals: myList.length,
+    );
+  }
+
+  /// 公共入账：写入 myReferralCodes（去重）+ 里程碑积分/徽章/皮肤发放
+  Future<ReferralRecordOutcome> _grantMilestone(String code) async {
+    final settings = Storage.getSettings();
+    final myList = (settings['myReferralCodes'] as List?)?.cast<String>() ?? [];
+    if (myList.contains(code)) {
+      return ReferralRecordOutcome(
+        success: false,
+        totalReferrals: myList.length,
+      );
+    }
     myList.add(code);
     settings['myReferralCodes'] = myList;
     Storage.saveSettings(settings);
@@ -405,7 +437,13 @@ class InvitationService {
     }
     if (count >= 10) _unlockBadge('referral_ten');
 
-    return _currentMilestone(count);
+    return ReferralRecordOutcome(
+      success: true,
+      totalReferrals: count,
+      pointsEarned: reward,
+      // 仅命中档位（1/3/5/10）时返回里程碑，非档位次数为 null
+      milestone: reward > 0 ? _currentMilestone(count) : null,
+    );
   }
 
   /// 累计邀请 5 人时解锁限定对手皮肤 skin_ambassador

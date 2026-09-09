@@ -72,11 +72,14 @@ void main() {
       // 切回邀请人
       useDeviceId('inviter_main');
 
-      ReferralMilestone? lastMilestone;
+      ReferralRecordOutcome? lastOutcome;
       for (final code in codes) {
-        lastMilestone = await InvitationService.instance.recordReferralActivation(code);
+        lastOutcome = await InvitationService.instance.recordReferralActivation(code);
       }
-      expect(lastMilestone, ReferralMilestone.fiveActivations);
+      expect(lastOutcome!.success, true);
+      expect(lastOutcome.milestone, ReferralMilestone.fiveActivations);
+      expect(lastOutcome.pointsEarned, 600);
+      expect(lastOutcome.totalReferrals, 5);
 
       final s = Storage.getSettings();
       expect(s['unlockedOpponentSkin'], true);
@@ -212,9 +215,12 @@ void main() {
 
       // 邀请人
       useDeviceId('inviter_loop_main');
-      final milestone =
+      final outcome =
           await InvitationService.instance.recordReferralActivation(receipt);
-      expect(milestone, ReferralMilestone.firstActivation);
+      expect(outcome.success, true);
+      expect(outcome.milestone, ReferralMilestone.firstActivation);
+      expect(outcome.pointsEarned, 100);
+      expect(outcome.totalReferrals, 1);
       expect(PointsService.instance.points, 100);
 
       final myList = (Storage.getSettings()['myReferralCodes'] as List).cast<String>();
@@ -226,9 +232,10 @@ void main() {
       final receipt = InvitationService.instance.generateActivationReceipt();
 
       useDeviceId('inviter_loop_main2');
-      final milestone =
+      final outcome =
           await InvitationService.instance.recordReferralActivation(receipt);
-      expect(milestone, isNull);
+      expect(outcome.success, false);
+      expect(outcome.totalReferrals, 0);
       expect(PointsService.instance.points, 0);
       // Storage.getSettings() 会合并 defaults（含 myReferralCodes: []），
       // 未入账时表现为空列表而非 null
@@ -240,9 +247,9 @@ void main() {
       insertValidTraining();
       final receipt = InvitationService.instance.generateActivationReceipt();
 
-      final milestone =
+      final outcome =
           await InvitationService.instance.recordReferralActivation(receipt);
-      expect(milestone, isNull);
+      expect(outcome.success, false);
       // Storage.getSettings() 会合并 defaults（含 myReferralCodes: []），
       // 未入账时表现为空列表而非 null
       expect(Storage.getSettings()['myReferralCodes'], isEmpty);
@@ -254,15 +261,42 @@ void main() {
       final receipt = InvitationService.instance.generateActivationReceipt();
 
       useDeviceId('inviter_loop_main4');
-      await InvitationService.instance.recordReferralActivation(receipt);
+      final first =
+          await InvitationService.instance.recordReferralActivation(receipt);
       final second =
           await InvitationService.instance.recordReferralActivation(receipt);
-      expect(second, isNull);
+      expect(first.success, true);
+      expect(second.success, false);
       expect(PointsService.instance.points, 100); // 只发一次
       expect(
         (Storage.getSettings()['myReferralCodes'] as List).length,
         1,
       );
+    });
+
+    test('第 2 次入账非里程碑档位：成功但 0 积分', () async {
+      // 两个不同被邀请人的达标识别码
+      useDeviceId('invitee_loop_seed_4');
+      insertValidTraining();
+      final receipt1 = InvitationService.instance.generateActivationReceipt();
+      useDeviceId('invitee_loop_seed_5');
+      insertValidTraining();
+      final receipt2 = InvitationService.instance.generateActivationReceipt();
+
+      useDeviceId('inviter_loop_main5');
+      final first =
+          await InvitationService.instance.recordReferralActivation(receipt1);
+      expect(first.success, true);
+      expect(first.pointsEarned, 100); // 第 1 人命中首档
+      expect(first.totalReferrals, 1);
+
+      final second =
+          await InvitationService.instance.recordReferralActivation(receipt2);
+      expect(second.success, true);
+      expect(second.totalReferrals, 2);
+      expect(second.pointsEarned, 0); // 第 2 人非里程碑档位
+      expect(second.milestone, isNull);
+      expect(PointsService.instance.points, 100); // 总积分不变
     });
   });
 }
