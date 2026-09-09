@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -147,6 +148,24 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         .map((k) => exLookup[k.toString()] ?? '未知动作')
         .toList();
 
+    // 容量分析数据（仅含有实际组数的动作）
+    final volumeData = <Map<String, dynamic>>[];
+    for (final entry in setRecords.entries) {
+      final setsList = entry.value as List? ?? [];
+      if (setsList.isEmpty) continue;
+      double vol = 0;
+      for (final s in setsList) {
+        if (s is Map) {
+          vol += ((s['weight'] as num?) ?? 0).toDouble() *
+              ((s['reps'] as num?) ?? 0).toDouble();
+        }
+      }
+      volumeData.add({
+        'name': exLookup[entry.key.toString()] ?? '未知动作',
+        'volume': vol,
+      });
+    }
+
     return Scaffold(
       backgroundColor: colors.bgSecondary,
       appBar: AppBar(
@@ -229,6 +248,12 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                 ],
               ),
             ),
+
+            // 容量分析图表
+            if (volumeData.length > 1) ...[
+              const SizedBox(height: 20),
+              _buildVolumeChartCard(colors, volumeData),
+            ],
 
             // 动作详情列表
             if (exerciseNames.isNotEmpty) ...[
@@ -537,6 +562,133 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
       height: 26,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       color: colors.borderColor.withOpacity(0.6),
+    );
+  }
+
+  Widget _buildVolumeChartCard(
+      LiftTrackColors colors, List<Map<String, dynamic>> data) {
+    final totalVolume = data.fold<double>(
+        0, (sum, e) => sum + ((e['volume'] as num?) ?? 0).toDouble());
+    final maxVol = data
+        .map((e) => ((e['volume'] as num?) ?? 0).toDouble())
+        .reduce((a, b) => a > b ? a : b);
+
+    final barGroups = <BarChartGroupData>[];
+    for (var i = 0; i < data.length; i++) {
+      barGroups.add(BarChartGroupData(
+        x: i,
+        barRods: [
+          BarChartRodData(
+            toY: ((data[i]['volume'] as num?) ?? 0).toDouble(),
+            color: colors.accentGlow,
+            width: 18,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(4)),
+          ),
+        ],
+      ));
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(child: SectionHeader(title: '容量分析')),
+              Text(
+                '合计 ${_fmtKg(totalVolume)}kg',
+                style: TextStyle(
+                  color: colors.accentGlow,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: BarChart(BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: maxVol <= 0 ? 1 : maxVol * 1.15,
+              minY: 0,
+              barGroups: barGroups,
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                getDrawingHorizontalLine: (v) =>
+                    FlLine(color: colors.borderColor, strokeWidth: 1),
+              ),
+              borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipItem: (group, groupIdx, rod, rodIdx) =>
+                      BarTooltipItem(
+                    '${data[groupIdx]['name']}\n${_fmtKg(rod.toY)}kg',
+                    TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              titlesData: FlTitlesData(
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 36,
+                    interval: maxVol > 0 ? maxVol / 3 : 1,
+                    getTitlesWidget: (v, meta) => SideTitleWidget(
+                      axisSide: meta.axisSide,
+                      child: Text(
+                        _fmtKg(v),
+                        style: TextStyle(
+                            color: colors.textSecondary, fontSize: 10),
+                      ),
+                    ),
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28,
+                    getTitlesWidget: (v, meta) {
+                      final idx = v.toInt();
+                      if (idx < 0 || idx >= data.length) {
+                        return const SizedBox.shrink();
+                      }
+                      final name = data[idx]['name'].toString();
+                      final label =
+                          name.length > 4 ? '${name.substring(0, 4)}…' : name;
+                      return SideTitleWidget(
+                        axisSide: meta.axisSide,
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          style: TextStyle(
+                              color: colors.textSecondary, fontSize: 10),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            )),
+          ),
+        ],
+      ),
     );
   }
 

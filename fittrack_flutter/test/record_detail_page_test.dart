@@ -117,4 +117,59 @@ void main() {
     // 总次数 4 + 2 = 6
     expect(find.text('6次'), findsOneWidget);
   });
+
+  testWidgets('多动作记录显示容量分析图表卡片', (tester) async {
+    final record = Storage.addRecord({
+      'name': '测试训练',
+      'planName': '测试计划',
+      'date': DateTime.now().millisecondsSinceEpoch,
+      'duration': 30,
+      'totalSets': 2,
+      'totalWeight': 220,
+      'exerciseCount': 2,
+      'muscles': ['胸'],
+      'setRecords': {
+        'e1': [
+          {'weight': 30, 'reps': 4, 'rest': 90},
+        ],
+        'e2': [
+          {'weight': 20, 'reps': 5, 'rest': 60},
+        ],
+      },
+      'restLog': [],
+    });
+
+    await tester.pumpWidget(
+        _wrap(RecordDetailPage(recordId: record['id'] as String)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('容量分析'), findsOneWidget);
+    // 30×4 + 20×5 = 220
+    expect(find.text('合计 220kg'), findsOneWidget);
+  });
+
+  testWidgets('单动作记录不显示容量分析图表卡片', (tester) async {
+    final record = Storage.addRecord({
+      'name': '测试训练',
+      'planName': '测试计划',
+      'date': DateTime.now().millisecondsSinceEpoch,
+      'duration': 30,
+      'totalSets': 1,
+      'totalWeight': 120,
+      'exerciseCount': 1,
+      'muscles': ['胸'],
+      'setRecords': {
+        'e1': [
+          {'weight': 30, 'reps': 4, 'rest': 90},
+        ],
+      },
+      'restLog': [],
+    });
+
+    await tester.pumpWidget(
+        _wrap(RecordDetailPage(recordId: record['id'] as String)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('容量分析'), findsNothing);
+  });
 }
