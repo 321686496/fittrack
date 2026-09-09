@@ -232,6 +232,8 @@ class _RecordsPageState extends State<RecordsPage> {
         record['createTime'] as int? ??
         DateTime.now().millisecondsSinceEpoch;
     final muscles = (record['muscles'] as List?)?.cast<String>() ?? [];
+    final setRecords = record['setRecords'] as Map? ?? {};
+    final exerciseCount = record['exerciseCount'] as int? ?? setRecords.length;
 
     return CardWidget(
       onTap: () {
@@ -257,6 +259,8 @@ class _RecordsPageState extends State<RecordsPage> {
                 child: Icon(Icons.delete_outline,
                     size: 20, color: colors.textMuted),
               ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right, size: 18, color: colors.textMuted),
             ],
           ),
           const SizedBox(height: 4),
@@ -278,65 +282,82 @@ class _RecordsPageState extends State<RecordsPage> {
             ),
           ],
           const SizedBox(height: 10),
-          Row(
-            children: [
-              _buildStatItem(colors, Icons.timer_outlined,
-                  _formatDuration(record['duration']), '时长'),
-              const SizedBox(width: 16),
-              _buildStatItem(colors, Icons.fitness_center,
-                  '${record['totalSets'] ?? 0}', '组数'),
-              const SizedBox(width: 16),
-              _buildStatItem(colors, Icons.monitor_weight_outlined,
-                  '${record['totalWeight'] ?? 0}kg', '重量'),
-            ],
-          ),
-          const SizedBox(height: 6),
-          // 点击查看详情提示
-          Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '查看详情',
-                  style: TextStyle(
-                    color: colors.accentGlow,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Icon(Icons.chevron_right, size: 16, color: colors.accentGlow),
-              ],
-            ),
-          ),
+          _buildStatsGrid(colors, record, exerciseCount),
         ],
       ),
     );
 }
 
-  Widget _buildStatItem(
+  Widget _buildStatsGrid(
+      LiftTrackColors colors, Map<String, dynamic> record, int exerciseCount) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.bgSecondary.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _buildStatCell(colors, Icons.timer_outlined,
+                  _formatDuration(record['duration']), '时长'),
+              _buildGridDivider(colors),
+              _buildStatCell(colors, Icons.fitness_center,
+                  '${record['totalSets'] ?? 0}', '组数'),
+            ],
+          ),
+          Container(height: 1, color: colors.borderColor.withOpacity(0.6)),
+          Row(
+            children: [
+              _buildStatCell(colors, Icons.monitor_weight_outlined,
+                  '${record['totalWeight'] ?? 0}kg', '重量'),
+              _buildGridDivider(colors),
+              _buildStatCell(colors, Icons.sports_gymnastics,
+                  '$exerciseCount', '动作数'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCell(
       LiftTrackColors colors, IconData icon, String value, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: colors.accentGlow),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: TextStyle(
-            color: colors.textPrimary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: colors.accentGlow),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(label,
+                    style:
+                        TextStyle(color: colors.textMuted, fontSize: 11)),
+              ],
+            ),
+          ],
         ),
-        const SizedBox(width: 2),
-        Text(
-          label,
-          style: TextStyle(
-            color: colors.textMuted,
-            fontSize: 11,
-          ),
-        ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildGridDivider(LiftTrackColors colors) {
+    return Container(
+      width: 1,
+      height: 36,
+      color: colors.borderColor.withOpacity(0.6),
     );
   }
 }
