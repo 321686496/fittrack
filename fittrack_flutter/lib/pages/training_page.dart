@@ -61,6 +61,10 @@ class _TrainingPageState extends State<TrainingPage>
   int _currentSetIdx = 0;
   bool _trainingDone = false;
 
+  /// 路由传入的训练日索引（持久化到草稿，供首页"继续训练"与
+  /// OHOS 卡片 fallback 恢复训练路由使用）
+  int _initialDayIndex = 0;
+
   /// 动作指导卡片是否展开（默认展开，状态从持久化设置读取）
   bool _actionGuideExpanded = true;
 
@@ -116,6 +120,7 @@ class _TrainingPageState extends State<TrainingPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _startTime = DateTime.now();
+    _initialDayIndex = widget.params['dayIndex'] as int? ?? 0;
     // 读取持久化的动作指导折叠状态（默认展开）
     _actionGuideExpanded =
         !(Storage.getSettings()['actionGuideCollapsed'] as bool? ?? false);
@@ -164,6 +169,9 @@ class _TrainingPageState extends State<TrainingPage>
     // 回调，导致 Flutter 的 _isPopGestureEnabled 返回 false，从而禁用 iOS
     // 侧滑返回手势。dispose() 是页面被移除时的统一生命周期回调，且本项目的
     // GoRouter 实例稳定（主题切换不会重建路由），不会因页面重建被误触发。
+    // 兜底：系统手势退出时补一次草稿持久化
+    // （_trainingDone / _exercises 为空时内部自动跳过；异步 fire-and-forget）
+    _persistInProgressTraining();
     _resetWidgetOnExit();
     WidgetsBinding.instance.removeObserver(this);
     _restTimer?.cancel();
@@ -211,11 +219,10 @@ class _TrainingPageState extends State<TrainingPage>
   }
 
   /// 顶部返回按钮：先恢复卡片空闲态，再返回上一页。
+  /// 训练未完成时保留草稿（首页显示"进行中"，可继续）；
+  /// 放弃训练入口在首页"进行中"卡片上。
   void _onBackPressed() {
-    // 主动退出：清理进行中训练持久化
-    if (!_trainingDone) {
-      Storage.clearInProgressTraining();
-    }
+    _persistInProgressTraining();
     _resetWidgetOnExit();
     context.pop();
   }
@@ -670,6 +677,7 @@ class _TrainingPageState extends State<TrainingPage>
         'planId': _plan?['id'],
         'planName': _plan?['name'],
         'dayConfig': _dayConfig,
+        'dayIndex': _initialDayIndex,
         'exercises': _exercises,
         'currentExIdx': _currentExIdx,
         'currentSetIdx': _currentSetIdx,
@@ -719,6 +727,7 @@ class _TrainingPageState extends State<TrainingPage>
     try {
       _startTime =
           DateTime.fromMillisecondsSinceEpoch(data['startedAt'] as int);
+      _initialDayIndex = data['dayIndex'] as int? ?? _initialDayIndex;
       _plan = data['planId'] != null
           ? Storage.getPlanById(data['planId'] as String)
           : null;
