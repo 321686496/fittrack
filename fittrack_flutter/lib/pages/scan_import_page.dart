@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +10,7 @@ import '../data/storage.dart';
 import '../utils/platform_utils.dart';
 import '../services/share_code_service.dart';
 import '../services/rom_adaptation_service.dart';
+import '../services/ohos_scan_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 
@@ -29,6 +31,11 @@ class _ScanImportPageState extends State<ScanImportPage> {
   bool _cameraAllowed = false;
   // 是否仅支持相册扫码（OHOS 或鸿蒙兼容层设备）：直接走相册兜底，不申请相机权限
   bool _galleryOnly = isOhos;
+  // OHOS 原生扫码（Scan Kit 系统扫码界面）可用性：
+  // mobile_scanner 在 OHOS 无原生实现，相机扫码改用系统扫码界面；true 时页面自动拉起
+  bool _ohosScanSupported = isOhos;
+  // 原生扫码进行中（显示"正在启动相机扫码"）
+  bool _nativeScanning = false;
 
   bool get _cameraActive => _permissionChecked && _cameraAllowed && !_cameraFailed;
 
@@ -39,6 +46,15 @@ class _ScanImportPageState extends State<ScanImportPage> {
   void initState() {
     super.initState();
     _initCameraPermission();
+    if (_ohosScanSupported) {
+      // OHOS：页面出现后自动拉起系统扫码界面（Scan Kit 默认界面扫码）
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) _startNativeScan();
+        });
+      });
+    }
   }
 
   /// 启动时申请相机权限（Android/iOS 运行时授权；OHOS 及鸿蒙兼容层直接走相册兜底）
@@ -89,6 +105,42 @@ class _ScanImportPageState extends State<ScanImportPage> {
     });
   }
 
+  /// OHOS：调用原生 Scan Kit 启动系统扫码界面
+  ///
+  /// - 识别成功：交由 [_handleDecoded] 解析导入
+  /// - 用户取消：回到本页显示兜底引导（可重试相机扫码或从相册选图）
+  /// - 原生侧未接入 Scan Kit 通道：降级为纯相册兜底
+  Future<void> _startNativeScan() async {
+    if (_nativeScanning || _processed) return;
+    setState(() => _nativeScanning = true);
+    try {
+      final raw = await OhosScanService.instance.scan();
+      if (raw == null || raw.isEmpty) {
+        if (mounted) setState(() => _nativeScanning = false);
+        return;
+      }
+      // 复位后再解析：解析失败（无效码/用户取消确认）时页面停留在兜底引导而非"启动中"
+      if (mounted) setState(() => _nativeScanning = false);
+      _handleDecoded(raw);
+    } on MissingPluginException {
+      if (mounted) {
+        setState(() {
+          _ohosScanSupported = false;
+          _nativeScanning = false;
+        });
+      }
+    } on PlatformException catch (e) {
+      if (mounted) {
+        setState(() => _nativeScanning = false);
+        if (e.code != 'USER_CANCELED') {
+          FitToast.error(context, '无法启动相机扫码，请重试');
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _nativeScanning = false);
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -120,7 +172,9 @@ class _ScanImportPageState extends State<ScanImportPage> {
           Expanded(
             child: Stack(
               children: [
-                if (_cameraUnsupported)
+                if (_ohosScanSupported)
+                  _nativeScanning ? _buildNativeScanLoading() : _buildOhosScanFallback()
+                else if (_cameraUnsupported)
                   _buildGalleryFallback()
                 else if (!_permissionChecked)
                   _buildPermissionLoading()
@@ -163,26 +217,93 @@ class _ScanImportPageState extends State<ScanImportPage> {
                   right: 0,
                   bottom: 24,
                   child: Center(
-                    child: ElevatedButton.icon(
-                      onPressed: _picking ? null : _pickQrImage,
-                      icon: _picking
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Icon(Icons.photo_library_outlined, size: 18),
-                      label: Text(_picking ? '识别中...' : '从相册选择二维码图片'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black54,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                      ),
-                    ),
+                    // OHOS 原生扫码时底部按钮隐藏，由 _buildOhosScanFallback 提供操作入口
+                    child: _ohosScanSupported
+                        ? const SizedBox.shrink()
+                        : ElevatedButton.icon(
+                            onPressed: _picking ? null : _pickQrImage,
+                            icon: _picking
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : const Icon(Icons.photo_library_outlined, size: 18),
+                            label: Text(_picking ? '识别中...' : '从相册选择二维码图片'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black54,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                            ),
+                          ),
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// OHOS：正在拉起系统扫码界面
+  Widget _buildNativeScanLoading() {
+    return Container(
+      color: const Color(0xFF111111),
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          CircularProgressIndicator(color: Colors.white70),
+          SizedBox(height: 12),
+          Text('正在启动相机扫码...', style: TextStyle(color: Colors.white70, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  /// OHOS：系统扫码取消/失败后的引导（可重试相机扫码或从相册选图）
+  Widget _buildOhosScanFallback() {
+    return Container(
+      color: const Color(0xFF111111),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.qr_code_scanner, size: 56, color: Colors.white38),
+          const SizedBox(height: 16),
+          const Text(
+            '使用相机扫码',
+            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '点击"相机扫码"启动系统扫码，或从相册选择二维码图片。',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _nativeScanning ? null : _startNativeScan,
+            icon: const Icon(Icons.camera_alt_outlined, size: 18),
+            label: Text(_nativeScanning ? '启动中...' : '相机扫码'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _picking ? null : _pickQrImage,
+            icon: const Icon(Icons.photo_library_outlined, size: 18),
+            label: const Text('从相册选择二维码图片'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white38),
             ),
           ),
         ],

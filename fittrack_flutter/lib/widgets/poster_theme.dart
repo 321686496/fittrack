@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -490,4 +492,97 @@ class PosterQrFooter extends StatelessWidget {
       ],
     );
   }
+}
+
+/// 海报底部应用市场下载引导（源自邀请海报 #2 底部）
+///
+/// 展示一句"去哪下载"情绪文案 + 华为应用市场 / App Store 两个下载渠道。
+/// 用于无有效二维码海报的底部填充，与邀请海报共用同一套视觉与文案模板。
+/// [headline] 不传时，从 [kPosterEmotionalSlogans] 中随机选一条情感文案。
+class PosterDownloadFooter extends StatelessWidget {
+  final PosterColors colors;
+
+  /// 顶部"去哪下载"情绪文案；不传则每次随机展示一条情感文案
+  final String? headline;
+
+  const PosterDownloadFooter({
+    super.key,
+    required this.colors,
+    this.headline,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          headline ?? randomEmotionalSlogan(),
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: px(11),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            height: 1.4,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: px(7)),
+        // 防英文门店名较长时水平溢出：放得下就原比例，放不下自动等比缩小
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _downloadPill(
+                  colors, Icons.grid_view_rounded, '华为应用市场 · LiftTrack'),
+              SizedBox(width: px(6)),
+              _downloadPill(colors, Icons.apple, 'App Store · LiftTrack'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _downloadPill(PosterColors colors, IconData icon, String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: px(10), vertical: px(4)),
+      decoration: BoxDecoration(
+        color: colors.cardBg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: colors.cardBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: px(10), color: colors.brand),
+          SizedBox(width: px(4)),
+          Text(
+            text,
+            style: TextStyle(
+              color: colors.brand,
+              fontSize: px(8.5),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 海报底部下载引导的情绪化文案池（每次分享随机展示一条）
+const List<String> kPosterEmotionalSlogans = [
+  '别辜负每一次想练的冲动',
+  '每一滴汗水，都算数',
+  '坚持，是对自己最好的礼物',
+  '想练就练，别等明天',
+  '别让它只是想想而已',
+];
+
+/// 从 [kPosterEmotionalSlogans] 随机选取一条情感文案
+String randomEmotionalSlogan() {
+  return kPosterEmotionalSlogans[Random().nextInt(kPosterEmotionalSlogans.length)];
 }

@@ -279,13 +279,25 @@ class GymCardPoster extends StatelessWidget {
                 ),
               ),
             ],
-            // ── 底部二维码 ───────────────────────
+            // ── 底部文案 + 下载引导 ──────────────
             const Spacer(),
-            PosterQrFooter(
-              colors: colors,
-              qrData: 'fittrack://gym',
-              hint: 'LiftTrack 训练',
-              sub: '坚持 · 看到变化',
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '坚持 · 看到变化',
+                  style: TextStyle(
+                    color: colors.textMuted,
+                    fontSize: px(10),
+                    letterSpacing: px(2),
+                  ),
+                ),
+                SizedBox(height: px(12)),
+                PosterDownloadFooter(
+                  colors: colors,
+                ),
+              ],
             ),
           ],
         ),

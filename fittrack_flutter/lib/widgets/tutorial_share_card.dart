@@ -431,7 +431,6 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
           tutorial: t,
           inviteCode: _inviteCode,
           steps: _steps,
-          qrData: 'fittrack://tutorial?id=${t.id}',
         ),
         posterWidth: TutorialPoster.posterWidth,
         title: '动作分享海报',

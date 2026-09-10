@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/device_identity_service.dart';
 import 'database_helper.dart';
 import 'mock_data.dart';
 
@@ -90,7 +91,28 @@ class Storage {
       _store[_keySettings] = settings;
       _persistKey(_keySettings);
     }
+
+    // 持久设备 ID（卸载重装后稳定）：作为邀请码防刷身份，优先于随机 deviceId。
+    // 每次启动拉取一次并缓存；原生不可用（如 OHOS / 测试环境）时保持随机 deviceId。
+    final persistentId = await _readPersistentDeviceId();
+    if (persistentId.isNotEmpty &&
+        settings['persistentDeviceId'] != persistentId) {
+      settings['persistentDeviceId'] = persistentId;
+      _store[_keySettings] = settings;
+      _persistKey(_keySettings);
+    }
+
     isPremiumNotifier.value = settings['isPremium'] ?? false;
+  }
+
+  /// 获取持久设备标识，失败回退为空。
+  static Future<String> _readPersistentDeviceId() async {
+    final DeviceIdentityService id = DeviceIdentityService.instance;
+    try {
+      return await id.getPersistentDeviceId();
+    } catch (_) {
+      return '';
+    }
   }
 
   // ── 数据迁移：SharedPreferences �?SQLite ──────────────────

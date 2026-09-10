@@ -512,65 +512,11 @@ class InvitePoster extends StatelessWidget {
     );
   }
 
-  /// 底部情绪文案 + 下载引导
+  /// 底部情绪文案 + 下载引导（复用共享 PosterDownloadFooter）
   Widget _buildDownloadFooter(PosterColors colors) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '别辜负每一次想练的冲动 · 扫码现在开始',
-          style: TextStyle(
-            color: colors.textPrimary,
-            fontSize: px(11),
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
-            height: 1.4,
-          ),
-        ),
-        SizedBox(height: px(7)),
-        // 左右并排两个下载按钮（原布局）。为防英文门店名较长时水平溢出，
-        // 用 FittedBox(scaleDown) 包裹：放得下就原比例显示，放不下自动等比缩小，
-        // 始终保持左右排布、不溢出。
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _downloadPill(
-                  colors, Icons.grid_view_rounded, '华为应用市场 · LiftTrack'),
-              SizedBox(width: px(6)),
-              _downloadPill(colors, Icons.apple, 'App Store · LiftTrack'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _downloadPill(PosterColors colors, IconData icon, String text) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: px(10), vertical: px(4)),
-      decoration: BoxDecoration(
-        color: colors.cardBg,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: colors.cardBorder),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: px(10), color: colors.brand),
-          SizedBox(width: px(4)),
-          Text(
-            text,
-            style: TextStyle(
-              color: colors.brand,
-              fontSize: px(8.5),
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
+    return PosterDownloadFooter(
+      colors: colors,
+      headline: '别辜负每一次想练的冲动 · 扫码现在开始',
     );
   }
 }

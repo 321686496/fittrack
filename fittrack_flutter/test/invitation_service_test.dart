@@ -275,6 +275,44 @@ void main() {
       );
     });
 
+    test('同一设备卸载重装后识别码被设备维度去重', () async {
+      // 模拟持久设备身份：persistentDeviceId 跨重装稳定；deviceId 重装后变化
+      void usePersistent(String persistent, String device) {
+        final s = Storage.getSettings();
+        s['persistentDeviceId'] = persistent;
+        s['deviceId'] = device;
+        Storage.saveSettings(s);
+      }
+
+      // 被邀请人：同一台设备第一安装
+      usePersistent('P-reinstallable-device-1', 'device_1st_install');
+      insertValidTraining();
+      final receipt1 = InvitationService.instance.generateActivationReceipt();
+
+      // 邀请人入账第一次成功
+      usePersistent('P-inviter', 'inviter_install');
+      final first =
+          await InvitationService.instance.recordReferralActivation(receipt1);
+      expect(first.success, true);
+      expect(first.totalReferrals, 1);
+      expect(PointsService.instance.points, 100);
+
+      // 卸载重装：deviceId 变化，但持久身份不变 → 同一设备再来一次
+      usePersistent('P-reinstallable-device-1', 'device_2nd_install');
+      insertValidTraining();
+      final receipt2 = InvitationService.instance.generateActivationReceipt();
+      expect(receipt2, isNot(receipt1)); // 码字符串已变
+
+      usePersistent('P-inviter', 'inviter_install');
+      final second =
+          await InvitationService.instance.recordReferralActivation(receipt2);
+      expect(second.success, false); // 设备维度去重拦截
+      expect(second.totalReferrals, 1); // 仍只有 1 人
+      expect(PointsService.instance.points, 100); // 不重复发积分
+      expect((Storage.getSettings()['myReferralDeviceIds'] as List).length, 1);
+      expect((Storage.getSettings()['myReferralCodes'] as List).length, 1);
+    });
+
     test('第 2 次入账非里程碑档位：成功但 0 积分', () async {
       // 两个不同被邀请人的达标识别码
       useDeviceId('invitee_loop_seed_4');
@@ -298,6 +336,83 @@ void main() {
       expect(second.pointsEarned, 0); // 第 2 人非里程碑档位
       expect(second.milestone, isNull);
       expect(PointsService.instance.points, 100); // 总积分不变
+    });
+  });
+
+  group('互绑拦截（双守卫）', () {
+    void insertValidTraining() {
+      Storage.addRecord({
+        'name': '测试训练',
+        'date': DateTime.now().millisecondsSinceEpoch,
+        'duration': 30,
+        'pureDuration': 1800,
+        'totalWeight': 100,
+        'totalSets': 10,
+        'exerciseCount': 1,
+        'muscles': [],
+        'setRecords': <String, List<Map<String, dynamic>>>{},
+        'restLog': <Map<String, dynamic>>[],
+        'planId': 'p1',
+        'planName': '测试训练',
+      });
+    }
+
+    test('守卫1（激活时）：A 已绑定 B，B 反向邀请 A 被拒', () async {
+      // 第一步：A 邀请 B 并成功入账（A 的绑定列表记录 B 的设备身份）
+      useDeviceId('invitee_mutual_b');
+      insertValidTraining();
+      final receiptB = InvitationService.instance.generateActivationReceipt();
+      useDeviceId('inviter_mutual_a');
+      final bound =
+          await InvitationService.instance.recordReferralActivation(receiptB);
+      expect(bound.success, true);
+      expect((Storage.getSettings()['myReferralDeviceIds'] as List).length, 1);
+
+      // 第二步：B 生成自己的邀请码，A 尝试激活 → 守卫1 拦截（互绑）
+      useDeviceId('invitee_mutual_b');
+      final bCode = InvitationService.instance.generateInvitationCode();
+      useDeviceId('inviter_mutual_a');
+      final result =
+          await InvitationService.instance.activateInvitationCode(bCode);
+      expect(result, InvitationResult.mutualInvite);
+      // 未写入激活记录：B 无法借此拿到 50 积分（默认值为空串）
+      expect(Storage.getSettings()['activatedInvitationCode'], isEmpty);
+    });
+
+    test('守卫2（录入时）：B 已邀请 A，A 再录入 B 的识别码被拒', () async {
+      // 第一步：B 邀请 A（A 激活 B 的码），A 记录 B 为"邀请过我的人"
+      useDeviceId('inviter_mutual_b');
+      final bCode = InvitationService.instance.generateInvitationCode();
+      useDeviceId('invitee_mutual_a');
+      final activated =
+          await InvitationService.instance.activateInvitationCode(bCode);
+      expect(activated, InvitationResult.success);
+
+      // 第二步：B 生成达标识别码，A 尝试录入 → 守卫2 拦截（互绑）
+      useDeviceId('inviter_mutual_b');
+      insertValidTraining();
+      final receiptB = InvitationService.instance.generateActivationReceipt();
+      useDeviceId('invitee_mutual_a');
+      final outcome =
+          await InvitationService.instance.recordReferralActivation(receiptB);
+      expect(outcome.success, false);
+      expect(outcome.totalReferrals, 0);
+      // getSettings 合并 defaults：myReferralCodes 默认 []，myReferralDeviceIds 无默认值
+      expect(Storage.getSettings()['myReferralCodes'], isEmpty);
+      expect(Storage.getSettings()['myReferralDeviceIds'] ?? [], isEmpty);
+    });
+
+    test('非互绑的陌生人首次绑定不受影响', () async {
+      // 无任何互绑历史时，正常邀请链路保持可用（防误杀回归）
+      useDeviceId('invitee_mutual_c');
+      insertValidTraining();
+      final receiptC = InvitationService.instance.generateActivationReceipt();
+      useDeviceId('inviter_mutual_d');
+      final outcome =
+          await InvitationService.instance.recordReferralActivation(receiptC);
+      expect(outcome.success, true);
+      expect(outcome.totalReferrals, 1);
+      expect(PointsService.instance.points, 100);
     });
   });
 }

@@ -202,6 +202,9 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                                 case InvitationResult.alreadyActivated:
                                   msg = '你已激活过邀请码（一码一绑）';
                                   break;
+                                case InvitationResult.mutualInvite:
+                                  msg = '你们已互相邀请过，不能重复绑定';
+                                  break;
                               }
                               if (success) {
                                 FitToast.success(ctx, msg);

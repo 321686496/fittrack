@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../data/tutorial_content.dart';
 import 'poster_theme.dart';
@@ -18,9 +17,6 @@ import 'poster_theme.dart';
 class TutorialPoster extends StatelessWidget {
   final Tutorial tutorial;
 
-  /// 二维码内容（默认指向 LiftTrack 教学入口）
-  final String qrData;
-
   /// 展示的邀请码（底部展示）
   final String inviteCode;
 
@@ -33,7 +29,6 @@ class TutorialPoster extends StatelessWidget {
   const TutorialPoster({
     super.key,
     required this.tutorial,
-    this.qrData = 'fittrack://tutorial',
     this.inviteCode = '',
     this.steps = const [],
     this.themeId,
@@ -321,43 +316,12 @@ class TutorialPoster extends StatelessWidget {
               ),
             ),
             SizedBox(width: px(10)),
-            Container(
-              width: px(40),
-              height: px(40),
-              padding: EdgeInsets.all(px(4)),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(px(11)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: px(10),
-                    offset: Offset(0, px(4)),
-                  ),
-                ],
-              ),
-              child: QrImageView(
-                data: qrData,
-                version: QrVersions.auto,
-                gapless: true,
-                backgroundColor: Colors.white,
-                // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
-                eyeStyle: QrEyeStyle(
-                  eyeShape: QrEyeShape.square,
-                  color: const Color(0xFF1C1C1E),
-                ),
-                dataModuleStyle: QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.square,
-                  color: const Color(0xFF1C1C1E),
-                ),
-                // 兜底：数据过长无法编码时，避免渲染成白底空容器
-                errorStateBuilder: (context, error) => Center(
-                  child:
-                      Icon(Icons.qr_code, size: px(9), color: colors.textMuted),
-                ),
-              ),
-            ),
           ],
+        ),
+        SizedBox(height: px(14)),
+        PosterDownloadFooter(
+          colors: colors,
+          headline: '去哪下载 · 应用市场搜索 LiftTrack',
         ),
       ],
     );

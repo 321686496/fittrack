@@ -121,7 +121,7 @@ class PrivacyConsentDialog extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '协议版本 $privacyPolicyVersion · 更新于 2026-09-03',
+              '协议版本 $privacyPolicyVersion · 更新于 2026-09-10',
               textAlign: TextAlign.center,
               style: TextStyle(color: colors.textMuted.withOpacity(0.8), fontSize: 11),
             ),

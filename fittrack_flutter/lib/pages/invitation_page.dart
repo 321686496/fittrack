@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../data/storage.dart';
 import '../services/invitation_service.dart';
+import '../services/device_identity_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/invite_poster.dart';
@@ -43,12 +44,22 @@ class _InvitationPageState extends State<InvitationPage> {
   void initState() {
     super.initState();
     _loadData();
+    _ensureDeviceIdentity();
   }
 
   void _loadData() {
     _myCode = InvitationService.instance.generateInvitationCode();
     _progress = InvitationService.instance.getReferralProgress();
     setState(() {});
+  }
+
+  /// OHOS：确保持久设备标识就绪（OAID 授权 + 缓存），防刷身份跨重装稳定。
+  /// 授权成功后身份可能变化（随机 deviceId → OAID），需重新生成邀请码展示。
+  /// 用户拒绝授权/不可用时静默回退随机 deviceId，不阻塞页面。
+  Future<void> _ensureDeviceIdentity() async {
+    await DeviceIdentityService.instance.ensurePersistentDeviceId();
+    if (!mounted) return;
+    _loadData();
   }
 
   @override
@@ -1314,6 +1325,9 @@ class _InvitationPageState extends State<InvitationPage> {
         break;
       case InvitationResult.alreadyActivated:
         msg = '你已激活过邀请码（一码一绑）';
+        break;
+      case InvitationResult.mutualInvite:
+        msg = '你们已互相邀请过，不能重复绑定';
         break;
     }
 

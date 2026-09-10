@@ -23,6 +23,10 @@
     {
       "name": "writeimagevideo",
       "value": "用于保存用户生成的训练海报到系统相册"
+    },
+    {
+      "name": "app_tracking_consent",
+      "value": "用于获取设备匿名标识（OAID），防止邀请奖励被同一设备重复领取"
     }
   ]
 }

@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
+import '../services/invitation_service.dart';
 import 'poster_theme.dart';
 
 /// 训练成果分享卡（海报1，对应 HTML #1）
@@ -19,10 +21,14 @@ class ShareCardFrame extends StatelessWidget {
   /// 海报主题 ID；为 null 时从全局 Settings 读取当前主题
   final String? themeId;
 
+  /// 邀请码：不提供则自动由 InvitationService 生成当前用户邀请码
+  final String? inviteCode;
+
   const ShareCardFrame({
     required this.record,
     this.size = const Size(1080, 1920),
     this.themeId,
+    this.inviteCode,
     super.key,
   });
 
@@ -123,19 +129,91 @@ class ShareCardFrame extends StatelessWidget {
               SizedBox(height: px(12)),
               _buildPkBanner(colors, pk),
             ],
-            // ── 底部二维码 ─────────────────────────
+            // ── 底部邀请码 ─────────────────────────
             const Spacer(),
-            PosterQrFooter(
-              colors: colors,
-              qrData: 'fittrack://share',
-              hint: '扫码开始训练',
-              sub: 'LiftTrack · 训练',
+            Row(
+              children: [
+                Icon(Icons.card_giftcard, size: px(16), color: colors.brand),
+                SizedBox(width: px(10)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '输入邀请码，双方得福利',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textMuted,
+                          fontSize: px(9),
+                        ),
+                      ),
+                      SizedBox(height: px(2)),
+                      Text(
+                        _inviteCode,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.brand,
+                          fontSize: px(14),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: px(2),
+                          height: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: px(10)),
+                // 邀请码二维码
+                Container(
+                  width: px(44),
+                  height: px(44),
+                  padding: EdgeInsets.all(px(4)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(px(11)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: px(10),
+                        offset: Offset(0, px(4)),
+                      ),
+                    ],
+                  ),
+                  child: QrImageView(
+                    data: 'fittrack://invite?code=$_inviteCode',
+                    version: QrVersions.auto,
+                    gapless: true,
+                    backgroundColor: Colors.white,
+                    // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
+                    eyeStyle: QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: const Color(0xFF1C1C1E),
+                    ),
+                    dataModuleStyle: QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: const Color(0xFF1C1C1E),
+                    ),
+                    // 兜底：数据过长无法编码时，避免渲染成白底空容器
+                    errorStateBuilder: (context, error) => Center(
+                      child: Icon(Icons.qr_code,
+                          size: px(9), color: colors.textMuted),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  /// 邀请码：优先用外部传入值，否则自动生成当前用户邀请码（确定性）
+  String get _inviteCode =>
+      inviteCode ?? InvitationService.instance.generateInvitationCode();
 
   String _avgWeight(int totalWeight, int totalSets) {
     if (totalSets <= 0) return '-';

@@ -25,6 +25,7 @@ struct RestLiveActivityAttributes: ActivityAttributes {
   private var liveViewChannel: FlutterMethodChannel?
   private var widgetChannel: FlutterMethodChannel?
   private var inviteChannel: FlutterMethodChannel?
+  private var deviceIdentityChannel: FlutterMethodChannel?
   private var lastScheduledNotificationId: Int? = nil
 
   override func application(
@@ -62,6 +63,13 @@ struct RestLiveActivityAttributes: ActivityAttributes {
       binaryMessenger: controller!.binaryMessenger
     )
     setupInviteChannel()
+
+    // 5. 持久设备标识通道（邀请码防刷身份）
+    deviceIdentityChannel = FlutterMethodChannel(
+      name: "com.lt.lifttrack/device_identity",
+      binaryMessenger: controller!.binaryMessenger
+    )
+    setupDeviceIdentityChannel()
 
     // 设置 UNUserNotificationCenter 代理（处理通知点击）
     UNUserNotificationCenter.current().delegate = self
@@ -275,6 +283,21 @@ struct RestLiveActivityAttributes: ActivityAttributes {
             result(success)
           }
         }
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  // MARK: - Device Identity Channel
+
+  private func setupDeviceIdentityChannel() {
+    deviceIdentityChannel?.setMethodCallHandler { call, result in
+      switch call.method {
+      case "getPersistentDeviceId":
+        // identifierForVendor：卸载重装后稳定（同一厂商全部卸载才可能重置），
+        // 用于邀请码防刷身份。
+        result(UIDevice.current.identifierForVendor?.uuidString ?? "")
       default:
         result(FlutterMethodNotImplemented)
       }

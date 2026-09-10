@@ -10,8 +10,8 @@
           "keyAlias": "public",
           "keyPassword": "000000197791216870613E67B321D617C61B120DF0A1FB2C63DEA91A98552E297ABF4DBA85988C3C00",
           "signAlg": "SHA256withECDSA",
-          "profile": "D:/app/projects/health_training/packagefile/packagefile/ohos/lifttrackdebugDebug.p7b",
-          "certpath": "D:/app/projects/health_training/packagefile/packagefile/ohos/debug.cer"
+          "profile": "D:/app/projects/health_training/packagefile/packagefile/ohos/lifttrackpublicRelease.p7b",
+          "certpath": "D:/app/projects/health_training/packagefile/packagefile/ohos/public.cer"
         }
       }
     ],

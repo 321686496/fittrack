@@ -55,7 +55,10 @@
       {"name" :  "ohos.permission.VIBRATE"},
       {"name" :  "ohos.permission.WRITE_IMAGEVIDEO",
         "reason": "$string:writeimagevideo",
-        "usedScene": {"abilities": ["EntryAbility"], "when": "always"}}
+        "usedScene": {"abilities": ["EntryAbility"], "when": "always"}},
+      {"name": "ohos.permission.APP_TRACKING_CONSENT",
+        "reason": "$string:app_tracking_consent",
+        "usedScene": {"abilities": ["EntryAbility"], "when": "inuse"}}
     ]
   }
 }
