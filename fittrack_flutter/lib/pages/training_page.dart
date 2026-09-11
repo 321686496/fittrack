@@ -418,8 +418,12 @@ class _TrainingPageState extends State<TrainingPage>
     final isLastExercise = _currentExIdx + 1 >= _exercises.length;
 
     if (isLastSet && isLastExercise) {
-      // 训练完成：取消所有待发通知（§1 修复）
-      RestNotificationService.instance.cancelScheduledNotification();
+      // 训练完成：彻底清空所有待发休息提醒（§1 修复）
+      // 使用 await cancelScheduledNotification() 而非 fire-and-forget，
+      // 消除与前一组休息调度在原生通道上的竞态——确保 Android AlarmManager / OHOS 代理提醒
+      // 中任何在途的"休息结束"通知都被撤销，训练完成后不再弹休息提醒。
+      // 注意：刻意不用 cancelAll()，因为它会连带清空每日训练/健身卡/智能推送等其他提醒。
+      await RestNotificationService.instance.cancelScheduledNotification();
       // 训练完成：立即触觉反馈（修复 Issue 1a — 震动与完成动作同步）
       try {
         final settings = Storage.getSettings();
