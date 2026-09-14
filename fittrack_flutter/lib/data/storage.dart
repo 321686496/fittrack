@@ -949,6 +949,8 @@ class Storage {
     return {
       'plans': getPlans(),
       'records': getRecords(),
+      'gymCards': getGymCards(),
+      'notes': getNotes(),
       'settings': getSettings(),
       'stats': getStats(),
       'exportTime': DateTime.now().millisecondsSinceEpoch,
@@ -960,18 +962,55 @@ class Storage {
   }
 
   static Future<bool> importDataAsync(Map<String, dynamic> data) async {
-    if (data['plans'] == null || data['records'] == null) return false;
-    await savePlansAsync(
-      List<Map<String, dynamic>>.from(
-        (data['plans'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
-      ),
-    );
-    await saveRecordsAsync(
-      List<Map<String, dynamic>>.from(
-        (data['records'] as List)
-            .map((e) => Map<String, dynamic>.from(e as Map)),
-      ),
-    );
+    if (data['plans'] == null && data['records'] == null) return false;
+    // 逐段导入，任一段失败不影响其余数据，避免单个异常导致整个导入判为失败
+    if (data['plans'] is List) {
+      try {
+        await savePlansAsync(
+          List<Map<String, dynamic>>.from(
+            (data['plans'] as List)
+                .map((e) => Map<String, dynamic>.from(e as Map)),
+          ),
+        );
+      } catch (e) {
+        debugPrint('importDataAsync: plans 导入失败 $e');
+      }
+    }
+    if (data['records'] is List) {
+      try {
+        await saveRecordsAsync(
+          List<Map<String, dynamic>>.from(
+            (data['records'] as List)
+                .map((e) => Map<String, dynamic>.from(e as Map)),
+          ),
+        );
+      } catch (e) {
+        debugPrint('importDataAsync: records 导入失败 $e');
+      }
+    }
+    // 兼容不同导出版本：健身卡、笔记、身体数据按需导入
+    if (data['gymCards'] is List) {
+      try {
+        await _db.deleteAllGymCards();
+        for (final card in (data['gymCards'] as List)) {
+          await _db.insertGymCard(Map<String, dynamic>.from(card as Map));
+        }
+        _gymCardsCacheDirty = true;
+      } catch (e) {
+        debugPrint('importDataAsync: gymCards 导入失败 $e');
+      }
+    }
+    if (data['notes'] is List) {
+      try {
+        await _db.deleteAllNotes();
+        for (final note in (data['notes'] as List)) {
+          await _db.insertNote(Map<String, dynamic>.from(note as Map));
+        }
+        _notesCacheDirty = true;
+      } catch (e) {
+        debugPrint('importDataAsync: notes 导入失败 $e');
+      }
+    }
     if (data['settings'] != null) {
       saveSettings(Map<String, dynamic>.from(data['settings'] as Map));
     }

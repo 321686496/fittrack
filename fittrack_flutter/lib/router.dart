@@ -41,7 +41,6 @@ import 'pages/invitation_flow_detail_page.dart';
 import 'pages/share_code_page.dart';
 import 'pages/plan_qr_code_page.dart';
 import 'pages/scan_import_page.dart';
-import 'pages/plan_poster_page.dart';
 import 'pages/tutorial_list_page.dart';
 import 'pages/all_tutorials_page.dart';
 import 'pages/tutorial_category_page.dart';
@@ -402,13 +401,6 @@ GoRouter createRouter() {
         path: '/scan-import',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ScanImportPage(),
-      ),
-      GoRoute(
-        path: '/plan-poster/:planId',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => PlanPosterPage(
-          planId: state.params['planId'] ?? '',
-        ),
       ),
       GoRoute(
         path: '/tutorial/:tutorialId',

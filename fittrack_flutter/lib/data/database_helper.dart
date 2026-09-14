@@ -550,6 +550,11 @@ class DatabaseHelper {
     return db.delete('notes', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<int> deleteAllNotes() async {
+    final db = await database;
+    return db.delete('notes');
+  }
+
   Map<String, dynamic> _noteRowToMap(Map<String, Object?> row) {
     final map = Map<String, dynamic>.from(row);
     // soreParts: JSON 字符串 → List<String>

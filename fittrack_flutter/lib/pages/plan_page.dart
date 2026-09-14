@@ -6,12 +6,15 @@ import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
 import '../services/plan_unlock_service.dart';
+import '../services/share_code_service.dart';
 import '../utils/art_assets.dart';
 import '../utils/gender_filter.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/exercise_picker_sheet.dart';
 import '../widgets/exercise_set_table.dart';
 import '../widgets/page_header.dart';
+import '../widgets/plan_poster_widget.dart';
+import '../widgets/poster_capture_helper.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
 // ============================================================
@@ -692,12 +695,45 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
               leading: Icon(Icons.image_outlined, color: colors.accentGlow),
               title: Text('生成海报', style: TextStyle(color: colors.textPrimary, fontSize: 14)),
               trailing: Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
-              onTap: () { Navigator.pop(ctx); context.push('/plan-poster/$planId'); },
+              onTap: () { Navigator.pop(ctx); _generatePlanPoster(colors, plan); },
             ),
             const SizedBox(height: 8),
           ],
         ),
       ),
+    );
+  }
+
+  /// 直接生成计划分享海报并弹出预览（不跳转独立海报页，与其余海报统一走弹窗）
+  Future<void> _generatePlanPoster(
+      LiftTrackColors colors, Map<String, dynamic> plan) async {
+    // 与计划海报页一致：剔除本地字段后附加作者署名，生成可扫码导入的分享串
+    final shareData = Map<String, dynamic>.from(plan);
+    shareData.remove('id');
+    shareData.remove('status');
+    shareData.remove('progress');
+    shareData.remove('createTime');
+    shareData.remove('updateTime');
+    shareData.remove('currentDayIndex');
+
+    final settings = Storage.getSettings();
+    final author = settings['nickname'] as String? ?? '匿名用户';
+    final withAuthor =
+        ShareCodeService.instance.attachAuthorSignature(shareData, author);
+    final shareString =
+        ShareCodeService.instance.generateShareableString(withAuthor);
+    final code = shareString.split('|').first;
+
+    await PosterCaptureHelper.captureAndPreview(
+      context,
+      posterWidget: PlanPosterWidget(
+        plan: plan,
+        shareCode: code,
+        shareString: shareString,
+      ),
+      posterWidth: PlanPosterWidget.posterWidth,
+      title: '计划海报',
+      fileNamePrefix: 'fittrack_plan_poster',
     );
   }
 

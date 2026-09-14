@@ -492,14 +492,21 @@ class _TrainingPageState extends State<TrainingPage>
     }
 
     // 预约定时通知（后台时系统自动触发）
+    // 仅当用户开启「休息结束提醒」时才调度，否则停止可能残留的预约提醒
+    final restNotifyEnabled =
+        Storage.getSettings()['restNotificationEnabled'] as bool? ?? true;
     if (PlatformServices.restReminder is! OhosRestReminderService) {
-      final exerciseName = _currentExIdx < _exercises.length
-          ? _exercises[_currentExIdx]['name'] as String
-          : '';
-      RestNotificationService.instance.scheduleRestEndNotification(
-        exerciseName: exerciseName,
-        delaySeconds: seconds,
-      );
+      if (restNotifyEnabled) {
+        final exerciseName = _currentExIdx < _exercises.length
+            ? _exercises[_currentExIdx]['name'] as String
+            : '';
+        RestNotificationService.instance.scheduleRestEndNotification(
+          exerciseName: exerciseName,
+          delaySeconds: seconds,
+        );
+      } else {
+        RestNotificationService.instance.cancelScheduledNotification();
+      }
     }
 
     _restartRestTimer();
@@ -624,6 +631,11 @@ class _TrainingPageState extends State<TrainingPage>
   ///   （OHOS 上由 EntryAbility 的 reminderAgentManager 代理提醒处理）
   Future<void> _notifyRestEnd() async {
     if (_restEndReason != null) return; // 已通知过
+
+    // 用户关闭「休息结束提醒」后不再弹通知/提示音
+    final restNotifyEnabled =
+        Storage.getSettings()['restNotificationEnabled'] as bool? ?? true;
+    if (!restNotifyEnabled) return;
 
     final exerciseName = _currentExIdx < _exercises.length
         ? _exercises[_currentExIdx]['name'] as String

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../services/daily_reminder_service.dart';
+import '../services/rest_notification_service.dart';
 import '../services/gym_card_reminder_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/custom_time_picker.dart';
@@ -99,6 +100,12 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                           onChanged: (v) {
                             setState(() => _restNotificationEnabled = v);
                             _saveSetting('restNotificationEnabled', v);
+                            // 关闭后立即取消已预约/进行中的休息结束提醒，
+                            // 否则当前组间休息到点仍会继续触发通知。
+                            if (!v) {
+                              RestNotificationService.instance
+                                  .cancelScheduledNotification();
+                            }
                           },
                         ),
                         DividerWidget(indent: 44),
