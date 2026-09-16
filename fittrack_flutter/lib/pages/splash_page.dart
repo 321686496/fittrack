@@ -7,12 +7,15 @@ class SplashPage extends StatefulWidget {
   final VoidCallback onReady;
   final VoidCallback onShowPrivacy;
   final VoidCallback onShowOnboarding;
+  /// 进入首页前的可选拦截钩子（如夜间模式询问）。返回的 Future 完成后才会进入首页。
+  final Future<void> Function(BuildContext context)? onBeforeReady;
 
   const SplashPage({
     super.key,
     required this.onReady,
     required this.onShowPrivacy,
     required this.onShowOnboarding,
+    this.onBeforeReady,
   });
 
   @override
@@ -38,13 +41,17 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   }
 
   void _startTimer() {
-    _navTimer = Timer(const Duration(seconds: 2), () {
+    _navTimer = Timer(const Duration(seconds: 2), () async {
       if (!mounted) return;
       final settings = Storage.getSettings();
       final privacyAgreed = settings['privacyAgreed'] == true;
       final onboardingDone = settings['onboardingDone'] == true;
 
       if (privacyAgreed && onboardingDone) {
+        // 已同意隐私且已完成引导：进入首页前先执行可选拦截钩子（如夜间询问），
+        // 确保在 Splash 上等待用户作答后再进入首页。
+        await widget.onBeforeReady?.call(context);
+        if (!mounted) return;
         widget.onReady();
       } else if (!privacyAgreed) {
         widget.onShowPrivacy();

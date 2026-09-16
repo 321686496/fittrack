@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -107,6 +107,14 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               s['onboardingV2Done'] = true;
               Storage.saveSettings(s);
               Navigator.pop(context);
+            },
+            onChoosePlan: () {
+              // 用户选定部位后：标记本次引导完成、关闭教练弹窗、跳转系统训练计划库。
+              final s = Storage.getSettings();
+              s['onboardingV2Done'] = true;
+              Storage.saveSettings(s);
+              Navigator.of(context).pop();
+              context.push('/plan-library');
             },
           ),
         );

@@ -139,7 +139,6 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   late final GoRouter _router;
   bool _romGuidanceShown = false;
   bool _nightPromptVisible = false;
-  Timer? _nightPromptTimeout;
 
   @override
   void initState() {
@@ -151,14 +150,13 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     _timedDarkTime = settings['timedDarkTime'] as String? ?? '18:00';
     _lightThemeId = settings['lightThemeId'] ?? 'vitality-sport';
     _darkThemeId = settings['darkThemeId'] ?? 'iron-forge';
-    _router = app_router.createRouter();
+    _router = app_router.createRouter(
+      onBeforeSplashReady: checkNightPromptOnSplash,
+    );
     _globalRouter = _router;
     // 设置全局主题变更回调
     app_router.onThemeChanged = _onThemeChanged;
     _restartTimedTimerIfNeeded();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _maybePromptFirstNightMode();
-    });
     // Android: 启动后延迟检查 ROM 适配
     if (!isOhos) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -171,8 +169,6 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _timedRefreshTimer?.cancel();
-    _nightPromptTimeout?.cancel();
-    _nightPromptTimeout = null;
     super.dispose();
   }
 
@@ -198,7 +194,6 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
       if (!isOhos) {
         _checkRomAdaptationOnResume();
       }
-      _maybePromptFirstNightMode();
     }
   }
 
@@ -233,31 +228,27 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     );
   }
 
-  /// 首次进入夜间：若当前处于深色窗口且用户从未被询问过，则弹出夜间模式开关引导。
-  void _maybePromptFirstNightMode() {
+  /// 在 Splash 页进入首页前调用：若当前处于深色窗口、用户从未被询问过，且
+  /// 已完成隐私同意与引导，则弹出夜间模式开关引导。阻塞流程直至用户作答，
+  /// 完成后才允许进入首页。
+  Future<void> checkNightPromptOnSplash(BuildContext context) async {
     if (_nightPromptVisible || !mounted) return;
     final settings = Storage.getSettings();
+    // 仅在用户已同意隐私、且自动深色尚未开启、且从未询问过时弹出
+    if (settings['privacyAgreed'] != true) return;
     if ((settings['autoDarkMode'] as String? ?? 'off') != 'off') return;
     if (settings['nightModePrompted'] as bool? ?? false) return;
     final t = settings['timedDarkTime'] as String? ?? '18:00';
     if (!LiftTrackTheme.isTimedDarkNow(t)) return;
 
-    final nav = app_router.rootNavigatorKey.currentState;
-    if (nav == null) return;
-    final overlayContext = nav.overlay?.context;
-    if (overlayContext == null) return;
+    // 无其他弹窗兜底守卫：在 Splash 上且无更上层路由/弹窗时才弹出。
+    // 若已存在其他弹层（如评分、想练部位等），则不打断，本次跳过。
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) return;
 
     _nightPromptVisible = true;
-    _nightPromptTimeout = Timer(const Duration(seconds: 8), () {
-      // 仅在弹窗仍可见时按拒绝处理；用户若已点击，.then 中会取消本定时器。
-      if (!_nightPromptVisible) return;
-      if (app_router.rootNavigatorKey.currentState?.canPop() == true) {
-        app_router.rootNavigatorKey.currentState?.pop(false);
-      }
-    });
-
-    showDialog<bool>(
-      context: overlayContext,
+    final result = await showDialog<bool>(
+      context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
         final colors = Theme.of(dialogContext).extension<LiftTrackColors>()!;
@@ -279,13 +270,9 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
           ],
         );
       },
-    ).then((result) {
-      _nightPromptTimeout?.cancel();
-      _nightPromptTimeout = null;
-      if (!mounted) return;
-      _nightPromptVisible = false;
-      _handleNightPromptResult(result);
-    });
+    );
+    _nightPromptVisible = false;
+    _handleNightPromptResult(result);
   }
 
   void _handleNightPromptResult(bool? result) {

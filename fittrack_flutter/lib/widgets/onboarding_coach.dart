@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import '../data/storage.dart';
-import '../data/mock_data.dart';
 
 class OnboardingCoach extends StatefulWidget {
   final VoidCallback onComplete;
   final VoidCallback onSkip;
+  /// 用户在选定身体部位后触发的跳转（如进入系统训练计划库）。
+  final VoidCallback onChoosePlan;
   const OnboardingCoach({
     required this.onComplete,
     required this.onSkip,
+    required this.onChoosePlan,
     super.key,
   });
   @override
@@ -45,12 +47,14 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
       case 0:
         return Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('今天练什么部位？',
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: _parts.map((p) {
                 return ChoiceChip(
                   label: Text(p),
@@ -75,20 +79,22 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
           ],
         );
       case 1:
-        final exercises = MockData.exercises
-            .where((e) => _matchesPart(e, _selectedPart))
-            .take(3)
-            .toList();
         return Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('为你推荐 3 个动作', style: Theme.of(context).textTheme.titleLarge),
+            Text('选择适合你的训练计划',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
-            ...exercises.map((e) => ListTile(
-                  leading: const Icon(Icons.fitness_center),
-                  title: Text(e['name'] as String? ?? ''),
-                  dense: true,
-                )),
+            Text(
+              '已记录你想练『$_selectedPart』，可前往系统训练计划库，'
+              '按你的目标（增肌/减脂/塑形等）选择针对所需部位的综合训练计划。',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,8 +103,8 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
                     onPressed: () => setState(() => _step = 0),
                     child: const Text('上一步')),
                 FilledButton(
-                  onPressed: _finish,
-                  child: const Text('开始记录'),
+                  onPressed: widget.onChoosePlan,
+                  child: const Text('去选择训练计划'),
                 ),
               ],
             ),
@@ -107,20 +113,5 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
       default:
         return const SizedBox();
     }
-  }
-
-  // Resolution 2: MockData.exercises uses 'category' field (e.g. '胸部', '背部'),
-  // NOT 'muscles'. Match against category.
-  bool _matchesPart(Map<String, dynamic> exercise, String? part) {
-    if (part == null) return true;
-    final category = exercise['category'] as String? ?? '';
-    return category.contains(part);
-  }
-
-  void _finish() {
-    final settings = Storage.getSettings();
-    settings['onboardingV2Done'] = true;
-    Storage.saveSettings(settings);
-    widget.onComplete();
   }
 }

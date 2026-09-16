@@ -73,7 +73,7 @@ void Function(String themeId, {bool? followSystem, String? lightThemeId, String?
 // 当前 tab 索引（供 Shell 使用）
 final ValueNotifier<int> currentTabIndex = ValueNotifier<int>(0);
 
-GoRouter createRouter() {
+GoRouter createRouter({Future<void> Function(BuildContext context)? onBeforeSplashReady}) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
@@ -83,6 +83,7 @@ GoRouter createRouter() {
       GoRoute(
         path: '/splash',
         builder: (context, state) => SplashPage(
+          onBeforeReady: onBeforeSplashReady,
           onReady: () => context.go('/home'),
           onShowPrivacy: () {
             final settings = Storage.getSettings();

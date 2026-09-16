@@ -17,6 +17,10 @@ class RatingPromptSheet {
   static bool shouldShow() {
     final settings = Storage.getSettings();
     if (settings['ratingPromptNeverAsk'] == true) return false;
+    // 若当前平台未配置应用市场标识（无法跳转评分页），则不弹窗。
+    // iOS 未填写 App Store ID 时直接跳过；OHOS 同理。
+    if (isIos && _iosAppStoreId.isEmpty) return false;
+    if (isOhos && _ohosBundleName.isEmpty) return false;
     final lastShown = settings['ratingPromptLastShown'] as int? ?? 0;
     final since = DateTime.now().millisecondsSinceEpoch - lastShown;
     if (since < _cooldown.inMilliseconds) return false;
