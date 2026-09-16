@@ -37,11 +37,14 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
       # permission_handler_apple 要求通过 GCC_PREPROCESSOR_DEFINITIONS 启用对应权限的编译开关。
-      # PERMISSION_NOTIFICATIONS=1 启用通知权限的完整实现（NotificationPermissionStrategy），
-      # 否则该策略类编译为空壳，checkPermissionStatus 始终返回 denied。
+      # 未启用的权限策略类会编译为空壳，checkPermissionStatus/requestPermission 始终返回 denied，
+      # 导致 iOS 永不弹出系统的权限授权弹窗（例如相机扫码提示「需要相机权限」）。
+      # PERMISSION_NOTIFICATIONS=1：通知权限（NotificationPermissionStrategy）
+      # PERMISSION_CAMERA=1：相机权限（AudioVideoPermissionStrategy），扫码激活/识别依赖它
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'PERMISSION_NOTIFICATIONS=1',
+        'PERMISSION_CAMERA=1',
       ]
     end
   end
