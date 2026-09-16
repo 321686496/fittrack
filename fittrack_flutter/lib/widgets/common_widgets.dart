@@ -9,7 +9,7 @@ class SectionHeader extends StatelessWidget {
   final String? moreText;
   final VoidCallback? onMore;
 
-  const SectionHeader({
+  SectionHeader({
     super.key,
     required this.title,
     this.moreText,
@@ -20,18 +20,23 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
+    // 标题用 Expanded 兜底：英文标题（如 Permission Management）比中文长得多，
+    // 固定宽度会溢出。宁可换行，也不要出现黄黑警示条。
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: colors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
-        if (moreText != null)
+        if (moreText != null) ...[
+          SizedBox(width: 8),
           GestureDetector(
             onTap: onMore,
             child: Text(
@@ -42,6 +47,7 @@ class SectionHeader extends StatelessWidget {
               ),
             ),
           ),
+        ],
       ],
     );
   }
@@ -55,7 +61,7 @@ class StatCard extends StatelessWidget {
   final String label;
   final Color color;
 
-  const StatCard({
+  StatCard({
     super.key,
     required this.icon,
     required this.value,
@@ -68,7 +74,7 @@ class StatCard extends StatelessWidget {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: colors.bgCard,
         borderRadius: BorderRadius.circular(12),
@@ -79,7 +85,7 @@ class StatCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 18, color: color),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
@@ -88,7 +94,7 @@ class StatCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
@@ -110,7 +116,7 @@ class BadgeWidget extends StatelessWidget {
   final String text;
   final BadgeVariant variant;
 
-  const BadgeWidget({
+  BadgeWidget({
     super.key,
     required this.text,
     this.variant = BadgeVariant.accent,
@@ -147,7 +153,7 @@ class BadgeWidget extends StatelessWidget {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: _bgColor(colors),
         borderRadius: BorderRadius.circular(6),
@@ -171,7 +177,7 @@ class ProgressBar extends StatelessWidget {
   final Color? fillColor;
   final double height;
 
-  const ProgressBar({
+  ProgressBar({
     super.key,
     required this.progress,
     this.fillColor,
@@ -212,7 +218,7 @@ class CardWidget extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
 
-  const CardWidget({
+  CardWidget({
     super.key,
     required this.child,
     this.padding,
@@ -227,7 +233,7 @@ class CardWidget extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: padding ?? const EdgeInsets.all(16),
+        padding: padding ?? EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: colors.bgCard,
           borderRadius: BorderRadius.circular(12),
@@ -247,7 +253,7 @@ class MenuButton extends StatelessWidget {
   final VoidCallback? onTap;
   final Color? iconColor;
 
-  const MenuButton({
+  MenuButton({
     super.key,
     required this.icon,
     required this.label,
@@ -262,7 +268,7 @@ class MenuButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: colors.bgCard,
           borderRadius: BorderRadius.circular(12),
@@ -271,7 +277,7 @@ class MenuButton extends StatelessWidget {
         child: Row(
           children: [
             Icon(icon, size: 20, color: iconColor ?? colors.accentGlow),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,
@@ -300,7 +306,7 @@ class IconBtn extends StatelessWidget {
   final VoidCallback? onTap;
   final double size;
 
-  const IconBtn({
+  IconBtn({
     super.key,
     required this.icon,
     this.onTap,
@@ -314,7 +320,7 @@ class IconBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
           border: Border.all(color: colors.borderColor),
           borderRadius: BorderRadius.circular(8),
@@ -335,7 +341,7 @@ class EmptyState extends StatelessWidget {
   final IconData icon;
   final String message;
 
-  const EmptyState({
+  EmptyState({
     super.key,
     this.icon = Icons.inbox_outlined,
     required this.message,
@@ -350,7 +356,7 @@ class EmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 48, color: colors.textMuted),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             message,
             style: TextStyle(
@@ -411,7 +417,7 @@ class FitToast {
       ),
     );
     overlay.insert(overlayEntry);
-    Future.delayed(duration + const Duration(milliseconds: 300), () {
+    Future.delayed(duration + Duration(milliseconds: 300), () {
       overlayEntry.remove();
     });
   }
@@ -436,7 +442,7 @@ class _ToastOverlay extends StatefulWidget {
   final Duration duration;
   final VoidCallback onDismiss;
 
-  const _ToastOverlay({
+  _ToastOverlay({
     required this.message,
     required this.type,
     required this.duration,
@@ -458,11 +464,11 @@ class _ToastOverlayState extends State<_ToastOverlay>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: Duration(milliseconds: 250),
     );
     _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
     _slide = Tween<Offset>(
-      begin: const Offset(0, -0.3),
+      begin: Offset(0, -0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
@@ -528,7 +534,7 @@ class _ToastOverlayState extends State<_ToastOverlay>
             child: Material(
               color: Colors.transparent,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: colors.bgCard,
                   borderRadius: BorderRadius.circular(12),
@@ -537,14 +543,14 @@ class _ToastOverlayState extends State<_ToastOverlay>
                     BoxShadow(
                       color: Colors.black.withOpacity(0.3),
                       blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
                     Icon(_icon(), color: _accentColor(colors), size: 22),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         widget.message,
@@ -578,7 +584,7 @@ class ConfirmDialog extends StatelessWidget {
   final Color? confirmColor;
   final IconData? icon;
 
-  const ConfirmDialog({
+  ConfirmDialog({
     super.key,
     required this.title,
     required this.content,
@@ -623,7 +629,7 @@ class ConfirmDialog extends StatelessWidget {
         side: BorderSide(color: colors.borderColor),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -637,7 +643,7 @@ class ConfirmDialog extends StatelessWidget {
                 ),
                 child: Icon(icon, color: danger, size: 24),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
             ],
             Text(
               title,
@@ -648,7 +654,7 @@ class ConfirmDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               content,
               style: TextStyle(
@@ -658,7 +664,7 @@ class ConfirmDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
@@ -669,7 +675,7 @@ class ConfirmDialog extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
                       cancelText ?? tr(context, '取消'),
@@ -677,7 +683,7 @@ class ConfirmDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(true),
@@ -688,7 +694,7 @@ class ConfirmDialog extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(confirmText ?? tr(context, '确认')),
                   ),
@@ -713,7 +719,7 @@ class InfoDialog extends StatelessWidget {
   final IconData? icon;
   final Color? iconColor;
 
-  const InfoDialog({
+  InfoDialog({
     super.key,
     required this.title,
     required this.content,
@@ -755,7 +761,7 @@ class InfoDialog extends StatelessWidget {
         side: BorderSide(color: colors.borderColor),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -769,7 +775,7 @@ class InfoDialog extends StatelessWidget {
                 ),
                 child: Icon(icon, color: accent, size: 24),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
             ],
             Text(
               title,
@@ -780,7 +786,7 @@ class InfoDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               content,
               style: TextStyle(
@@ -790,7 +796,7 @@ class InfoDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -802,7 +808,7 @@ class InfoDialog extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12),
                 ),
                 child: Text(actionText ?? tr(context, '知道了')),
               ),
@@ -824,7 +830,7 @@ class AchievementDialog extends StatelessWidget {
   final String desc;
   final VoidCallback? onDone;
 
-  const AchievementDialog({
+  AchievementDialog({
     super.key,
     required this.icon,
     required this.name,
@@ -861,12 +867,12 @@ class AchievementDialog extends StatelessWidget {
         side: BorderSide(color: colors.accentGlow, width: 2),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+        padding: EdgeInsets.fromLTRB(24, 28, 24, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(icon, style: const TextStyle(fontSize: 56)),
-            const SizedBox(height: 16),
+            Text(icon, style: TextStyle(fontSize: 56)),
+            SizedBox(height: 16),
             Text(
               tr(context, '恭喜达成成就！'),
               style: TextStyle(
@@ -875,7 +881,7 @@ class AchievementDialog extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               name,
               style: TextStyle(
@@ -884,7 +890,7 @@ class AchievementDialog extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               desc,
               style: TextStyle(
@@ -893,7 +899,7 @@ class AchievementDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -908,7 +914,7 @@ class AchievementDialog extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12),
                 ),
                 child: Text(tr(context, '太棒了')),
               ),
@@ -953,7 +959,7 @@ class _BottomSheetWrapper extends StatelessWidget {
   final Widget child;
   final double maxHeightRatio;
 
-  const _BottomSheetWrapper({
+  _BottomSheetWrapper({
     required this.child,
     this.maxHeightRatio = 0.75,
   });
@@ -971,7 +977,7 @@ class _BottomSheetWrapper extends StatelessWidget {
       child: AnimatedPadding(
         // 键盘弹出时，底部留出键盘高度，确保内容不被遮挡
         padding: EdgeInsets.only(bottom: keyboardHeight),
-        duration: const Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 200),
         child: Container(
           constraints: BoxConstraints(
             // 键盘弹出时，限制最大高度为屏幕剩余可用高度
@@ -979,7 +985,7 @@ class _BottomSheetWrapper extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: colors.bgSecondary,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             border: Border.all(color: colors.borderColor),
           ),
           child: Column(
@@ -987,7 +993,7 @@ class _BottomSheetWrapper extends StatelessWidget {
             children: [
               // 拖拽指示条
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 10),
+                margin: EdgeInsets.symmetric(vertical: 10),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
@@ -1024,7 +1030,7 @@ class FitTextField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final Widget? suffix;
 
-  const FitTextField({
+  FitTextField({
     super.key,
     required this.controller,
     this.label,
@@ -1056,7 +1062,7 @@ class FitTextField extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
         ],
         TextField(
           controller: controller,
@@ -1074,7 +1080,7 @@ class FitTextField extends StatelessWidget {
             hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
             filled: true,
             fillColor: colors.bgElevated,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(
@@ -1099,10 +1105,10 @@ class FitTextField extends StatelessWidget {
           ),
         ),
         if (hasError) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             errorText!,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.redAccent,
               fontSize: 12,
             ),
@@ -1123,7 +1129,7 @@ class FitChipSelector extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final Color? selectedColor;
 
-  const FitChipSelector({
+  FitChipSelector({
     super.key,
     required this.options,
     required this.selected,
@@ -1144,8 +1150,8 @@ class FitChipSelector extends StatelessWidget {
         return GestureDetector(
           onTap: () => onChanged(opt),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            duration: Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected ? accent.withOpacity(0.15) : colors.bgElevated,
               borderRadius: BorderRadius.circular(8),

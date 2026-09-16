@@ -13,7 +13,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
   final RetentionWeeklyReport report;
   final VoidCallback? onDismiss;
 
-  const RetentionWeeklyReportDialog({
+  RetentionWeeklyReportDialog({
     super.key,
     required this.report,
     this.onDismiss,
@@ -33,10 +33,10 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
     return Dialog(
       backgroundColor: colors.bgSecondary,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 380),
+        constraints: BoxConstraints(maxWidth: 380),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -44,24 +44,24 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
             children: [
               _buildHeader(colors),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                padding: EdgeInsets.fromLTRB(20, 16, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildTitle(colors),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     _buildSubtitle(colors),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18),
                     _buildStatsGrid(colors),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     _buildWeightAnalogy(colors),
                     if (report.trainedMuscles.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildMuscleChips(colors),
                     ],
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18),
                     _buildStreakBanner(colors),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     _buildActions(colors, context),
                   ],
                 ),
@@ -87,7 +87,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
             colors.accentGlow.withOpacity(0.55),
           ],
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Stack(
         children: [
@@ -98,7 +98,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                 size: 72, color: Colors.white.withOpacity(0.18)),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +107,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                   children: [
                     Icon(Icons.auto_awesome,
                         size: 14, color: Colors.white.withOpacity(0.9)),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       trn( 'LiftTrack · 7日周报'),
                       style: TextStyle(
@@ -119,10 +119,10 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   trn( '你已经用 LiftTrack 一周了'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -177,7 +177,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
             highlight: true,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
             colors,
@@ -205,7 +205,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
     final valueColor = highlight ? colors.accentGlow : colors.textPrimary;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
@@ -221,7 +221,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
           Row(
             children: [
               Icon(icon, size: 14, color: colors.accentGlow),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
@@ -232,7 +232,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -246,7 +246,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                   height: 1,
                 ),
               ),
-              const SizedBox(width: 2),
+              SizedBox(width: 2),
               Text(
                 unit,
                 style: TextStyle(
@@ -267,7 +267,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
   Widget _buildWeightAnalogy(LiftTrackColors colors) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: colors.accentGlow.withOpacity(0.05),
         borderRadius: BorderRadius.circular(10),
@@ -276,7 +276,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
         children: [
           Icon(Icons.lightbulb_outline,
               size: 16, color: colors.accentGlow),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               trn( '${report.weightAnalogy} · 累计训练 ${report.durationText}'),
@@ -301,7 +301,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
       children: [
         for (final m in report.trainedMuscles.take(6))
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: colors.accentGlow.withOpacity(0.08),
               borderRadius: BorderRadius.circular(6),
@@ -323,11 +323,11 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   Widget _buildStreakBanner(LiftTrackColors colors) {
     if (report.streak <= 0) {
-      return const SizedBox.shrink();
+      return SizedBox.shrink();
     }
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -342,7 +342,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
         children: [
           Icon(Icons.local_fire_department,
               size: 20, color: colors.accentGlow),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               trn( '已连续打卡 ${report.streak} 天，保持节奏!'),
@@ -369,7 +369,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: colors.textSecondary,
               side: BorderSide(color: colors.borderColor),
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),
               ),
@@ -377,14 +377,14 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
             child: Text(tr(context, '稍后再看')),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.accentGlow,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),
               ),
@@ -392,7 +392,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
             ),
             child: Text(
               tr(context, '继续加油'),
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ),

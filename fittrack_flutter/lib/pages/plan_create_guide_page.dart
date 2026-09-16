@@ -9,7 +9,7 @@ import '../l10n/i18n.dart';
 /// 首次进入"创建计划"时展示，帮助用户理解创建流程：
 /// 命名计划 → 选择模板或从空开始 → 添加训练日与动作 → 保存开始训练。
 class PlanCreateGuidePage extends StatefulWidget {
-  const PlanCreateGuidePage({super.key});
+  PlanCreateGuidePage({super.key});
 
   @override
   State<PlanCreateGuidePage> createState() => _PlanCreateGuidePageState();
@@ -38,7 +38,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+                padding: EdgeInsets.fromLTRB(24, 32, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -53,7 +53,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                           ),
                           child: Icon(Icons.auto_awesome, color: colors.accentGlow),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             tr(context, '3 步创建你的训练计划'),
@@ -66,12 +66,12 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       tr(context, '从零开始也能轻松上手，快来看看怎么创建吧'),
                       style: TextStyle(color: colors.textSecondary, fontSize: 14),
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28),
                     _buildStep(
                       colors,
                       step: '1',
@@ -93,10 +93,10 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                       title: tr(context, '设置难度并保存'),
                       desc: tr(context, '选择难度等级与适用人群（全部/男性/女性），确认训练日安排后点击「创建计划」，即可开始训练。'),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(14),
+                      padding: EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: colors.infoColor.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(12),
@@ -105,7 +105,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(Icons.tips_and_updates_outlined, size: 18, color: colors.infoColor),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               tr(context, '小提示：保存后随时可以进入计划详情继续编辑训练日与动作。'),
@@ -120,7 +120,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              padding: EdgeInsets.fromLTRB(24, 8, 24, 24),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -128,10 +128,10 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    padding: EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text(tr(context, '开始创建'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: Text(tr(context, '开始创建'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ),
@@ -149,7 +149,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
     required String desc,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: EdgeInsets.only(bottom: 20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -163,11 +163,11 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
             child: Center(
               child: Text(
                 step,
-                style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,18 +175,21 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                 Row(
                   children: [
                     Icon(icon, size: 18, color: colors.accentGlow),
-                    const SizedBox(width: 6),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: colors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    SizedBox(width: 6),
+                    // 英文标题更长，用 Expanded 占满剩余宽度并允许换行
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   desc,
                   style: TextStyle(

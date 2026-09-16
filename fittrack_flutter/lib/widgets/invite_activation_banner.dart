@@ -19,7 +19,7 @@ class InviteActivationBanner extends StatefulWidget {
   final String inviteCode;
   final VoidCallback onDismissed;
 
-  const InviteActivationBanner({
+  InviteActivationBanner({
     super.key,
     required this.inviteCode,
     required this.onDismissed,
@@ -41,11 +41,11 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
       child: SafeArea(
         bottom: false,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              const Icon(Icons.card_giftcard, size: 20, color: Colors.white),
-              const SizedBox(width: 10),
+              Icon(Icons.card_giftcard, size: 20, color: Colors.white),
+              SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +60,7 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
                     ),
                     Text(
                       widget.inviteCode,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -75,9 +75,9 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
                 onPressed: _dismiss,
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white.withOpacity(0.8),
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10),
                 ),
-                child: Text(tr(context, '忽略'), style: const TextStyle(fontSize: 13)),
+                child: Text(tr(context, '忽略'), style: TextStyle(fontSize: 13)),
               ),
               // 激活
               ElevatedButton(
@@ -86,21 +86,21 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
                   backgroundColor: Colors.white,
                   foregroundColor: colors.accentGlow,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
                   elevation: 0,
                 ),
                 child: _activating
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.black54),
                       )
                     : Text(tr(context, '激活'),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w700)),
               ),
             ],

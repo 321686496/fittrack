@@ -8,7 +8,7 @@ import '../utils/art_assets.dart';
 
 import '../l10n/i18n.dart';
 class RecommendationBanner extends StatefulWidget {
-  const RecommendationBanner({super.key});
+  RecommendationBanner({super.key});
 
   @override
   State<RecommendationBanner> createState() => _RecommendationBannerState();
@@ -28,11 +28,11 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
     // 返回首页时 tab 激活回调不会触发，必须由数据通知驱动）
     Storage.dataChanged.addListener(_onDataChanged);
     if (_banners.isNotEmpty) {
-      _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _timer = Timer.periodic(Duration(seconds: 5), (_) {
         if (_controller.hasClients) {
           final next = (_currentPage + 1) % _banners.length;
           _controller.animateToPage(next,
-              duration: const Duration(milliseconds: 400),
+              duration: Duration(milliseconds: 400),
               curve: Curves.easeInOut);
         }
       });
@@ -68,7 +68,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
 
   @override
   Widget build(BuildContext context) {
-    if (_banners.isEmpty) return const SizedBox.shrink();
+    if (_banners.isEmpty) return SizedBox.shrink();
     return Column(
       children: [
         SizedBox(
@@ -80,7 +80,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
             itemBuilder: (ctx, i) => _buildBanner(_banners[i]),
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         _buildIndicator(),
       ],
     );
@@ -113,7 +113,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                 child: Image.asset(
                   bannerArtAsset(banner.type) ?? '',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  errorBuilder: (_, __, ___) => SizedBox.shrink(),
                 ),
               ),
             ),
@@ -129,7 +129,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                       Colors.black.withOpacity(0.55),
                       Colors.transparent,
                     ],
-                    stops: const [0.0, 0.65],
+                    stops: [0.0, 0.65],
                   ),
                 ),
               ),
@@ -162,21 +162,21 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
             ),
             // 内容
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     banner.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(
                     banner.subtitle,
                     style: TextStyle(
@@ -184,9 +184,9 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                       fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
@@ -248,7 +248,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                 child: Image.asset(
                   bannerArtAsset('invitation') ?? '',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  errorBuilder: (_, __, ___) => SizedBox.shrink(),
                 ),
               ),
             ),
@@ -263,7 +263,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                       Colors.black.withOpacity(0.5),
                       Colors.transparent,
                     ],
-                    stops: const [0.0, 0.7],
+                    stops: [0.0, 0.7],
                   ),
                 ),
               ),
@@ -295,20 +295,20 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 头部：礼物图标 + 标题 + 大使角标
                   Row(
                     children: [
-                      const Icon(Icons.card_giftcard,
+                      Icon(Icons.card_giftcard,
                           color: Colors.white, size: 22),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           banner.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -318,7 +318,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                       ),
                       if (isAmbassador)
                         Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                               horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
@@ -326,7 +326,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                           ),
                           child: Text(
                             tr(context, '大使'),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -335,19 +335,19 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                         ),
                     ],
                   ),
-                  const Spacer(),
+                  Spacer(),
                   // 进度文案
                   Text(
                     isAmbassador
                         ? tr(context, '已邀请 $totalReferrals 人 · 大使')
                         : tr(context, '已邀请 $totalReferrals / $nextMilestone 人'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   // 进度条
                   ClipRRect(
                     borderRadius: BorderRadius.circular(3),
@@ -363,10 +363,10 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   // 动态 CTA
                   Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
@@ -397,8 +397,8 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
       children: List.generate(_banners.length, (i) {
         final isCurrent = i == _currentPage;
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
+          duration: Duration(milliseconds: 300),
+          margin: EdgeInsets.symmetric(horizontal: 3),
           width: isCurrent ? 16 : 6,
           height: 6,
           decoration: BoxDecoration(

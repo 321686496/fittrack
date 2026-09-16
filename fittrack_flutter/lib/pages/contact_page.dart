@@ -15,7 +15,7 @@ import '../widgets/poster_preview_dialog.dart';
 import '../l10n/i18n.dart';
 /// 联系我们页面（独立详情页，展示群二维码与群号等联系方式）
 class ContactPage extends StatelessWidget {
-  const ContactPage({super.key});
+  ContactPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +31,14 @@ class ContactPage extends StatelessWidget {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── 顶部说明 ──
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: colors.accentGlow.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
@@ -48,7 +48,7 @@ class ContactPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(Icons.headset_mic_outlined, size: 22, color: colors.accentGlow),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,12 +61,12 @@ class ContactPage extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               Text(
                                 tr(context, '如果你在使用过程中遇到任何问题、觉得有不好用或存在漏洞的地方，可以通过以下方式联系开发者，也可以直接发送邮件到邮箱反馈问题，我们会积极听取并采纳你的意见，把产品做得更好。'),
                                 style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
                               Text(
                                 tr(context, '如果你觉得用得还不错，也欢迎加入官方社群，与爱训练的朋友们一起讨论交流、自律打卡～'),
                                 style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
@@ -77,10 +77,10 @@ class ContactPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   // ── 官方社群（双二维码并排展示） ──
                   _buildGroupCard(context, colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   // ── 一对一联系方式 ──
                   CardWidget(
                     child: Column(
@@ -90,14 +90,14 @@ class ContactPage extends StatelessWidget {
                           .toList(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Center(
                     child: Text(
                       tr(context, '客服在线时间：每天 9:00 - 22:00'),
                       style: TextStyle(color: colors.textMuted, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                 ],
               ),
             ),
@@ -118,30 +118,33 @@ class ContactPage extends StatelessWidget {
 
     return CardWidget(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.groups_rounded, size: 20, color: colors.accentGlow),
-                const SizedBox(width: 8),
-                Text(
-                  tr(context, '官方社群'),
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                SizedBox(width: 8),
+                // 英文标题更长，用 Expanded 占满剩余宽度并允许换行
+                Expanded(
+                  child: Text(
+                    tr(context, '官方社群'),
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               tr(context, '扫码加入社群，与爱训练的朋友一起交流打卡'),
               style: TextStyle(color: colors.textMuted, fontSize: 12),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Row(
               children: groups.map((c) {
                 final isFirst = c == groups.first;
@@ -169,7 +172,7 @@ class ContactPage extends StatelessWidget {
     ContactChannel c,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.bgCard,
         borderRadius: BorderRadius.circular(12),
@@ -182,7 +185,7 @@ class ContactPage extends StatelessWidget {
             size: 18,
             color: colors.accentGlow,
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             c.label,
             style: TextStyle(
@@ -191,13 +194,13 @@ class ContactPage extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           GestureDetector(
             onTap: () => _previewQrCode(context, c),
             child: Container(
               width: 120,
               height: 120,
-              padding: const EdgeInsets.all(6),
+              padding: EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
@@ -221,7 +224,7 @@ class ContactPage extends StatelessWidget {
                     right: 2,
                     bottom: 2,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.45),
                         borderRadius: BorderRadius.circular(6),
@@ -229,10 +232,10 @@ class ContactPage extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.zoom_in, size: 10, color: Colors.white),
-                          const SizedBox(width: 2),
+                          Icon(Icons.zoom_in, size: 10, color: Colors.white),
+                          SizedBox(width: 2),
                           Text(tr(context, '点击放大'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 9, color: Colors.white)),
                         ],
                       ),
@@ -242,14 +245,14 @@ class ContactPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             c.hint,
             textAlign: TextAlign.center,
             style: TextStyle(color: colors.textMuted, fontSize: 11, height: 1.3),
           ),
           if (c.copyable) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
@@ -261,15 +264,15 @@ class ContactPage extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             OutlinedButton.icon(
               onPressed: () => _copyValue(context, c),
-              icon: const Icon(Icons.copy_rounded, size: 14),
-              label: Text(tr(context, '复制群号'), style: const TextStyle(fontSize: 12)),
+              icon: Icon(Icons.copy_rounded, size: 14),
+              label: Text(tr(context, '复制群号'), style: TextStyle(fontSize: 12)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colors.accentGlow,
                 side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
@@ -329,7 +332,7 @@ class ContactPage extends StatelessWidget {
     return InkWell(
       onTap: () => isEmail ? _sendEmail(context, c) : _copyValue(context, c),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
             Container(
@@ -341,7 +344,7 @@ class ContactPage extends StatelessWidget {
               ),
               child: Icon(icon, size: 20, color: colors.accentGlow),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,11 +354,11 @@ class ContactPage extends StatelessWidget {
                           color: colors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(c.value,
                       style:
                           TextStyle(color: colors.accentGlow, fontSize: 13)),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(c.hint,
                       style:
                           TextStyle(color: colors.textMuted, fontSize: 11)),

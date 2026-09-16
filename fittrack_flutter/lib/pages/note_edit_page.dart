@@ -24,7 +24,7 @@ class NoteEditPage extends StatefulWidget {
   final String? recordId;
   final String? noteId;
 
-  const NoteEditPage({super.key, this.recordId, this.noteId});
+  NoteEditPage({super.key, this.recordId, this.noteId});
 
   @override
   State<NoteEditPage> createState() => _NoteEditPageState();
@@ -115,28 +115,28 @@ class _NoteEditPageState extends State<NoteEditPage> {
           ),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildRecordBindingSection(colors),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _buildFeelingSection(colors),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _buildBestExerciseSection(colors),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _buildSorePartsSection(colors),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _buildContentSection(colors),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _buildMoodStickerSection(colors),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _buildFeaturedToggle(colors),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
                         _buildActions(colors),
-                        const SizedBox(height: 40),
+                        SizedBox(height: 40),
                       ],
                     ),
                   ),
@@ -152,7 +152,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     final record = _boundRecord;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: colors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
@@ -164,16 +164,19 @@ class _NoteEditPageState extends State<NoteEditPage> {
           Row(
             children: [
               Icon(Icons.link, size: 14, color: colors.accentGlow),
-              const SizedBox(width: 6),
-              Text(
-                tr(context, '绑定训练记录'),
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              SizedBox(width: 6),
+              // 英文标题更长，用 Flexible 让它在 Spacer 之前按需收缩
+              Flexible(
+                child: Text(
+                  tr(context, '绑定训练记录'),
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               if (record != null)
                 TextButton(
                   onPressed: () => setState(() {
@@ -182,23 +185,28 @@ class _NoteEditPageState extends State<NoteEditPage> {
                   }),
                   style: TextButton.styleFrom(
                     foregroundColor: colors.textMuted,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    minimumSize: const Size(0, 0),
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    minimumSize: Size(0, 0),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: Text(tr(context, '解除'), style: const TextStyle(fontSize: 12)),
+                  child: Text(tr(context, '解除'), style: TextStyle(fontSize: 12)),
                 )
               else
-                Text(
-                  tr(context, '选一次训练，记录当下感受'),
-                  style: TextStyle(color: colors.textMuted, fontSize: 11),
+                // 英文提示更长，用 Flexible 收缩 + 单行省略
+                Flexible(
+                  child: Text(
+                    tr(context, '选一次训练，记录当下感受'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: colors.textMuted, fontSize: 11),
+                  ),
                 ),
             ],
           ),
           if (record != null) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             _buildBoundRecordCard(colors),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -208,14 +216,14 @@ class _NoteEditPageState extends State<NoteEditPage> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50)),
                 ),
               ),
             ),
           ] else ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -225,13 +233,13 @@ class _NoteEditPageState extends State<NoteEditPage> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50)),
                 ),
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               tr(context, '未绑定也可直接写自由笔记'),
               style: TextStyle(color: colors.textMuted, fontSize: 11),
@@ -259,7 +267,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: colors.bgSecondary,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
@@ -269,18 +277,18 @@ class _NoteEditPageState extends State<NoteEditPage> {
             Container(
               width: 36,
               height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
+              margin: EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: colors.borderColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Row(
                 children: [
                   Icon(Icons.history, size: 18, color: colors.accentGlow),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Text(
                     tr(context, '选择本次训练记录'),
                     style: TextStyle(
@@ -380,7 +388,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     final mins = (duration / 60).round();
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: colors.accentGlow.withOpacity(0.06),
         borderRadius: BorderRadius.circular(12),
@@ -392,7 +400,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
           Row(
             children: [
               Icon(Icons.link, size: 14, color: colors.accentGlow),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Text(
                 tr(context, '关联训练'),
                 style: TextStyle(
@@ -401,14 +409,14 @@ class _NoteEditPageState extends State<NoteEditPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               if (muscles.isNotEmpty)
                 Wrap(
                   spacing: 4,
                   children: muscles
                       .take(3)
                       .map((m) => Container(
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: colors.accentGlow.withOpacity(0.1),
@@ -422,18 +430,18 @@ class _NoteEditPageState extends State<NoteEditPage> {
                 ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           // 双列数据
           Row(
             children: [
               Expanded(
                 child: _buildMiniStat(colors, tr(context, '时长'), '${mins}min'),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _buildMiniStat(colors, tr(context, '总重量'), '${totalWeight}kg'),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _buildMiniStat(colors, tr(context, '总组数'), '$totalSets'),
               ),
@@ -450,7 +458,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
       children: [
         Text(label,
             style: TextStyle(color: colors.textMuted, fontSize: 10)),
-        const SizedBox(height: 2),
+        SizedBox(height: 2),
         Text(value,
             style: TextStyle(
                 color: colors.textPrimary,
@@ -541,7 +549,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                   }),
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: selected
                           ? colors.accentGlow
@@ -576,7 +584,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                   borderSide: BorderSide(color: colors.borderColor),
                 ),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
               style: TextStyle(color: colors.textPrimary, fontSize: 13),
               onChanged: (v) => _bestExercise = v,
@@ -606,7 +614,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             }),
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: selected
                     ? colors.accentGlow.withOpacity(0.12)
@@ -651,7 +659,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             decoration: InputDecoration(
               hintText: tr(context, '记录今天训练的感悟、突破或不足...'),
               hintStyle: TextStyle(color: colors.textMuted, fontSize: 13),
-              counterStyle: const TextStyle(fontSize: 0),
+              counterStyle: TextStyle(fontSize: 0),
               filled: true,
               fillColor: colors.bgCard,
               border: OutlineInputBorder(
@@ -659,7 +667,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                 borderSide: BorderSide(color: colors.borderColor),
               ),
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
             style: TextStyle(color: colors.textPrimary, fontSize: 13),
           ),
@@ -696,7 +704,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             }),
             child: Container(
               width: 64,
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: selected
                     ? colors.accentGlow.withOpacity(0.12)
@@ -717,7 +725,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                         ? colors.accentGlow
                         : colors.textMuted,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     opt['label']!,
                     style: TextStyle(
@@ -756,7 +764,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   Widget _buildFeaturedToggle(LiftTrackColors colors) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: colors.bgCard,
         borderRadius: BorderRadius.circular(10),
@@ -765,7 +773,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
       child: Row(
         children: [
           Icon(Icons.bookmark_outline, size: 16, color: colors.textMuted),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               tr(context, '标记为精选'),
@@ -795,32 +803,32 @@ class _NoteEditPageState extends State<NoteEditPage> {
             onPressed: _saving
                 ? null
                 : () => context.pop(),
-            icon: const Icon(Icons.close, size: 16),
+            icon: Icon(Icons.close, size: 16),
             label: Text(tr(context, '取消')),
             style: OutlinedButton.styleFrom(
               foregroundColor: colors.textSecondary,
               side: BorderSide(color: colors.borderColor),
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50)),
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _saving ? null : _save,
             icon: _saving
-                ? const SizedBox(
+                ? SizedBox(
                     width: 14,
                     height: 14,
                     child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.check, size: 16),
+                : Icon(Icons.check, size: 16),
             label: Text(_saving ? tr(context, '保存中') : tr(context, '保存')),
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.accentGlow,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50)),
               elevation: 0,
@@ -841,7 +849,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: colors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
@@ -853,18 +861,21 @@ class _NoteEditPageState extends State<NoteEditPage> {
           Row(
             children: [
               Icon(icon, size: 14, color: colors.accentGlow),
-              const SizedBox(width: 6),
-              Text(
-                title,
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              SizedBox(width: 6),
+              // 英文小节标题更长，用 Expanded 占满剩余宽度并允许换行
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           child,
         ],
       ),

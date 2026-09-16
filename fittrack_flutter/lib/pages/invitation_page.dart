@@ -23,7 +23,7 @@ import '../l10n/i18n.dart';
 /// 3. 奖励规则说明（4 档奖励列表 + 双方获奖备注）
 /// 4. 邀请流程图解（4 步水平流程：分享→注册→训练→获奖）
 class InvitationPage extends StatefulWidget {
-  const InvitationPage({super.key});
+  InvitationPage({super.key});
 
   @override
   State<InvitationPage> createState() => _InvitationPageState();
@@ -76,7 +76,7 @@ class _InvitationPageState extends State<InvitationPage> {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         0,
-        duration: const Duration(milliseconds: 400),
+        duration: Duration(milliseconds: 400),
         curve: Curves.easeOut,
       );
     }
@@ -97,22 +97,22 @@ class _InvitationPageState extends State<InvitationPage> {
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildCodeCard(colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildProgressCard(colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildRewardRulesCard(colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildFlowCard(colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildActivateCard(colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildRecordReceiptCard(colors),
-                  const SizedBox(height: 100),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
@@ -131,7 +131,7 @@ class _InvitationPageState extends State<InvitationPage> {
           Row(
             children: [
               Icon(Icons.card_giftcard, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 tr(context, '我的专属邀请码'),
                 style: TextStyle(
@@ -142,10 +142,10 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [colors.accentGlow.withOpacity(0.12), colors.accentGlow.withOpacity(0.04)],
@@ -166,7 +166,7 @@ class _InvitationPageState extends State<InvitationPage> {
                     letterSpacing: 3,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   tr(context, '永久有效'),
                   style: TextStyle(
@@ -177,25 +177,25 @@ class _InvitationPageState extends State<InvitationPage> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _copyCode(colors),
-                  icon: const Icon(Icons.copy, size: 18),
+                  icon: Icon(Icons.copy, size: 18),
                   label: Text(tr(context, '复制邀请码')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.accentGlow,
                     side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: _sharing ? null : _shareCode,
@@ -209,12 +209,12 @@ class _InvitationPageState extends State<InvitationPage> {
                                 AlwaysStoppedAnimation<Color>(colors.textPrimary),
                           ),
                         )
-                      : const Icon(Icons.share, size: 18),
+                      : Icon(Icons.share, size: 18),
                   label: Text(_sharing ? tr(context, '生成中...') : tr(context, '立即分享')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
@@ -279,7 +279,7 @@ class _InvitationPageState extends State<InvitationPage> {
           Row(
             children: [
               Icon(Icons.trending_up, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 tr(context, '进度概览'),
                 style: TextStyle(
@@ -290,20 +290,20 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // 两列统计
           Row(
             children: [
               Expanded(
                 child: _buildStatBox(colors, tr(context, '已邀请人数'), '$totalReferrals', tr(context, '人'), Icons.person_add),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _buildStatBox(colors, tr(context, '已获积分'), '$totalPoints', tr(context, '分'), Icons.stars),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // 4 档里程碑进度条
           Row(
             children: milestones.map((m) {
@@ -313,13 +313,13 @@ class _InvitationPageState extends State<InvitationPage> {
                   children: [
                     Container(
                       height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      margin: EdgeInsets.symmetric(horizontal: 2),
                       decoration: BoxDecoration(
                         color: active ? colors.accentGlow : colors.borderColor,
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Text(
                       '${m.count}',
                       style: TextStyle(
@@ -333,7 +333,7 @@ class _InvitationPageState extends State<InvitationPage> {
               );
             }).toList(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // 整体进度条
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -342,7 +342,7 @@ class _InvitationPageState extends State<InvitationPage> {
               Text('${(overallProgress * 100).toInt()}%', style: TextStyle(color: colors.textMuted, fontSize: 12)),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
@@ -353,10 +353,10 @@ class _InvitationPageState extends State<InvitationPage> {
             ),
           ),
           if (isAmbassador) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: colors.accentGlow.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
@@ -365,7 +365,7 @@ class _InvitationPageState extends State<InvitationPage> {
               child: Row(
                 children: [
                   Icon(Icons.military_tech, color: colors.accentGlow, size: 20),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     tr(context, '已获得「LiftTrack 大使」永久称号'),
                     style: TextStyle(
@@ -385,7 +385,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   Widget _buildStatBox(LiftTrackColors colors, String label, String value, String unit, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: colors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
@@ -400,22 +400,28 @@ class _InvitationPageState extends State<InvitationPage> {
             ),
             child: Icon(icon, color: colors.accentGlow, size: 18),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: TextStyle(color: colors.textMuted, fontSize: 11)),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text(value, style: TextStyle(
-                      color: colors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold,
-                    )),
-                    const SizedBox(width: 2),
-                    Text(unit, style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                    // 英文 value/unit 更长，两个 Text 都允许收缩，避免整行溢出
+                    Flexible(
+                      child: Text(value, style: TextStyle(
+                        color: colors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold,
+                      ), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                    SizedBox(width: 2),
+                    Flexible(
+                      child: Text(unit, style: TextStyle(color: colors.textMuted, fontSize: 12),
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
                   ],
                 ),
               ],
@@ -444,7 +450,7 @@ class _InvitationPageState extends State<InvitationPage> {
           Row(
             children: [
               Icon(Icons.emoji_events, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 tr(context, '奖励规则'),
                 style: TextStyle(
@@ -455,12 +461,12 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ...rules.map((r) => _buildRewardRuleItem(colors, r, currentInvites)),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: colors.accentGlow.withOpacity(0.06),
               borderRadius: BorderRadius.circular(10),
@@ -469,7 +475,7 @@ class _InvitationPageState extends State<InvitationPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.info_outline, color: colors.accentGlow, size: 16),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     tr(context, '好友输入你的邀请码激活后，双方均获得对应积分奖励。好友奖励为 50 积分，可立即用于解锁教学章节或购买皮肤。'),
@@ -486,7 +492,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
   Widget _buildRewardRuleItem(LiftTrackColors colors, _RewardRule r, int currentInvites) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -510,7 +516,7 @@ class _InvitationPageState extends State<InvitationPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,7 +524,7 @@ class _InvitationPageState extends State<InvitationPage> {
                     Text(r.title, style: TextStyle(
                       color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
                     )),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(tr(context, '你：${r.yourReward}'), style: TextStyle(color: colors.textSecondary, fontSize: 12, height: 1.4)),
                     Text(tr(context, '好友：${r.friendReward}'), style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.4)),
                   ],
@@ -537,15 +543,15 @@ class _InvitationPageState extends State<InvitationPage> {
   /// ambassador 限定皮肤突出预览（5 人档专属）
   Widget _buildAmbassadorPreview(LiftTrackColors colors, int currentInvites) {
     final cardTheme = OpponentSkinConfig.skinAmbassador.cardTheme;
-    const target = 5;
+    final target = 5;
     final progress = (currentInvites / target).clamp(0.0, 1.0);
     final remaining = (target - currentInvites).clamp(0, target);
     final unlocked = currentInvites >= target ||
         (Storage.getSettings()['unlockedOpponentSkin'] == true);
 
     return Container(
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(top: 10),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: cardTheme.gradientColors,
@@ -558,7 +564,7 @@ class _InvitationPageState extends State<InvitationPage> {
           BoxShadow(
             color: cardTheme.glowColor.withOpacity(0.3),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -566,7 +572,7 @@ class _InvitationPageState extends State<InvitationPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 96x96 皮肤预览
-          const SizedBox(
+          SizedBox(
             width: 96,
             height: 96,
             child: OpponentRenderer(
@@ -576,26 +582,30 @@ class _InvitationPageState extends State<InvitationPage> {
               showAura: true,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(
-                      tr(context, '${cardTheme.badgeEmoji} 传承导师'),
-                      style: TextStyle(
-                        color: cardTheme.badgeColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                    Flexible(
+                      child: Text(
+                        tr(context, '${cardTheme.badgeEmoji} 传承导师'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: cardTheme.badgeColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     BadgeWidget(text: tr(context, '限定'), variant: BadgeVariant.accent),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   unlocked
                       ? tr(context, '已解锁限定皮肤')
@@ -606,14 +616,14 @@ class _InvitationPageState extends State<InvitationPage> {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 // 解锁进度条
                 ProgressBar(
                   progress: progress,
                   fillColor: cardTheme.glowColor,
                   height: 6,
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   '$currentInvites / $target',
                   style: TextStyle(
@@ -622,16 +632,16 @@ class _InvitationPageState extends State<InvitationPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 // 立即邀请解锁按钮
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: unlocked ? null : _scrollToTop,
-                    icon: const Icon(Icons.card_giftcard, size: 14),
+                    icon: Icon(Icons.card_giftcard, size: 14),
                     label: Text(
                       unlocked ? tr(context, '已解锁') : tr(context, '立即邀请解锁'),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cardTheme.borderColor,
@@ -639,7 +649,7 @@ class _InvitationPageState extends State<InvitationPage> {
                       disabledBackgroundColor: cardTheme.borderColor.withOpacity(0.4),
                       disabledForegroundColor: colors.textMuted,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -672,16 +682,19 @@ class _InvitationPageState extends State<InvitationPage> {
           Row(
             children: [
               Icon(Icons.route, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
-              Text(
-                tr(context, '邀请流程'),
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              SizedBox(width: 8),
+              // 英文标题更长，用 Flexible 在 Spacer 之前按需收缩
+              Flexible(
+                child: Text(
+                  tr(context, '邀请流程'),
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Text(
                 tr(context, '查看详情'),
                 style: TextStyle(color: colors.textMuted, fontSize: 12),
@@ -689,7 +702,7 @@ class _InvitationPageState extends State<InvitationPage> {
               Icon(Icons.chevron_right, color: colors.textMuted, size: 16),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: steps.asMap().entries.map((entry) {
@@ -711,11 +724,11 @@ class _InvitationPageState extends State<InvitationPage> {
                             ),
                             child: Icon(s.icon, color: colors.accentGlow, size: 22),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(s.title, style: TextStyle(
                             color: colors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600,
                           ), textAlign: TextAlign.center),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(s.desc, style: TextStyle(
                             color: colors.textMuted, fontSize: 10,
                           ), textAlign: TextAlign.center),
@@ -749,24 +762,27 @@ class _InvitationPageState extends State<InvitationPage> {
           Row(
             children: [
               Icon(Icons.verified_user, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
-              Text(
-                tr(context, '记录邀请成果'),
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              SizedBox(width: 8),
+              // 英文标题更长，用 Expanded 占满剩余宽度并允许换行
+              Expanded(
+                child: Text(
+                  tr(context, '记录邀请成果'),
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             tr(context, '好友激活你的邀请码后，输入好友出示的 FIT-ACT 识别码，')
              + tr(context, '可验证其训练数据并确认成果'),
             style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -786,7 +802,7 @@ class _InvitationPageState extends State<InvitationPage> {
                       borderSide: BorderSide.none,
                     ),
                     contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                   style: TextStyle(
                     color: colors.textPrimary,
@@ -796,7 +812,7 @@ class _InvitationPageState extends State<InvitationPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               SizedBox(
                 height: 50,
                 width: 50,
@@ -810,28 +826,28 @@ class _InvitationPageState extends State<InvitationPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Icon(Icons.qr_code_scanner, size: 22),
+                  child: Icon(Icons.qr_code_scanner, size: 22),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: _verifying ? null : _verifyReceipt,
               icon: _verifying
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.search, size: 18),
+                  : Icon(Icons.search, size: 18),
               label: Text(_verifying ? tr(context, '校验中...') : tr(context, '校验识别码')),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colors.accentGlow,
                 side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
@@ -839,7 +855,7 @@ class _InvitationPageState extends State<InvitationPage> {
             ),
           ),
           if (_receiptValidation != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             _buildReceiptResultCard(colors),
           ],
         ],
@@ -853,7 +869,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: (valid ? colors.successColor : colors.warningColor)
             .withOpacity(0.08),
@@ -873,7 +889,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 color: valid ? colors.successColor : colors.warningColor,
                 size: 18,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   valid ? tr(context, '该好友已完成首次训练，可记录成果') : tr(context, '好友尚未完成首次训练'),
@@ -886,14 +902,14 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             tr(context, '有效训练 ${v.trainingCount} 次 · 总时长 ${v.totalDurationMin} 分钟')
              + tr(context, ' · 已激活 ${v.daysSinceActivation} 天'),
             style: TextStyle(color: colors.textSecondary, fontSize: 12),
           ),
           if (valid) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -907,12 +923,12 @@ class _InvitationPageState extends State<InvitationPage> {
                           valueColor: AlwaysStoppedAnimation<Color>(colors.textPrimary),
                         ),
                       )
-                    : const Icon(Icons.card_giftcard, size: 18),
+                    : Icon(Icons.card_giftcard, size: 18),
                 label: Text(_recording ? tr(context, '记录中...') : tr(context, '确认记录')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
@@ -947,7 +963,7 @@ class _InvitationPageState extends State<InvitationPage> {
       return;
     }
     setState(() => _verifying = true);
-    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await Future<void>.delayed(Duration(milliseconds: 50));
     if (!mounted) return;
     final v = InvitationService.instance.validateActivationReceipt(code);
     setState(() {
@@ -996,7 +1012,7 @@ class _InvitationPageState extends State<InvitationPage> {
           Row(
             children: [
               Icon(Icons.input, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 tr(context, '输入邀请码'),
                 style: TextStyle(
@@ -1007,11 +1023,11 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (activatedCode != null) ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: colors.successColor.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
@@ -1019,7 +1035,7 @@ class _InvitationPageState extends State<InvitationPage> {
               child: Row(
                 children: [
                   Icon(Icons.check_circle, color: colors.successColor, size: 20),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1032,7 +1048,7 @@ class _InvitationPageState extends State<InvitationPage> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           activatedCode,
                           style: TextStyle(
@@ -1048,7 +1064,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               tr(context, '激活奖励：50 积分已到账\n')
                + tr(context, '积分可立即用于解锁教学章节或购买皮肤'),
@@ -1058,7 +1074,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _buildActivationReceiptEntry(colors, activatedCode),
           ] else ...[
             Text(
@@ -1068,7 +1084,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 fontSize: 13,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -1087,7 +1103,7 @@ class _InvitationPageState extends State<InvitationPage> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                     style: TextStyle(
                       color: colors.textPrimary,
@@ -1097,7 +1113,7 @@ class _InvitationPageState extends State<InvitationPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 SizedBox(
                   height: 50,
                   width: 50,
@@ -1111,12 +1127,12 @@ class _InvitationPageState extends State<InvitationPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Icon(Icons.qr_code_scanner, size: 22),
+                    child: Icon(Icons.qr_code_scanner, size: 22),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -1124,7 +1140,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
@@ -1135,7 +1151,7 @@ class _InvitationPageState extends State<InvitationPage> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: colors.textPrimary),
                       )
-                    : Text(tr(context, '立即激活'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    : Text(tr(context, '立即激活'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -1150,7 +1166,7 @@ class _InvitationPageState extends State<InvitationPage> {
       LiftTrackColors colors, String activatedCode) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.bgSecondary,
         borderRadius: BorderRadius.circular(12),
@@ -1161,7 +1177,7 @@ class _InvitationPageState extends State<InvitationPage> {
           Row(
             children: [
               Icon(Icons.badge, size: 18, color: colors.accentGlow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   tr(context, '我的激活凭证'),
@@ -1174,23 +1190,23 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             tr(context, '生成识别码发给邀请你的好友，好友输入后双方得奖励。')
              + tr(context, '识别码含你的训练数据并加密签名，请放心展示'),
             style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () => _showReceiptDialog(colors),
-              icon: const Icon(Icons.qr_code_2, size: 18),
+              icon: Icon(Icons.qr_code_2, size: 18),
               label: Text(tr(context, '生成我的激活凭证')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
                 
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
@@ -1217,7 +1233,7 @@ class _InvitationPageState extends State<InvitationPage> {
           children: [
             // 识别码二维码（好友可扫码识别）
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -1234,7 +1250,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             SelectableText(
               code,
               textAlign: TextAlign.center,
@@ -1245,7 +1261,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 letterSpacing: 1,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(
               tr(context, '将此码发给邀请你的好友。好友在「记录邀请成果」中扫码或输入确认后，')
                + tr(context, '双方均可获得奖励。每次生成均反映你最新的训练数据。'),
@@ -1264,7 +1280,7 @@ class _InvitationPageState extends State<InvitationPage> {
               Navigator.of(dialogContext).pop();
               FitToast.success(context, tr(context, '识别码已复制'));
             },
-            icon: const Icon(Icons.copy, size: 16),
+            icon: Icon(Icons.copy, size: 16),
             label: Text(tr(context, '复制识别码')),
           ),
         ],

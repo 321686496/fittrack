@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fittrack_flutter/data/storage.dart';
@@ -34,7 +34,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.getTheme('vitality-sport'),
-        home: const Scaffold(
+        home: Scaffold(
           body: VirtualOpponentCard(),
         ),
       ),

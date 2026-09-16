@@ -17,13 +17,13 @@ class NotificationListSheet {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => const _NotificationListContent(),
+      builder: (ctx) => _NotificationListContent(),
     );
   }
 }
 
 class _NotificationListContent extends StatefulWidget {
-  const _NotificationListContent();
+  _NotificationListContent();
 
   @override
   State<_NotificationListContent> createState() =>
@@ -83,13 +83,13 @@ class _NotificationListContentState extends State<_NotificationListContent> {
       height: screenHeight * 0.7,
       decoration: BoxDecoration(
         color: colors.bgCard,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
           // 顶部标题栏
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+            padding: EdgeInsets.fromLTRB(16, 12, 8, 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -114,14 +114,14 @@ class _NotificationListContentState extends State<_NotificationListContent> {
                       ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1),
           // 通知列表
           Expanded(
             child: _notifications.isEmpty
@@ -131,7 +131,7 @@ class _NotificationListContentState extends State<_NotificationListContent> {
                       children: [
                         Icon(Icons.notifications_none,
                             size: 64, color: colors.textMuted),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         Text(tr(context, '暂无通知'),
                             style: TextStyle(color: colors.textSecondary)),
                       ],
@@ -156,7 +156,7 @@ class _NotificationListContentState extends State<_NotificationListContent> {
                               Container(
                                 width: 8,
                                 height: 8,
-                                margin: const EdgeInsets.only(right: 6),
+                                margin: EdgeInsets.only(right: 6),
                                 decoration: BoxDecoration(
                                   color: colors.accentGlow,
                                   shape: BoxShape.circle,

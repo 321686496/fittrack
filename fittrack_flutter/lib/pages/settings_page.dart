@@ -326,7 +326,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 10),
                   _buildThemeEntry(colors),
                   const SizedBox(height: 20),
-                  SectionHeader(title: tr(context, '语言 / Language')),
+                  SectionHeader(title: tr(context, '语言')),
                   const SizedBox(height: 10),
                   _buildLanguageSettings(colors),
                   const SizedBox(height: 20),
@@ -558,15 +558,25 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return CardWidget(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        // 与语言区块同理：英文选项（Training Volume / Training Duration）更长，
+        // 单行 Row 在窄屏会溢出，改用 Wrap 自动换行。
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(tr(context, '配色依据'), style: TextStyle(fontSize: 14, color: colors.textPrimary)),
+            Text(tr(context, '配色依据'),
+                style: TextStyle(fontSize: 14, color: colors.textPrimary)),
+            SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildModeChip(
+                    colors, tr(context, '训练容量'), 'capacity', isCapacity),
+                _buildModeChip(
+                    colors, tr(context, '训练时长'), 'duration', !isCapacity),
+              ],
             ),
-            _buildModeChip(colors, tr(context, '训练容量'), 'capacity', isCapacity),
-            const SizedBox(width: 8),
-            _buildModeChip(colors, tr(context, '训练时长'), 'duration', !isCapacity),
           ],
         ),
       ),
@@ -692,50 +702,71 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildLanguageSettings(LiftTrackColors colors) {
-    final language = LocaleController.instance.language;
-    return CardWidget(
-      child: _buildMenuTile(
-        colors,
-        Icons.translate,
-        tr(context, '语言 / Language'),
-        _languageLabel(language),
-        _showLanguagePicker,
-      ),
-    );
-  }
-
-  String _languageLabel(AppLanguage lang) {
-    switch (lang) {
-      case AppLanguage.zh:
-        return tr(context, '简体中文');
-      case AppLanguage.en:
-        return 'English';
-      case AppLanguage.system:
-        return tr(context, '跟随系统 / System');
-    }
-  }
-
-  Future<void> _showLanguagePicker() async {
     final current = LocaleController.instance.language;
-    final selected = await showModalBottomSheet<AppLanguage>(
-      context: context,
-      builder: (ctx) => SafeArea(
+    return CardWidget(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        // 标签独占一行、选项用 Wrap 自动换行：
+        // 英文选项（Follow System / Simplified Chinese）比中文长得多，
+        // 单行 Row 在窄屏上必然溢出。
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final lang in AppLanguage.values)
-              ListTile(
-                title: Text(_languageLabel(lang)),
-                trailing: current == lang ? const Icon(Icons.check) : null,
-                onTap: () => Navigator.pop(ctx, lang),
-              ),
+            Text(
+              tr(context, '语言'),
+              style: TextStyle(fontSize: 14, color: colors.textPrimary),
+            ),
+            SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildLanguageChip(colors, tr(context, '跟随系统'),
+                    AppLanguage.system, current == AppLanguage.system),
+                _buildLanguageChip(colors, tr(context, '简体中文'),
+                    AppLanguage.zh, current == AppLanguage.zh),
+                _buildLanguageChip(
+                    colors, 'English', AppLanguage.en, current == AppLanguage.en),
+              ],
+            ),
           ],
         ),
       ),
     );
-    if (selected != null && selected != current) {
-      await LocaleController.instance.setLanguage(selected);
-      if (mounted) setState(() {});
-    }
   }
+
+  Widget _buildLanguageChip(
+    LiftTrackColors colors,
+    String label,
+    AppLanguage language,
+    bool active,
+  ) {
+    return GestureDetector(
+      onTap: () async {
+        if (active) return;
+        await LocaleController.instance.setLanguage(language);
+        if (mounted) setState(() {});
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? colors.accentGlow.withOpacity(0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: active ? colors.accentGlow : colors.borderColor,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: active ? colors.accentGlow : colors.textSecondary,
+            fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
 }

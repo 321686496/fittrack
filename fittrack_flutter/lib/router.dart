@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'data/storage.dart';
@@ -150,31 +150,31 @@ GoRouter createRouter() {
         routes: [
           GoRoute(
             path: '/home',
-            pageBuilder: (context, state) => const NoTransitionPage(
+            pageBuilder: (context, state) => NoTransitionPage(
               child: HomePage(),
             ),
           ),
           GoRoute(
             path: '/plan',
-            pageBuilder: (context, state) => const NoTransitionPage(
+            pageBuilder: (context, state) => NoTransitionPage(
               child: PlanPage(),
             ),
           ),
           GoRoute(
             path: '/tutorial',
-            pageBuilder: (context, state) => const NoTransitionPage(
+            pageBuilder: (context, state) => NoTransitionPage(
               child: TutorialListPage(),
             ),
           ),
           GoRoute(
             path: '/stats',
-            pageBuilder: (context, state) => const NoTransitionPage(
+            pageBuilder: (context, state) => NoTransitionPage(
               child: StatsPage(),
             ),
           ),
           GoRoute(
             path: '/profile',
-            pageBuilder: (context, state) => const NoTransitionPage(
+            pageBuilder: (context, state) => NoTransitionPage(
               child: ProfilePage(),
             ),
           ),
@@ -203,7 +203,7 @@ GoRouter createRouter() {
       GoRoute(
         path: '/records',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const RecordsPage(),
+        builder: (context, state) => RecordsPage(),
       ),
       GoRoute(
         path: '/records/:recordId',
@@ -224,14 +224,14 @@ GoRouter createRouter() {
       GoRoute(
         path: '/plan-guide',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PlanCreateGuidePage(),
+        builder: (context, state) => PlanCreateGuidePage(),
       ),
       // 系统计划库路由（注意：detail 必须在 :goal 之前，避免 :goal 匹配 "detail"）
       GoRoute(
         path: '/plan-library',
         name: 'planLibraryHome',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PlanLibraryHomePage(),
+        builder: (context, state) => PlanLibraryHomePage(),
       ),
       GoRoute(
         path: '/plan-library/detail/:planId',
@@ -268,7 +268,7 @@ GoRouter createRouter() {
       GoRoute(
         path: '/exercise',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ExercisePage(),
+        builder: (context, state) => ExercisePage(),
       ),
       GoRoute(
         path: '/settings',
@@ -299,97 +299,97 @@ GoRouter createRouter() {
       GoRoute(
         path: '/notification-test',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const NotificationTestPage(),
+        builder: (context, state) => NotificationTestPage(),
       ),
       GoRoute(
         path: '/reminder-settings',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ReminderSettingsPage(),
+        builder: (context, state) => ReminderSettingsPage(),
       ),
       GoRoute(
         path: '/banner-notification-guide',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const BannerNotificationGuidePage(),
+        builder: (context, state) => BannerNotificationGuidePage(),
       ),
       GoRoute(
         path: '/gym-card',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const GymCardPage(),
+        builder: (context, state) => GymCardPage(),
       ),
       GoRoute(
         path: '/gym-card-stats',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const GymCardStatsPage(),
+        builder: (context, state) => GymCardStatsPage(),
       ),
       GoRoute(
         path: '/body-data',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const BodyDataPage(),
+        builder: (context, state) => BodyDataPage(),
       ),
       GoRoute(
         path: '/privacy-full',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PrivacyPolicyPage(),
+        builder: (context, state) => PrivacyPolicyPage(),
       ),
       GoRoute(
         path: '/agreement',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const UserAgreementPage(),
+        builder: (context, state) => UserAgreementPage(),
       ),
       GoRoute(
         path: '/data-privacy',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const DataPrivacyPage(),
+        builder: (context, state) => DataPrivacyPage(),
       ),
       GoRoute(
         path: '/about',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AboutPage(),
+        builder: (context, state) => AboutPage(),
       ),
       GoRoute(
         path: '/privacy-security',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PrivacySecurityPage(),
+        builder: (context, state) => PrivacySecurityPage(),
       ),
       GoRoute(
         path: '/help-feedback',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const HelpFeedbackPage(),
+        builder: (context, state) => HelpFeedbackPage(),
       ),
       GoRoute(
         path: '/contact',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ContactPage(),
+        builder: (context, state) => ContactPage(),
       ),
       GoRoute(
         path: '/achievements',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AchievementPage(),
+        builder: (context, state) => AchievementPage(),
       ),
       GoRoute(
         path: '/honor-wall',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const HonorWallPage(),
+        builder: (context, state) => HonorWallPage(),
       ),
       GoRoute(
         path: '/redeem',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const RedeemPage(),
+        builder: (context, state) => RedeemPage(),
       ),
       GoRoute(
         path: '/invitation',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const InvitationPage(),
+        builder: (context, state) => InvitationPage(),
       ),
       GoRoute(
         path: '/invitation/flow',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const InvitationFlowDetailPage(),
+        builder: (context, state) => InvitationFlowDetailPage(),
       ),
       GoRoute(
         path: '/share-code',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ShareCodePage(),
+        builder: (context, state) => ShareCodePage(),
       ),
       GoRoute(
         path: '/plan-qr/:planId',
@@ -401,7 +401,7 @@ GoRouter createRouter() {
       GoRoute(
         path: '/scan-import',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ScanImportPage(),
+        builder: (context, state) => ScanImportPage(),
       ),
       GoRoute(
         path: '/tutorial/:tutorialId',
@@ -414,13 +414,13 @@ GoRouter createRouter() {
       GoRoute(
         path: '/all-tutorials',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AllTutorialsPage(),
+        builder: (context, state) => AllTutorialsPage(),
       ),
       GoRoute(
         path: '/tutorial-search',
         name: 'tutorialSearch',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const TutorialSearchPage(),
+        builder: (context, state) => TutorialSearchPage(),
       ),
       // 教学分类详情页（v1.3 新增：瀑布流分类点击进入）
       GoRoute(
@@ -434,7 +434,7 @@ GoRouter createRouter() {
       GoRoute(
         path: '/course',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const CourseListPage(),
+        builder: (context, state) => CourseListPage(),
       ),
       GoRoute(
         path: '/course/:courseId',
@@ -452,35 +452,35 @@ GoRouter createRouter() {
       GoRoute(
         path: '/points-detail',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PointsDetailPage(),
+        builder: (context, state) => PointsDetailPage(),
       ),
       GoRoute(
         path: '/max-weight-detail',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const MaxWeightDetailPage(),
+        builder: (context, state) => MaxWeightDetailPage(),
       ),
       GoRoute(
         path: '/opponent-detail',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const OpponentDetailPage(),
+        builder: (context, state) => OpponentDetailPage(),
       ),
       GoRoute(
         path: '/logo-preview',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const LogoPreviewPage(),
+        builder: (context, state) => LogoPreviewPage(),
       ),
       // v1 V1-11: 训练笔记路由
       GoRoute(
         path: '/note',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const NoteListPage(),
+        builder: (context, state) => NoteListPage(),
       ),
       // 注意：静态路由必须放在动态路由之前，否则 `/note/edit` 会被
       // `/note/:noteId` 匹配为 noteId='edit'，跳转到详情页而不是编辑页。
       GoRoute(
         path: '/note/edit',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const NoteEditPage(),
+        builder: (context, state) => NoteEditPage(),
       ),
       GoRoute(
         path: '/note/edit/:recordId',
@@ -512,7 +512,7 @@ class AppShell extends StatefulWidget {
   final int currentIndex;
   final Widget child;
 
-  const AppShell({
+  AppShell({
     super.key,
     required this.currentIndex,
     required this.child,
@@ -524,7 +524,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   // 缓存每个 tab 的 child，避免反复创建销毁导致 Ink splash 崩溃
-  final List<Widget> _children = List.filled(5, const SizedBox.shrink());
+  final List<Widget> _children = List.filled(5, SizedBox.shrink());
   bool _initialized = false;
   DateTime? _lastBackPressed;
 
@@ -534,7 +534,7 @@ class _AppShellState extends State<AppShell> {
     // 第一次提示，第二次才真正退出，避免误触直接退出应用。
     final now = DateTime.now();
     if (_lastBackPressed != null &&
-        now.difference(_lastBackPressed!) < const Duration(seconds: 2)) {
+        now.difference(_lastBackPressed!) < Duration(seconds: 2)) {
       _lastBackPressed = null;
       SystemNavigator.pop();
       return false;
@@ -552,11 +552,11 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     // 首次构建时初始化所有 tab
     if (!_initialized) {
-      _children[0] = const HomePage();
-      _children[1] = const PlanPage();
-      _children[2] = const TutorialListPage();
-      _children[3] = const StatsPage();
-      _children[4] = const ProfilePage();
+      _children[0] = HomePage();
+      _children[1] = PlanPage();
+      _children[2] = TutorialListPage();
+      _children[3] = StatsPage();
+      _children[4] = ProfilePage();
       _initialized = true;
     }
 

@@ -23,7 +23,7 @@ import '../l10n/i18n.dart';
 class VirtualOpponentCard extends StatefulWidget {
   final VoidCallback? onTap;
 
-  const VirtualOpponentCard({super.key, this.onTap});
+  VirtualOpponentCard({super.key, this.onTap});
 
   @override
   State<VirtualOpponentCard> createState() => _VirtualOpponentCardState();
@@ -41,7 +41,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
     super.initState();
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: Duration(milliseconds: 1500),
     );
     _loadData();
   }
@@ -124,7 +124,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
     if (records.isEmpty) return OpponentTier.casual;
 
     final now = DateTime.now();
-    final fourWeeksAgo = now.subtract(const Duration(days: 28));
+    final fourWeeksAgo = now.subtract(Duration(days: 28));
     final fourWeeksAgoMs = DateTime(fourWeeksAgo.year, fourWeeksAgo.month, fourWeeksAgo.day).millisecondsSinceEpoch;
 
     int recentCount = 0;
@@ -178,7 +178,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
 
     if (_opponent == null) {
-      return const SizedBox.shrink();
+      return SizedBox.shrink();
     }
 
     final opponentTrainings = _opponent!.weeklyTrainings;
@@ -210,7 +210,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: cardTheme != null
                   ? LinearGradient(
@@ -230,7 +230,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                       BoxShadow(
                         color: cardTheme.glowColor.withOpacity(0.3),
                         blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        offset: Offset(0, 4),
                       ),
                     ]
                   : null,
@@ -246,23 +246,28 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                       height: 48,
                       child: OpponentRenderer(
                         skinId: _opponent!.appliedSkinId,
-                        size: const Size(48, 48),
+                        size: Size(48, 48),
                         autoTrain: false,
                         showAura: false,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      tr(context, '本周 PK'),
-                      style: TextStyle(
-                        color: colors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                    SizedBox(width: 6),
+                    // 英文标题更长，用 Flexible 在 Spacer 之前按需收缩
+                    Flexible(
+                      child: Text(
+                        tr(context, '本周 PK'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                    const Spacer(),
+                    Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: colors.accentGlow.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
@@ -278,7 +283,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 // VS 对比区
                 Row(
                   children: [
@@ -320,12 +325,12 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 // 对手动态（如果有）
                 if (_opponent!.currentStatus != null) ...[
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
                       color: colors.bgSecondary,
                       borderRadius: BorderRadius.circular(8),
@@ -333,7 +338,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                     child: Row(
                       children: [
                         Icon(Icons.chat_bubble_outline, size: 14, color: colors.textMuted),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             tr(context, '${_opponent!.nickname}：${_opponent!.currentStatus}'),
@@ -348,12 +353,12 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                 ],
                 // 激励文案
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: colors.accentGlow.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(8),
@@ -378,7 +383,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
               right: 10,
               child: Text(
                 cardTheme.badgeEmoji,
-                style: const TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: 18),
               ),
             ),
           // 呼吸光效叠加（仅 showShimmer=true 的皮肤）
@@ -435,7 +440,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Text(
           tr(context, '$count 次'),
           style: TextStyle(
@@ -444,7 +449,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
             fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(

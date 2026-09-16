@@ -21,7 +21,7 @@ import '../l10n/i18n.dart';
 /// 1. 生成分享码（选计划 → 生成 FITT-XXXXXX 码 + 完整分享串）
 /// 2. 导入分享码（粘贴分享串 → 校验 → 导入计划）
 class ShareCodePage extends StatefulWidget {
-  const ShareCodePage({super.key});
+  ShareCodePage({super.key});
 
   @override
   State<ShareCodePage> createState() => _ShareCodePageState();
@@ -69,14 +69,14 @@ class _ShareCodePageState extends State<ShareCodePage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildGenerateCard(colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildImportCard(colors),
-                  const SizedBox(height: 100),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
@@ -96,33 +96,36 @@ class _ShareCodePageState extends State<ShareCodePage> {
           Row(
             children: [
               Icon(Icons.qr_code, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
-              Text(
-                tr(context, '生成分享码'),
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              SizedBox(width: 8),
+              // 英文标题更长，用 Expanded 让文字占满剩余宽度并自动换行
+              Expanded(
+                child: Text(
+                  tr(context, '生成分享码'),
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           if (_plans.isEmpty)
             _buildEmptyPlans(colors)
           else ...[
             _buildPlanSelector(colors),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _selectedPlanId == null ? null : _generateCode,
-                icon: const Icon(Icons.qr_code_2, size: 18),
+                icon: Icon(Icons.qr_code_2, size: 18),
                 label: Text(tr(context, '生成分享码')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -131,7 +134,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
             ),
           ],
           if (_generatedCode != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             _buildGeneratedResult(colors),
           ],
         ],
@@ -142,11 +145,11 @@ class _ShareCodePageState extends State<ShareCodePage> {
   Widget _buildEmptyPlans(LiftTrackColors colors) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
           Icon(Icons.inbox_outlined, size: 40, color: colors.textMuted),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             tr(context, '暂无训练计划'),
             style: TextStyle(color: colors.textMuted, fontSize: 13),
@@ -164,7 +167,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
           tr(context, '选择要分享的计划'),
           style: TextStyle(color: colors.textSecondary, fontSize: 13),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         ..._plans.map((plan) => _buildPlanOption(colors, plan)),
       ],
     );
@@ -177,8 +180,8 @@ class _ShareCodePageState extends State<ShareCodePage> {
     return GestureDetector(
       onTap: () => _selectPlan(planId),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        margin: EdgeInsets.only(bottom: 8),
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
               ? colors.accentGlow.withOpacity(0.08)
@@ -197,7 +200,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               size: 20,
               color: isSelected ? colors.accentGlow : colors.textMuted,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,7 +213,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     '${plan['frequency'] ?? ''} · ${plan['difficulty'] ?? ''}',
                     style: TextStyle(color: colors.textMuted, fontSize: 12),
@@ -269,12 +272,12 @@ class _ShareCodePageState extends State<ShareCodePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         // 分享串二维码（数据过大时二维码无法承载，降级为提示 + 纯文本）
         Center(
           child: canRenderQr
               ? Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -293,7 +296,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                 )
               : Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: colors.warningColor.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
@@ -306,14 +309,14 @@ class _ShareCodePageState extends State<ShareCodePage> {
                   ),
                 ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Center(
           child: Text(tr(context, '好友可扫码导入此计划'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           decoration: BoxDecoration(
             color: colors.accentGlow.withOpacity(0.08),
             borderRadius: BorderRadius.circular(12),
@@ -325,7 +328,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                 tr(context, '分享码'),
                 style: TextStyle(color: colors.textSecondary, fontSize: 12),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               SelectableText(
                 _generatedCode!,
                 textAlign: TextAlign.center,
@@ -339,20 +342,20 @@ class _ShareCodePageState extends State<ShareCodePage> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           tr(context, '完整分享串（含计划数据，可复制发送）：'),
           style: TextStyle(color: colors.textSecondary, fontSize: 12),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: colors.bgSecondary,
             borderRadius: BorderRadius.circular(8),
           ),
-          constraints: const BoxConstraints(maxHeight: 80),
+          constraints: BoxConstraints(maxHeight: 80),
           child: SingleChildScrollView(
             child: SelectableText(
               _generatedShareString!,
@@ -364,34 +367,34 @@ class _ShareCodePageState extends State<ShareCodePage> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () => _copyString(colors),
-                icon: const Icon(Icons.copy, size: 18),
+                icon: Icon(Icons.copy, size: 18),
                 label: Text(tr(context, '复制分享串')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () => _shareString(),
-                icon: const Icon(Icons.share, size: 18),
+                icon: Icon(Icons.share, size: 18),
                 label: Text(tr(context, '分享')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
@@ -434,7 +437,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
         if (box != null && box.hasSize) {
           origin = box.localToGlobal(Offset.zero) & box.size;
         } else {
-          origin = const Rect.fromLTWH(0, 0, 1, 1);
+          origin = Rect.fromLTWH(0, 0, 1, 1);
         }
       }
       await Share.share(
@@ -459,7 +462,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
           Row(
             children: [
               Icon(Icons.download_for_offline, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 tr(context, '导入计划'),
                 style: TextStyle(
@@ -470,12 +473,12 @@ class _ShareCodePageState extends State<ShareCodePage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             tr(context, '粘贴好友发送的分享串（FITT-XXXXXX|... 格式）'),
             style: TextStyle(color: colors.textSecondary, fontSize: 13),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TextField(
             controller: _importController,
             maxLines: 3,
@@ -488,37 +491,44 @@ class _ShareCodePageState extends State<ShareCodePage> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.all(14),
+              contentPadding: EdgeInsets.all(14),
             ),
             style: TextStyle(
               color: colors.textPrimary,
               fontSize: 13,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Row(
             children: [
-              TextButton.icon(
-                onPressed: _pasteFromClipboard,
-                icon: const Icon(Icons.paste, size: 16),
-                label: Text(tr(context, '从剪贴板粘贴')),
-                style: TextButton.styleFrom(
-                  foregroundColor: colors.infoColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+              // 英文按钮文案比中文长，用 Flexible 允许按需收缩，避免 Row 溢出
+              Flexible(
+                child: TextButton.icon(
+                  onPressed: _pasteFromClipboard,
+                  icon: Icon(Icons.paste, size: 16),
+                  label: Text(tr(context, '从剪贴板粘贴'),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.infoColor,
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                  ),
                 ),
               ),
-              TextButton.icon(
-                onPressed: () => context.push('/scan-import'),
-                icon: const Icon(Icons.qr_code_scanner, size: 16),
-                label: Text(tr(context, '扫码导入')),
-                style: TextButton.styleFrom(
-                  foregroundColor: colors.accentGlow,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+              Flexible(
+                child: TextButton.icon(
+                  onPressed: () => context.push('/scan-import'),
+                  icon: Icon(Icons.qr_code_scanner, size: 16),
+                  label: Text(tr(context, '扫码导入'),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.accentGlow,
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -526,18 +536,18 @@ class _ShareCodePageState extends State<ShareCodePage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
               ),
               child: _importing
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : Text(tr(context, '导入计划'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  : Text(tr(context, '导入计划'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ),
           ),
         ],

@@ -7,7 +7,7 @@ import '../widgets/page_header.dart';
 
 import '../l10n/i18n.dart';
 class RecordsPage extends StatefulWidget {
-  const RecordsPage({super.key});
+  RecordsPage({super.key});
 
   @override
   State<RecordsPage> createState() => _RecordsPageState();
@@ -43,14 +43,14 @@ class _RecordsPageState extends State<RecordsPage> {
   String _getGroupLabel(DateTime recordDate) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
+    final yesterday = today.subtract(Duration(days: 1));
     final recordDay = DateTime(recordDate.year, recordDate.month, recordDate.day);
 
     if (recordDay == today) return tr(context, '今天');
     if (recordDay == yesterday) return tr(context, '昨天');
 
     final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
-    if (recordDay.isAfter(startOfWeek.subtract(const Duration(days: 1)))) {
+    if (recordDay.isAfter(startOfWeek.subtract(Duration(days: 1)))) {
       return tr(context, '本周');
     }
 
@@ -86,10 +86,10 @@ class _RecordsPageState extends State<RecordsPage> {
 
   String _formatDuration(dynamic minutes) {
     final m = (minutes as num?)?.toInt() ?? 0;
-    if (m < 60) return tr(context, '$m分钟');
+    if (m < 60) return tr(context, '${m}分钟');
     final h = m ~/ 60;
     final rem = m % 60;
-    return rem > 0 ? tr(context, '$h小时$rem分钟') : tr(context, '$h小时');
+    return rem > 0 ? tr(context, '${h}小时${rem}分钟') : tr(context, '${h}小时');
   }
 
   void _deleteRecord(String recordId) async {
@@ -134,15 +134,15 @@ class _RecordsPageState extends State<RecordsPage> {
           child: _records.isEmpty
               ? Center(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(horizontal: 24),
                     child: CardWidget(
-                      padding: const EdgeInsets.all(24),
+                      padding: EdgeInsets.all(24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.history_outlined,
                               size: 48, color: colors.accentGlow),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Text(
                             tr(context, '暂无训练记录'),
                             style: TextStyle(
@@ -151,7 +151,7 @@ class _RecordsPageState extends State<RecordsPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(
                             tr(context, '你的训练记录将显示在这里，包括每个动作的组数、重量和时长'),
                             textAlign: TextAlign.center,
@@ -161,23 +161,25 @@ class _RecordsPageState extends State<RecordsPage> {
                               height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           // 功能亮点标签
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          // 英文标签（Workout Details / Weight Tracking / Duration Stats）
+                          // 比中文长很多，用 Wrap 允许换行，避免 Row 溢出
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
                             children: [
                               BadgeWidget(text: tr(context, '训练详情')),
-                              const SizedBox(width: 8),
                               BadgeWidget(
                                   text: tr(context, '重量追踪'),
                                   variant: BadgeVariant.info),
-                              const SizedBox(width: 8),
                               BadgeWidget(
                                   text: tr(context, '时长统计'),
                                   variant: BadgeVariant.success),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
@@ -191,7 +193,7 @@ class _RecordsPageState extends State<RecordsPage> {
                   ),
                 )
               : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -200,7 +202,7 @@ class _RecordsPageState extends State<RecordsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 10, top: 8),
+                              padding: EdgeInsets.only(bottom: 10, top: 8),
                               child: Text(
                                 entry.key,
                                 style: TextStyle(
@@ -211,13 +213,13 @@ class _RecordsPageState extends State<RecordsPage> {
                               ),
                             ),
                             ...entry.value.map((record) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
+                                  padding: EdgeInsets.only(bottom: 10),
                                   child: _buildRecordCard(colors, record),
                                 )),
                           ],
                         );
                       }),
-                      const SizedBox(height: 200),
+                      SizedBox(height: 200),
                     ],
                   ),
                 ),
@@ -260,11 +262,11 @@ class _RecordsPageState extends State<RecordsPage> {
                 child: Icon(Icons.delete_outline,
                     size: 20, color: colors.textMuted),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Icon(Icons.chevron_right, size: 18, color: colors.textMuted),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             _formatDate(timestamp),
             style: TextStyle(
@@ -273,7 +275,7 @@ class _RecordsPageState extends State<RecordsPage> {
             ),
           ),
           if (muscles.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Wrap(
               spacing: 6,
               runSpacing: 4,
@@ -282,7 +284,7 @@ class _RecordsPageState extends State<RecordsPage> {
               }).toList(),
             ),
           ],
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           _buildStatsGrid(colors, record, exerciseCount),
         ],
       ),
@@ -292,7 +294,7 @@ class _RecordsPageState extends State<RecordsPage> {
   Widget _buildStatsGrid(
       LiftTrackColors colors, Map<String, dynamic> record, int exerciseCount) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
         color: colors.bgSecondary.withOpacity(0.4),
         borderRadius: BorderRadius.circular(10),
@@ -327,11 +329,11 @@ class _RecordsPageState extends State<RecordsPage> {
       LiftTrackColors colors, IconData icon, String value, String label) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
         child: Row(
           children: [
             Icon(icon, size: 18, color: colors.accentGlow),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
+import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
@@ -11,10 +12,13 @@ import '../widgets/exercise_picker_sheet.dart';
 import '../widgets/exercise_set_table.dart';
 
 import '../l10n/i18n.dart';
-List<String> _planTypes = [trn( '三分化'), trn( '四分化'), trn( '五分化'), trn( '全身训练'), trn( '自定义')];
-List<String> _difficulties = [trn( '入门'), trn( '初级'), trn( '进阶'), trn( '高级')];
+// 训练类型 / 难度是**与语言无关的数据键**（会持久化、并用于查 _quickSetup 模板），
+// 必须保持中文；展示处统一用 tr(context, ...) 翻译。
+List<String> _planTypes = ['三分化', '四分化', '五分化', '全身训练', '自定义'];
+List<String> _difficulties = ['入门', '初级', '进阶', '高级'];
 
-Map<String, List<Map<String, dynamic>>> _quickSetup = {
+Map<String, List<Map<String, dynamic>>> get _quickSetup => _quickSetupMemo.value;
+final LocaleMemo<Map<String, List<Map<String, dynamic>>>> _quickSetupMemo = LocaleMemo(() => {
   '三分化': [
     {'day': 1, 'label': trn( '胸部 + 三头肌'), 'muscle': trn( '胸'), 'exercises': [{'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}, {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
     {'day': 2, 'label': trn( '背部 + 二头肌'), 'muscle': trn( '背'), 'exercises': [{'id': 'e5', 'name': trn( '引体向上'), 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90}, {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}]},
@@ -39,12 +43,12 @@ Map<String, List<Map<String, dynamic>>> _quickSetup = {
     {'day': 2, 'label': trn( '全身训练B'), 'muscle': trn( '全身'), 'exercises': [{'id': 'e10', 'name': trn( '腿举'), 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90}, {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90}]},
     {'day': 3, 'label': trn( '全身训练C'), 'muscle': trn( '全身'), 'exercises': [{'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}, {'id': 'e7', 'name': trn( '高位下拉'), 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75}]},
   ],
-};
+});
 
 class AddPlanPage extends StatefulWidget {
   final String? editPlanId;
 
-  const AddPlanPage({super.key, this.editPlanId});
+  AddPlanPage({super.key, this.editPlanId});
 
   @override
   State<AddPlanPage> createState() => _AddPlanPageState();
@@ -55,8 +59,10 @@ class _AddPlanPageState extends State<AddPlanPage> {
   final _totalWeeksController = TextEditingController(text: '8');
   final _restTimeController = TextEditingController(text: '90');
 
-  String _selectedType = trn( '三分化');
-  String _selectedDifficulty = trn( '初级');
+  // 训练类型 / 难度是**与语言无关的数据键**：会作为 plan['type'] / plan['difficulty']
+  // 持久化，并用于查 _quickSetup 模板，所以保持中文；展示处用 tr(context, ...) 翻译。
+  String _selectedType = '三分化';
+  String _selectedDifficulty = '初级';
   String _selectedGender = 'all';
   List<Map<String, dynamic>> _days = [];
   Map<String, dynamic>? _editingPlan;
@@ -380,27 +386,27 @@ class _AddPlanPageState extends State<AddPlanPage> {
         leading: IconButton(icon: Icon(Icons.arrow_back, color: colors.textPrimary), onPressed: () => context.go('/plan')),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+        padding: EdgeInsets.fromLTRB(16, 8, 16, 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── 自定义计划表单 ──
             Text(isEditing ? tr(context, '编辑计划信息') : tr(context, '或自定义计划'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // 计划名称
             _buildLabel(colors, tr(context, '计划名称')),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             TextField(
               controller: _nameController,
               style: TextStyle(color: colors.textPrimary),
               decoration: InputDecoration(hintText: tr(context, '输入计划名称'), hintStyle: TextStyle(color: colors.textMuted)),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // 训练类型
             _buildLabel(colors, tr(context, '训练类型')),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Wrap(
               spacing: 8, runSpacing: 8,
               children: _planTypes.map((type) {
@@ -408,22 +414,22 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 return GestureDetector(
                   onTap: () { setState(() => _selectedType = type); _applyQuickSetup(type); },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected ? colors.accentGlow.withOpacity(0.15) : colors.bgCard,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: isSelected ? colors.accentGlow : colors.borderColor),
                     ),
-                    child: Text(type, style: TextStyle(color: isSelected ? colors.accentGlow : colors.textSecondary, fontSize: 13, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
+                    child: Text(tr(context, type), style: TextStyle(color: isSelected ? colors.accentGlow : colors.textSecondary, fontSize: 13, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
                   ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // 难度等级
             _buildLabel(colors, tr(context, '难度等级')),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Wrap(
               spacing: 8, runSpacing: 8,
               children: _difficulties.map((diff) {
@@ -431,67 +437,87 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedDifficulty = diff),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected ? colors.accentGlow.withOpacity(0.15) : colors.bgCard,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: isSelected ? colors.accentGlow : colors.borderColor),
                     ),
-                    child: Text(diff, style: TextStyle(color: isSelected ? colors.accentGlow : colors.textSecondary, fontSize: 13, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
+                    child: Text(tr(context, diff), style: TextStyle(color: isSelected ? colors.accentGlow : colors.textSecondary, fontSize: 13, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
                   ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // 适用人群
             _buildLabel(colors, tr(context, '适用人群')),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             _buildGenderSelector(colors),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // 总周数 & 休息时间
             Row(
               children: [
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, tr(context, '总周数')), const SizedBox(height: 6), TextField(controller: _totalWeeksController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: const InputDecoration(hintText: '8'))])),
-                const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, tr(context, '默认休息(秒)')), const SizedBox(height: 6), TextField(controller: _restTimeController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: const InputDecoration(hintText: '90'))])),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, tr(context, '总周数')), SizedBox(height: 6), TextField(controller: _totalWeeksController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: InputDecoration(hintText: '8'))])),
+                SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, tr(context, '默认休息(秒)')), SizedBox(height: 6), TextField(controller: _restTimeController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: InputDecoration(hintText: '90'))])),
               ],
             ),
             _buildRestRecommendationCard(colors),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // 训练日编辑器（可添加/删除训练日与动作）
+            // 英文标签（Training Days / Rest Day）比中文长得多，
+            // 三段都用 Flexible 收缩，文字单行省略，避免整行溢出
             Row(
               children: [
-                _buildLabel(colors, tr(context, '训练日 (${_days.length}天)')),
-                const Spacer(),
-                GestureDetector(
-                  onTap: _addDay,
-                  child: Row(
-                    children: [
-                      Icon(Icons.add, size: 18, color: colors.accentGlow),
-                      Text(tr(context, '训练日'), style: TextStyle(color: colors.accentGlow, fontSize: 13)),
-                    ],
+                Flexible(
+                  child: _buildLabel(colors, tr(context, '训练日 (${_days.length}天)')),
+                ),
+                Spacer(),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: _addDay,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add, size: 18, color: colors.accentGlow),
+                        Flexible(
+                          child: Text(tr(context, '训练日'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: _addRestDay,
-                  child: Row(
-                    children: [
-                      Icon(Icons.bedtime_outlined, size: 18, color: colors.infoColor),
-                      Text(tr(context, '休息日'), style: TextStyle(color: colors.infoColor, fontSize: 13)),
-                    ],
+                SizedBox(width: 12),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: _addRestDay,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bedtime_outlined, size: 18, color: colors.infoColor),
+                        Flexible(
+                          child: Text(tr(context, '休息日'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: colors.infoColor, fontSize: 13)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             if (_days.isEmpty) ...[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                 decoration: BoxDecoration(
                   color: colors.bgCard,
                   borderRadius: BorderRadius.circular(12),
@@ -500,12 +526,12 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 child: Column(
                   children: [
                     Icon(Icons.event_note_outlined, size: 36, color: colors.textMuted),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       tr(context, '还没有训练日'),
                       style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       tr(context, '点击上方「+ 训练日」开始添加，或选择训练类型使用模板快速生成'),
                       textAlign: TextAlign.center,
@@ -514,34 +540,34 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
             ],
             ..._days.asMap().entries.map((entry) {
               final idx = entry.key;
               final day = entry.value;
               return _buildDayEditor(colors, idx, day);
             }),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // ── 系统推荐 ──
             if (!isEditing && recommendedPlans.isNotEmpty) ...[
-              const Divider(),
-              const SizedBox(height: 16),
+              Divider(),
+              SizedBox(height: 16),
               Row(
                 children: [
                   Icon(Icons.auto_awesome, size: 20, color: colors.accentGlow),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Text(tr(context, '为你推荐'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                  const Spacer(),
+                  Spacer(),
                   Text(tr(context, '基于你的信息'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               ...recommendedPlans.map((rec) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: EdgeInsets.only(bottom: 10),
                 child: _buildRecommendedCard(colors, rec),
               )),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
             ],
 
             // 保存按钮
@@ -549,8 +575,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _save,
-                style: ElevatedButton.styleFrom(backgroundColor: colors.accentGlow, foregroundColor: Theme.of(context).colorScheme.onPrimary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                child: Text(isEditing ? tr(context, '保存修改') : tr(context, '创建计划'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                style: ElevatedButton.styleFrom(backgroundColor: colors.accentGlow, foregroundColor: Theme.of(context).colorScheme.onPrimary, padding: EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                child: Text(isEditing ? tr(context, '保存修改') : tr(context, '创建计划'), style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
               ),
             ),
           ],
@@ -581,28 +607,28 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
-                  child: Text(plan.coverEmoji, style: const TextStyle(fontSize: 22)),
+                  child: Text(plan.coverEmoji, style: TextStyle(fontSize: 22)),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(plan.name, style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(tr(context, '$typeLabel · $frequencyLabel · $difficultyLabel · ${plan.totalWeeks}周'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(plan.description, style: TextStyle(color: colors.textSecondary, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
                 if (rec.reasons.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Wrap(
                     spacing: 6, runSpacing: 4,
                     children: rec.reasons.take(2).map((r) {
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(color: colors.accentGlow.withOpacity(0.08), borderRadius: BorderRadius.circular(4)),
                         child: Text(r, style: TextStyle(color: colors.accentGlow, fontSize: 10, fontWeight: FontWeight.w500)),
                       );
@@ -637,7 +663,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
         return GestureDetector(
           onTap: () => setState(() => _selectedGender = value),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: selected ? colors.accentGlow.withOpacity(0.15) : colors.bgCard,
               borderRadius: BorderRadius.circular(8),
@@ -660,11 +686,11 @@ class _AddPlanPageState extends State<AddPlanPage> {
   // 历史休息偏好推荐卡片：基于历史训练数据推荐休息时间
   Widget _buildRestRecommendationCard(LiftTrackColors colors) {
     final recommended = RestPreferenceService.instance.computeRecommendedRestSeconds();
-    if (recommended == null) return const SizedBox.shrink();
+    if (recommended == null) return SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(top: 8),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.accentGlow.withOpacity(0.06),
         borderRadius: BorderRadius.circular(12),
@@ -672,7 +698,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
       child: Row(
         children: [
           Icon(Icons.lightbulb, color: colors.accentGlow, size: 18),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               tr(context, '根据您的历史组间休息偏好, 推荐休息时间 $recommended 秒'),
@@ -691,7 +717,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
   // 训练动作的小标签：用于展示组数/次数/重量/休息时间
   Widget _buildMiniTag(LiftTrackColors colors, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: colors.bgSecondary,
         borderRadius: BorderRadius.circular(4),
@@ -710,8 +736,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
     final labelController = _labelControllers[dayIndex] ?? TextEditingController(text: '${day['label'] ?? ''}');
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isRest ? colors.infoColor.withOpacity(0.06) : colors.bgCard,
         borderRadius: BorderRadius.circular(10),
@@ -737,14 +763,14 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: labelController,
                   style: TextStyle(color: colors.textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     hintText: isRest ? tr(context, '休息日名称') : tr(context, '训练日名称'),
                   ),
                   onChanged: (val) => _days[dayIndex]['label'] = val,
@@ -758,10 +784,10 @@ class _AddPlanPageState extends State<AddPlanPage> {
             ],
           ),
           if (isRest) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               decoration: BoxDecoration(
                 color: colors.infoColor.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(6),
@@ -769,7 +795,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               child: Row(
                 children: [
                   Icon(Icons.self_improvement, size: 16, color: colors.infoColor),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       tr(context, '休息日 — 充分恢复，准备下一次训练'),
@@ -780,7 +806,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               ),
             ),
           ] else ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           // Exercise list
           ...exercises.asMap().entries.map((exEntry) {
             final exIdx = exEntry.key;
@@ -797,7 +823,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               weightStr = '$weightVal';
             }
             return Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: EdgeInsets.only(bottom: 6),
               child: GestureDetector(
                 onTap: () => _editExercise(dayIndex, exIdx),
                 behavior: HitTestBehavior.opaque,
@@ -808,31 +834,31 @@ class _AddPlanPageState extends State<AddPlanPage> {
                       '${ex['name']}',
                       style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     if (hasPerSet) ...[
                       Row(
                         children: [
                           _buildMiniTag(colors, tr(context, '共${ex['sets']}组 · 逐组设置')),
-                          const Spacer(),
+                          Spacer(),
                           GestureDetector(
                             onTap: () => _removeExercise(dayIndex, exIdx),
                             child: Icon(Icons.close, size: 14, color: colors.textMuted),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      ExerciseSetTable(setConfig: setConfig),
+                      SizedBox(height: 6),
+                      ExerciseSetTable(setConfig: setConfig!),
                     ] else
                       Row(
                         children: [
                           _buildMiniTag(colors, tr(context, '${ex['sets']}组')),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           _buildMiniTag(colors, tr(context, '${ex['reps']}次')),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           _buildMiniTag(colors, '${weightStr}kg'),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           _buildMiniTag(colors, tr(context, '${ex['restTime']}秒')),
-                          const Spacer(),
+                          Spacer(),
                           GestureDetector(
                             onTap: () => _removeExercise(dayIndex, exIdx),
                             child: Icon(Icons.close, size: 14, color: colors.textMuted),
@@ -844,12 +870,12 @@ class _AddPlanPageState extends State<AddPlanPage> {
               ),
             );
           }),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           GestureDetector(
             onTap: () => _addExercise(dayIndex),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 border: Border.all(color: colors.borderColor, style: BorderStyle.solid),
                 borderRadius: BorderRadius.circular(6),
@@ -859,7 +885,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.add, size: 16, color: colors.textMuted),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(tr(context, '添加动作'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                   ],
                 ),

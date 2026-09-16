@@ -18,7 +18,7 @@ import '../widgets/tab_refresh_mixin.dart';
 
 import '../l10n/i18n.dart';
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -38,7 +38,8 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   Map<String, dynamic>? _todayPlanCache;
   Map<String, dynamic> _weeklyStatsCache = const {};
   List<Map<String, dynamic>> _weeklyCalendarDataCache = const [];
-  String _userNameCache = trn( '用户');
+  /// 用户昵称（数据值，与语言无关）。为空时由展示层回落为 tr(context, '用户')。
+  String? _userNameValue;
   late final String _todayDateStrCache;
 
   @override
@@ -57,6 +58,8 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     // v1.3 每日推进对手数据
     VirtualOpponentEngine.instance.dailyAdvance();
     _loadData();
+    // 记录当前语言代次，避免首次 didChangeDependencies 重复加载
+    _localeGeneration = LocaleController.instance.generation;
     Storage.dataChanged.addListener(_loadData);
     // v1 一键裂变：启动时检测剪贴板邀请码
     WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardInvite());
@@ -85,9 +88,19 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   }
 
   @override
+  /// 语言代次：用于在切换语言后刷新 [_loadData] 里那批"依赖语言"的缓存。
+  int _localeGeneration = -1;
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _maybeShowCoach();
+    // initState 阶段不能访问 InheritedWidget，所以依赖文案的缓存改在这里补刷
+    final generation = LocaleController.instance.generation;
+    if (_localeGeneration != generation) {
+      _localeGeneration = generation;
+      _loadData();
+    }
   }
 
   void _maybeShowCoach() {
@@ -136,7 +149,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     _todayPlanCache = _computeTodayPlan();
     _weeklyStatsCache = _computeWeeklyStats();
     _weeklyCalendarDataCache = _computeWeeklyCalendarData();
-    _userNameCache = Storage.getSettings()['userName'] as String? ?? tr(context, '用户');
+    _userNameValue = Storage.getSettings()['userName'] as String?;
     setState(() {});
   }
 
@@ -191,7 +204,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           .difference(DateTime.fromMillisecondsSinceEpoch(startedAt))
           .inMinutes;
       return {
-        'name': dayConfig['label'] ?? inProgress['planName'] ?? tr(context, '今日训练'),
+        'name': dayConfig['label'] ?? inProgress['planName'] ?? trn('今日训练'),
         'muscle': dayConfig['muscle'] ?? '',
         'duration': elapsedMin,
         'exerciseCount': exercises.length,
@@ -209,7 +222,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
       final muscles = (todayRecord['muscles'] as List?)?.cast<String>() ?? [];
       final totalSets = (todayRecord['totalSets'] as num?)?.toInt() ?? 0;
       return {
-        'name': todayRecord['name'] ?? tr(context, '今日训练'),
+        'name': todayRecord['name'] ?? trn('今日训练'),
         'muscle': muscles.isNotEmpty ? muscles.join(' · ') : '',
         'duration': (todayRecord['duration'] as num?)?.toInt() ?? 0,
         'exerciseCount': (todayRecord['exerciseCount'] as num?)?.toInt() ?? 0,
@@ -233,7 +246,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           return null;
         }
         return {
-          'name': dayData['label'] ?? tr(context, '今日训练'),
+          'name': dayData['label'] ?? trn('今日训练'),
           'muscle': dayData['muscle'] ?? '',
           'duration': 60,
           'exerciseCount': exercises.length,
@@ -254,8 +267,8 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
       final latest = weeklyData.last as Map<String, dynamic>;
       return {
         'trainings': latest['trainings'] ?? 0,
-        'duration': '${((latest['duration'] ?? 0) / 60).toStringAsFixed(1)}h',
-        'weight': '${((latest['weight'] ?? 0) / 1000).toStringAsFixed(1)}t',
+        'duration': '${((latest['duration'] ?? 0 as num) / 60).toStringAsFixed(1)}h',
+        'weight': '${((latest['weight'] ?? 0 as num) / 1000).toStringAsFixed(1)}t',
         'calories': (((latest['trainings'] ?? 0) as int) * 420).toString(),
       };
     }
@@ -272,7 +285,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     final weekday = now.weekday; // 1=Mon..7=Sun
     final weekStartDate = DateTime(now.year, now.month, now.day)
         .subtract(Duration(days: weekday - 1)); // 本周一 00:00
-    final dayLabels = [tr(context, '一'), tr(context, '二'), tr(context, '三'), tr(context, '四'), tr(context, '五'), tr(context, '六'), tr(context, '日')];
+    final dayLabels = [trn('一'), trn('二'), trn('三'), trn('四'), trn('五'), trn('六'), trn('日')];
 
     final active = _activePlanCache;
     final activePlanId = active?['id'];
@@ -335,7 +348,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
 
       return {
         'day': dayLabels[i],
-        'label': isRest ? tr(context, '休息') : (planDay?['label'] ?? tr(context, '休息')),
+        'label': isRest ? trn('休息') : (planDay?['label'] ?? trn('休息')),
         'done': isDone,
         'today': isToday,
         'rest': isRest,
@@ -364,20 +377,20 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
     int currentStreak = 0;
     if (sortedDates.contains(todayStr)) {
       currentStreak = 1;
-      var checkDate = today.subtract(const Duration(days: 1));
+      var checkDate = today.subtract(Duration(days: 1));
       while (dates.contains('${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}')) {
         currentStreak++;
-        checkDate = checkDate.subtract(const Duration(days: 1));
+        checkDate = checkDate.subtract(Duration(days: 1));
       }
     } else {
-      final yesterday = today.subtract(const Duration(days: 1));
+      final yesterday = today.subtract(Duration(days: 1));
       final yesterdayStr = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
       if (sortedDates.contains(yesterdayStr)) {
         currentStreak = 1;
-        var checkDate = yesterday.subtract(const Duration(days: 1));
+        var checkDate = yesterday.subtract(Duration(days: 1));
         while (dates.contains('${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}')) {
           currentStreak++;
-          checkDate = checkDate.subtract(const Duration(days: 1));
+          checkDate = checkDate.subtract(Duration(days: 1));
         }
       }
     }
@@ -453,7 +466,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
       body: Column(
         children: [
           PageHeader(
-            title: tr(context, '你好, $_userNameCache'),
+            title: tr(context, '你好, ${_userNameValue ?? tr(context, '用户')}'),
             subtitle: _todayDateStrCache,
             isTabPage: true,
             onBellTap: () => _showNotifications(context),
@@ -473,39 +486,39 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                 _loadData();
               },
               child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildRecommendationBanners(colors),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     if (todayPlan != null)
                       _buildTodayPlanCard(colors, todayPlan)
                     else
                       _buildNoPlanCard(colors),
                     if (activePlan != null) ...[
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14),
                       _buildCurrentPlanCard(colors, activePlan),
                     ],
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     _buildWeeklyStatsGrid(colors, weeklyStats),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     _buildWeeklyCalendar(colors),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     _buildStreakCard(colors, streakData),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     // v1 获客留存版：首页虚拟对手 PK 卡片
-                    const VirtualOpponentCard(),
-                    const SizedBox(height: 14),
+                    VirtualOpponentCard(),
+                    SizedBox(height: 14),
                     _buildRecentTrainings(colors),
                     if (prData.isNotEmpty) ...[
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14),
                       _buildPersonalRecords(colors, prData),
                     ],
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     _buildDailyTip(colors),
-                    const SizedBox(height: 120),
+                    SizedBox(height: 120),
                   ],
                 ),
               ),
@@ -519,7 +532,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
   // ── 推荐轮播 Banner ──────────────────────────────────────
 
   Widget _buildRecommendationBanners(LiftTrackColors colors) {
-    return const RecommendationBanner();
+    return RecommendationBanner();
   }
 
   Widget _buildNoPlanCard(LiftTrackColors colors) {
@@ -536,26 +549,29 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           Row(
             children: [
               Icon(Icons.fitness_center, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
-              Text(
-                tr(context, '今日训练'),
-                style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+              SizedBox(width: 8),
+              // 英文标题更长，用 Flexible 在 Spacer 之前按需收缩
+              Flexible(
+                child: Text(
+                  tr(context, '今日训练'),
+                  style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                ),
               ),
-              const Spacer(),
+              Spacer(),
               BadgeWidget(text: hasActivePlan ? tr(context, '休息日') : tr(context, '未安排'), variant: BadgeVariant.info),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Text(
             title,
             style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             subtitle,
             style: TextStyle(color: colors.textMuted, fontSize: 13),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -563,10 +579,10 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: Text(buttonText, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              child: Text(buttonText, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
             ),
           ),
         ],
@@ -592,12 +608,15 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           Row(
             children: [
               Icon(Icons.fitness_center, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
-              Text(
-                tr(context, '今日训练'),
-                style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+              SizedBox(width: 8),
+              // 英文标题更长，用 Flexible 在 Spacer 之前按需收缩
+              Flexible(
+                child: Text(
+                  tr(context, '今日训练'),
+                  style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                ),
               ),
-              const Spacer(),
+              Spacer(),
               BadgeWidget(
                 text: isCompleted
                     ? tr(context, '已完成')
@@ -608,39 +627,39 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Text(
             plan['name'] as String? ?? '',
             style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             plan['muscle'] as String? ?? '',
             style: TextStyle(color: colors.textMuted, fontSize: 13),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               Icon(Icons.timer_outlined, size: 16, color: colors.textSecondary),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Text(
                 isInProgress
                     ? tr(context, '已练 ${plan['duration'] ?? 0}min')
                     : '${plan['duration'] ?? 0}min',
                 style: TextStyle(color: colors.textSecondary, fontSize: 13),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Icon(Icons.list_alt, size: 16, color: colors.textSecondary),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Text(
                 tr(context, '$total个动作'),
                 style: TextStyle(color: colors.textSecondary, fontSize: 13),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ProgressBar(progress: progress),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Row(
             children: [
               Text(
@@ -650,7 +669,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                 style: TextStyle(color: colors.textMuted, fontSize: 12),
               ),
               if (isInProgress) ...[
-                const Spacer(),
+                Spacer(),
                 GestureDetector(
                   onTap: () => _confirmAbandonTraining(completed),
                   child: Text(
@@ -666,7 +685,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               ],
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -689,14 +708,14 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(
                 isCompleted
                     ? tr(context, '查看记录')
                     : (isInProgress ? tr(context, '继续训练') : tr(context, '开始训练')),
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               ),
             ),
           ),
@@ -742,20 +761,20 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(title: tr(context, '本周统计')),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         // 2x2 网格，用 Row+Column 避免 GridView 溢出
         Row(
           children: [
             Expanded(child: StatCard(icon: items[0]['icon'] as IconData, value: items[0]['value'] as String, label: items[0]['label'] as String, color: items[0]['color'] as Color)),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(child: StatCard(icon: items[1]['icon'] as IconData, value: items[1]['value'] as String, label: items[1]['label'] as String, color: items[1]['color'] as Color)),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Row(
           children: [
             Expanded(child: StatCard(icon: items[2]['icon'] as IconData, value: items[2]['value'] as String, label: items[2]['label'] as String, color: items[2]['color'] as Color)),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(child: StatCard(icon: items[3]['icon'] as IconData, value: items[3]['value'] as String, label: items[3]['label'] as String, color: items[3]['color'] as Color)),
           ],
         ),
@@ -770,7 +789,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(title: tr(context, '本周日历')),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: calendarData.map((day) {
@@ -826,7 +845,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                       fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Container(
                     width: 32,
                     height: 32,
@@ -837,7 +856,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                     ),
                     child: Center(child: indicator),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   SizedBox(
                     height: 24,
                     child: Text(
@@ -869,20 +888,21 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           Row(
             children: [
               Icon(Icons.local_fire_department, size: 20, color: colors.warningColor),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 tr(context, '连续打卡'),
                 style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
+          // 英文标签（Current / Longest / This Month Streak）比中文长，
+          // 用 Expanded 等分宽度并单行省略，避免整行溢出
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStreakItem(colors, '${streak['current'] ?? 0}', tr(context, '当前连续'), colors.accentGlow),
-              _buildStreakItem(colors, '${streak['longest'] ?? 0}', tr(context, '最长连续'), colors.warningColor),
-              _buildStreakItem(colors, '${streak['thisMonth'] ?? 0}', tr(context, '本月打卡'), colors.successColor),
+              Expanded(child: _buildStreakItem(colors, '${streak['current'] ?? 0}', tr(context, '当前连续'), colors.accentGlow)),
+              Expanded(child: _buildStreakItem(colors, '${streak['longest'] ?? 0}', tr(context, '最长连续'), colors.warningColor)),
+              Expanded(child: _buildStreakItem(colors, '${streak['thisMonth'] ?? 0}', tr(context, '本月打卡'), colors.successColor)),
             ],
           ),
         ],
@@ -897,9 +917,12 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           value,
           style: TextStyle(color: color, fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(color: colors.textMuted, fontSize: 12),
         ),
       ],
@@ -924,16 +947,16 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           moreText: recentList.isNotEmpty ? tr(context, '查看全部') : null,
           onMore: recentList.isNotEmpty ? () => context.push('/records') : null,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         if (displayList.isEmpty)
           CardWidget(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
+                padding: EdgeInsets.symmetric(vertical: 20),
                 child: Column(
                   children: [
                     Icon(Icons.fitness_center_outlined, size: 36, color: colors.textMuted),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(tr(context, '暂无训练记录'), style: TextStyle(color: colors.textMuted, fontSize: 14)),
                   ],
                 ),
@@ -942,9 +965,9 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           )
         else
           ...displayList.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(bottom: 10),
               child: CardWidget(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12),
                 onTap: () => context.push('/records'),
                 child: Row(
                   children: [
@@ -957,7 +980,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                       ),
                       child: Icon(Icons.fitness_center, size: 20, color: colors.accentGlow),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -966,7 +989,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                             '${item['name']}',
                             style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             '${item['date']}',
                             style: TextStyle(color: colors.textMuted, fontSize: 12),
@@ -1013,15 +1036,15 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(title: tr(context, '个人记录')),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         ...records.map((record) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.only(bottom: 8),
               child: CardWidget(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   children: [
                     Icon(Icons.emoji_events_outlined, size: 20, color: colors.warningColor),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         '${record['name']}',
@@ -1049,14 +1072,17 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           Row(
             children: [
               Icon(Icons.lightbulb_outline, size: 20, color: colors.warningColor),
-              const SizedBox(width: 8),
-              Text(
-                tr(context, '每日贴士 · ${tip['category']}'),
-                style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+              SizedBox(width: 8),
+              // 英文标题更长，用 Expanded 占满剩余宽度并允许换行
+              Expanded(
+                child: Text(
+                  tr(context, '每日贴士 · ${tip['category']}'),
+                  style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             '${tip['text']}',
             style: TextStyle(color: colors.textSecondary, fontSize: 14, height: 1.5),
@@ -1117,25 +1143,25 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           Row(
             children: [
               Icon(Icons.assignment_outlined, size: 20, color: colors.accentGlow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 tr(context, '当前计划'),
                 style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
               ),
-              const Spacer(),
+              Spacer(),
               BadgeWidget(text: tr(context, '${plan['badge'] ?? '进行中'}'), variant: BadgeVariant.accent),
               if (totalRounds > 1) ...[
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 _buildRoundRing(colors, currentRound, totalRounds),
               ],
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             '${plan['name']}',
             style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Row(
             children: [
               if (totalRounds > 1)
@@ -1148,22 +1174,22 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                   tr(context, '第 $weekInRound/$totalWeeks 周'),
                   style: TextStyle(color: colors.textSecondary, fontSize: 13),
                 ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text(
                 '${plan['frequency'] ?? ''}',
                 style: TextStyle(color: colors.textSecondary, fontSize: 13),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           if (totalRounds > 1) ...[
             Text(tr(context, '当前轮次进度'),
                 style: TextStyle(color: colors.textMuted, fontSize: 11)),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             ProgressBar(
               progress: totalWeeks > 0 ? weekInRound / totalWeeks : 0.0,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1171,7 +1197,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
                 Text('${overallProgress.toInt()}%', style: TextStyle(color: colors.textMuted, fontSize: 11)),
               ],
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             LinearProgressIndicator(
               value: totalRounds > 0 ? currentRound / totalRounds : 0.0,
               backgroundColor: colors.borderColor,
@@ -1210,9 +1236,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
         final startWeekday = firstDay.weekday - 1;
         final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
         final cells = <Widget>[];
-        for (var i = 0; i < startWeekday; i++) {
-          cells.add(const SizedBox());
-        }
+        for (var i = 0; i < startWeekday; i++) cells.add(SizedBox());
         for (var day = 1; day <= daysInMonth; day++) {
           final isToday = day == now.day;
           final isTrained = trainedDays.contains(day);
@@ -1225,7 +1249,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
         final weeks = <Widget>[];
         List<Widget> currentWeek = [];
         for (var i = 0; i < startWeekday; i++) {
-          currentWeek.add(const Expanded(child: SizedBox()));
+          currentWeek.add(Expanded(child: SizedBox()));
         }
         for (var day = 1; day <= daysInMonth; day++) {
           final isToday = day == now.day;
@@ -1256,7 +1280,7 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
         }
         if (currentWeek.isNotEmpty) {
           while (currentWeek.length < 7) {
-            currentWeek.add(const Expanded(child: SizedBox()));
+            currentWeek.add(Expanded(child: SizedBox()));
           }
           weeks.add(Row(children: currentWeek));
         }
@@ -1265,32 +1289,32 @@ class _HomePageState extends State<HomePage> with TabRefreshMixin<HomePage> {
           color: Colors.transparent,
           child: Container(
             constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.65),
-            decoration: BoxDecoration(color: colors.bgSecondary, borderRadius: const BorderRadius.vertical(top: Radius.circular(20)), border: Border.all(color: colors.borderColor)),
+            decoration: BoxDecoration(color: colors.bgSecondary, borderRadius: BorderRadius.vertical(top: Radius.circular(20)), border: Border.all(color: colors.borderColor)),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Container(margin: const EdgeInsets.symmetric(vertical: 10), width: 40, height: 4, decoration: BoxDecoration(color: colors.borderColor, borderRadius: BorderRadius.circular(2))),
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
+              Container(margin: EdgeInsets.symmetric(vertical: 10), width: 40, height: 4, decoration: BoxDecoration(color: colors.borderColor, borderRadius: BorderRadius.circular(2))),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
                 Text(tr(context, '${now.year}年${now.month}月'), style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                const Spacer(),
+                Spacer(),
                 GestureDetector(onTap: () => Navigator.of(ctx).pop(), child: Icon(Icons.close, color: colors.textMuted)),
               ])),
-              const SizedBox(height: 12),
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: [tr(context, '一'),tr(context, '二'),tr(context, '三'),tr(context, '四'),tr(context, '五'),tr(context, '六'),tr(context, '日')].map((d) => Expanded(child: Center(child: Text(d, style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600))))).toList())),
-              const SizedBox(height: 8),
+              SizedBox(height: 12),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Row(children: [tr(context, '一'),tr(context, '二'),tr(context, '三'),tr(context, '四'),tr(context, '五'),tr(context, '六'),tr(context, '日')].map((d) => Expanded(child: Center(child: Text(d, style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600))))).toList())),
+              SizedBox(height: 8),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Column(children: weeks),
               ),
-              const SizedBox(height: 16),
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
+              SizedBox(height: 16),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
                 Container(width: 10, height: 10, decoration: BoxDecoration(color: colors.accentGlow, shape: BoxShape.circle)),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(tr(context, '已训练 ${trainedDays.length} 天'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Container(width: 10, height: 10, decoration: BoxDecoration(color: colors.accentGlow.withOpacity(0.3), shape: BoxShape.circle)),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(tr(context, '今天'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
               ])),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ]),
           ),
         );

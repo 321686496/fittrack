@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/course_content.dart';
 import '../utils/art_assets.dart';
@@ -6,7 +6,7 @@ import '../widgets/page_header.dart';
 
 import '../l10n/i18n.dart';
 class CourseListPage extends StatelessWidget {
-  const CourseListPage({super.key});
+  CourseListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +16,12 @@ class CourseListPage extends StatelessWidget {
           PageHeader(title: tr(context, '系统化课程'), subtitle: tr(context, '从入门到精通的完整训练体系'), onBack: () => Navigator.of(context).pop()),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               itemCount: CourseLibrary.courses.length,
               itemBuilder: (ctx, i) {
                 final c = CourseLibrary.courses[i];
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.only(bottom: 16),
                   child: GestureDetector(
                     onTap: () => context.push('/course/${c.id}'),
                     child: Container(
@@ -39,7 +39,7 @@ class CourseListPage extends StatelessWidget {
                               child: Image.asset(
                                 courseArtAsset(c.id),
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                errorBuilder: (_, __, ___) => SizedBox.shrink(),
                               ),
                             ),
                           ),
@@ -54,27 +54,29 @@ class CourseListPage extends StatelessWidget {
                                     Colors.black.withOpacity(0.5),
                                     Colors.transparent,
                                   ],
-                                  stops: const [0.0, 0.7],
+                                  stops: [0.0, 0.7],
                                 ),
                               ),
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(16),
                             child: Row(
                               children: [
-                                Text(c.coverEmoji, style: const TextStyle(fontSize: 48)),
-                                const SizedBox(width: 16),
+                                Text(c.coverEmoji, style: TextStyle(fontSize: 48)),
+                                SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(c.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 4),
-                                      Text(c.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                                      const SizedBox(height: 8),
-                                      Text(tr(context, '${c.chapters.length}章 · ${c.pointsCost}积分'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                                      // 卡片高度固定 120，英文标题/副标题更长，
+                                      // 限制单行省略，避免内容撑破卡片
+                                      Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                      SizedBox(height: 4),
+                                      Text(c.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white70, fontSize: 13)),
+                                      SizedBox(height: 8),
+                                      Text(tr(context, '${c.chapters.length}章 · ${c.pointsCost}积分'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white60, fontSize: 12)),
                                     ],
                                   ),
                                 ),

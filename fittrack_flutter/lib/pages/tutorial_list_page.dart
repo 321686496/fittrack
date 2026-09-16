@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/course_content.dart';
 import '../data/storage.dart';
@@ -18,7 +18,7 @@ import '../l10n/i18n.dart';
 /// - 推荐数据：系统横滑 banner + 精选系统化课程 + 精选基础/进阶/专题/高手教学
 /// - 底部"查看全部教学"入口跳转 AllTutorialsPage，那里用卡片瀑布流分类
 class TutorialListPage extends StatefulWidget {
-  const TutorialListPage({super.key});
+  TutorialListPage({super.key});
 
   @override
   State<TutorialListPage> createState() => _TutorialListPageState();
@@ -78,29 +78,29 @@ class _TutorialListPageState extends State<TutorialListPage>
               backgroundColor: colors.bgCard,
               onRefresh: _onRefresh,
               child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     // ── 为你推荐横滑区段 ──────────────────────
                     if (banners.isNotEmpty) ...[
                       SectionHeader(title: tr(context, '为你推荐')),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       _buildRecommendRow(colors, banners, recommendedCourses),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                     ],
                     // ── 精选系统化课程 ─────────────────────────
                     SectionHeader(title: tr(context, '精选系统化课程')),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _buildRecommendedCourses(colors, recommendedCourses),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     // ── 推荐教学 ──────────────────────────────
                     SectionHeader(title: tr(context, '推荐教学')),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _buildRecommendedTutorials(colors),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     // ── 查看全部教学入口 ─────────────────────
                     SizedBox(
                       width: double.infinity,
@@ -109,17 +109,17 @@ class _TutorialListPageState extends State<TutorialListPage>
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: colors.accentGlow),
                           foregroundColor: colors.accentGlow,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                         child: Text(tr(context, '查看全部教学'),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 15)),
                       ),
                     ),
-                    const SizedBox(height: 200),
+                    SizedBox(height: 200),
                   ],
                 ),
               ),
@@ -138,7 +138,7 @@ class _TutorialListPageState extends State<TutorialListPage>
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: (banners.length + courses.length).clamp(0, 4),
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => SizedBox(width: 12),
         itemBuilder: (ctx, i) {
           if (i < banners.length) {
             final banner = banners[i];
@@ -148,7 +148,7 @@ class _TutorialListPageState extends State<TutorialListPage>
               },
               child: Container(
                 width: 160,
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -166,7 +166,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                   children: [
                     Text(
                       banner.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -174,7 +174,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       banner.subtitle,
                       style: TextStyle(
@@ -194,7 +194,7 @@ class _TutorialListPageState extends State<TutorialListPage>
               onTap: () => context.push('/course/${course.id}'),
               child: Container(
                 width: 160,
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -209,7 +209,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                   children: [
                     Text(
                       course.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -217,7 +217,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       course.subtitle,
                       style: TextStyle(
@@ -248,8 +248,8 @@ class _TutorialListPageState extends State<TutorialListPage>
         return GestureDetector(
           onTap: () => context.push('/course/${c.id}'),
           child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
+            margin: EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: colors.bgCard,
               borderRadius: BorderRadius.circular(12),
@@ -265,10 +265,10 @@ class _TutorialListPageState extends State<TutorialListPage>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
-                    child: Text(c.coverEmoji, style: const TextStyle(fontSize: 24)),
+                    child: Text(c.coverEmoji, style: TextStyle(fontSize: 24)),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +278,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                               color: colors.textPrimary,
                               fontSize: 15,
                               fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(c.subtitle,
                           style: TextStyle(
                               color: colors.textMuted, fontSize: 12)),
@@ -306,7 +306,7 @@ class _TutorialListPageState extends State<TutorialListPage>
           subtitle: tr(context, '免费开放 · 覆盖全肌群的基础动作'),
           take: 3,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _buildTypeSubsection(
           colors,
           type: TutorialType.advanced,
@@ -314,7 +314,7 @@ class _TutorialListPageState extends State<TutorialListPage>
           subtitle: tr(context, '邀请 1 人激活解锁 3 个进阶动作'),
           take: 2,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _buildTypeSubsection(
           colors,
           type: TutorialType.topic,
@@ -322,7 +322,7 @@ class _TutorialListPageState extends State<TutorialListPage>
           subtitle: tr(context, '累计邀请 3 人激活解锁完整分化指南'),
           take: 2,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _buildTypeSubsection(
           colors,
           type: TutorialType.master,
@@ -354,7 +354,7 @@ class _TutorialListPageState extends State<TutorialListPage>
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: (unlocked ? colors.accentGlow : colors.textMuted)
                     .withOpacity(0.12),
@@ -369,21 +369,24 @@ class _TutorialListPageState extends State<TutorialListPage>
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            Text(title,
-                style: TextStyle(
-                    color: colors.textPrimary,
+            SizedBox(width: 8),
+            // 英文分组标题更长，用 Expanded 占满剩余宽度并允许换行
+            Expanded(
+              child: Text(title,
+                  style: TextStyle(
+                      color: colors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.bold)),
-            const SizedBox(width: 6),
+            ),
+            SizedBox(width: 6),
             if (!unlocked)
               Icon(Icons.lock_outline, size: 14, color: colors.textMuted),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(subtitle,
             style: TextStyle(color: colors.textMuted, fontSize: 11)),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         if (display.isEmpty)
           _buildEmpty(colors, tr(context, '暂无推荐$title'))
         else
@@ -401,8 +404,8 @@ class _TutorialListPageState extends State<TutorialListPage>
     return GestureDetector(
       onTap: () => context.push('/tutorial/${t.id}'),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        margin: EdgeInsets.only(bottom: 10),
+        padding: EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: unlocked ? colors.bgCard : colors.bgCard.withOpacity(0.6),
           borderRadius: BorderRadius.circular(12),
@@ -427,7 +430,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                   : Icon(Icons.lock_outline,
                       color: colors.textMuted, size: 20),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,7 +440,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                           color: colors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     unlocked
                         ? t.coachName
@@ -477,13 +480,13 @@ class _TutorialListPageState extends State<TutorialListPage>
 
   Widget _buildEmpty(LiftTrackColors colors, String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.symmetric(vertical: 16),
       child: Center(
         child: Column(
           children: [
             Icon(Icons.play_circle_outline,
                 size: 40, color: colors.textMuted.withOpacity(0.4)),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(text,
                 style: TextStyle(color: colors.textMuted, fontSize: 12)),
           ],

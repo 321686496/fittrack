@@ -7,7 +7,7 @@ class OnboardingCoach extends StatefulWidget {
   /// 选择部位并确认时回调，参数为所选部位
   final ValueChanged<String> onComplete;
   final VoidCallback onSkip;
-  const OnboardingCoach({
+  OnboardingCoach({
     required this.onComplete,
     required this.onSkip,
     super.key,
@@ -19,7 +19,9 @@ class OnboardingCoach extends StatefulWidget {
 class _OnboardingCoachState extends State<OnboardingCoach> {
   String? _selectedPart;
 
-  static final _parts = [trn( '胸'), trn( '背'), trn( '腿'), trn( '肩'), trn( '手臂'), trn( '核心')];
+  /// 身体部位选项：**与语言无关的数据键**（会通过 onComplete 写入用户设置），
+  /// 因此保持中文字面量，展示处再用 `tr(context, ...)` 翻译。
+  static const List<String> _parts = ['胸', '背', '腿', '肩', '手臂', '核心'];
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +38,9 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
         elevation: 8,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: BoxConstraints(maxWidth: 420),
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -48,13 +50,13 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 tr(context, '选择想练的部位，为你自动搜索合适的训练计划'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(color: textSecondary),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 10,
@@ -62,7 +64,7 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
                 children: _parts.map((p) {
                   final selected = _selectedPart == p;
                   return ChoiceChip(
-                    label: Text(p),
+                    label: Text(tr(context, p)),
                     selected: selected,
                     // 显式指定两种状态颜色，避免浅色背景下文字看不清
                     backgroundColor:
@@ -80,7 +82,7 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -88,9 +90,15 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
                     onPressed: widget.onSkip,
                     child: Text(tr(context, '跳过'), style: TextStyle(color: textSecondary)),
                   ),
-                  FilledButton(
-                    onPressed: _selectedPart == null ? null : _confirm,
-                    child: Text(tr(context, '搜索训练计划')),
+                  SizedBox(width: 12),
+                  // 英文 'Search Training Plans' 比中文长，用 Flexible 让按钮
+                  // 按需收缩换行，避免窄屏溢出
+                  Flexible(
+                    child: FilledButton(
+                      onPressed: _selectedPart == null ? null : _confirm,
+                      child: Text(tr(context, '搜索训练计划'),
+                          textAlign: TextAlign.center),
+                    ),
                   ),
                 ],
               ),

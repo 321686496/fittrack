@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fittrack_flutter/data/storage.dart';
 import 'package:fittrack_flutter/pages/records_page.dart';
@@ -48,7 +48,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       theme: AppTheme.getTheme('vitality-sport'),
-      home: const RecordsPage(),
+      home: RecordsPage(),
     ));
     await tester.pumpAndSettle();
 
