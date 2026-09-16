@@ -4,6 +4,7 @@ import '../data/database_helper.dart';
 import 'points_service.dart';
 import 'sound_service.dart';
 
+import '../l10n/i18n.dart';
 class Achievement {
   final String id;
   final String category;
@@ -15,7 +16,7 @@ class Achievement {
   final int pointsReward;      // 解锁可获积分，0 表示纯荣誉
   final bool canEarnPoints;    // 是否可获积分
 
-  const Achievement({
+  Achievement({
     required this.id,
     required this.category,
     required this.title,
@@ -32,78 +33,79 @@ class AchievementService {
   static final AchievementService instance = AchievementService._();
   AchievementService._();
 
-  static const List<Achievement> _all = [
+  static List<Achievement> get _all => _allMemo.value;
+  static final LocaleMemo<List<Achievement>> _allMemo = LocaleMemo(() => [
     // Streak
-    Achievement(id: 'streak_7', category: 'streak', title: '青铜挑战者',
-        description: '连续训练 7 天', icon: 'streak',
+    Achievement(id: 'streak_7', category: 'streak', title: trn('青铜挑战者'),
+        description: trn('连续训练 7 天'), icon: 'streak',
         pointsReward: 20, canEarnPoints: true),
-    Achievement(id: 'streak_30', category: 'streak', title: '白银挑战者',
-        description: '连续训练 30 天', icon: 'streak',
+    Achievement(id: 'streak_30', category: 'streak', title: trn('白银挑战者'),
+        description: trn('连续训练 30 天'), icon: 'streak',
         pointsReward: 50, canEarnPoints: true),
-    Achievement(id: 'streak_100', category: 'streak', title: '黄金挑战者',
-        description: '连续训练 100 天', icon: 'streak',
+    Achievement(id: 'streak_100', category: 'streak', title: trn('黄金挑战者'),
+        description: trn('连续训练 100 天'), icon: 'streak',
         pointsReward: 100, canEarnPoints: true),
-    Achievement(id: 'streak_365', category: 'streak', title: '钻石挑战者',
-        description: '连续训练 365 天', icon: 'streak',
+    Achievement(id: 'streak_365', category: 'streak', title: trn('钻石挑战者'),
+        description: trn('连续训练 365 天'), icon: 'streak',
         pointsReward: 200, canEarnPoints: true),
     // Weight milestones（纯荣誉，可刷）
-    Achievement(id: 'weight_1t', category: 'weight', title: '千斤顶',
-        description: '累计训练总重量 1 吨', icon: 'weight',
+    Achievement(id: 'weight_1t', category: 'weight', title: trn('千斤顶'),
+        description: trn('累计训练总重量 1 吨'), icon: 'weight',
         pointsReward: 0, canEarnPoints: false),
-    Achievement(id: 'weight_10t', category: 'weight', title: '力拔山兮',
-        description: '累计训练总重量 10 吨', icon: 'weight',
+    Achievement(id: 'weight_10t', category: 'weight', title: trn('力拔山兮'),
+        description: trn('累计训练总重量 10 吨'), icon: 'weight',
         pointsReward: 0, canEarnPoints: false),
-    Achievement(id: 'weight_50t', category: 'weight', title: '撼地者',
-        description: '累计训练总重量 50 吨', icon: 'weight',
+    Achievement(id: 'weight_50t', category: 'weight', title: trn('撼地者'),
+        description: trn('累计训练总重量 50 吨'), icon: 'weight',
         pointsReward: 0, canEarnPoints: false),
-    Achievement(id: 'weight_100t', category: 'weight', title: '举重大师',
-        description: '累计训练总重量 100 吨', icon: 'weight',
+    Achievement(id: 'weight_100t', category: 'weight', title: trn('举重大师'),
+        description: trn('累计训练总重量 100 吨'), icon: 'weight',
         pointsReward: 0, canEarnPoints: false),
     // Duration
-    Achievement(id: 'duration_24h', category: 'duration', title: '勤劳蜜蜂',
-        description: '累计训练时长 24 小时', icon: 'duration',
+    Achievement(id: 'duration_24h', category: 'duration', title: trn('勤劳蜜蜂'),
+        description: trn('累计训练时长 24 小时'), icon: 'duration',
         pointsReward: 30, canEarnPoints: true),
-    Achievement(id: 'duration_100h', category: 'duration', title: '马拉松健将',
-        description: '累计训练时长 100 小时', icon: 'duration',
+    Achievement(id: 'duration_100h', category: 'duration', title: trn('马拉松健将'),
+        description: trn('累计训练时长 100 小时'), icon: 'duration',
         pointsReward: 80, canEarnPoints: true),
-    Achievement(id: 'duration_500h', category: 'duration', title: '铁人',
-        description: '累计训练时长 500 小时', icon: 'duration',
+    Achievement(id: 'duration_500h', category: 'duration', title: trn('铁人'),
+        description: trn('累计训练时长 500 小时'), icon: 'duration',
         pointsReward: 200, canEarnPoints: true),
     // Month streak
-    Achievement(id: 'month_3', category: 'month', title: '季度坚持',
-        description: '连续 3 个月有训练', icon: 'month',
+    Achievement(id: 'month_3', category: 'month', title: trn('季度坚持'),
+        description: trn('连续 3 个月有训练'), icon: 'month',
         pointsReward: 50, canEarnPoints: true),
-    Achievement(id: 'month_6', category: 'month', title: '半年坚持',
-        description: '连续 6 个月有训练', icon: 'month',
+    Achievement(id: 'month_6', category: 'month', title: trn('半年坚持'),
+        description: trn('连续 6 个月有训练'), icon: 'month',
         pointsReward: 100, canEarnPoints: true),
-    Achievement(id: 'month_12', category: 'month', title: '全年坚持',
-        description: '连续 12 个月有训练', icon: 'month',
+    Achievement(id: 'month_12', category: 'month', title: trn('全年坚持'),
+        description: trn('连续 12 个月有训练'), icon: 'month',
         pointsReward: 200, canEarnPoints: true),
     // Explore
-    Achievement(id: 'explore_15', category: 'explore', title: '动作探索者',
-        description: '尝试 15 个不同动作', icon: 'explore',
+    Achievement(id: 'explore_15', category: 'explore', title: trn('动作探索者'),
+        description: trn('尝试 15 个不同动作'), icon: 'explore',
         pointsReward: 30, canEarnPoints: true),
-    Achievement(id: 'explore_20', category: 'explore', title: '动作收藏家',
-        description: '尝试 20 个不同动作', icon: 'explore',
+    Achievement(id: 'explore_20', category: 'explore', title: trn('动作收藏家'),
+        description: trn('尝试 20 个不同动作'), icon: 'explore',
         pointsReward: 60, canEarnPoints: true),
-    Achievement(id: 'explore_25', category: 'explore', title: '动作大师',
-        description: '尝试 25 个不同动作', icon: 'explore',
+    Achievement(id: 'explore_25', category: 'explore', title: trn('动作大师'),
+        description: trn('尝试 25 个不同动作'), icon: 'explore',
         pointsReward: 100, canEarnPoints: true),
     // Plan
-    Achievement(id: 'plan_first_done', category: 'plan', title: '计划完成者',
-        description: '完成第一个训练计划', icon: 'plan',
+    Achievement(id: 'plan_first_done', category: 'plan', title: trn('计划完成者'),
+        description: trn('完成第一个训练计划'), icon: 'plan',
         pointsReward: 50, canEarnPoints: true),
     // Share
-    Achievement(id: 'share_first', category: 'share', title: '初次分享',
-        description: '首次分享训练成果', icon: 'share',
+    Achievement(id: 'share_first', category: 'share', title: trn('初次分享'),
+        description: trn('首次分享训练成果'), icon: 'share',
         pointsReward: 20, canEarnPoints: true),
-    Achievement(id: 'share_3', category: 'share', title: '分享达人',
-        description: '分享训练成果 3 次', icon: 'share',
+    Achievement(id: 'share_3', category: 'share', title: trn('分享达人'),
+        description: trn('分享训练成果 3 次'), icon: 'share',
         pointsReward: 40, canEarnPoints: true),
-    Achievement(id: 'share_10', category: 'share', title: '分享大使',
-        description: '分享训练成果 10 次', icon: 'share',
+    Achievement(id: 'share_10', category: 'share', title: trn('分享大使'),
+        description: trn('分享训练成果 10 次'), icon: 'share',
         pointsReward: 80, canEarnPoints: true),
-  ];
+  ]);
 
   final Set<String> _unlocked = {};
   final Map<String, int> _unlockedAtMap = {};

@@ -1,6 +1,5 @@
 // test/opponent_assets_test.dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 void main() {
@@ -22,7 +21,7 @@ void main() {
     ];
     for (final p in paths) {
       final asset = AssetImage(p);
-      final config = ImageConfiguration.empty;
+      const config = ImageConfiguration.empty;
       final completer = asset.resolve(config);
       expect(completer, isNotNull, reason: '$p not found');
     }

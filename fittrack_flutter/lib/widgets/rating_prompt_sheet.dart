@@ -5,6 +5,7 @@ import '../themes/app_themes.dart';
 import '../utils/platform_utils.dart';
 import 'common_widgets.dart';
 
+import '../l10n/i18n.dart';
 class RatingPromptSheet {
   static const Duration _cooldown = Duration(days: 30);
 
@@ -132,7 +133,7 @@ class _RatingSheet extends StatelessWidget {
           const Icon(Icons.star, color: Colors.amber, size: 64),
           const SizedBox(height: 16),
           Text(
-            '你已经用 LiftTrack 完成了 $total 次训练！',
+            tr(context, '你已经用 LiftTrack 完成了 $total 次训练！'),
             style: TextStyle(
               color: colors.textPrimary,
               fontSize: 16,
@@ -142,7 +143,7 @@ class _RatingSheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '给个好评让更多独立开发者坚持下去吧',
+            tr(context, '给个好评让更多独立开发者坚持下去吧'),
             style: TextStyle(color: colors.textMuted, fontSize: 14),
           ),
           const SizedBox(height: 24),
@@ -151,15 +152,15 @@ class _RatingSheet extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: onRate,
               icon: const Icon(Icons.star),
-              label: const Text('去评分'),
+              label: Text(tr(context, '去评分')),
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(onPressed: onLater, child: const Text('稍后再说')),
+          TextButton(onPressed: onLater, child: Text(tr(context, '稍后再说'))),
           TextButton(
             onPressed: onNeverAsk,
             child: Text(
-              '不再提醒',
+              tr(context, '不再提醒'),
               style: TextStyle(color: colors.textMuted, fontSize: 14),
             ),
           ),

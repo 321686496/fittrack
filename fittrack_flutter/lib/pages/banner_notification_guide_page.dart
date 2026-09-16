@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../themes/app_themes.dart';
 import '../widgets/page_header.dart';
 import '../services/permission_service.dart';
 
+import '../l10n/i18n.dart';
 /// 横幅通知引导页
 ///
 /// 引导用户去系统设置开启横幅通知开关。
@@ -49,7 +50,7 @@ class _BannerNotificationGuidePageState
         children: [
           PageHeader(
             onBack: () => context.pop(),
-            title: '横幅通知引导',
+            title: tr(context, '横幅通知引导'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -74,15 +75,15 @@ class _BannerNotificationGuidePageState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('为什么需要开启横幅通知？',
+                              Text(tr(context, '为什么需要开启横幅通知？'),
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium
                                       ?.copyWith(fontWeight: FontWeight.w600)),
                               const SizedBox(height: 8),
                               Text(
-                                '休息结束时，横幅通知会在屏幕顶部弹出提醒，类似微信消息通知。\n\n'
-                                '由于系统限制，横幅通知需要您手动开启，应用无法自动开启此开关。',
+                                tr(context, '休息结束时，横幅通知会在屏幕顶部弹出提醒，类似微信消息通知。\n\n')
+                                 + tr(context, '由于系统限制，横幅通知需要您手动开启，应用无法自动开启此开关。'),
                                 style: TextStyle(color: colors.textSecondary),
                               ),
                             ],
@@ -93,11 +94,11 @@ class _BannerNotificationGuidePageState
                   ),
                   const SizedBox(height: 20),
                   // 步骤卡片
-                  Text('开启步骤', style: Theme.of(context).textTheme.titleMedium),
+                  Text(tr(context, '开启步骤'), style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 12),
-                  _buildStep(colors, 1, '打开手机「设置」'),
-                  _buildStep(colors, 2, '进入「通知管理」> 找到「LiftTrack」'),
-                  _buildStep(colors, 3, '开启「横幅通知」开关'),
+                  _buildStep(colors, 1, tr(context, '打开手机「设置」')),
+                  _buildStep(colors, 2, tr(context, '进入「通知管理」> 找到「LiftTrack」')),
+                  _buildStep(colors, 3, tr(context, '开启「横幅通知」开关')),
                   const SizedBox(height: 20),
                   // 状态指示器
                   Container(
@@ -122,8 +123,8 @@ class _BannerNotificationGuidePageState
                         Expanded(
                           child: Text(
                             _notificationGranted
-                                ? '通知权限已开启，请确认横幅通知开关也已开启'
-                                : '通知权限未开启，请先开启通知权限',
+                                ? tr(context, '通知权限已开启，请确认横幅通知开关也已开启')
+                                : tr(context, '通知权限未开启，请先开启通知权限'),
                             style: TextStyle(color: colors.textSecondary),
                           ),
                         ),
@@ -139,7 +140,7 @@ class _BannerNotificationGuidePageState
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('去开启'),
+                      child: Text(tr(context, '去开启')),
                     ),
                   ),
                 ],

@@ -8,6 +8,7 @@ import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
 
+import '../l10n/i18n.dart';
 /// v1 训练笔记编写页
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md V1-11-02
@@ -108,8 +109,8 @@ class _NoteEditPageState extends State<NoteEditPage> {
       body: Column(
         children: [
           PageHeader(
-            title: _boundRecord != null ? '训练笔记' : '写笔记',
-            subtitle: _boundRecord != null ? '记录这次训练的感受' : '记录你的健身心得',
+            title: _boundRecord != null ? tr(context, '训练笔记') : tr(context, '写笔记'),
+            subtitle: _boundRecord != null ? tr(context, '记录这次训练的感受') : tr(context, '记录你的健身心得'),
             isTabPage: true,
           ),
           Expanded(
@@ -165,7 +166,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
               Icon(Icons.link, size: 14, color: colors.accentGlow),
               const SizedBox(width: 6),
               Text(
-                '绑定训练记录',
+                tr(context, '绑定训练记录'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 13,
@@ -185,11 +186,11 @@ class _NoteEditPageState extends State<NoteEditPage> {
                     minimumSize: const Size(0, 0),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text('解除', style: TextStyle(fontSize: 12)),
+                  child: Text(tr(context, '解除'), style: const TextStyle(fontSize: 12)),
                 )
               else
                 Text(
-                  '选一次训练，记录当下感受',
+                  tr(context, '选一次训练，记录当下感受'),
                   style: TextStyle(color: colors.textMuted, fontSize: 11),
                 ),
             ],
@@ -203,7 +204,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
               child: OutlinedButton.icon(
                 onPressed: _pickRecord,
                 icon: Icon(Icons.swap_horiz, size: 18, color: colors.accentGlow),
-                label: const Text('更换训练记录'),
+                label: Text(tr(context, '更换训练记录')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -220,7 +221,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
               child: OutlinedButton.icon(
                 onPressed: _pickRecord,
                 icon: Icon(Icons.add_link, size: 18, color: colors.accentGlow),
-                label: const Text('选择训练记录'),
+                label: Text(tr(context, '选择训练记录')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -232,7 +233,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             ),
             const SizedBox(height: 6),
             Text(
-              '未绑定也可直接写自由笔记',
+              tr(context, '未绑定也可直接写自由笔记'),
               style: TextStyle(color: colors.textMuted, fontSize: 11),
             ),
           ],
@@ -246,7 +247,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final records = Storage.getRecords();
     if (records.isEmpty) {
-      FitToast.info(context, '暂无训练记录，先去完成一次训练吧');
+      FitToast.info(context, tr(context, '暂无训练记录，先去完成一次训练吧'));
       return;
     }
     final sorted = List<Map<String, dynamic>>.from(records)
@@ -281,7 +282,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                   Icon(Icons.history, size: 18, color: colors.accentGlow),
                   const SizedBox(width: 6),
                   Text(
-                    '选择本次训练记录',
+                    tr(context, '选择本次训练记录'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 15,
@@ -355,8 +356,8 @@ class _NoteEditPageState extends State<NoteEditPage> {
     final muscles = (r['muscles'] as List?)?.cast<String>() ?? [];
     final ts = ((r['createTime'] as num?)?.toInt() ?? 0);
     final d = ts > 0 ? DateTime.fromMillisecondsSinceEpoch(ts) : null;
-    final dateStr = d != null ? '${d.month}月${d.day}日' : '';
-    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : '全身训练';
+    final dateStr = d != null ? tr(context, '${d.month}月${d.day}日') : '';
+    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : tr(context, '全身训练');
     return '$dateStr · $muscleStr';
   }
 
@@ -365,7 +366,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     final totalWeight = ((r['totalWeight'] ?? 0) as num).toInt();
     final totalSets = ((r['totalSets'] ?? 0) as num).toInt();
     final mins = (duration / 60).round();
-    return '${mins}min · ${totalWeight}kg · $totalSets 组';
+    return tr(context, '${mins}min · ${totalWeight}kg · $totalSets 组');
   }
 
   // ── 绑定的训练记录摘要 ─────────────────────────────────────
@@ -393,7 +394,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
               Icon(Icons.link, size: 14, color: colors.accentGlow),
               const SizedBox(width: 4),
               Text(
-                '关联训练',
+                tr(context, '关联训练'),
                 style: TextStyle(
                   color: colors.accentGlow,
                   fontSize: 11,
@@ -426,15 +427,15 @@ class _NoteEditPageState extends State<NoteEditPage> {
           Row(
             children: [
               Expanded(
-                child: _buildMiniStat(colors, '时长', '${mins}min'),
+                child: _buildMiniStat(colors, tr(context, '时长'), '${mins}min'),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildMiniStat(colors, '总重量', '${totalWeight}kg'),
+                child: _buildMiniStat(colors, tr(context, '总重量'), '${totalWeight}kg'),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildMiniStat(colors, '总组数', '$totalSets'),
+                child: _buildMiniStat(colors, tr(context, '总组数'), '$totalSets'),
               ),
             ],
           ),
@@ -465,21 +466,21 @@ class _NoteEditPageState extends State<NoteEditPage> {
     return _buildSection(
       colors,
       icon: Icons.tune,
-      title: '训练感受',
+      title: tr(context, '训练感受'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('轻松',
+              Text(tr(context, '轻松'),
                   style: TextStyle(color: colors.textMuted, fontSize: 11)),
               Text(_feelingLabel(_feeling),
                   style: TextStyle(
                       color: colors.accentGlow,
                       fontSize: 14,
                       fontWeight: FontWeight.w700)),
-              Text('爆炸',
+              Text(tr(context, '爆炸'),
                   style: TextStyle(color: colors.textMuted, fontSize: 11)),
             ],
           ),
@@ -507,17 +508,17 @@ class _NoteEditPageState extends State<NoteEditPage> {
   String _feelingLabel(int f) {
     switch (f) {
       case 1:
-        return '轻松';
+        return tr(context, '轻松');
       case 2:
-        return '尚可';
+        return tr(context, '尚可');
       case 3:
-        return '适中';
+        return tr(context, '适中');
       case 4:
-        return '吃力';
+        return tr(context, '吃力');
       case 5:
-        return '爆炸';
+        return tr(context, '爆炸');
       default:
-        return '适中';
+        return tr(context, '适中');
     }
   }
 
@@ -527,7 +528,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     return _buildSection(
       colors,
       icon: Icons.star_outline,
-      title: '最满意动作',
+      title: tr(context, '最满意动作'),
       child: _exerciseOptions.isNotEmpty
           ? Wrap(
               spacing: 6,
@@ -566,7 +567,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             )
           : TextField(
               decoration: InputDecoration(
-                hintText: '如：杠铃卧推 80kg×8',
+                hintText: tr(context, '如：杠铃卧推 80kg×8'),
                 hintStyle: TextStyle(color: colors.textMuted, fontSize: 13),
                 filled: true,
                 fillColor: colors.bgCard,
@@ -589,7 +590,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     return _buildSection(
       colors,
       icon: Icons.accessibility_new,
-      title: '身体状态 · 酸痛部位',
+      title: tr(context, '身体状态 · 酸痛部位'),
       child: Wrap(
         spacing: 6,
         runSpacing: 6,
@@ -639,7 +640,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     return _buildSection(
       colors,
       icon: Icons.edit_note,
-      title: '自由心得',
+      title: tr(context, '自由心得'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -648,7 +649,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             maxLength: 200,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: '记录今天训练的感悟、突破或不足...',
+              hintText: tr(context, '记录今天训练的感悟、突破或不足...'),
               hintStyle: TextStyle(color: colors.textMuted, fontSize: 13),
               counterStyle: const TextStyle(fontSize: 0),
               filled: true,
@@ -683,7 +684,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     return _buildSection(
       colors,
       icon: Icons.mood_outlined,
-      title: '心情贴纸',
+      title: tr(context, '心情贴纸'),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
@@ -737,7 +738,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
   }
 
   IconData _iconData(String name) {
-    const map = {
+    final map = {
       'local_fire_department': Icons.local_fire_department,
       'bolt': Icons.bolt,
       'fitness_center': Icons.fitness_center,
@@ -767,7 +768,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '标记为精选',
+              tr(context, '标记为精选'),
               style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 13,
@@ -795,7 +796,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                 ? null
                 : () => context.pop(),
             icon: const Icon(Icons.close, size: 16),
-            label: const Text('取消'),
+            label: Text(tr(context, '取消')),
             style: OutlinedButton.styleFrom(
               foregroundColor: colors.textSecondary,
               side: BorderSide(color: colors.borderColor),
@@ -815,7 +816,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
                     height: 14,
                     child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.check, size: 16),
-            label: Text(_saving ? '保存中' : '保存'),
+            label: Text(_saving ? tr(context, '保存中') : tr(context, '保存')),
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.accentGlow,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -899,10 +900,10 @@ class _NoteEditPageState extends State<NoteEditPage> {
     if (_existingNote == null) {
       final shouldPoster = await ConfirmDialog.show(
         context,
-        title: '笔记已保存',
-        content: '已成功保存训练笔记，是否生成海报分享？',
-        confirmText: '生成海报',
-        cancelText: '稍后再说',
+        title: tr(context, '笔记已保存'),
+        content: tr(context, '已成功保存训练笔记，是否生成海报分享？'),
+        confirmText: tr(context, '生成海报'),
+        cancelText: tr(context, '稍后再说'),
         icon: Icons.photo_camera_outlined,
       );
 
@@ -914,7 +915,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             context,
             posterWidget: NotePosterContent(note: note, boundRecord: _boundRecord),
             posterWidth: NotePosterContent.posterWidth,
-            title: '训练笔记海报',
+            title: tr(context, '训练笔记海报'),
             fileNamePrefix: 'fittrack_note',
           );
         }

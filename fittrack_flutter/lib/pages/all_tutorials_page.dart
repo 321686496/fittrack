@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/course_content.dart';
 import '../data/storage.dart';
@@ -6,6 +6,7 @@ import '../data/tutorial_content.dart';
 import '../themes/app_themes.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// 全部教学页面（v1.3 改版）
 ///
 /// 设计原则（依据 Issue 6）：
@@ -27,7 +28,7 @@ class AllTutorialsPage extends StatelessWidget {
       body: Column(
         children: [
           PageHeader(
-            title: '全部教学',
+            title: tr(context, '全部教学'),
             isTabPage: false,
             onBack: () => Navigator.of(context).pop(),
             onSearchTap: () => context.push('/tutorial-search'),
@@ -39,7 +40,7 @@ class AllTutorialsPage extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   sliver: SliverToBoxAdapter(
                     child: Text(
-                      '选择教学分类',
+                      tr(context, '选择教学分类'),
                       style: TextStyle(
                         color: ft.textPrimary,
                         fontSize: 18,
@@ -86,40 +87,40 @@ class AllTutorialsPage extends StatelessWidget {
     return [
       _TutorialCategory(
         key: 'system',
-        title: '系统化课程',
-        subtitle: '从零基础到进阶的完整体系',
+        title: trn( '系统化课程'),
+        subtitle: trn( '从零基础到进阶的完整体系'),
         emoji: '📚',
-        gradientColors: const [Color(0xFFFF6B35), Color(0xFFFFD700)],
+        gradientColors: [const Color(0xFFFF6B35), const Color(0xFFFFD700)],
         totalCount: CourseLibrary.courses.length,
         unlockedCount: CourseLibrary.courses.length, // 课程本身可点击查看详情
         requiresUnlock: false,
       ),
       _TutorialCategory(
         key: 'basic',
-        title: '基础教学',
-        subtitle: '免费开放 · 覆盖全肌群基础动作',
+        title: trn( '基础教学'),
+        subtitle: trn( '免费开放 · 覆盖全肌群基础动作'),
         emoji: '🌱',
-        gradientColors: const [Color(0xFF6BCB77), Color(0xFF4DBF60)],
+        gradientColors: [const Color(0xFF6BCB77), const Color(0xFF4DBF60)],
         totalCount: TutorialLibrary.basicTutorials.length,
         unlockedCount: TutorialLibrary.basicTutorials.length,
         requiresUnlock: false,
       ),
       _TutorialCategory(
         key: 'advanced',
-        title: '进阶教学',
-        subtitle: '邀请 1 人激活解锁 3 个进阶动作',
+        title: trn( '进阶教学'),
+        subtitle: trn( '邀请 1 人激活解锁 3 个进阶动作'),
         emoji: '🚀',
-        gradientColors: const [Color(0xFF4D96FF), Color(0xFF6BB6FF)],
+        gradientColors: [const Color(0xFF4D96FF), const Color(0xFF6BB6FF)],
         totalCount: TutorialLibrary.advancedTutorials.length,
         unlockedCount: TutorialLibrary.getAdvanced(advancedUnlockedCount).length,
         requiresUnlock: true,
       ),
       _TutorialCategory(
         key: 'topic',
-        title: '专题教学包',
-        subtitle: '累计邀请 3 人激活解锁完整分化指南',
+        title: trn( '专题教学包'),
+        subtitle: trn( '累计邀请 3 人激活解锁完整分化指南'),
         emoji: '📦',
-        gradientColors: const [Color(0xFFB57BFF), Color(0xFF9C5BE0)],
+        gradientColors: [const Color(0xFFB57BFF), const Color(0xFF9C5BE0)],
         totalCount: TutorialLibrary.topicTutorials.length,
         unlockedCount: invitedCount >= 3
             ? TutorialLibrary.topicTutorials.length
@@ -128,10 +129,10 @@ class AllTutorialsPage extends StatelessWidget {
       ),
       _TutorialCategory(
         key: 'master',
-        title: '高手教学',
-        subtitle: '累计邀请 5 人激活解锁高手级课程',
+        title: trn( '高手教学'),
+        subtitle: trn( '累计邀请 5 人激活解锁高手级课程'),
         emoji: '👑',
-        gradientColors: const [Color(0xFFFFB347), Color(0xFFFF8C42)],
+        gradientColors: [const Color(0xFFFFB347), const Color(0xFFFF8C42)],
         totalCount: TutorialLibrary.masterTutorials.length,
         unlockedCount:
             masterUnlocked ? TutorialLibrary.masterTutorials.length : 0,
@@ -152,7 +153,7 @@ class _TutorialCategory {
   final int unlockedCount;
   final bool requiresUnlock;
 
-  const _TutorialCategory({
+  _TutorialCategory({
     required this.key,
     required this.title,
     required this.subtitle,
@@ -208,12 +209,12 @@ class _CategoryCard extends StatelessWidget {
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(Icons.lock_outline, size: 12, color: Colors.white),
-                      SizedBox(width: 4),
+                    children: [
+                      const Icon(Icons.lock_outline, size: 12, color: Colors.white),
+                      const SizedBox(width: 4),
                       Text(
-                        '未解锁',
-                        style: TextStyle(
+                        tr(context, '未解锁'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -240,7 +241,7 @@ class _CategoryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${category.unlockedCount}/${category.totalCount} 项可学',
+                    tr(context, '${category.unlockedCount}/${category.totalCount} 项可学'),
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(height: 4),

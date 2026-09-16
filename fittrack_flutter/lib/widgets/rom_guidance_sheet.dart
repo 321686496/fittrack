@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/rom_adaptation_service.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 class RomGuidanceSheet extends StatefulWidget {
   final VoidCallback? onDismiss;
 
@@ -21,8 +22,8 @@ class RomGuidanceSheet extends StatefulWidget {
 }
 
 class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
-  String _title = '请确保 LiftTrack 允许后台运行';
-  String _steps = '请确保 LiftTrack 允许后台运行和自启动';
+  String _title = trn( '请确保 LiftTrack 允许后台运行');
+  String _steps = trn( '请确保 LiftTrack 允许后台运行和自启动');
   bool _loading = true;
 
   @override
@@ -80,7 +81,7 @@ class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _loading ? '正在检测...' : _title,
+                      _loading ? tr(context, '正在检测...') : _title,
                       style: TextStyle(
                         color: colors.textPrimary,
                         fontSize: 17,
@@ -144,7 +145,7 @@ class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
                               ),
                             ),
                             child: Text(
-                              '去开启自启动',
+                              tr(context, '去开启自启动'),
                               style: TextStyle(color: colors.textSecondary, fontSize: 14),
                             ),
                           ),
@@ -165,9 +166,9 @@ class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        '关闭电池优化',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      child: Text(
+                        tr(context, '关闭电池优化'),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                       ),
                     ),
                   ),
@@ -180,7 +181,7 @@ class _RomGuidanceSheetState extends State<RomGuidanceSheet> {
                   widget.onDismiss?.call();
                 },
                 child: Text(
-                  '稍后设置',
+                  tr(context, '稍后设置'),
                   style: TextStyle(color: colors.textMuted, fontSize: 14),
                 ),
               ),

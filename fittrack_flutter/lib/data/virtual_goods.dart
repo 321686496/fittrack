@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'storage.dart';
 
+import '../l10n/i18n.dart';
 /// 虚拟物品类别
 enum GoodCategory {
   opponentSkin, // 对手皮肤
@@ -20,7 +21,7 @@ class VirtualGood {
   final bool isLimited;
   final Map<String, dynamic>? metadata;
 
-  const VirtualGood({
+  VirtualGood({
     required this.id,
     required this.name,
     required this.category,
@@ -40,42 +41,43 @@ class VirtualGoodsStore {
   VirtualGoodsStore._();
 
   /// 全部商品清单
-  static const List<VirtualGood> kAllGoods = [
+  static List<VirtualGood> get kAllGoods => _kAllGoodsMemo.value;
+  static final LocaleMemo<List<VirtualGood>> _kAllGoodsMemo = LocaleMemo(() => [
     // ── 对手皮肤 ──
     VirtualGood(
       id: 'skin_beginner',
-      name: '晨光起步者',
+      name: trn('晨光起步者'),
       category: GoodCategory.opponentSkin,
       pointsCost: 100,
       emoji: '🌱',
     ),
     VirtualGood(
       id: 'skin_iron_warrior',
-      name: '熔铁匠人',
+      name: trn('熔铁匠人'),
       category: GoodCategory.opponentSkin,
       pointsCost: 300,
       emoji: '⚒',
     ),
     VirtualGood(
       id: 'skin_cyber_ninja',
-      name: '风行游侠',
+      name: trn('风行游侠'),
       category: GoodCategory.opponentSkin,
       pointsCost: 600,
       emoji: '🍃',
     ),
     VirtualGood(
       id: 'skin_ambassador',
-      name: '传承导师',
+      name: trn('传承导师'),
       category: GoodCategory.opponentSkin,
       pointsCost: 1200,
       emoji: '📜',
-      unlockCondition: '累计邀请 5 人',
+      unlockCondition: trn('累计邀请 5 人'),
       isLimited: true,
     ),
     // ── 徽章 ──
     VirtualGood(
       id: 'badge_standard',
-      name: '标准徽章',
+      name: trn('标准徽章'),
       category: GoodCategory.badge,
       pointsCost: 300,
       emoji: '🏅',
@@ -83,14 +85,14 @@ class VirtualGoodsStore {
     // ── 头像框 ──
     VirtualGood(
       id: 'frame_basic',
-      name: '基础头像框',
+      name: trn('基础头像框'),
       category: GoodCategory.avatarFrame,
       pointsCost: 100,
       emoji: '🖼️',
     ),
     VirtualGood(
       id: 'frame_premium',
-      name: '精品头像框',
+      name: trn('精品头像框'),
       category: GoodCategory.avatarFrame,
       pointsCost: 600,
       emoji: '🖼️',
@@ -98,14 +100,14 @@ class VirtualGoodsStore {
     // ── 称号 ──
     VirtualGood(
       id: 'title_ambassador',
-      name: 'LiftTrack 大使称号',
+      name: trn('LiftTrack 大使称号'),
       category: GoodCategory.title,
       pointsCost: 1200,
       emoji: '🎖️',
-      unlockCondition: '累计邀请 10 人',
+      unlockCondition: trn('累计邀请 10 人'),
       isLimited: true,
     ),
-  ];
+  ]);
 
   /// 按 id 查询
   static VirtualGood? byId(String id) {

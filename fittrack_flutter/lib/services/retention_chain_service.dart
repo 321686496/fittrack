@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../data/storage.dart';
 import '../utils/platform_utils.dart';
 
+import '../l10n/i18n.dart';
 /// v1 新手7天留存链服务
 ///
 /// 依据：docs/versions/v1-获客留存版/03_开发目标.md 任务2 [V1-04]
@@ -23,21 +24,24 @@ class RetentionChainService {
   // 定时闹钟覆盖掉（每日训练提醒从此不触发）。
   static const int _notificationId = 5001;
   static const String _channelId = 'retention_chain_channel';
-  static const String _channelName = '新手留存提醒';
-  static const String _channelDesc = '新手7天留存链定时提醒';
+  static String get _channelName => _channelNameMemo.value;
+  static final LocaleMemo<String> _channelNameMemo = LocaleMemo(() => trn('新手留存提醒'));
+  static String get _channelDesc => _channelDescMemo.value;
+  static final LocaleMemo<String> _channelDescMemo = LocaleMemo(() => trn('新手7天留存链定时提醒'));
 
   /// 拮抗肌群映射（用于 Day2 推荐）
-  static const Map<String, String> _antagonistMuscle = {
-    '胸': '背',
-    '背': '胸',
-    '腿': '肩',
-    '肩': '腿',
-    '臂': '腿',
-    '手臂': '腿',
-    '核心': '全身',
-    '胸/肩': '背',
-    '背/肩': '胸',
-  };
+  static Map<String, String> get _antagonistMuscle => _antagonistMuscleMemo.value;
+  static final LocaleMemo<Map<String, String>> _antagonistMuscleMemo = LocaleMemo(() => {
+    '胸': trn('背'),
+    '背': trn('胸'),
+    '腿': trn('肩'),
+    '肩': trn('腿'),
+    '臂': trn('腿'),
+    '手臂': trn('腿'),
+    '核心': trn('全身'),
+    '胸/肩': trn('背'),
+    '背/肩': trn('胸'),
+  });
 
   /// 留存链阶段枚举
   static const int stageDay2 = 2;
@@ -54,7 +58,7 @@ class RetentionChainService {
       await _plugin
           ?.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(const AndroidNotificationChannel(
+          ?.createNotificationChannel(AndroidNotificationChannel(
             _channelId,
             _channelName,
             description: _channelDesc,
@@ -126,10 +130,10 @@ class RetentionChainService {
     final muscles = (firstRecord['muscles'] as List?)?.cast<String>() ?? [];
     final primaryMuscle = muscles.isNotEmpty ? muscles.first : '';
 
-    final antagonist = _antagonistMuscle[primaryMuscle] ?? '全身';
+    final antagonist = _antagonistMuscle[primaryMuscle] ?? trn('全身');
     final message = primaryMuscle.isNotEmpty
-        ? '昨天的$primaryMuscle训练数据已保存，今天试试$antagonist?'
-        : '昨天的训练数据已保存，今天继续加油吧!';
+        ? trn('昨天的$primaryMuscle训练数据已保存，今天试试$antagonist?')
+        : trn('昨天的训练数据已保存，今天继续加油吧!');
 
     await _sendPush('LiftTrack Day2', message);
   }
@@ -149,8 +153,8 @@ class RetentionChainService {
 
     if (!hasRecentTraining) {
       await _sendPush(
-        'LiftTrack 想你了',
-        '休息一下也不错，看看你的训练日历，规划下一次训练吧',
+        trn('LiftTrack 想你了'),
+        trn('休息一下也不错，看看你的训练日历，规划下一次训练吧'),
       );
     }
   }
@@ -251,14 +255,14 @@ class RetentionChainService {
         _notificationId,
         title,
         body,
-        const NotificationDetails(
+        NotificationDetails(
           android: AndroidNotificationDetails(
             _channelId,
             _channelName,
             channelDescription: _channelDesc,
             importance: Importance.defaultImportance,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: const DarwinNotificationDetails(),
         ),
       );
       debugPrint('RetentionChain push sent: $title');
@@ -277,7 +281,7 @@ class RetentionWeeklyReport {
   final List<String> trainedMuscles; // 训练过的肌群
   final DateTime firstTrainingDate; // 首次训练日
 
-  const RetentionWeeklyReport({
+  RetentionWeeklyReport({
     required this.trainingDays,
     required this.totalWeight,
     required this.totalDuration,
@@ -288,11 +292,11 @@ class RetentionWeeklyReport {
 
   /// 趣味类比：根据总重量返回类比文案
   String get weightAnalogy {
-    if (totalWeight >= 1000) return '≈举起一头成年牛';
-    if (totalWeight >= 500) return '≈举起半头牛';
-    if (totalWeight >= 200) return '≈举起两只成年金毛';
-    if (totalWeight >= 50) return '≈举起一袋大米';
-    return '继续努力，积少成多';
+    if (totalWeight >= 1000) return trn('≈举起一头成年牛');
+    if (totalWeight >= 500) return trn('≈举起半头牛');
+    if (totalWeight >= 200) return trn('≈举起两只成年金毛');
+    if (totalWeight >= 50) return trn('≈举起一袋大米');
+    return trn('继续努力，积少成多');
   }
 
   /// 时长格式化

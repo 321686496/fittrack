@@ -10,6 +10,7 @@ import '../data/virtual_goods.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class PointsDetailPage extends StatefulWidget {
   const PointsDetailPage({super.key});
 
@@ -75,53 +76,53 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
   }
 
   String _sourceLabel(String source) {
-    const map = {
-      'daily_check_in': '每日签到',
-      'ad_watched': '观看广告',
-      'ad': '观看广告',
-      'invite': '邀请好友',
-      'feature_unlock': '解锁功能',
-      'course_learn': '课程学习',
-      'training': '每日训练',
-      'achievement': '成就解锁',
-      'checkIn': '每日签到',
-      'welcome': '新用户奖励',
-      'invited': '邀请好友',
+    final map = {
+      'daily_check_in': tr(context, '每日签到'),
+      'ad_watched': tr(context, '观看广告'),
+      'ad': tr(context, '观看广告'),
+      'invite': tr(context, '邀请好友'),
+      'feature_unlock': tr(context, '解锁功能'),
+      'course_learn': tr(context, '课程学习'),
+      'training': tr(context, '每日训练'),
+      'achievement': tr(context, '成就解锁'),
+      'checkIn': tr(context, '每日签到'),
+      'welcome': tr(context, '新用户奖励'),
+      'invited': tr(context, '邀请好友'),
     };
     if (map.containsKey(source)) return map[source]!;
 
     // 邀请里程碑：invite_milestone_<N> → 友好标签
     if (source.startsWith('invite_milestone_')) {
       final n = source.substring('invite_milestone_'.length);
-      return '邀请里程碑（第 $n 人）';
+      return tr(context, '邀请里程碑（第 $n 人）');
     }
 
     // 解锁 / 购买类消费：解析出具体的课程、计划、皮肤、教学章节名称，展示友好提示
     if (source.startsWith('unlock_plan_')) {
       final planId = source.substring('unlock_plan_'.length);
       final plan = SystemPlanLibrary.instance.getById(planId);
-      return plan != null ? '购买健身计划「${plan.name}」' : '购买健身计划';
+      return plan != null ? tr(context, '购买健身计划「${plan.name}」') : tr(context, '购买健身计划');
     }
     if (source.startsWith('unlock_good_')) {
       final goodId = source.substring('unlock_good_'.length);
       final good = VirtualGoodsStore.byId(goodId);
       if (good != null) {
         final categoryNames = {
-          GoodCategory.opponentSkin: '对手皮肤',
-          GoodCategory.badge: '徽章',
-          GoodCategory.avatarFrame: '头像框',
-          GoodCategory.title: '称号',
+          GoodCategory.opponentSkin: tr(context, '对手皮肤'),
+          GoodCategory.badge: tr(context, '徽章'),
+          GoodCategory.avatarFrame: tr(context, '头像框'),
+          GoodCategory.title: tr(context, '称号'),
         };
-        return '购买${categoryNames[good.category] ?? '虚拟物品'}「${good.name}」';
+        return tr(context, '购买${categoryNames[good.category] ?? '虚拟物品'}「${good.name}」');
       }
-      return '购买虚拟物品';
+      return tr(context, '购买虚拟物品');
     }
     if (source.startsWith('unlock_')) {
       final featureId = source.substring('unlock_'.length);
       final course = CourseLibrary.getById(featureId);
-      if (course != null) return '购买系统课程「${course.title}」';
-      if (featureId.startsWith('tutorial_')) return '解锁教学章节';
-      return '解锁内容';
+      if (course != null) return tr(context, '购买系统课程「${course.title}」');
+      if (featureId.startsWith('tutorial_')) return tr(context, '解锁教学章节');
+      return tr(context, '解锁内容');
     }
     return source;
   }
@@ -188,11 +189,11 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
     final success = await PointsService.instance.dailyCheckIn();
     if (!mounted) return;
     if (success) {
-      FitToast.success(context, '签到成功，获得 ${PointsService.checkInPoints} 积分！');
+      FitToast.success(context, tr(context, '签到成功，获得 ${PointsService.checkInPoints} 积分！'));
       _loadLog();
       setState(() {});
     } else {
-      FitToast.warning(context, '今日已签到，明天再来吧');
+      FitToast.warning(context, tr(context, '今日已签到，明天再来吧'));
     }
   }
 
@@ -200,14 +201,14 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
   Future<void> _watchAd() async {
     final canWatch = await PointsService.instance.canWatchAd();
     if (!canWatch) {
-      if (mounted) FitToast.warning(context, '今日观看次数已达上限');
+      if (mounted) FitToast.warning(context, tr(context, '今日观看次数已达上限'));
       return;
     }
     final adResult = await AdService.instance.showRewardedVideo();
     if (adResult == AdResult.success || adResult == AdResult.notAvailable) {
       await PointsService.instance.recordAdWatched();
       if (mounted) {
-        FitToast.success(context, '获得 ${PointsService.adPoints} 积分！');
+        FitToast.success(context, tr(context, '获得 ${PointsService.adPoints} 积分！'));
         _loadLog();
         setState(() {});
       }
@@ -248,7 +249,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '积分明细',
+            title: tr(context, '积分明细'),
             isTabPage: false,
             onBack: () => context.pop(),
           ),
@@ -278,7 +279,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text('当前积分',
+                        Text(tr(context, '当前积分'),
                             style: TextStyle(color: colors.textMuted, fontSize: 12)),
                         const SizedBox(height: 16),
                         // 分隔线
@@ -296,7 +297,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 2),
-                                  Text('累计获得',
+                                  Text(tr(context, '累计获得'),
                                       style: TextStyle(color: colors.textMuted, fontSize: 12)),
                                 ],
                               ),
@@ -311,7 +312,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 2),
-                                  Text('累计消耗',
+                                  Text(tr(context, '累计消耗'),
                                       style: TextStyle(color: colors.textMuted, fontSize: 12)),
                                 ],
                               ),
@@ -326,7 +327,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                             child: OutlinedButton.icon(
                               onPressed: _watchAd,
                               icon: const Icon(Icons.ondemand_video, size: 16),
-                              label: const Text('看广告 +${PointsService.adPoints} 积分'),
+                              label: Text(tr(context, '看广告 +${PointsService.adPoints} 积分')),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: colors.accentGlow,
                                 side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -344,7 +345,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                   // 积分明细列表 - 标题 + 筛选
                   Row(
                     children: [
-                      Text('积分明细', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(tr(context, '积分明细'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                       const Spacer(),
                       if (_log.length > 5)
                         TextButton(
@@ -355,7 +356,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            _showAll ? '收起' : '查看全部 (${_log.length})',
+                            _showAll ? tr(context, '收起') : tr(context, '查看全部 (${_log.length})'),
                             style: TextStyle(color: colors.accentGlow, fontSize: 13),
                           ),
                         ),
@@ -370,7 +371,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Text(
-                          _filterSource == 'all' ? '暂无积分记录' : '暂无该类型记录',
+                          _filterSource == 'all' ? tr(context, '暂无积分记录') : tr(context, '暂无该类型记录'),
                           style: TextStyle(color: colors.textMuted, fontSize: 14),
                         ),
                       ),
@@ -382,25 +383,25 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                       padding: const EdgeInsets.only(top: 8),
                       child: Center(
                         child: Text(
-                          '共 ${_filteredList.length} 条记录',
+                          tr(context, '共 ${_filteredList.length} 条记录'),
                           style: TextStyle(color: colors.textMuted, fontSize: 12),
                         ),
                       ),
                     ),
                   const SizedBox(height: 24),
                   // 积分获取途径
-                  Text('积分获取途径', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(tr(context, '积分获取途径'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  _buildWayItem(colors, Icons.check_circle_outline, '每日签到', '每天首次签到 +${PointsService.checkInPoints} 积分', 'checkIn'),
+                  _buildWayItem(colors, Icons.check_circle_outline, tr(context, '每日签到'), tr(context, '每天首次签到 +${PointsService.checkInPoints} 积分'), 'checkIn'),
                   if (adsEnabled)
-                    _buildWayItem(colors, Icons.ondemand_video, '观看广告', '观看完整广告 +${PointsService.adPoints} 积分', 'ad'),
-                  _buildWayItem(colors, Icons.card_giftcard, '邀请好友', '好友首次训练 +${PointsService.invitePoints} 积分，里程碑额外奖励', 'invite'),
-                  _buildWayItem(colors, Icons.fitness_center, '每日训练', '完成当天训练 +${PointsService.trainingPoints} 积分', 'training'),
-                  _buildWayItem(colors, Icons.school, '课程学习', '完成课程章节 +10 积分', 'course'),
-                  _buildWayItem(colors, Icons.emoji_events, '成就解锁', '成就解锁获得积分（部分成就为纯荣誉）', 'achievement'),
+                    _buildWayItem(colors, Icons.ondemand_video, tr(context, '观看广告'), tr(context, '观看完整广告 +${PointsService.adPoints} 积分'), 'ad'),
+                  _buildWayItem(colors, Icons.card_giftcard, tr(context, '邀请好友'), tr(context, '好友首次训练 +${PointsService.invitePoints} 积分，里程碑额外奖励'), 'invite'),
+                  _buildWayItem(colors, Icons.fitness_center, tr(context, '每日训练'), tr(context, '完成当天训练 +${PointsService.trainingPoints} 积分'), 'training'),
+                  _buildWayItem(colors, Icons.school, tr(context, '课程学习'), tr(context, '完成课程章节 +10 积分'), 'course'),
+                  _buildWayItem(colors, Icons.emoji_events, tr(context, '成就解锁'), tr(context, '成就解锁获得积分（部分成就为纯荣誉）'), 'achievement'),
                   const SizedBox(height: 24),
                   // 积分兑换入口
-                  Text('积分兑换', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(tr(context, '积分兑换'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   CardWidget(
                     onTap: () => context.push('/opponent-detail'),
@@ -420,13 +421,13 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('对手皮肤',
+                              Text(tr(context, '对手皮肤'),
                                   style: TextStyle(
                                       color: colors.textPrimary,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600)),
                               const SizedBox(height: 2),
-                              Text('用积分解锁炫酷皮肤',
+                              Text(tr(context, '用积分解锁炫酷皮肤'),
                                   style: TextStyle(
                                       color: colors.textMuted, fontSize: 12)),
                             ],
@@ -450,14 +451,14 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
   /// 构建筛选标签
   Widget _buildFilterChips(LiftTrackColors colors) {
     // 使用 Map 保持顺序并避免使用 Records 语法（Dart 2.19 不支持 Records）
-    const chips = <MapEntry<String, String>>[
-      MapEntry('all', '全部'),
-      MapEntry('checkIn', '签到'),
-      MapEntry('ad', '广告'),
-      MapEntry('invite', '邀请'),
-      MapEntry('training', '训练'),
-      MapEntry('course', '课程'),
-      MapEntry('achievement', '成就'),
+    final chips = <MapEntry<String, String>>[
+      MapEntry('all', tr(context, '全部')),
+      MapEntry('checkIn', tr(context, '签到')),
+      MapEntry('ad', tr(context, '广告')),
+      MapEntry('invite', tr(context, '邀请')),
+      MapEntry('training', tr(context, '训练')),
+      MapEntry('course', tr(context, '课程')),
+      MapEntry('achievement', tr(context, '成就')),
     ];
     return SizedBox(
       height: 32,
@@ -555,7 +556,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                                 color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500,
                               )),
                               Text(
-                                linkable ? '${_formatTime(time)} · 点击查看详情' : _formatTime(time),
+                                linkable ? tr(context, '${_formatTime(time)} · 点击查看详情') : _formatTime(time),
                                 style: TextStyle(
                                   color: linkable ? colors.accentGlow : colors.textMuted,
                                   fontSize: 11,
@@ -574,7 +575,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                                 fontSize: 16, fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text('余额 $balance', style: TextStyle(
+                            Text(tr(context, '余额 $balance'), style: TextStyle(
                               color: colors.textMuted, fontSize: 10,
                             )),
                           ],
@@ -630,7 +631,7 @@ class _PointsDetailPageState extends State<PointsDetailPage> {
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Text(
-                    '去获取',
+                    tr(context, '去获取'),
                     style: TextStyle(
                       color: colors.accentGlow,
                       fontSize: 12,

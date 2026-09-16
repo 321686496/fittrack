@@ -15,7 +15,7 @@ class ShareCardService {
     Map<String, dynamic> record,
     BuildContext context,
   ) async {
-    final cardSize = const Size(1080, 1920);
+    const cardSize = Size(1080, 1920);
     // Render offscreen via Overlay.
     // 修复：原实现将 1080x1920 蓝色卡片直接插入可见 Overlay，铺满屏幕呈现"透明蓝屏"，
     // 且 50ms 等待不足以让文本/图标完成 paint，导致截图无内容。

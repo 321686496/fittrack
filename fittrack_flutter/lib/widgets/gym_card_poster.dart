@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'poster_theme.dart';
 
+import '../l10n/i18n.dart';
 /// 健身卡海报（海报5，对应 HTML #5）
 ///
 /// 宽度 1080、高度 1920 固定（9:16）。使用 [PosterBackground] 跟随主题。
@@ -24,9 +25,9 @@ class GymCardPoster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = PosterColors.fromThemeId(themeId);
-    final gymName = (card['gymName'] as String?) ?? '健身房';
+    final gymName = (card['gymName'] as String?) ?? tr(context, '健身房');
     final address = (card['address'] as String?) ?? '';
-    final cardType = (card['cardType'] as String?) ?? '月卡';
+    final cardType = (card['cardType'] as String?) ?? tr(context, '月卡');
     final startMs = card['startDate'] as int? ?? 0;
     final endMs = card['endDate'] as int? ?? 0;
     final totalCount = (card['totalCount'] as int?) ?? 0;
@@ -49,18 +50,18 @@ class GymCardPoster extends StatelessWidget {
     if (totalDays <= 0) totalDays = usedDays;
     final progress = (usedDays / totalDays).clamp(0.0, 1.0);
     final remainingDays = (totalDays - usedDays).clamp(0, 99999);
-    final isCountCard = cardType == '次卡';
+    final isCountCard = cardType == tr(context, '次卡');
 
     // 大数字
     final bigValue = isCountCard ? '$remainingCount' : '$usedDays';
-    final bigUnit = isCountCard ? '次' : '天';
-    final bigLabel = isCountCard ? '剩余可用' : '累计坚持';
+    final bigUnit = isCountCard ? tr(context, '次') : tr(context, '天');
+    final bigLabel = isCountCard ? tr(context, '剩余可用') : tr(context, '累计坚持');
 
     // 双数据卡
     final v1 = isCountCard ? remainingCount : remainingDays;
-    final l1 = isCountCard ? '剩余次数' : '剩余天数';
+    final l1 = isCountCard ? tr(context, '剩余次数') : tr(context, '剩余天数');
     final v2 = isCountCard ? totalCount : totalDays;
-    final l2 = isCountCard ? '购买次数' : '总天数';
+    final l2 = isCountCard ? tr(context, '购买次数') : tr(context, '总天数');
 
     // 到期日期
     final expireLabel = endMs > 0 ? _formatDate(endMs) : '';
@@ -78,7 +79,7 @@ class GymCardPoster extends StatelessWidget {
               colors: colors,
               subtitle: 'GYM CARD',
               trailing: cardType.isNotEmpty
-                  ? PostBadge(text: '$cardType · 通用', colors: colors)
+                  ? PostBadge(text: tr(context, '$cardType · 通用'), colors: colors)
                   : null,
             ),
             // ── 坚持标题 ─────────────────────────
@@ -87,7 +88,7 @@ class GymCardPoster extends StatelessWidget {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: '我在 $gymName\n',
+                    text: tr(context, '我在 $gymName\n'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: px(18),
@@ -96,7 +97,7 @@ class GymCardPoster extends StatelessWidget {
                     ),
                   ),
                   TextSpan(
-                    text: '坚持训练',
+                    text: tr(context, '坚持训练'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: px(18),
@@ -205,7 +206,7 @@ class GymCardPoster extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${(progress * 100).toStringAsFixed(0)}% 完成',
+                        tr(context, '${(progress * 100).toStringAsFixed(0)}% 完成'),
                         style: TextStyle(
                           fontSize: px(11),
                           color: colors.textPrimary,
@@ -214,8 +215,8 @@ class GymCardPoster extends StatelessWidget {
                       ),
                       Text(
                         isCountCard
-                            ? '已用 ${(totalCount - v1).clamp(0, 99999)}'
-                            : '剩余 $v1 天',
+                            ? tr(context, '已用 ${(totalCount - v1).clamp(0, 99999)}')
+                            : tr(context, '剩余 $v1 天'),
                         style: TextStyle(
                           fontSize: px(11),
                           color: colors.textSecondary,
@@ -244,7 +245,7 @@ class GymCardPoster extends StatelessWidget {
                 PostBadge(text: cardType, colors: colors),
                 if (expireLabel.isNotEmpty) ...[
                   SizedBox(width: px(6)),
-                  PostBadge(text: '$expireLabel 到期', colors: colors),
+                  PostBadge(text: tr(context, '$expireLabel 到期'), colors: colors),
                 ],
               ],
             ),
@@ -286,7 +287,7 @@ class GymCardPoster extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '坚持 · 看到变化',
+                  tr(context, '坚持 · 看到变化'),
                   style: TextStyle(
                     color: colors.textMuted,
                     fontSize: px(10),

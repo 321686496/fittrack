@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
-import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
@@ -11,33 +10,34 @@ import '../widgets/common_widgets.dart';
 import '../widgets/exercise_picker_sheet.dart';
 import '../widgets/exercise_set_table.dart';
 
-const List<String> _planTypes = ['三分化', '四分化', '五分化', '全身训练', '自定义'];
-const List<String> _difficulties = ['入门', '初级', '进阶', '高级'];
+import '../l10n/i18n.dart';
+List<String> _planTypes = [trn( '三分化'), trn( '四分化'), trn( '五分化'), trn( '全身训练'), trn( '自定义')];
+List<String> _difficulties = [trn( '入门'), trn( '初级'), trn( '进阶'), trn( '高级')];
 
-const Map<String, List<Map<String, dynamic>>> _quickSetup = {
+Map<String, List<Map<String, dynamic>>> _quickSetup = {
   '三分化': [
-    {'day': 1, 'label': '胸部 + 三头肌', 'muscle': '胸', 'exercises': [{'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}, {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
-    {'day': 2, 'label': '背部 + 二头肌', 'muscle': '背', 'exercises': [{'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90}, {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}]},
-    {'day': 3, 'label': '腿部', 'muscle': '腿', 'exercises': [{'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120}, {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90}]},
-    {'day': 4, 'label': '肩部 + 核心', 'muscle': '肩', 'exercises': [{'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90}, {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60}]},
+    {'day': 1, 'label': trn( '胸部 + 三头肌'), 'muscle': trn( '胸'), 'exercises': [{'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}, {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
+    {'day': 2, 'label': trn( '背部 + 二头肌'), 'muscle': trn( '背'), 'exercises': [{'id': 'e5', 'name': trn( '引体向上'), 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90}, {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}]},
+    {'day': 3, 'label': trn( '腿部'), 'muscle': trn( '腿'), 'exercises': [{'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120}, {'id': 'e10', 'name': trn( '腿举'), 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90}]},
+    {'day': 4, 'label': trn( '肩部 + 核心'), 'muscle': trn( '肩'), 'exercises': [{'id': 'e11', 'name': trn( '哑铃推举'), 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90}, {'id': 'e12', 'name': trn( '侧平举'), 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60}]},
   ],
   '四分化': [
-    {'day': 1, 'label': '胸部', 'muscle': '胸', 'exercises': [{'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}, {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
-    {'day': 2, 'label': '背部', 'muscle': '背', 'exercises': [{'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90}, {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}]},
-    {'day': 3, 'label': '腿部', 'muscle': '腿', 'exercises': [{'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120}]},
-    {'day': 4, 'label': '肩部 + 手臂', 'muscle': '肩/手臂', 'exercises': [{'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90}, {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60}]},
+    {'day': 1, 'label': trn( '胸部'), 'muscle': trn( '胸'), 'exercises': [{'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}, {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
+    {'day': 2, 'label': trn( '背部'), 'muscle': trn( '背'), 'exercises': [{'id': 'e5', 'name': trn( '引体向上'), 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90}, {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}]},
+    {'day': 3, 'label': trn( '腿部'), 'muscle': trn( '腿'), 'exercises': [{'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120}]},
+    {'day': 4, 'label': trn( '肩部 + 手臂'), 'muscle': trn( '肩/手臂'), 'exercises': [{'id': 'e11', 'name': trn( '哑铃推举'), 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90}, {'id': 'e13', 'name': trn( '哑铃弯举'), 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60}]},
   ],
   '五分化': [
-    {'day': 1, 'label': '胸部', 'muscle': '胸', 'exercises': [{'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}, {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
-    {'day': 2, 'label': '背部', 'muscle': '背', 'exercises': [{'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90}, {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}]},
-    {'day': 3, 'label': '腿部', 'muscle': '腿', 'exercises': [{'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120}]},
-    {'day': 4, 'label': '肩部', 'muscle': '肩', 'exercises': [{'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90}]},
-    {'day': 5, 'label': '手臂', 'muscle': '手臂', 'exercises': [{'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60}, {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
+    {'day': 1, 'label': trn( '胸部'), 'muscle': trn( '胸'), 'exercises': [{'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}, {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
+    {'day': 2, 'label': trn( '背部'), 'muscle': trn( '背'), 'exercises': [{'id': 'e5', 'name': trn( '引体向上'), 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90}, {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90}]},
+    {'day': 3, 'label': trn( '腿部'), 'muscle': trn( '腿'), 'exercises': [{'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120}]},
+    {'day': 4, 'label': trn( '肩部'), 'muscle': trn( '肩'), 'exercises': [{'id': 'e11', 'name': trn( '哑铃推举'), 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90}]},
+    {'day': 5, 'label': trn( '手臂'), 'muscle': trn( '手臂'), 'exercises': [{'id': 'e13', 'name': trn( '哑铃弯举'), 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60}, {'id': 'e14', 'name': trn( '锤式弯举'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}]},
   ],
   '全身训练': [
-    {'day': 1, 'label': '全身训练A', 'muscle': '全身', 'exercises': [{'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'weight': 50.0, 'restTime': 90}, {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90}]},
-    {'day': 2, 'label': '全身训练B', 'muscle': '全身', 'exercises': [{'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90}, {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90}]},
-    {'day': 3, 'label': '全身训练C', 'muscle': '全身', 'exercises': [{'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}, {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75}]},
+    {'day': 1, 'label': trn( '全身训练A'), 'muscle': trn( '全身'), 'exercises': [{'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 3, 'reps': '10-12', 'weight': 50.0, 'restTime': 90}, {'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90}]},
+    {'day': 2, 'label': trn( '全身训练B'), 'muscle': trn( '全身'), 'exercises': [{'id': 'e10', 'name': trn( '腿举'), 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90}, {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90}]},
+    {'day': 3, 'label': trn( '全身训练C'), 'muscle': trn( '全身'), 'exercises': [{'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60}, {'id': 'e7', 'name': trn( '高位下拉'), 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75}]},
   ],
 };
 
@@ -55,8 +55,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
   final _totalWeeksController = TextEditingController(text: '8');
   final _restTimeController = TextEditingController(text: '90');
 
-  String _selectedType = '三分化';
-  String _selectedDifficulty = '初级';
+  String _selectedType = trn( '三分化');
+  String _selectedDifficulty = trn( '初级');
   String _selectedGender = 'all';
   List<Map<String, dynamic>> _days = [];
   Map<String, dynamic>? _editingPlan;
@@ -111,8 +111,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
     if (plan.isNotEmpty) {
       _editingPlan = plan;
       _nameController.text = plan['name'] as String? ?? '';
-      _selectedType = plan['type'] as String? ?? '三分化';
-      _selectedDifficulty = plan['difficulty'] as String? ?? '初级';
+      _selectedType = plan['type'] as String? ?? tr(context, '三分化');
+      _selectedDifficulty = plan['difficulty'] as String? ?? tr(context, '初级');
       _selectedGender = plan['gender'] as String? ?? 'all';
       _totalWeeksController.text = '${plan['totalWeeks'] ?? 8}';
       _restTimeController.text = '${plan['defaultRestTime'] ?? 90}';
@@ -124,7 +124,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
   }
 
   void _applyQuickSetup(String type) {
-    if (type == '自定义') {
+    if (type == tr(context, '自定义')) {
       // 自定义模式保持空白，由用户手动添加训练日
       _days = [];
     } else {
@@ -152,7 +152,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
   void _addDay() {
     _days.add({
       'day': _days.length + 1,
-      'label': '训练日${_days.length + 1}',
+      'label': tr(context, '训练日${_days.length + 1}'),
       'muscle': '',
       'exercises': <Map<String, dynamic>>[],
     });
@@ -163,7 +163,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
   void _addRestDay() {
     _days.add({
       'day': _days.length + 1,
-      'label': '休息日',
+      'label': tr(context, '休息日'),
       'muscle': '',
       'isRest': true,
       'exercises': <Map<String, dynamic>>[],
@@ -294,11 +294,11 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
-      FitToast.info(context, '请输入计划名称');
+      FitToast.info(context, tr(context, '请输入计划名称'));
       return;
     }
     if (_days.isEmpty) {
-      FitToast.warning(context, '请先添加训练日（右上角「+ 训练日」），或选择训练类型使用模板');
+      FitToast.warning(context, tr(context, '请先添加训练日（右上角「+ 训练日」），或选择训练类型使用模板'));
       return;
     }
     final totalWeeks = int.tryParse(_totalWeeksController.text) ?? 8;
@@ -307,19 +307,19 @@ class _AddPlanPageState extends State<AddPlanPage> {
     String frequency;
     switch (_selectedType) {
       case '三分化':
-        frequency = '6天/周';
+        frequency = tr(context, '6天/周');
         break;
       case '四分化':
-        frequency = '4天/周';
+        frequency = tr(context, '4天/周');
         break;
       case '五分化':
-        frequency = '5天/周';
+        frequency = tr(context, '5天/周');
         break;
       case '全身训练':
-        frequency = '3天/周';
+        frequency = tr(context, '3天/周');
         break;
       default:
-        frequency = '${_days.length}天/周';
+        frequency = tr(context, '${_days.length}天/周');
     }
 
     final planData = <String, dynamic>{
@@ -335,7 +335,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
       'week': _editingPlan?['week'] ?? 0,
       'progress': _editingPlan?['progress'] ?? 0,
       'status': _editingPlan?['status'] ?? 'active',
-      'badge': _editingPlan?['badge'] ?? '进行中',
+      'badge': _editingPlan?['badge'] ?? tr(context, '进行中'),
     };
 
     try {
@@ -345,7 +345,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
         for (final p in existingPlans) {
           if (p['status'] == 'active') {
             await Storage.updatePlanAsync(
-                p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+                p['id'] as String, {'status': 'paused', 'badge': tr(context, '已暂停')});
           }
         }
         await Storage.addPlanAsync(planData);
@@ -355,13 +355,13 @@ class _AddPlanPageState extends State<AddPlanPage> {
       }
       // 保存成功后跳转首页并提示用户可以开始训练
       if (mounted) {
-        FitToast.success(context, _editingPlan == null ? '计划已创建，开始训练吧！' : '计划已更新，开始训练吧！');
+        FitToast.success(context, _editingPlan == null ? tr(context, '计划已创建，开始训练吧！') : tr(context, '计划已更新，开始训练吧！'));
         context.go('/home');
       }
     } catch (e) {
       debugPrint('保存计划失败: $e');
       if (mounted) {
-        FitToast.error(context, '保存失败，请重试');
+        FitToast.error(context, tr(context, '保存失败，请重试'));
       }
     }
   }
@@ -376,7 +376,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
       backgroundColor: colors.bgSecondary,
       appBar: AppBar(
         backgroundColor: colors.bgSecondary,
-        title: Text(isEditing ? '编辑计划' : '创建计划', style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text(isEditing ? tr(context, '编辑计划') : tr(context, '创建计划'), style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
         leading: IconButton(icon: Icon(Icons.arrow_back, color: colors.textPrimary), onPressed: () => context.go('/plan')),
       ),
       body: SingleChildScrollView(
@@ -385,21 +385,21 @@ class _AddPlanPageState extends State<AddPlanPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── 自定义计划表单 ──
-            Text(isEditing ? '编辑计划信息' : '或自定义计划', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(isEditing ? tr(context, '编辑计划信息') : tr(context, '或自定义计划'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
 
             // 计划名称
-            _buildLabel(colors, '计划名称'),
+            _buildLabel(colors, tr(context, '计划名称')),
             const SizedBox(height: 6),
             TextField(
               controller: _nameController,
               style: TextStyle(color: colors.textPrimary),
-              decoration: InputDecoration(hintText: '输入计划名称', hintStyle: TextStyle(color: colors.textMuted)),
+              decoration: InputDecoration(hintText: tr(context, '输入计划名称'), hintStyle: TextStyle(color: colors.textMuted)),
             ),
             const SizedBox(height: 16),
 
             // 训练类型
-            _buildLabel(colors, '训练类型'),
+            _buildLabel(colors, tr(context, '训练类型')),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8, runSpacing: 8,
@@ -422,7 +422,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
             const SizedBox(height: 16),
 
             // 难度等级
-            _buildLabel(colors, '难度等级'),
+            _buildLabel(colors, tr(context, '难度等级')),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8, runSpacing: 8,
@@ -445,7 +445,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
             const SizedBox(height: 16),
 
             // 适用人群
-            _buildLabel(colors, '适用人群'),
+            _buildLabel(colors, tr(context, '适用人群')),
             const SizedBox(height: 6),
             _buildGenderSelector(colors),
             const SizedBox(height: 16),
@@ -453,9 +453,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
             // 总周数 & 休息时间
             Row(
               children: [
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, '总周数'), const SizedBox(height: 6), TextField(controller: _totalWeeksController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: const InputDecoration(hintText: '8'))])),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, tr(context, '总周数')), const SizedBox(height: 6), TextField(controller: _totalWeeksController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: const InputDecoration(hintText: '8'))])),
                 const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, '默认休息(秒)'), const SizedBox(height: 6), TextField(controller: _restTimeController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: const InputDecoration(hintText: '90'))])),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel(colors, tr(context, '默认休息(秒)')), const SizedBox(height: 6), TextField(controller: _restTimeController, keyboardType: TextInputType.number, style: TextStyle(color: colors.textPrimary), decoration: const InputDecoration(hintText: '90'))])),
               ],
             ),
             _buildRestRecommendationCard(colors),
@@ -464,14 +464,14 @@ class _AddPlanPageState extends State<AddPlanPage> {
             // 训练日编辑器（可添加/删除训练日与动作）
             Row(
               children: [
-                _buildLabel(colors, '训练日 (${_days.length}天)'),
+                _buildLabel(colors, tr(context, '训练日 (${_days.length}天)')),
                 const Spacer(),
                 GestureDetector(
                   onTap: _addDay,
                   child: Row(
                     children: [
                       Icon(Icons.add, size: 18, color: colors.accentGlow),
-                      Text('训练日', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                      Text(tr(context, '训练日'), style: TextStyle(color: colors.accentGlow, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -481,7 +481,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   child: Row(
                     children: [
                       Icon(Icons.bedtime_outlined, size: 18, color: colors.infoColor),
-                      Text('休息日', style: TextStyle(color: colors.infoColor, fontSize: 13)),
+                      Text(tr(context, '休息日'), style: TextStyle(color: colors.infoColor, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -502,12 +502,12 @@ class _AddPlanPageState extends State<AddPlanPage> {
                     Icon(Icons.event_note_outlined, size: 36, color: colors.textMuted),
                     const SizedBox(height: 8),
                     Text(
-                      '还没有训练日',
+                      tr(context, '还没有训练日'),
                       style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '点击上方「+ 训练日」开始添加，或选择训练类型使用模板快速生成',
+                      tr(context, '点击上方「+ 训练日」开始添加，或选择训练类型使用模板快速生成'),
                       textAlign: TextAlign.center,
                       style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.5),
                     ),
@@ -531,9 +531,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 children: [
                   Icon(Icons.auto_awesome, size: 20, color: colors.accentGlow),
                   const SizedBox(width: 6),
-                  Text('为你推荐', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(tr(context, '为你推荐'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                   const Spacer(),
-                  Text('基于你的信息', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                  Text(tr(context, '基于你的信息'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -550,7 +550,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               child: ElevatedButton(
                 onPressed: _save,
                 style: ElevatedButton.styleFrom(backgroundColor: colors.accentGlow, foregroundColor: Theme.of(context).colorScheme.onPrimary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                child: Text(isEditing ? '保存修改' : '创建计划', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                child: Text(isEditing ? tr(context, '保存修改') : tr(context, '创建计划'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
               ),
             ),
           ],
@@ -563,7 +563,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
     final plan = rec.plan;
     final difficultyLabel = kDifficultyLabelsZh[plan.difficulty] ?? plan.difficulty;
     final typeLabel = kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType;
-    final frequencyLabel = '${plan.recommendedFrequency}天/周';
+    final frequencyLabel = tr(context, '${plan.recommendedFrequency}天/周');
     return CardWidget(
       onTap: () => context.push('/plan-library/detail/${plan.id}'),
       child: Row(
@@ -593,7 +593,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               children: [
                 Text(plan.name, style: TextStyle(color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
-                Text('$typeLabel · $frequencyLabel · $difficultyLabel · ${plan.totalWeeks}周', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                Text(tr(context, '$typeLabel · $frequencyLabel · $difficultyLabel · ${plan.totalWeeks}周'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
                 const SizedBox(height: 2),
                 Text(plan.description, style: TextStyle(color: colors.textSecondary, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
                 if (rec.reasons.isNotEmpty) ...[
@@ -623,10 +623,10 @@ class _AddPlanPageState extends State<AddPlanPage> {
   }
 
   Widget _buildGenderSelector(LiftTrackColors colors) {
-    const options = <Map<String, String>>[
-      {'value': 'all', 'label': '全部人群'},
-      {'value': 'male', 'label': '男性'},
-      {'value': 'female', 'label': '女性'},
+    final options = <Map<String, String>>[
+      {'value': 'all', 'label': tr(context, '全部人群')},
+      {'value': 'male', 'label': tr(context, '男性')},
+      {'value': 'female', 'label': tr(context, '女性')},
     ];
     return Wrap(
       spacing: 8,
@@ -675,13 +675,13 @@ class _AddPlanPageState extends State<AddPlanPage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '根据您的历史组间休息偏好, 推荐休息时间 $recommended 秒',
+              tr(context, '根据您的历史组间休息偏好, 推荐休息时间 $recommended 秒'),
               style: TextStyle(color: colors.textSecondary, fontSize: 13),
             ),
           ),
           TextButton(
             onPressed: () => _restTimeController.text = recommended.toString(),
-            child: const Text('应用'),
+            child: Text(tr(context, '应用')),
           ),
         ],
       ),
@@ -745,7 +745,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   decoration: InputDecoration(
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    hintText: isRest ? '休息日名称' : '训练日名称',
+                    hintText: isRest ? tr(context, '休息日名称') : tr(context, '训练日名称'),
                   ),
                   onChanged: (val) => _days[dayIndex]['label'] = val,
                 ),
@@ -772,7 +772,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '休息日 — 充分恢复，准备下一次训练',
+                      tr(context, '休息日 — 充分恢复，准备下一次训练'),
                       style: TextStyle(color: colors.infoColor, fontSize: 12),
                     ),
                   ),
@@ -812,7 +812,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                     if (hasPerSet) ...[
                       Row(
                         children: [
-                          _buildMiniTag(colors, '共${ex['sets']}组 · 逐组设置'),
+                          _buildMiniTag(colors, tr(context, '共${ex['sets']}组 · 逐组设置')),
                           const Spacer(),
                           GestureDetector(
                             onTap: () => _removeExercise(dayIndex, exIdx),
@@ -821,17 +821,17 @@ class _AddPlanPageState extends State<AddPlanPage> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      ExerciseSetTable(setConfig: setConfig!),
+                      ExerciseSetTable(setConfig: setConfig),
                     ] else
                       Row(
                         children: [
-                          _buildMiniTag(colors, '${ex['sets']}组'),
+                          _buildMiniTag(colors, tr(context, '${ex['sets']}组')),
                           const SizedBox(width: 6),
-                          _buildMiniTag(colors, '${ex['reps']}次'),
+                          _buildMiniTag(colors, tr(context, '${ex['reps']}次')),
                           const SizedBox(width: 6),
                           _buildMiniTag(colors, '${weightStr}kg'),
                           const SizedBox(width: 6),
-                          _buildMiniTag(colors, '${ex['restTime']}秒'),
+                          _buildMiniTag(colors, tr(context, '${ex['restTime']}秒')),
                           const Spacer(),
                           GestureDetector(
                             onTap: () => _removeExercise(dayIndex, exIdx),
@@ -860,7 +860,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                   children: [
                     Icon(Icons.add, size: 16, color: colors.textMuted),
                     const SizedBox(width: 4),
-                    Text('添加动作', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                    Text(tr(context, '添加动作'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                   ],
                 ),
               ),

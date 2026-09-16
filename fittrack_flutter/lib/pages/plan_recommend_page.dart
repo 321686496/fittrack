@@ -9,6 +9,7 @@ import '../services/plan_recommendation_service.dart';
 import '../services/plan_unlock_service.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 class PlanRecommendPage extends StatefulWidget {
   final Map<String, dynamic> profileData;
   final VoidCallback onComplete;
@@ -60,7 +61,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
       for (final p in existingPlans) {
         if (p['status'] == 'active') {
           await Storage.updatePlanAsync(
-              p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+              p['id'] as String, {'status': 'paused', 'badge': tr(context, '已暂停')});
         }
       }
 
@@ -73,7 +74,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
     } catch (e) {
       debugPrint('采用推荐计划失败: $e');
       if (!mounted) return;
-      FitToast.error(context, '采用计划失败，请重试');
+      FitToast.error(context, tr(context, '采用计划失败，请重试'));
     }
   }
 
@@ -119,7 +120,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                           size: 20, color: colors.accentGlow),
                       const SizedBox(width: 8),
                       Text(
-                        '输入邀请码',
+                        tr(context, '输入邀请码'),
                         style: TextStyle(
                           color: colors.textPrimary,
                           fontSize: 17,
@@ -130,7 +131,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '输入好友的邀请码，激活后双方获得奖励',
+                    tr(context, '输入好友的邀请码，激活后双方获得奖励'),
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 13,
@@ -174,7 +175,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                               final code =
                                   controller.text.trim().toUpperCase();
                               if (code.isEmpty) {
-                                FitToast.info(ctx, '请输入邀请码');
+                                FitToast.info(ctx, tr(context, '请输入邀请码'));
                                 return;
                               }
                               setSheetState(() => activating = true);
@@ -187,23 +188,23 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                               bool success = false;
                               switch (result) {
                                 case InvitationResult.success:
-                                  msg = '激活成功！已获得 50 积分奖励';
+                                  msg = tr(context, '激活成功！已获得 50 积分奖励');
                                   success = true;
                                   break;
                                 case InvitationResult.invalidFormat:
-                                  msg = '格式错误：应为 FIT-INV-XXXXXX';
+                                  msg = tr(context, '格式错误：应为 FIT-INV-XXXXXX');
                                   break;
                                 case InvitationResult.invalidSignature:
-                                  msg = '邀请码无效，请检查后重试';
+                                  msg = tr(context, '邀请码无效，请检查后重试');
                                   break;
                                 case InvitationResult.selfInvite:
-                                  msg = '不能输入自己的邀请码哦';
+                                  msg = tr(context, '不能输入自己的邀请码哦');
                                   break;
                                 case InvitationResult.alreadyActivated:
-                                  msg = '你已激活过邀请码（一码一绑）';
+                                  msg = tr(context, '你已激活过邀请码（一码一绑）');
                                   break;
                                 case InvitationResult.mutualInvite:
-                                  msg = '你们已互相邀请过，不能重复绑定';
+                                  msg = tr(context, '你们已互相邀请过，不能重复绑定');
                                   break;
                               }
                               if (success) {
@@ -230,8 +231,8 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
-                          : const Text('立即激活',
-                              style: TextStyle(
+                          : Text(tr(context, '立即激活'),
+                              style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600)),
                     ),
@@ -260,7 +261,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '为你推荐',
+                    tr(context, '为你推荐'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 24,
@@ -269,7 +270,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '根据你的信息，我们为你精选了以下训练计划',
+                    tr(context, '根据你的信息，我们为你精选了以下训练计划'),
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 14,
@@ -285,7 +286,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(24),
                         child: Text(
-                          '计划库加载中，请稍后重试',
+                          tr(context, '计划库加载中，请稍后重试'),
                           style: TextStyle(
                             color: colors.textSecondary,
                             fontSize: 14,
@@ -326,7 +327,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                         ),
                       ),
                       child: Text(
-                        '自定义计划',
+                        tr(context, '自定义计划'),
                         style: TextStyle(
                           color: colors.accentGlow,
                           fontSize: 16,
@@ -342,7 +343,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                     icon: Icon(Icons.card_giftcard_outlined,
                         size: 16, color: colors.accentGlow),
                     label: Text(
-                      '我有邀请码',
+                      tr(context, '我有邀请码'),
                       style: TextStyle(
                         color: colors.accentGlow,
                         fontSize: 14,
@@ -353,7 +354,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                   TextButton(
                     onPressed: widget.onComplete,
                     child: Text(
-                      '跳过',
+                      tr(context, '跳过'),
                       style: TextStyle(
                         color: colors.textMuted,
                         fontSize: 15,
@@ -388,7 +389,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
     final typeLabel =
         kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType;
     final goalLabel = kGoalLabelsZh[plan.goal] ?? plan.goal;
-    final frequencyLabel = '${plan.recommendedFrequency}天/周';
+    final frequencyLabel = tr(context, '${plan.recommendedFrequency}天/周');
 
     // 按钮文案：精品未解锁 → "前往解锁"，否则 → "选择此计划"
     final isLocked =
@@ -419,7 +420,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    '推荐',
+                    tr(context, '推荐'),
                     style: TextStyle(
                       color: colors.accentGlow,
                       fontSize: 12,
@@ -448,8 +449,8 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                       const SizedBox(width: 4),
                       Text(
                         isLocked
-                            ? '精品 · 需${plan.pointsCost}积分解锁'
-                            : '精品 · 已解锁',
+                            ? tr(context, '精品 · 需${plan.pointsCost}积分解锁')
+                            : tr(context, '精品 · 已解锁'),
                         style: TextStyle(
                           color: colors.accentGlow,
                           fontSize: 11,
@@ -462,7 +463,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
               const Spacer(),
               if (matchPercent > 0)
                 Text(
-                  '匹配度 $matchPercent%',
+                  tr(context, '匹配度 $matchPercent%'),
                   style: TextStyle(
                     color: colors.textSecondary,
                     fontSize: 12,
@@ -501,9 +502,9 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
               _buildTag(colors, Icons.category_outlined, typeLabel),
               _buildTag(colors, Icons.repeat, frequencyLabel),
               _buildTag(colors, Icons.signal_cellular_alt, difficultyLabel),
-              _buildTag(colors, Icons.fitness_center, '$exerciseCount个动作'),
+              _buildTag(colors, Icons.fitness_center, tr(context, '$exerciseCount个动作')),
               _buildTag(
-                  colors, Icons.calendar_today, '${plan.totalWeeks}周'),
+                  colors, Icons.calendar_today, tr(context, '${plan.totalWeeks}周')),
             ],
           ),
           // Recommendation reasons (最多 3 条)
@@ -559,7 +560,7 @@ class _PlanRecommendPageState extends State<PlanRecommendPage> {
                 ),
               ),
               child: Text(
-                isLocked ? '前往解锁' : '选择此计划',
+                isLocked ? tr(context, '前往解锁') : tr(context, '选择此计划'),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,

@@ -6,6 +6,7 @@ import '../services/device_identity_service.dart';
 import 'database_helper.dart';
 import 'mock_data.dart';
 
+import '../l10n/i18n.dart';
 /// Storage with hybrid persistence:
 /// - Plans & Records: SQLite (via DatabaseHelper) �?结构化大数据
 /// - Settings / Stats / BodyData: SharedPreferences �?简单键值对
@@ -533,6 +534,7 @@ class Storage {
       'autoDarkMode': 'off', // off | system | timed
       'timedDarkTime': '18:00', // "HH:mm" 字符串
       'nightModePrompted': false,
+      'languageCode': 'system', // system | zh | en
       'lightThemeId': 'vitality-sport',
       'darkThemeId': 'iron-forge',
       'trainingTime': '',
@@ -1221,43 +1223,43 @@ class Storage {
     if (hasData()) return null;
 
     final demoPlan = addPlan({
-      'name': '三分化增肌计划',
-      'type': '三分化',
-      'frequency': '6天/周',
-      'difficulty': '进阶',
+      'name': trn('三分化增肌计划'),
+      'type': trn('三分化'),
+      'frequency': trn('6天/周'),
+      'difficulty': trn('进阶'),
       'totalWeeks': 8,
       'week': 4,
-      'badge': '进行中',
+      'badge': trn('进行中'),
       'days': [
         {
           'day': 1,
-          'label': '胸部 + 三头肌',
-          'muscle': '胸',
+          'label': trn('胸部 + 三头肌'),
+          'muscle': trn('胸'),
           'exercises': [
             {
               'id': 'e1',
-              'name': '杠铃卧推',
+              'name': trn('杠铃卧推'),
               'sets': 4,
               'reps': '8-12',
               'restTime': 90
             },
             {
               'id': 'e2',
-              'name': '哑铃飞鸟',
+              'name': trn('哑铃飞鸟'),
               'sets': 3,
               'reps': '12',
               'restTime': 60
             },
             {
               'id': 'e3',
-              'name': '上斜卧推',
+              'name': trn('上斜卧推'),
               'sets': 4,
               'reps': '8-12',
               'restTime': 90
             },
             {
               'id': 'e4',
-              'name': '绳索夹胸',
+              'name': trn('绳索夹胸'),
               'sets': 3,
               'reps': '15',
               'restTime': 60
@@ -1266,47 +1268,47 @@ class Storage {
         },
         {
           'day': 2,
-          'label': '背部 + 二头肌',
-          'muscle': '背',
+          'label': trn('背部 + 二头肌'),
+          'muscle': trn('背'),
           'exercises': [
             {
               'id': 'e5',
-              'name': '引体向上',
+              'name': trn('引体向上'),
               'sets': 4,
               'reps': '8-12',
               'restTime': 90
             },
             {
               'id': 'e6',
-              'name': '杠铃划船',
+              'name': trn('杠铃划船'),
               'sets': 4,
               'reps': '8-12',
               'restTime': 90
             },
             {
               'id': 'e7',
-              'name': '高位下拉',
+              'name': trn('高位下拉'),
               'sets': 4,
               'reps': '12',
               'restTime': 75
             },
             {
               'id': 'e8',
-              'name': '坐姿划船',
+              'name': trn('坐姿划船'),
               'sets': 3,
               'reps': '12',
               'restTime': 60
             },
             {
               'id': 'e13',
-              'name': '哑铃弯举',
+              'name': trn('哑铃弯举'),
               'sets': 4,
               'reps': '10-12',
               'restTime': 60
             },
             {
               'id': 'e14',
-              'name': '锤式弯举',
+              'name': trn('锤式弯举'),
               'sets': 3,
               'reps': '12',
               'restTime': 60
@@ -1315,19 +1317,19 @@ class Storage {
         },
         {
           'day': 3,
-          'label': '腿部',
-          'muscle': '腿',
+          'label': trn('腿部'),
+          'muscle': trn('腿'),
           'exercises': [
             {
               'id': 'e9',
-              'name': '杠铃深蹲',
+              'name': trn('杠铃深蹲'),
               'sets': 5,
               'reps': '5-8',
               'restTime': 120
             },
             {
               'id': 'e10',
-              'name': '腿举',
+              'name': trn('腿举'),
               'sets': 4,
               'reps': '10-12',
               'restTime': 90
@@ -1336,33 +1338,33 @@ class Storage {
         },
         {
           'day': 4,
-          'label': '肩部 + 核心',
-          'muscle': '肩',
+          'label': trn('肩部 + 核心'),
+          'muscle': trn('肩'),
           'exercises': [
             {
               'id': 'e11',
-              'name': '哑铃推举',
+              'name': trn('哑铃推举'),
               'sets': 4,
               'reps': '8-12',
               'restTime': 90
             },
             {
               'id': 'e12',
-              'name': '侧平举',
+              'name': trn('侧平举'),
               'sets': 4,
               'reps': '12-15',
               'restTime': 60
             },
             {
               'id': 'e15',
-              'name': '平板支撑',
+              'name': trn('平板支撑'),
               'sets': 3,
-              'reps': '60秒',
+              'reps': trn('60秒'),
               'restTime': 45
             },
             {
               'id': 'e16',
-              'name': '卷腹',
+              'name': trn('卷腹'),
               'sets': 3,
               'reps': '20',
               'restTime': 45
@@ -1371,52 +1373,52 @@ class Storage {
         },
         {
           'day': 5,
-          'label': '胸部 + 背部',
-          'muscle': '胸/背',
+          'label': trn('胸部 + 背部'),
+          'muscle': trn('胸/背'),
           'exercises': <Map<String, dynamic>>[],
         },
         {
           'day': 6,
-          'label': '腿部 + 手臂',
-          'muscle': '腿/手臂',
+          'label': trn('腿部 + 手臂'),
+          'muscle': trn('腿/手臂'),
           'exercises': <Map<String, dynamic>>[],
         },
       ],
     });
 
     addPlan({
-      'name': '新手入门计划',
-      'type': '全身训练',
-      'frequency': '3天/周',
-      'difficulty': '入门',
+      'name': trn('新手入门计划'),
+      'type': trn('全身训练'),
+      'frequency': trn('3天/周'),
+      'difficulty': trn('入门'),
       'totalWeeks': 4,
       'week': 4,
       'status': 'done',
       'progress': 100,
-      'badge': '已完成',
+      'badge': trn('已完成'),
       'days': [
         {
           'day': 1,
-          'label': '全身训练A',
-          'muscle': '全身',
+          'label': trn('全身训练A'),
+          'muscle': trn('全身'),
           'exercises': [
             {
               'id': 'e9',
-              'name': '杠铃深蹲',
+              'name': trn('杠铃深蹲'),
               'sets': 3,
               'reps': '10-12',
               'restTime': 90
             },
             {
               'id': 'e1',
-              'name': '杠铃卧推',
+              'name': trn('杠铃卧推'),
               'sets': 3,
               'reps': '10-12',
               'restTime': 90
             },
             {
               'id': 'e5',
-              'name': '引体向上',
+              'name': trn('引体向上'),
               'sets': 3,
               'reps': '8-10',
               'restTime': 90
@@ -1425,26 +1427,26 @@ class Storage {
         },
         {
           'day': 2,
-          'label': '全身训练B',
-          'muscle': '全身',
+          'label': trn('全身训练B'),
+          'muscle': trn('全身'),
           'exercises': [
             {
               'id': 'e10',
-              'name': '腿举',
+              'name': trn('腿举'),
               'sets': 3,
               'reps': '10-12',
               'restTime': 90
             },
             {
               'id': 'e6',
-              'name': '杠铃划船',
+              'name': trn('杠铃划船'),
               'sets': 3,
               'reps': '10-12',
               'restTime': 90
             },
             {
               'id': 'e11',
-              'name': '哑铃推举',
+              'name': trn('哑铃推举'),
               'sets': 3,
               'reps': '10-12',
               'restTime': 90
@@ -1453,28 +1455,28 @@ class Storage {
         },
         {
           'day': 3,
-          'label': '全身训练C',
-          'muscle': '全身',
+          'label': trn('全身训练C'),
+          'muscle': trn('全身'),
           'exercises': [
             {
               'id': 'e2',
-              'name': '哑铃飞鸟',
+              'name': trn('哑铃飞鸟'),
               'sets': 3,
               'reps': '12',
               'restTime': 60
             },
             {
               'id': 'e7',
-              'name': '高位下拉',
+              'name': trn('高位下拉'),
               'sets': 3,
               'reps': '12',
               'restTime': 75
             },
             {
               'id': 'e15',
-              'name': '平板支撑',
+              'name': trn('平板支撑'),
               'sets': 3,
-              'reps': '30秒',
+              'reps': trn('30秒'),
               'restTime': 30
             },
           ],

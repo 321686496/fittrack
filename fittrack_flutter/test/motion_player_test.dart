@@ -1,19 +1,16 @@
 // test/motion_player_test.dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/animation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:fittrack_flutter/widgets/opponent/opponent_skin_config.dart';
-import 'package:fittrack_flutter/widgets/opponent/motion/motion_player.dart';
 
 void main() {
   group('MotionSpec.interpolate', () {
     final spec = MotionSpec(
       frames: [
-        MotionFrame(t: 0.0, armAngle: 0, bodyOffset: Offset(0, 0)),
-        MotionFrame(t: 0.5, armAngle: 90, bodyOffset: Offset(0, -5)),
-        MotionFrame(t: 1.0, armAngle: 0, bodyOffset: Offset(0, 0)),
+        const MotionFrame(t: 0.0, armAngle: 0, bodyOffset: Offset(0, 0)),
+        const MotionFrame(t: 0.5, armAngle: 90, bodyOffset: Offset(0, -5)),
+        const MotionFrame(t: 1.0, armAngle: 0, bodyOffset: Offset(0, 0)),
       ],
-      duration: Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1000),
     );
 
     test('progress=0 returns first frame values', () {
@@ -44,8 +41,8 @@ void main() {
 
     test('single frame spec returns that frame', () {
       final single = MotionSpec(
-        frames: [MotionFrame(t: 0, armAngle: 42)],
-        duration: Duration(milliseconds: 500),
+        frames: [const MotionFrame(t: 0, armAngle: 42)],
+        duration: const Duration(milliseconds: 500),
       );
       expect(single.interpolate(0.5).armAngle, 42);
     });

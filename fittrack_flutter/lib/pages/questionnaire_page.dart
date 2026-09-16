@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../services/daily_reminder_service.dart';
 import '../services/user_profile_generator.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 class QuestionnairePage extends StatefulWidget {
   final void Function(Map<String, dynamic> profileData) onComplete;
   final VoidCallback onSkip;
@@ -42,39 +43,39 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   final TextEditingController _restingHeartRateController = TextEditingController();
 
   final List<Map<String, dynamic>> _genderOptions = [
-    {'value': '男', 'icon': Icons.male, 'label': '男'},
-    {'value': '女', 'icon': Icons.female, 'label': '女'},
+    {'value': trn( '男'), 'icon': Icons.male, 'label': trn( '男')},
+    {'value': trn( '女'), 'icon': Icons.female, 'label': trn( '女')},
   ];
 
   final List<Map<String, dynamic>> _goalOptions = [
-    {'value': '增肌', 'icon': Icons.fitness_center, 'label': '增肌'},
-    {'value': '减脂', 'icon': Icons.local_fire_department, 'label': '减脂'},
-    {'value': '塑形', 'icon': Icons.accessibility_new, 'label': '塑形'},
-    {'value': '保持健康', 'icon': Icons.favorite, 'label': '保持健康'},
+    {'value': trn( '增肌'), 'icon': Icons.fitness_center, 'label': trn( '增肌')},
+    {'value': trn( '减脂'), 'icon': Icons.local_fire_department, 'label': trn( '减脂')},
+    {'value': trn( '塑形'), 'icon': Icons.accessibility_new, 'label': trn( '塑形')},
+    {'value': trn( '保持健康'), 'icon': Icons.favorite, 'label': trn( '保持健康')},
   ];
 
   final List<Map<String, dynamic>> _levelOptions = [
-    {'value': '新手', 'icon': Icons.looks_one, 'label': '新手'},
-    {'value': '初级', 'icon': Icons.looks_two, 'label': '初级'},
-    {'value': '中级', 'icon': Icons.looks_3, 'label': '中级'},
-    {'value': '高级', 'icon': Icons.looks_4, 'label': '高级'},
+    {'value': trn( '新手'), 'icon': Icons.looks_one, 'label': trn( '新手')},
+    {'value': trn( '初级'), 'icon': Icons.looks_two, 'label': trn( '初级')},
+    {'value': trn( '中级'), 'icon': Icons.looks_3, 'label': trn( '中级')},
+    {'value': trn( '高级'), 'icon': Icons.looks_4, 'label': trn( '高级')},
   ];
 
   final List<Map<String, dynamic>> _frequencyOptions = [
-    {'value': '2天/周', 'label': '2天/周'},
-    {'value': '3天/周', 'label': '3天/周'},
-    {'value': '4天/周', 'label': '4天/周'},
-    {'value': '5天/周', 'label': '5天/周'},
-    {'value': '6天/周', 'label': '6天/周'},
+    {'value': trn( '2天/周'), 'label': trn( '2天/周')},
+    {'value': trn( '3天/周'), 'label': trn( '3天/周')},
+    {'value': trn( '4天/周'), 'label': trn( '4天/周')},
+    {'value': trn( '5天/周'), 'label': trn( '5天/周')},
+    {'value': trn( '6天/周'), 'label': trn( '6天/周')},
   ];
 
   final List<Map<String, String>> _channelOptions = [
-    {'label': '应用商店搜索', 'value': 'store'},
-    {'label': '小红书', 'value': 'xiaohongshu'},
-    {'label': '抖音', 'value': 'douyin'},
-    {'label': '朋友推荐', 'value': 'friend'},
-    {'label': '健身房', 'value': 'gym'},
-    {'label': '其他', 'value': 'other'},
+    {'label': trn( '应用商店搜索'), 'value': 'store'},
+    {'label': trn( '小红书'), 'value': 'xiaohongshu'},
+    {'label': trn( '抖音'), 'value': 'douyin'},
+    {'label': trn( '朋友推荐'), 'value': 'friend'},
+    {'label': trn( '健身房'), 'value': 'gym'},
+    {'label': trn( '其他'), 'value': 'other'},
   ];
 
   bool get _canProceed {
@@ -231,7 +232,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       if (thighCircumference != null) bodyData['thighCircumference'] = thighCircumference;
       if (targetWeight != null) bodyData['targetWeight'] = targetWeight;
       if (restingHeartRate != null) bodyData['restingHeartRate'] = restingHeartRate;
-      bodyData['lastUpdate'] = '刚刚';
+      bodyData['lastUpdate'] = tr(context, '刚刚');
       Storage.saveBodyData(bodyData);
     }
 
@@ -291,7 +292,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                   TextButton(
                     onPressed: widget.onSkip,
                     child: Text(
-                      '跳过',
+                      tr(context, '跳过'),
                       style: TextStyle(
                         color: colors.textSecondary,
                         fontSize: 15,
@@ -336,7 +337,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                     ),
                   ),
                   child: Text(
-                    _currentStep < _totalSteps - 1 ? '下一步' : '完成',
+                    _currentStep < _totalSteps - 1 ? tr(context, '下一步') : tr(context, '完成'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -356,28 +357,28 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       case 0:
         return _buildSelectionStep(
           colors: colors,
-          question: '你的性别是？',
+          question: tr(context, '你的性别是？'),
           options: _genderOptions,
           selectedValue: _gender,
         );
       case 1:
         return _buildSelectionStep(
           colors: colors,
-          question: '你的健身目标是什么？',
+          question: tr(context, '你的健身目标是什么？'),
           options: _goalOptions,
           selectedValue: _fitnessGoal,
         );
       case 2:
         return _buildSelectionStep(
           colors: colors,
-          question: '你的健身水平如何？',
+          question: tr(context, '你的健身水平如何？'),
           options: _levelOptions,
           selectedValue: _fitnessLevel,
         );
       case 3:
         return _buildSelectionStep(
           colors: colors,
-          question: '你计划每周训练几天？',
+          question: tr(context, '你计划每周训练几天？'),
           options: _frequencyOptions,
           selectedValue: _trainingFrequency,
         );
@@ -474,7 +475,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       children: [
         const SizedBox(height: 20),
         Text(
-          '你的身体数据',
+          tr(context, '你的身体数据'),
           style: TextStyle(
             color: colors.textPrimary,
             fontSize: 22,
@@ -483,7 +484,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         ),
         const SizedBox(height: 8),
         Text(
-          '用于计算BMI和个性化推荐',
+          tr(context, '用于计算BMI和个性化推荐'),
           style: TextStyle(
             color: colors.textSecondary,
             fontSize: 14,
@@ -494,8 +495,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
           controller: _heightController,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            labelText: '身高 (cm)',
-            hintText: '例如：175',
+            labelText: tr(context, '身高 (cm)'),
+            hintText: tr(context, '例如：175'),
             suffixText: 'cm',
             suffixStyle: TextStyle(
               color: colors.textSecondary,
@@ -509,8 +510,8 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
           controller: _weightController,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            labelText: '体重 (kg)',
-            hintText: '例如：72.5',
+            labelText: tr(context, '体重 (kg)'),
+            hintText: tr(context, '例如：72.5'),
             suffixText: 'kg',
             suffixStyle: TextStyle(
               color: colors.textSecondary,
@@ -538,7 +539,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'BMI 指数',
+                      tr(context, 'BMI 指数'),
                       style: TextStyle(
                         color: colors.textSecondary,
                         fontSize: 12,
@@ -584,14 +585,14 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
   Widget _buildBodyDetailsStep(LiftTrackColors colors) {
     // 字段配置：[label, controller, hintText]
     final fields = <List<dynamic>>[
-      ['体脂率 (%)', _bodyFatController, '5 - 50'],
-      ['胸围 (cm)', _chestController, '50 - 150'],
-      ['腰围 (cm)', _waistController, '40 - 130'],
-      ['臀围 (cm)', _hipController, '50 - 150'],
-      ['上臂围 (cm)', _armCircumferenceController, '15 - 60'],
-      ['大腿围 (cm)', _thighCircumferenceController, '30 - 80'],
-      ['目标体重 (kg)', _targetWeightController, '30 - 200'],
-      ['静息心率 (bpm)', _restingHeartRateController, '40 - 120'],
+      [tr(context, '体脂率 (%)'), _bodyFatController, '5 - 50'],
+      [tr(context, '胸围 (cm)'), _chestController, '50 - 150'],
+      [tr(context, '腰围 (cm)'), _waistController, '40 - 130'],
+      [tr(context, '臀围 (cm)'), _hipController, '50 - 150'],
+      [tr(context, '上臂围 (cm)'), _armCircumferenceController, '15 - 60'],
+      [tr(context, '大腿围 (cm)'), _thighCircumferenceController, '30 - 80'],
+      [tr(context, '目标体重 (kg)'), _targetWeightController, '30 - 200'],
+      [tr(context, '静息心率 (bpm)'), _restingHeartRateController, '40 - 120'],
     ];
 
     return Column(
@@ -599,7 +600,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       children: [
         const SizedBox(height: 20),
         Text(
-          '更多身体数据',
+          tr(context, '更多身体数据'),
           style: TextStyle(
             color: colors.textPrimary,
             fontSize: 22,
@@ -608,7 +609,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         ),
         const SizedBox(height: 8),
         Text(
-          '可选填写，用于更精准的训练推荐',
+          tr(context, '可选填写，用于更精准的训练推荐'),
           style: TextStyle(
             color: colors.textSecondary,
             fontSize: 14,
@@ -641,7 +642,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                '以上字段均为可选，可直接点击"下一步"跳过',
+                tr(context, '以上字段均为可选，可直接点击"下一步"跳过'),
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 12,
@@ -660,21 +661,21 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
     if (height == null || weight == null || height <= 0) return '';
     final heightM = height / 100;
     final bmi = weight / (heightM * heightM);
-    if (bmi < 18.5) return '偏瘦';
-    if (bmi < 24) return '正常';
-    if (bmi < 28) return '偏胖';
-    return '肥胖';
+    if (bmi < 18.5) return tr(context, '偏瘦');
+    if (bmi < 24) return tr(context, '正常');
+    if (bmi < 28) return tr(context, '偏胖');
+    return tr(context, '肥胖');
   }
 
   Widget _buildTrainingTimeStep(LiftTrackColors colors) {
     // 自定义时间段选项
     final timeSlots = [
-      {'label': '清晨', 'time': '06:00', 'icon': Icons.wb_sunny_outlined, 'desc': '06:00 - 08:00'},
-      {'label': '上午', 'time': '09:00', 'icon': Icons.wb_sunny, 'desc': '09:00 - 11:00'},
-      {'label': '中午', 'time': '12:00', 'icon': Icons.light_mode_outlined, 'desc': '12:00 - 14:00'},
-      {'label': '下午', 'time': '15:00', 'icon': Icons.wb_twilight, 'desc': '15:00 - 17:00'},
-      {'label': '傍晚', 'time': '18:00', 'icon': Icons.brightness_3_outlined, 'desc': '18:00 - 20:00'},
-      {'label': '夜间', 'time': '20:00', 'icon': Icons.nights_stay_outlined, 'desc': '20:00 - 22:00'},
+      {'label': tr(context, '清晨'), 'time': '06:00', 'icon': Icons.wb_sunny_outlined, 'desc': '06:00 - 08:00'},
+      {'label': tr(context, '上午'), 'time': '09:00', 'icon': Icons.wb_sunny, 'desc': '09:00 - 11:00'},
+      {'label': tr(context, '中午'), 'time': '12:00', 'icon': Icons.light_mode_outlined, 'desc': '12:00 - 14:00'},
+      {'label': tr(context, '下午'), 'time': '15:00', 'icon': Icons.wb_twilight, 'desc': '15:00 - 17:00'},
+      {'label': tr(context, '傍晚'), 'time': '18:00', 'icon': Icons.brightness_3_outlined, 'desc': '18:00 - 20:00'},
+      {'label': tr(context, '夜间'), 'time': '20:00', 'icon': Icons.nights_stay_outlined, 'desc': '20:00 - 22:00'},
     ];
 
     return Column(
@@ -682,7 +683,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       children: [
         const SizedBox(height: 20),
         Text(
-          '你想要什么时间训练？',
+          tr(context, '你想要什么时间训练？'),
           style: TextStyle(
             color: colors.textPrimary,
             fontSize: 22,
@@ -691,7 +692,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         ),
         const SizedBox(height: 8),
         Text(
-          '设置后我们会在这个时间提醒你开始训练',
+          tr(context, '设置后我们会在这个时间提醒你开始训练'),
           style: TextStyle(
             color: colors.textSecondary,
             fontSize: 14,
@@ -769,7 +770,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '将在每天 $_trainingTime 提醒你训练',
+                    tr(context, '将在每天 $_trainingTime 提醒你训练'),
                     style: TextStyle(color: colors.textSecondary, fontSize: 13),
                   ),
                 ),
@@ -782,7 +783,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
             child: TextButton(
               onPressed: () => _nextStep(),
               child: Text(
-                '跳过（可在个人中心设置）',
+                tr(context, '跳过（可在个人中心设置）'),
                 style: TextStyle(color: colors.textMuted, fontSize: 13),
               ),
             ),
@@ -797,7 +798,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
       children: [
         const SizedBox(height: 20),
         Text(
-          '你从哪里找到 LiftTrack？',
+          tr(context, '你从哪里找到 LiftTrack？'),
           style: TextStyle(
             color: colors.textPrimary,
             fontSize: 22,
@@ -806,7 +807,7 @@ class _QuestionnairePageState extends State<QuestionnairePage> {
         ),
         const SizedBox(height: 8),
         Text(
-          '帮助我们了解用户来源（可选）',
+          tr(context, '帮助我们了解用户来源（可选）'),
           style: TextStyle(
             color: colors.textSecondary,
             fontSize: 14,

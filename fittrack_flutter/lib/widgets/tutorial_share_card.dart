@@ -10,6 +10,7 @@ import 'poster_capture_helper.dart';
 import 'poster_theme.dart';
 import 'tutorial_poster.dart';
 
+import '../l10n/i18n.dart';
 /// v1 教学分享卡片 —— 底部弹层
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md §E2-3.4
@@ -85,7 +86,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
               Icon(Icons.share_outlined, size: 18, color: colors.accentGlow),
               const SizedBox(width: 6),
               Text(
-                '分享动作教学',
+                tr(context, '分享动作教学'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -110,7 +111,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
                 child: OutlinedButton.icon(
                   onPressed: () => _copyText(t),
                   icon: const Icon(Icons.copy, size: 18),
-                  label: const Text('复制文本'),
+                  label: Text(tr(context, '复制文本')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.accentGlow,
                     side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -126,7 +127,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
                 child: ElevatedButton.icon(
                   onPressed: _sharing ? null : () => _sharePoster(t),
                   icon: const Icon(Icons.share, size: 18),
-                  label: const Text('立即分享'),
+                  label: Text(tr(context, '立即分享')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -214,7 +215,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${t.difficulty.label} · ${t.equipment ?? "无器械"} · ${t.coachName}',
+            tr(context, '${t.difficulty.label} · ${t.equipment ?? "无器械"} · ${t.coachName}'),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(color: pc.textMuted, fontSize: 11),
@@ -264,7 +265,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '输入邀请码，双方得福利',
+                      tr(context, '输入邀请码，双方得福利'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: pc.textMuted, fontSize: 11),
@@ -387,7 +388,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
       ),
       child: Text(
         '$num',
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 8,
           fontWeight: FontWeight.w800,
@@ -401,18 +402,13 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
 
   String _buildShareText(Tutorial t) {
     final points = t.keyPoints.take(3).map((p) => '• $p').join('\n');
-    return '【LiftTrack · ${t.name}】\n'
-        '${t.primaryMuscle.label} · ${t.difficulty.label} · ${t.coachName}\n\n'
-        '动作要点：\n$points\n\n'
-        '输入我的邀请码 $_inviteCode，咱俩都得福利～\n'
-        '一键激活：fittrack://invite?code=$_inviteCode\n'
-        '（邀请码位于 LiftTrack → 设置 → 邀请有礼）';
+    return '${tr(context, '【LiftTrack · ${t.name}】\n')}${t.primaryMuscle.label} · ${t.difficulty.label} · ${t.coachName}\n\n${tr(context, '动作要点：\n$points\n\n')}${tr(context, '输入我的邀请码 $_inviteCode，咱俩都得福利～\n')}${tr(context, '一键激活：fittrack://invite?code=$_inviteCode\n')}${tr(context, '（邀请码位于 LiftTrack → 设置 → 邀请有礼）')}';
   }
 
   void _copyText(Tutorial t) {
     final text = _buildShareText(t);
     Clipboard.setData(ClipboardData(text: text));
-    FitToast.success(context, '已复制到剪贴板');
+    FitToast.success(context, tr(context, '已复制到剪贴板'));
   }
 
   /// 海报分享：复用 [PosterCaptureHelper.captureAndPreview] 的统一离屏渲染
@@ -433,7 +429,7 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
           steps: _steps,
         ),
         posterWidth: TutorialPoster.posterWidth,
-        title: '动作分享海报',
+        title: tr(context, '动作分享海报'),
         fileNamePrefix: 'fittrack_tutorial',
       );
     } finally {
@@ -446,14 +442,14 @@ class _TutorialShareCardSheetState extends State<TutorialShareCardSheet> {
   /// 按动作名从 MockData 匹配该教程对应的训练步骤（title/desc/image）
   List<Map<String, dynamic>> _resolveSteps(Tutorial t) {
     final name = t.name.trim();
-    if (name.isEmpty) return const [];
+    if (name.isEmpty) return [];
     for (final ex in MockData.exercises) {
       if ((ex['name'] as String?) == name) {
         final id = ex['id'] as String;
-        return MockData.exerciseSteps[id] ?? const [];
+        return MockData.exerciseSteps[id] ?? [];
       }
     }
-    return const [];
+    return [];
   }
 
   LiftTrackColors get colors => Theme.of(context).extension<LiftTrackColors>()!;

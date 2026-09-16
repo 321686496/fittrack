@@ -9,6 +9,7 @@ import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class PlanWeightConfirmPage extends StatefulWidget {
   final SystemPlan plan;
   const PlanWeightConfirmPage({super.key, required this.plan});
@@ -73,7 +74,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
       }
     }
     if (firstEmptyId != null) {
-      FitToast.error(context, '请为每个动作填写有效重量');
+      FitToast.error(context, tr(context, '请为每个动作填写有效重量'));
       _focusId = firstEmptyId;
       setState(() {});
       return;
@@ -91,7 +92,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '确认建议重量',
+            title: tr(context, '确认建议重量'),
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -112,7 +113,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '未检测到你的体重信息，按 65kg 估算，可修改下方重量',
+                            tr(context, '未检测到你的体重信息，按 65kg 估算，可修改下方重量'),
                             style: TextStyle(color: ft.warningColor, fontSize: 13),
                           ),
                         ),
@@ -120,7 +121,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
                     ),
                   ),
                 Text(
-                  '${widget.plan.name} · ${widget.plan.days.length} 个训练日',
+                  tr(context, '${widget.plan.name} · ${widget.plan.days.length} 个训练日'),
                   style: TextStyle(
                     color: ft.textSecondary,
                     fontSize: 13,
@@ -150,7 +151,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '第 ${day.day} 天 · ${day.label}',
+            tr(context, '第 ${day.day} 天 · ${day.label}'),
             style: TextStyle(
               color: ft.textPrimary,
               fontSize: 15,
@@ -188,7 +189,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${ex.sets} 组 × ${ex.reps} 次',
+                  tr(context, '${ex.sets} 组 × ${ex.reps} 次'),
                   style: TextStyle(color: ft.textSecondary, fontSize: 12),
                 ),
               ],
@@ -202,7 +203,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '自重',
+                tr(context, '自重'),
                 style: TextStyle(color: ft.textSecondary, fontSize: 12),
               ),
             )
@@ -226,7 +227,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
                       suffixText: 'kg',
                       suffixStyle:
                           TextStyle(color: ft.textSecondary, fontSize: 12),
-                      hintText: '重量',
+                      hintText: tr(context, '重量'),
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 10),
                       border: OutlineInputBorder(
@@ -245,7 +246,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    sug?.source == WeightSource.history ? '历史记录' : '估算',
+                    sug?.source == WeightSource.history ? tr(context, '历史记录') : tr(context, '估算'),
                     style: TextStyle(
                       color: sug?.source == WeightSource.history
                           ? ft.accentSecondary
@@ -287,7 +288,7 @@ class _PlanWeightConfirmPageState extends State<PlanWeightConfirmPage> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            child: const Text('确认并使用计划'),
+            child: Text(tr(context, '确认并使用计划')),
           ),
         ),
       ),

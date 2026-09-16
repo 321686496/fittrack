@@ -5,6 +5,7 @@ import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class AchievementPage extends StatefulWidget {
   const AchievementPage({super.key});
 
@@ -46,14 +47,14 @@ class _AchievementPageState extends State<AchievementPage> {
   }
 
   String _categoryLabel(String cat) {
-    const map = {
-      'streak': '连续训练',
-      'weight': '重量里程碑',
-      'duration': '时长里程碑',
-      'month': '月度坚持',
-      'explore': '动作探索',
-      'plan': '计划完成',
-      'share': '分享成就',
+    final map = {
+      'streak': tr(context, '连续训练'),
+      'weight': tr(context, '重量里程碑'),
+      'duration': tr(context, '时长里程碑'),
+      'month': tr(context, '月度坚持'),
+      'explore': tr(context, '动作探索'),
+      'plan': tr(context, '计划完成'),
+      'share': tr(context, '分享成就'),
     };
     return map[cat] ?? cat;
   }
@@ -63,18 +64,18 @@ class _AchievementPageState extends State<AchievementPage> {
   String _formatRelativeTime(int ts) {
     final now = DateTime.now().millisecondsSinceEpoch;
     final diff = now - ts;
-    if (diff < 0) return '刚刚';
+    if (diff < 0) return tr(context, '刚刚');
     final minutes = diff ~/ 60000;
-    if (minutes < 1) return '刚刚';
-    if (minutes < 60) return '$minutes 分钟前';
+    if (minutes < 1) return tr(context, '刚刚');
+    if (minutes < 60) return tr(context, '$minutes 分钟前');
     final hours = minutes ~/ 60;
-    if (hours < 24) return '$hours 小时前';
+    if (hours < 24) return tr(context, '$hours 小时前');
     final days = hours ~/ 24;
-    if (days < 30) return '$days 天前';
+    if (days < 30) return tr(context, '$days 天前');
     final months = days ~/ 30;
-    if (months < 12) return '$months 个月前';
+    if (months < 12) return tr(context, '$months 个月前');
     final years = months ~/ 12;
-    return '$years 年前';
+    return tr(context, '$years 年前');
   }
 
   /// 组内排序：已解锁排前（按 unlockedAt 倒序），未解锁排后（保持原始顺序）
@@ -98,7 +99,7 @@ class _AchievementPageState extends State<AchievementPage> {
         body: Column(
           children: [
             PageHeader(
-              title: '成就墙',
+              title: tr(context, '成就墙'),
               isTabPage: false,
               onBack: () => context.pop(),
             ),
@@ -109,7 +110,7 @@ class _AchievementPageState extends State<AchievementPage> {
     }
 
     // 按 category 分组（保留原有顺序）
-    const categoryOrder = ['streak', 'weight', 'duration', 'month', 'explore', 'plan', 'share'];
+    final categoryOrder = ['streak', 'weight', 'duration', 'month', 'explore', 'plan', 'share'];
     final grouped = <String, List<Achievement>>{};
     for (final cat in categoryOrder) {
       final items = _all.where((a) => a.category == cat).toList();
@@ -125,7 +126,7 @@ class _AchievementPageState extends State<AchievementPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '成就墙',
+            title: tr(context, '成就墙'),
             isTabPage: false,
             onBack: () => context.pop(),
           ),
@@ -195,7 +196,7 @@ class _AchievementPageState extends State<AchievementPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('总进度',
+                Text(tr(context, '总进度'),
                     style: TextStyle(color: colors.textMuted, fontSize: 12)),
                 const SizedBox(height: 4),
                 Text('$unlocked / $total',
@@ -230,8 +231,8 @@ class _AchievementPageState extends State<AchievementPage> {
         context,
         title: a.title,
         content: a.unlocked
-            ? '${a.description}\n\n解锁于 ${a.unlockedAt != null ? _formatRelativeTime(a.unlockedAt!) : '已解锁'}'
-            : '未解锁\n\n解锁条件：${a.description}',
+            ? tr(context, '${a.description}\n\n解锁于 ${a.unlockedAt != null ? _formatRelativeTime(a.unlockedAt!) : '已解锁'}')
+            : tr(context, '未解锁\n\n解锁条件：${a.description}'),
         icon: _iconFor(a.icon),
         iconColor: a.unlocked ? colors.accentGlow : colors.textMuted,
       ),
@@ -323,13 +324,13 @@ class _AchievementPageState extends State<AchievementPage> {
   Widget? _buildPointsBadge(Achievement a) {
     if (a.canEarnPoints && a.pointsReward > 0) {
       return BadgeWidget(
-        text: '+${a.pointsReward}积分',
+        text: tr(context, '+${a.pointsReward}积分'),
         variant: BadgeVariant.purple,
       );
     }
     if (!a.canEarnPoints) {
-      return const BadgeWidget(
-        text: '纯荣誉',
+      return BadgeWidget(
+        text: tr(context, '纯荣誉'),
         variant: BadgeVariant.info,
       );
     }

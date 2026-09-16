@@ -11,6 +11,7 @@ import '../utils/platform_utils.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// v1 训练计划分享码页面
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md §E4
@@ -62,8 +63,8 @@ class _ShareCodePageState extends State<ShareCodePage> {
       body: Column(
         children: [
           PageHeader(
-            title: '计划分享',
-            subtitle: '生成分享码或导入好友的计划',
+            title: tr(context, '计划分享'),
+            subtitle: tr(context, '生成分享码或导入好友的计划'),
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -97,7 +98,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               Icon(Icons.qr_code, size: 20, color: colors.accentGlow),
               const SizedBox(width: 8),
               Text(
-                '生成分享码',
+                tr(context, '生成分享码'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -117,7 +118,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               child: ElevatedButton.icon(
                 onPressed: _selectedPlanId == null ? null : _generateCode,
                 icon: const Icon(Icons.qr_code_2, size: 18),
-                label: const Text('生成分享码'),
+                label: Text(tr(context, '生成分享码')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -147,7 +148,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
           Icon(Icons.inbox_outlined, size: 40, color: colors.textMuted),
           const SizedBox(height: 8),
           Text(
-            '暂无训练计划',
+            tr(context, '暂无训练计划'),
             style: TextStyle(color: colors.textMuted, fontSize: 13),
           ),
         ],
@@ -160,7 +161,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '选择要分享的计划',
+          tr(context, '选择要分享的计划'),
           style: TextStyle(color: colors.textSecondary, fontSize: 13),
         ),
         const SizedBox(height: 8),
@@ -202,7 +203,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    plan['name'] as String? ?? '未命名计划',
+                    plan['name'] as String? ?? tr(context, '未命名计划'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 14,
@@ -250,7 +251,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
 
     // 添加作者署名
     final settings = Storage.getSettings();
-    final author = settings['nickname'] as String? ?? '匿名用户';
+    final author = settings['nickname'] as String? ?? tr(context, '匿名用户');
     final withAuthor = ShareCodeService.instance.attachAuthorSignature(shareData, author);
 
     final shareString = ShareCodeService.instance.generateShareableString(withAuthor);
@@ -299,7 +300,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                     border: Border.all(color: colors.warningColor.withOpacity(0.25)),
                   ),
                   child: Text(
-                    '计划数据较大（${shareString.length}字符），无法生成二维码。\n请使用「复制分享串」或「分享」按钮发送。',
+                    tr(context, '计划数据较大（${shareString.length}字符），无法生成二维码。\n请使用「复制分享串」或「分享」按钮发送。'),
                     textAlign: TextAlign.center,
                     style: TextStyle(color: colors.warningColor, fontSize: 12, height: 1.5),
                   ),
@@ -307,7 +308,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
         ),
         const SizedBox(height: 6),
         Center(
-          child: Text('好友可扫码导入此计划', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+          child: Text(tr(context, '好友可扫码导入此计划'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
         ),
         const SizedBox(height: 12),
         Container(
@@ -321,7 +322,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
           child: Column(
             children: [
               Text(
-                '分享码',
+                tr(context, '分享码'),
                 style: TextStyle(color: colors.textSecondary, fontSize: 12),
               ),
               const SizedBox(height: 4),
@@ -340,7 +341,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
         ),
         const SizedBox(height: 12),
         Text(
-          '完整分享串（含计划数据，可复制发送）：',
+          tr(context, '完整分享串（含计划数据，可复制发送）：'),
           style: TextStyle(color: colors.textSecondary, fontSize: 12),
         ),
         const SizedBox(height: 6),
@@ -370,7 +371,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               child: OutlinedButton.icon(
                 onPressed: () => _copyString(colors),
                 icon: const Icon(Icons.copy, size: 18),
-                label: const Text('复制分享串'),
+                label: Text(tr(context, '复制分享串')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -386,7 +387,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               child: ElevatedButton.icon(
                 onPressed: () => _shareString(),
                 icon: const Icon(Icons.share, size: 18),
-                label: const Text('分享'),
+                label: Text(tr(context, '分享')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -405,7 +406,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
 
   void _copyString(LiftTrackColors colors) {
     Clipboard.setData(ClipboardData(text: _generatedShareString!));
-    FitToast.success(context, '分享串已复制');
+    FitToast.success(context, tr(context, '分享串已复制'));
   }
 
   Future<void> _shareString() async {
@@ -419,7 +420,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
       } catch (_) {
         if (!mounted) return;
         Clipboard.setData(ClipboardData(text: text));
-        FitToast.warning(context, '分享面板打开失败，分享串已复制到剪贴板');
+        FitToast.warning(context, tr(context, '分享面板打开失败，分享串已复制到剪贴板'));
       }
       return;
     }
@@ -438,13 +439,13 @@ class _ShareCodePageState extends State<ShareCodePage> {
       }
       await Share.share(
         text,
-        subject: 'LiftTrack 训练计划分享',
+        subject: tr(context, 'LiftTrack 训练计划分享'),
         sharePositionOrigin: origin,
       );
     } catch (_) {
       if (!mounted) return;
       Clipboard.setData(ClipboardData(text: text));
-      FitToast.warning(context, '分享失败，分享串已复制到剪贴板');
+      FitToast.warning(context, tr(context, '分享失败，分享串已复制到剪贴板'));
     }
   }
 
@@ -460,7 +461,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               Icon(Icons.download_for_offline, size: 20, color: colors.accentGlow),
               const SizedBox(width: 8),
               Text(
-                '导入计划',
+                tr(context, '导入计划'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -471,7 +472,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
           ),
           const SizedBox(height: 12),
           Text(
-            '粘贴好友发送的分享串（FITT-XXXXXX|... 格式）',
+            tr(context, '粘贴好友发送的分享串（FITT-XXXXXX|... 格式）'),
             style: TextStyle(color: colors.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 12),
@@ -479,7 +480,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
             controller: _importController,
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: '粘贴分享串...',
+              hintText: tr(context, '粘贴分享串...'),
               hintStyle: TextStyle(color: colors.textMuted),
               filled: true,
               fillColor: colors.bgSecondary,
@@ -500,7 +501,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               TextButton.icon(
                 onPressed: _pasteFromClipboard,
                 icon: const Icon(Icons.paste, size: 16),
-                label: const Text('从剪贴板粘贴'),
+                label: Text(tr(context, '从剪贴板粘贴')),
                 style: TextButton.styleFrom(
                   foregroundColor: colors.infoColor,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -509,7 +510,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
               TextButton.icon(
                 onPressed: () => context.push('/scan-import'),
                 icon: const Icon(Icons.qr_code_scanner, size: 16),
-                label: const Text('扫码导入'),
+                label: Text(tr(context, '扫码导入')),
                 style: TextButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -536,7 +537,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('导入计划', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  : Text(tr(context, '导入计划'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -554,7 +555,7 @@ class _ShareCodePageState extends State<ShareCodePage> {
   Future<void> _import() async {
     final input = _importController.text.trim();
     if (input.isEmpty) {
-      FitToast.info(context, '请粘贴分享串');
+      FitToast.info(context, tr(context, '请粘贴分享串'));
       return;
     }
 
@@ -574,15 +575,15 @@ class _ShareCodePageState extends State<ShareCodePage> {
           if (result.warning == ImportWarning.excessiveVolume) {
             _showWarningDialog(
               colors,
-              '训练量偏大',
-              '该计划单日训练组数超过50组，可能不适合新手。确定要导入吗？',
+              tr(context, '训练量偏大'),
+              tr(context, '该计划单日训练组数超过50组，可能不适合新手。确定要导入吗？'),
               () => _doImport(result.planData!, colors),
             );
           } else if (result.warning == ImportWarning.excessiveFrequency) {
             _showWarningDialog(
               colors,
-              '训练频率偏高',
-              '该计划每周训练超过7次，恢复压力较大。确定要导入吗？',
+              tr(context, '训练频率偏高'),
+              tr(context, '该计划每周训练超过7次，恢复压力较大。确定要导入吗？'),
               () => _doImport(result.planData!, colors),
             );
           } else {
@@ -592,21 +593,21 @@ class _ShareCodePageState extends State<ShareCodePage> {
           // 仅6位码，无计划内容
           FitToast.warning(
             context,
-            '分享码验证通过，但未包含计划数据。\n请让好友复制完整分享串发送。',
+            tr(context, '分享码验证通过，但未包含计划数据。\n请让好友复制完整分享串发送。'),
           );
         }
         break;
       case ShareCodeResult.invalidFormat:
-        FitToast.error(context, '格式错误：应以 FITT- 开头');
+        FitToast.error(context, tr(context, '格式错误：应以 FITT- 开头'));
         break;
       case ShareCodeResult.invalidSignature:
-        FitToast.error(context, '分享码签名无效，可能已损坏');
+        FitToast.error(context, tr(context, '分享码签名无效，可能已损坏'));
         break;
       case ShareCodeResult.payloadTooLarge:
-        FitToast.error(context, '计划数据过大');
+        FitToast.error(context, tr(context, '计划数据过大'));
         break;
       case ShareCodeResult.decodeError:
-        FitToast.error(context, '解析失败，分享串可能不完整');
+        FitToast.error(context, tr(context, '解析失败，分享串可能不完整'));
         break;
     }
   }
@@ -621,8 +622,8 @@ class _ShareCodePageState extends State<ShareCodePage> {
       context,
       title: title,
       content: content,
-      confirmText: '确定导入',
-      cancelText: '取消',
+      confirmText: tr(context, '确定导入'),
+      cancelText: tr(context, '取消'),
       confirmColor: colors.warningColor,
       icon: Icons.warning_amber_rounded,
     ).then((confirmed) {
@@ -648,8 +649,8 @@ class _ShareCodePageState extends State<ShareCodePage> {
     FitToast.success(
       context,
       author != null
-          ? '已导入「${planData['name'] ?? '计划'}」（来自$author）'
-          : '已导入「${planData['name'] ?? '计划'}」',
+          ? tr(context, '已导入「${planData['name'] ?? '计划'}」（来自$author）')
+          : tr(context, '已导入「${planData['name'] ?? '计划'}」'),
     );
 
     _importController.clear();

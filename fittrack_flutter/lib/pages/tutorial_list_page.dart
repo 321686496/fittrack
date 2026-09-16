@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/course_content.dart';
 import '../data/storage.dart';
@@ -10,6 +10,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
+import '../l10n/i18n.dart';
 /// 教学中心 Tab 页（v1.3 改版）
 ///
 /// 设计原则（依据 Issue 6）：
@@ -26,8 +27,8 @@ class TutorialListPage extends StatefulWidget {
 class _TutorialListPageState extends State<TutorialListPage>
     with TabRefreshMixin<TutorialListPage> {
   // build 内重计算缓存（在 _refreshCache 中预计算）
-  List<BannerItem> _bannersCache = const [];
-  List<Course> _recommendedCoursesCache = const [];
+  List<BannerItem> _bannersCache = [];
+  List<Course> _recommendedCoursesCache = [];
 
   @override
   int get tabIndex => 2;
@@ -67,7 +68,7 @@ class _TutorialListPageState extends State<TutorialListPage>
       body: Column(
         children: [
           PageHeader(
-            title: '教学中心',
+            title: tr(context, '教学中心'),
             isTabPage: true,
             onSearchTap: () => context.push('/tutorial-search'),
           ),
@@ -85,18 +86,18 @@ class _TutorialListPageState extends State<TutorialListPage>
                     const SizedBox(height: 16),
                     // ── 为你推荐横滑区段 ──────────────────────
                     if (banners.isNotEmpty) ...[
-                      const SectionHeader(title: '为你推荐'),
+                      SectionHeader(title: tr(context, '为你推荐')),
                       const SizedBox(height: 12),
                       _buildRecommendRow(colors, banners, recommendedCourses),
                       const SizedBox(height: 24),
                     ],
                     // ── 精选系统化课程 ─────────────────────────
-                    const SectionHeader(title: '精选系统化课程'),
+                    SectionHeader(title: tr(context, '精选系统化课程')),
                     const SizedBox(height: 12),
                     _buildRecommendedCourses(colors, recommendedCourses),
                     const SizedBox(height: 20),
                     // ── 推荐教学 ──────────────────────────────
-                    const SectionHeader(title: '推荐教学'),
+                    SectionHeader(title: tr(context, '推荐教学')),
                     const SizedBox(height: 12),
                     _buildRecommendedTutorials(colors),
                     const SizedBox(height: 24),
@@ -113,8 +114,8 @@ class _TutorialListPageState extends State<TutorialListPage>
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text('查看全部教学',
-                            style: TextStyle(
+                        child: Text(tr(context, '查看全部教学'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 15)),
                       ),
                     ),
@@ -240,7 +241,7 @@ class _TutorialListPageState extends State<TutorialListPage>
   Widget _buildRecommendedCourses(
       LiftTrackColors colors, List<Course> courses) {
     if (courses.isEmpty) {
-      return _buildEmpty(colors, '暂无推荐课程');
+      return _buildEmpty(colors, tr(context, '暂无推荐课程'));
     }
     return Column(
       children: courses.map((c) {
@@ -301,32 +302,32 @@ class _TutorialListPageState extends State<TutorialListPage>
         _buildTypeSubsection(
           colors,
           type: TutorialType.basic,
-          title: '基础教学',
-          subtitle: '免费开放 · 覆盖全肌群的基础动作',
+          title: tr(context, '基础教学'),
+          subtitle: tr(context, '免费开放 · 覆盖全肌群的基础动作'),
           take: 3,
         ),
         const SizedBox(height: 16),
         _buildTypeSubsection(
           colors,
           type: TutorialType.advanced,
-          title: '进阶教学',
-          subtitle: '邀请 1 人激活解锁 3 个进阶动作',
+          title: tr(context, '进阶教学'),
+          subtitle: tr(context, '邀请 1 人激活解锁 3 个进阶动作'),
           take: 2,
         ),
         const SizedBox(height: 16),
         _buildTypeSubsection(
           colors,
           type: TutorialType.topic,
-          title: '专题教学包',
-          subtitle: '累计邀请 3 人激活解锁完整分化指南',
+          title: tr(context, '专题教学包'),
+          subtitle: tr(context, '累计邀请 3 人激活解锁完整分化指南'),
           take: 2,
         ),
         const SizedBox(height: 16),
         _buildTypeSubsection(
           colors,
           type: TutorialType.master,
-          title: '高手教学',
-          subtitle: '累计邀请 5 人激活解锁高手级课程',
+          title: tr(context, '高手教学'),
+          subtitle: tr(context, '累计邀请 5 人激活解锁高手级课程'),
           take: 1,
         ),
       ],
@@ -384,7 +385,7 @@ class _TutorialListPageState extends State<TutorialListPage>
             style: TextStyle(color: colors.textMuted, fontSize: 11)),
         const SizedBox(height: 10),
         if (display.isEmpty)
-          _buildEmpty(colors, '暂无推荐$title')
+          _buildEmpty(colors, tr(context, '暂无推荐$title'))
         else
           Column(
             children: display
@@ -440,7 +441,7 @@ class _TutorialListPageState extends State<TutorialListPage>
                   Text(
                     unlocked
                         ? t.coachName
-                        : '${t.coachName} · 点击查看介绍',
+                        : tr(context, '${t.coachName} · 点击查看介绍'),
                     style: TextStyle(color: colors.textMuted, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

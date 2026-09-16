@@ -1,3 +1,4 @@
+import '../l10n/i18n.dart';
 /// v1 训练笔记数据模型
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md V1-11-01
@@ -23,7 +24,7 @@ class TrainingNote {
   final String moodSticker;
   final bool isFeatured;
 
-  const TrainingNote({
+  TrainingNote({
     required this.id,
     required this.createTime,
     this.recordId,
@@ -94,39 +95,40 @@ class TrainingNote {
   String get feelingLabel {
     switch (feeling) {
       case 1:
-        return '轻松';
+        return trn('轻松');
       case 2:
-        return '尚可';
+        return trn('尚可');
       case 3:
-        return '适中';
+        return trn('适中');
       case 4:
-        return '吃力';
+        return trn('吃力');
       case 5:
-        return '爆炸';
+        return trn('爆炸');
       default:
-        return '适中';
+        return trn('适中');
     }
   }
 
   /// 创建时间格式化
   String get dateLabel {
     final d = DateTime.fromMillisecondsSinceEpoch(createTime);
-    return '${d.year}年${d.month}月${d.day}日';
+    return trn('${d.year}年${d.month}月${d.day}日');
   }
 }
 
 /// 心情贴纸选项（使用文字标签，避免 emoji）
 class MoodStickers {
-  static const List<Map<String, String>> options = [
-    {'id': 'fire', 'label': '燃烧', 'icon': 'local_fire_department'},
-    {'id': 'bolt', 'label': '来电', 'icon': 'bolt'},
-    {'id': 'fitness', 'label': '充实', 'icon': 'fitness_center'},
-    {'id': 'spa', 'label': '舒缓', 'icon': 'spa'},
-    {'id': 'trending_up', 'label': '进步', 'icon': 'trending_up'},
-    {'id': 'star', 'label': '满意', 'icon': 'star'},
-    {'id': 'coffee', 'label': '疲惫', 'icon': 'coffee'},
-    {'id': 'sleep', 'label': '休息', 'icon': 'bedtime'},
-  ];
+  static List<Map<String, String>> get options => _optionsMemo.value;
+  static final LocaleMemo<List<Map<String, String>>> _optionsMemo = LocaleMemo(() => [
+    {'id': 'fire', 'label': trn('燃烧'), 'icon': 'local_fire_department'},
+    {'id': 'bolt', 'label': trn('来电'), 'icon': 'bolt'},
+    {'id': 'fitness', 'label': trn('充实'), 'icon': 'fitness_center'},
+    {'id': 'spa', 'label': trn('舒缓'), 'icon': 'spa'},
+    {'id': 'trending_up', 'label': trn('进步'), 'icon': 'trending_up'},
+    {'id': 'star', 'label': trn('满意'), 'icon': 'star'},
+    {'id': 'coffee', 'label': trn('疲惫'), 'icon': 'coffee'},
+    {'id': 'sleep', 'label': trn('休息'), 'icon': 'bedtime'},
+  ]);
 
   static String labelOf(String id) {
     return options.firstWhere(
@@ -145,18 +147,19 @@ class MoodStickers {
 
 /// 酸痛部位选项
 class SorePartOptions {
-  static const List<String> parts = [
-    '胸',
-    '背',
-    '肩',
-    '手臂',
-    '前臂',
-    '大腿',
-    '小腿',
-    '臀部',
-    '核心',
-    '腰',
-    '颈部',
-    '全身',
-  ];
+  static List<String> get parts => _partsMemo.value;
+  static final LocaleMemo<List<String>> _partsMemo = LocaleMemo(() => [
+    trn('胸'),
+    trn('背'),
+    trn('肩'),
+    trn('手臂'),
+    trn('前臂'),
+    trn('大腿'),
+    trn('小腿'),
+    trn('臀部'),
+    trn('核心'),
+    trn('腰'),
+    trn('颈部'),
+    trn('全身'),
+  ]);
 }

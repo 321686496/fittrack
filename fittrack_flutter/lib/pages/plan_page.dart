@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
-import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../services/plan_recommendation_service.dart';
@@ -17,160 +16,161 @@ import '../widgets/plan_poster_widget.dart';
 import '../widgets/poster_capture_helper.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
+import '../l10n/i18n.dart';
 // ============================================================
 // Quick setup templates for auto-generating plan days
 // ============================================================
-const Map<String, List<Map<String, dynamic>>> _quickSetup = {
+Map<String, List<Map<String, dynamic>>> _quickSetup = {
   '三分化': [
     {
-      'day': 1, 'label': '胸部 + 三头肌', 'muscle': '胸',
+      'day': 1, 'label': trn( '胸部 + 三头肌'), 'muscle': trn( '胸'),
       'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
-        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
+        {'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e3', 'name': trn( '上斜卧推'), 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
+        {'id': 'e4', 'name': trn( '绳索夹胸'), 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
       ],
     },
     {
-      'day': 2, 'label': '背部 + 二头肌', 'muscle': '背',
+      'day': 2, 'label': trn( '背部 + 二头肌'), 'muscle': trn( '背'),
       'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
-        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
-        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e5', 'name': trn( '引体向上'), 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': trn( '高位下拉'), 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e8', 'name': trn( '坐姿划船'), 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
+        {'id': 'e13', 'name': trn( '哑铃弯举'), 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
+        {'id': 'e14', 'name': trn( '锤式弯举'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
       ],
     },
     {
-      'day': 3, 'label': '腿部', 'muscle': '腿',
+      'day': 3, 'label': trn( '腿部'), 'muscle': trn( '腿'),
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+        {'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': trn( '腿举'), 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
       ],
     },
     {
-      'day': 4, 'label': '肩部 + 核心', 'muscle': '肩',
+      'day': 4, 'label': trn( '肩部 + 核心'), 'muscle': trn( '肩'),
       'exercises': [
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '60秒', 'weight': 0.0, 'restTime': 45},
-        {'id': 'e16', 'name': '卷腹', 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
+        {'id': 'e11', 'name': trn( '哑铃推举'), 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': trn( '侧平举'), 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
+        {'id': 'e15', 'name': trn( '平板支撑'), 'sets': 3, 'reps': trn( '60秒'), 'weight': 0.0, 'restTime': 45},
+        {'id': 'e16', 'name': trn( '卷腹'), 'sets': 3, 'reps': '20', 'weight': 0.0, 'restTime': 45},
       ],
     },
     {
-      'day': 5, 'label': '胸部 + 背部', 'muscle': '胸/背',
+      'day': 5, 'label': trn( '胸部 + 背部'), 'muscle': trn( '胸/背'),
       'exercises': <Map<String, dynamic>>[],
     },
     {
-      'day': 6, 'label': '腿部 + 手臂', 'muscle': '腿/手臂',
+      'day': 6, 'label': trn( '腿部 + 手臂'), 'muscle': trn( '腿/手臂'),
       'exercises': <Map<String, dynamic>>[],
     },
   ],
   '四分化': [
     {
-      'day': 1, 'label': '胸部', 'muscle': '胸',
+      'day': 1, 'label': trn( '胸部'), 'muscle': trn( '胸'),
       'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
+        {'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e3', 'name': trn( '上斜卧推'), 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
       ],
     },
     {
-      'day': 2, 'label': '背部', 'muscle': '背',
+      'day': 2, 'label': trn( '背部'), 'muscle': trn( '背'),
       'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e5', 'name': trn( '引体向上'), 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': trn( '高位下拉'), 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
       ],
     },
     {
-      'day': 3, 'label': '腿部', 'muscle': '腿',
+      'day': 3, 'label': trn( '腿部'), 'muscle': trn( '腿'),
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+        {'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': trn( '腿举'), 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
       ],
     },
     {
-      'day': 4, 'label': '肩部 + 手臂', 'muscle': '肩/手臂',
+      'day': 4, 'label': trn( '肩部 + 手臂'), 'muscle': trn( '肩/手臂'),
       'exercises': [
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
+        {'id': 'e11', 'name': trn( '哑铃推举'), 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': trn( '侧平举'), 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
+        {'id': 'e13', 'name': trn( '哑铃弯举'), 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
       ],
     },
   ],
   '五分化': [
     {
-      'day': 1, 'label': '胸部', 'muscle': '胸',
+      'day': 1, 'label': trn( '胸部'), 'muscle': trn( '胸'),
       'exercises': [
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
-        {'id': 'e3', 'name': '上斜卧推', 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
-        {'id': 'e4', 'name': '绳索夹胸', 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
+        {'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e3', 'name': trn( '上斜卧推'), 'sets': 4, 'reps': '8-12', 'weight': 35.0, 'restTime': 90},
+        {'id': 'e4', 'name': trn( '绳索夹胸'), 'sets': 3, 'reps': '15', 'weight': 20.0, 'restTime': 60},
       ],
     },
     {
-      'day': 2, 'label': '背部', 'muscle': '背',
+      'day': 2, 'label': trn( '背部'), 'muscle': trn( '背'),
       'exercises': [
-        {'id': 'e5', 'name': '引体向上', 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
-        {'id': 'e8', 'name': '坐姿划船', 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
+        {'id': 'e5', 'name': trn( '引体向上'), 'sets': 4, 'reps': '8-12', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 4, 'reps': '8-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e7', 'name': trn( '高位下拉'), 'sets': 4, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e8', 'name': trn( '坐姿划船'), 'sets': 3, 'reps': '12', 'weight': 30.0, 'restTime': 60},
       ],
     },
     {
-      'day': 3, 'label': '腿部', 'muscle': '腿',
+      'day': 3, 'label': trn( '腿部'), 'muscle': trn( '腿'),
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
-        {'id': 'e10', 'name': '腿举', 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+        {'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 5, 'reps': '5-8', 'weight': 50.0, 'restTime': 120},
+        {'id': 'e10', 'name': trn( '腿举'), 'sets': 4, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
       ],
     },
     {
-      'day': 4, 'label': '肩部', 'muscle': '肩',
+      'day': 4, 'label': trn( '肩部'), 'muscle': trn( '肩'),
       'exercises': [
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
-        {'id': 'e12', 'name': '侧平举', 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
+        {'id': 'e11', 'name': trn( '哑铃推举'), 'sets': 4, 'reps': '8-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e12', 'name': trn( '侧平举'), 'sets': 4, 'reps': '12-15', 'weight': 8.0, 'restTime': 60},
       ],
     },
     {
-      'day': 5, 'label': '手臂', 'muscle': '手臂',
+      'day': 5, 'label': trn( '手臂'), 'muscle': trn( '手臂'),
       'exercises': [
-        {'id': 'e13', 'name': '哑铃弯举', 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
-        {'id': 'e14', 'name': '锤式弯举', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e13', 'name': trn( '哑铃弯举'), 'sets': 4, 'reps': '10-12', 'weight': 10.0, 'restTime': 60},
+        {'id': 'e14', 'name': trn( '锤式弯举'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
       ],
     },
   ],
   '全身训练': [
     {
-      'day': 1, 'label': '全身训练A', 'muscle': '全身',
+      'day': 1, 'label': trn( '全身训练A'), 'muscle': trn( '全身'),
       'exercises': [
-        {'id': 'e9', 'name': '杠铃深蹲', 'sets': 3, 'reps': '10-12', 'weight': 50.0, 'restTime': 90},
-        {'id': 'e1', 'name': '杠铃卧推', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e5', 'name': '引体向上', 'sets': 3, 'reps': '8-10', 'weight': 0.0, 'restTime': 90},
+        {'id': 'e9', 'name': trn( '杠铃深蹲'), 'sets': 3, 'reps': '10-12', 'weight': 50.0, 'restTime': 90},
+        {'id': 'e1', 'name': trn( '杠铃卧推'), 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e5', 'name': trn( '引体向上'), 'sets': 3, 'reps': '8-10', 'weight': 0.0, 'restTime': 90},
       ],
     },
     {
-      'day': 2, 'label': '全身训练B', 'muscle': '全身',
+      'day': 2, 'label': trn( '全身训练B'), 'muscle': trn( '全身'),
       'exercises': [
-        {'id': 'e10', 'name': '腿举', 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
-        {'id': 'e6', 'name': '杠铃划船', 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
-        {'id': 'e11', 'name': '哑铃推举', 'sets': 3, 'reps': '10-12', 'weight': 15.0, 'restTime': 90},
+        {'id': 'e10', 'name': trn( '腿举'), 'sets': 3, 'reps': '10-12', 'weight': 80.0, 'restTime': 90},
+        {'id': 'e6', 'name': trn( '杠铃划船'), 'sets': 3, 'reps': '10-12', 'weight': 40.0, 'restTime': 90},
+        {'id': 'e11', 'name': trn( '哑铃推举'), 'sets': 3, 'reps': '10-12', 'weight': 15.0, 'restTime': 90},
       ],
     },
     {
-      'day': 3, 'label': '全身训练C', 'muscle': '全身',
+      'day': 3, 'label': trn( '全身训练C'), 'muscle': trn( '全身'),
       'exercises': [
-        {'id': 'e2', 'name': '哑铃飞鸟', 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
-        {'id': 'e7', 'name': '高位下拉', 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75},
-        {'id': 'e15', 'name': '平板支撑', 'sets': 3, 'reps': '30秒', 'weight': 0.0, 'restTime': 30},
+        {'id': 'e2', 'name': trn( '哑铃飞鸟'), 'sets': 3, 'reps': '12', 'weight': 12.0, 'restTime': 60},
+        {'id': 'e7', 'name': trn( '高位下拉'), 'sets': 3, 'reps': '12', 'weight': 35.0, 'restTime': 75},
+        {'id': 'e15', 'name': trn( '平板支撑'), 'sets': 3, 'reps': trn( '30秒'), 'weight': 0.0, 'restTime': 30},
       ],
     },
   ],
 };
 
-const List<String> _planTypes = ['三分化', '四分化', '五分化', '全身训练', '自定义'];
-const List<String> _difficulties = ['入门', '初级', '进阶', '高级'];
+List<String> _planTypes = [trn( '三分化'), trn( '四分化'), trn( '五分化'), trn( '全身训练'), trn( '自定义')];
+List<String> _difficulties = [trn( '入门'), trn( '初级'), trn( '进阶'), trn( '高级')];
 
 class PlanPage extends StatefulWidget {
   const PlanPage({super.key});
@@ -236,9 +236,9 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
   void _deletePlan(String planId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '确认删除',
-      content: '删除后无法恢复，确定要删除这个计划吗？',
-      confirmText: '删除',
+      title: tr(context, '确认删除'),
+      content: tr(context, '删除后无法恢复，确定要删除这个计划吗？'),
+      confirmText: tr(context, '删除'),
       confirmColor: Colors.redAccent,
       icon: Icons.delete_outline_rounded,
     );
@@ -263,7 +263,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
             if (ctx.mounted) Navigator.of(ctx).pop();
             // 保存成功后跳转首页并提示用户可以开始训练
             if (!mounted) return;
-            FitToast.success(context, '计划已更新，开始训练吧！');
+            FitToast.success(context, tr(context, '计划已更新，开始训练吧！'));
             context.go('/home');
           },
         ),
@@ -289,7 +289,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '训练计划',
+            title: tr(context, '训练计划'),
             isTabPage: true,
           ),
           Expanded(
@@ -328,7 +328,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
           children: [
             // ── 第一段：当前训练计划 ─────────────────────────────
             if (_activePlans.isNotEmpty) ...[
-              const SectionHeader(title: '进行中的计划'),
+              SectionHeader(title: tr(context, '进行中的计划')),
               const SizedBox(height: 12),
               ..._activePlans.map((plan) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -339,7 +339,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
             // ── 第二段：自定义计划 Top 3 ─────────────────────────
             if (top3.isNotEmpty) ...[
               SectionHeader(
-                title: _activePlans.isNotEmpty ? '我的计划' : '自定义计划',
+                title: _activePlans.isNotEmpty ? tr(context, '我的计划') : tr(context, '自定义计划'),
               ),
               const SizedBox(height: 12),
               ...top3.map((plan) => Padding(
@@ -412,7 +412,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
           child: Row(
             children: [
               Text(
-                '为你推荐',
+                tr(context, '为你推荐'),
                 style: TextStyle(
                   color: ft.textPrimary,
                   fontSize: 18,
@@ -425,7 +425,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
                 child: Row(
                   children: [
                     Text(
-                      '全部系统计划',
+                      tr(context, '全部系统计划'),
                       style: TextStyle(color: ft.purpleColor, fontSize: 13),
                     ),
                     Icon(Icons.chevron_right, color: ft.purpleColor, size: 16),
@@ -443,7 +443,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
             child: OutlinedButton.icon(
               onPressed: () => context.push('/plan-library'),
               icon: const Icon(Icons.library_books),
-              label: const Text('浏览系统计划库'),
+              label: Text(tr(context, '浏览系统计划库')),
               style: OutlinedButton.styleFrom(
                 foregroundColor: ft.purpleColor,
                 side: BorderSide(color: ft.purpleColor),
@@ -541,7 +541,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text('匹配', style: TextStyle(color: ft.textMuted, fontSize: 10)),
+                Text(tr(context, '匹配'), style: TextStyle(color: ft.textMuted, fontSize: 10)),
               ],
             ),
           ],
@@ -598,7 +598,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
               ),
               const SizedBox(width: 12),
               Text(
-                '第${plan['week'] ?? 0}/${plan['totalWeeks'] ?? 0}周',
+                tr(context, '第${plan['week'] ?? 0}/${plan['totalWeeks'] ?? 0}周'),
                 style: TextStyle(color: colors.textSecondary, fontSize: 13),
               ),
             ],
@@ -618,7 +618,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
                 _buildPlanActionButton(
                   colors,
                   icon: Icons.pause_circle_outline,
-                  label: '暂停',
+                  label: tr(context, '暂停'),
                   onTap: () => _pausePlan(planId),
                 ),
                 const SizedBox(width: 8),
@@ -626,7 +626,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
                 _buildPlanActionButton(
                   colors,
                   icon: Icons.play_circle_outline,
-                  label: '切换为此计划',
+                  label: tr(context, '切换为此计划'),
                   primary: true,
                   onTap: () => _switchToPlan(planId),
                 ),
@@ -636,7 +636,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
               _buildPlanActionButton(
                 colors,
                 icon: Icons.delete_outline,
-                label: '删除',
+                label: tr(context, '删除'),
                 danger: true,
                 onTap: () => _deletePlan(planId),
               ),
@@ -644,7 +644,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
               _buildPlanActionButton(
                 colors,
                 icon: Icons.share_outlined,
-                label: '分享',
+                label: tr(context, '分享'),
                 onTap: () => _showShareMenu(colors, plan),
               ),
             ],
@@ -671,7 +671,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                '分享「${plan['name'] ?? '计划'}」',
+                tr(context, '分享「${plan['name'] ?? '计划'}」'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -681,19 +681,19 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
             ),
             ListTile(
               leading: Icon(Icons.qr_code_2, color: colors.accentGlow),
-              title: Text('生成分享码', style: TextStyle(color: colors.textPrimary, fontSize: 14)),
+              title: Text(tr(context, '生成分享码'), style: TextStyle(color: colors.textPrimary, fontSize: 14)),
               trailing: Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
               onTap: () { Navigator.pop(ctx); context.push('/share-code'); },
             ),
             ListTile(
               leading: Icon(Icons.qr_code, color: colors.accentGlow),
-              title: Text('生成二维码', style: TextStyle(color: colors.textPrimary, fontSize: 14)),
+              title: Text(tr(context, '生成二维码'), style: TextStyle(color: colors.textPrimary, fontSize: 14)),
               trailing: Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
               onTap: () { Navigator.pop(ctx); context.push('/plan-qr/$planId'); },
             ),
             ListTile(
               leading: Icon(Icons.image_outlined, color: colors.accentGlow),
-              title: Text('生成海报', style: TextStyle(color: colors.textPrimary, fontSize: 14)),
+              title: Text(tr(context, '生成海报'), style: TextStyle(color: colors.textPrimary, fontSize: 14)),
               trailing: Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
               onTap: () { Navigator.pop(ctx); _generatePlanPoster(colors, plan); },
             ),
@@ -717,7 +717,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
     shareData.remove('currentDayIndex');
 
     final settings = Storage.getSettings();
-    final author = settings['nickname'] as String? ?? '匿名用户';
+    final author = settings['nickname'] as String? ?? tr(context, '匿名用户');
     final withAuthor =
         ShareCodeService.instance.attachAuthorSignature(shareData, author);
     final shareString =
@@ -732,7 +732,7 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
         shareString: shareString,
       ),
       posterWidth: PlanPosterWidget.posterWidth,
-      title: '计划海报',
+      title: tr(context, '计划海报'),
       fileNamePrefix: 'fittrack_plan_poster',
     );
   }
@@ -791,9 +791,9 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
 
   /// 暂停计划
   void _pausePlan(String planId) async {
-    await Storage.updatePlanAsync(planId, {'status': 'paused', 'badge': '已暂停'});
+    await Storage.updatePlanAsync(planId, {'status': 'paused', 'badge': tr(context, '已暂停')});
     _loadPlans();
-    if (mounted) FitToast.success(context, '计划已暂停');
+    if (mounted) FitToast.success(context, tr(context, '计划已暂停'));
   }
 
   /// 切换到指定计划（暂停其他活跃计划，激活该计划）
@@ -802,25 +802,25 @@ class _PlanPageState extends State<PlanPage> with TabRefreshMixin<PlanPage> {
     for (final p in _plans) {
       if (p['id'] != planId && p['status'] == 'active') {
         await Storage.updatePlanAsync(
-            p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+            p['id'] as String, {'status': 'paused', 'badge': tr(context, '已暂停')});
       }
     }
     // 激活目标计划
-    await Storage.updatePlanAsync(planId, {'status': 'active', 'badge': '进行中'});
+    await Storage.updatePlanAsync(planId, {'status': 'active', 'badge': tr(context, '进行中')});
     _loadPlans();
-    if (mounted) FitToast.success(context, '已切换训练计划');
+    if (mounted) FitToast.success(context, tr(context, '已切换训练计划'));
   }
 
   String _statusLabel(String status) {
     switch (status) {
       case 'active':
-        return '进行中';
+        return tr(context, '进行中');
       case 'done':
-        return '已完成';
+        return tr(context, '已完成');
       case 'pending':
-        return '待开始';
+        return tr(context, '待开始');
       case 'paused':
-        return '已暂停';
+        return tr(context, '已暂停');
       default:
         return status;
     }
@@ -847,8 +847,8 @@ class _PlanEditorSheet extends StatefulWidget {
 
 class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   late TextEditingController _nameController;
-  String _selectedType = '三分化';
-  String _selectedDifficulty = '进阶';
+  String _selectedType = trn( '三分化');
+  String _selectedDifficulty = trn( '进阶');
   late TextEditingController _totalWeeksController;
   late TextEditingController _restTimeController;
   List<Map<String, dynamic>> _days = [];
@@ -910,9 +910,9 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   }
 
   void _applyQuickSetup(String type) {
-    if (type == '自定义') {
+    if (type == tr(context, '自定义')) {
       _days = [
-        {'day': 1, 'label': '训练日1', 'muscle': '', 'exercises': <Map<String, dynamic>>[]},
+        {'day': 1, 'label': tr(context, '训练日1'), 'muscle': '', 'exercises': <Map<String, dynamic>>[]},
       ];
     } else {
       final template = _quickSetup[type];
@@ -937,7 +937,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   void _addDay() {
     _days.add({
       'day': _days.length + 1,
-      'label': '训练日${_days.length + 1}',
+      'label': tr(context, '训练日${_days.length + 1}'),
       'muscle': '',
       'exercises': <Map<String, dynamic>>[],
     });
@@ -948,7 +948,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   void _addRestDay() {
     _days.add({
       'day': _days.length + 1,
-      'label': '休息日',
+      'label': tr(context, '休息日'),
       'muscle': '',
       'isRest': true,
       'exercises': <Map<String, dynamic>>[],
@@ -1075,7 +1075,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
 
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
-      FitToast.warning(context, '请输入计划名称');
+      FitToast.warning(context, tr(context, '请输入计划名称'));
       return;
     }
 
@@ -1085,19 +1085,19 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
     String frequency;
     switch (_selectedType) {
       case '三分化':
-        frequency = '6天/周';
+        frequency = tr(context, '6天/周');
         break;
       case '四分化':
-        frequency = '4天/周';
+        frequency = tr(context, '4天/周');
         break;
       case '五分化':
-        frequency = '5天/周';
+        frequency = tr(context, '5天/周');
         break;
       case '全身训练':
-        frequency = '3天/周';
+        frequency = tr(context, '3天/周');
         break;
       default:
-        frequency = '${_days.length}天/周';
+        frequency = tr(context, '${_days.length}天/周');
     }
 
     if (widget.existingPlan == null) {
@@ -1106,7 +1106,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
       for (final p in existingPlans) {
         if (p['status'] == 'active') {
           await Storage.updatePlanAsync(
-              p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+              p['id'] as String, {'status': 'paused', 'badge': tr(context, '已暂停')});
         }
       }
     }
@@ -1122,7 +1122,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
       'week': widget.existingPlan?['week'] ?? 0,
       'progress': widget.existingPlan?['progress'] ?? 0,
       'status': widget.existingPlan?['status'] ?? 'active',
-      'badge': widget.existingPlan?['badge'] ?? '进行中',
+      'badge': widget.existingPlan?['badge'] ?? tr(context, '进行中'),
     });
   }
 
@@ -1158,7 +1158,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
             child: Row(
               children: [
                 Text(
-                  widget.existingPlan != null ? '编辑计划' : '创建计划',
+                  widget.existingPlan != null ? tr(context, '编辑计划') : tr(context, '创建计划'),
                   style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -1178,17 +1178,17 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Name
-                  _buildLabel(colors, '计划名称'),
+                  _buildLabel(colors, tr(context, '计划名称')),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _nameController,
                     style: TextStyle(color: colors.textPrimary),
-                    decoration: const InputDecoration(hintText: '输入计划名称'),
+                    decoration: InputDecoration(hintText: tr(context, '输入计划名称')),
                   ),
                   const SizedBox(height: 16),
 
                   // Type selector
-                  _buildLabel(colors, '训练类型'),
+                  _buildLabel(colors, tr(context, '训练类型')),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
@@ -1224,7 +1224,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                   const SizedBox(height: 16),
 
                   // Difficulty selector
-                  _buildLabel(colors, '难度等级'),
+                  _buildLabel(colors, tr(context, '难度等级')),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
@@ -1263,7 +1263,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel(colors, '总周数'),
+                            _buildLabel(colors, tr(context, '总周数')),
                             const SizedBox(height: 6),
                             TextField(
                               controller: _totalWeeksController,
@@ -1279,7 +1279,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel(colors, '默认休息(秒)'),
+                            _buildLabel(colors, tr(context, '默认休息(秒)')),
                             const SizedBox(height: 6),
                             TextField(
                               controller: _restTimeController,
@@ -1297,14 +1297,14 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                   // Days editor
                   Row(
                     children: [
-                      _buildLabel(colors, '训练日'),
+                      _buildLabel(colors, tr(context, '训练日')),
                       const Spacer(),
                       GestureDetector(
                         onTap: _addDay,
                         child: Row(
                           children: [
                             Icon(Icons.add, size: 18, color: colors.accentGlow),
-                            Text('训练日', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                            Text(tr(context, '训练日'), style: TextStyle(color: colors.accentGlow, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -1314,7 +1314,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                         child: Row(
                           children: [
                             Icon(Icons.bedtime_outlined, size: 18, color: colors.infoColor),
-                            Text('休息日', style: TextStyle(color: colors.infoColor, fontSize: 13)),
+                            Text(tr(context, '休息日'), style: TextStyle(color: colors.infoColor, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -1340,7 +1340,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('保存计划', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                      child: Text(tr(context, '保存计划'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -1416,7 +1416,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                   decoration: InputDecoration(
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    hintText: isRest ? '休息日名称' : '训练日名称',
+                    hintText: isRest ? tr(context, '休息日名称') : tr(context, '训练日名称'),
                   ),
                   onChanged: (val) => _days[dayIndex]['label'] = val,
                 ),
@@ -1443,7 +1443,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '休息日 — 充分恢复，准备下一次训练',
+                      tr(context, '休息日 — 充分恢复，准备下一次训练'),
                       style: TextStyle(color: colors.infoColor, fontSize: 12),
                     ),
                   ),
@@ -1485,7 +1485,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                     if (hasPerSet) ...[
                       Row(
                         children: [
-                          _buildMiniTag(colors, '共${ex['sets']}组 · 逐组设置'),
+                          _buildMiniTag(colors, tr(context, '共${ex['sets']}组 · 逐组设置')),
                           const Spacer(),
                           GestureDetector(
                             onTap: () => _removeExercise(dayIndex, exIdx),
@@ -1494,17 +1494,17 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      ExerciseSetTable(setConfig: setConfig!),
+                      ExerciseSetTable(setConfig: setConfig),
                     ] else
                       Row(
                         children: [
-                          _buildMiniTag(colors, '${ex['sets']}组'),
+                          _buildMiniTag(colors, tr(context, '${ex['sets']}组')),
                           const SizedBox(width: 6),
-                          _buildMiniTag(colors, '${ex['reps']}次'),
+                          _buildMiniTag(colors, tr(context, '${ex['reps']}次')),
                           const SizedBox(width: 6),
                           _buildMiniTag(colors, '${weightStr}kg'),
                           const SizedBox(width: 6),
-                          _buildMiniTag(colors, '${ex['restTime']}秒'),
+                          _buildMiniTag(colors, tr(context, '${ex['restTime']}秒')),
                           const Spacer(),
                           GestureDetector(
                             onTap: () => _removeExercise(dayIndex, exIdx),
@@ -1533,7 +1533,7 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
                   children: [
                     Icon(Icons.add, size: 16, color: colors.textMuted),
                     const SizedBox(width: 4),
-                    Text('添加动作', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                    Text(tr(context, '添加动作'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                   ],
                 ),
               ),

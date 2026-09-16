@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../services/invitation_service.dart';
 import 'poster_theme.dart';
 
+import '../l10n/i18n.dart';
 /// 训练成果分享卡（海报1，对应 HTML #1）
 ///
 /// 宽度 1080、高度 1920 固定（9:16）。使用 [PosterBackground] 跟随主题。
@@ -39,7 +40,7 @@ class ShareCardFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = PosterColors.fromThemeId(themeId);
-    final name = record['name'] as String? ?? '训练完成';
+    final name = record['name'] as String? ?? tr(context, '训练完成');
     final dayLabel = record['dayLabel'] as String?;
     final totalWeight = record['totalWeight'] as int? ?? 0;
     final totalSets = record['totalSets'] as int? ?? 0;
@@ -111,7 +112,7 @@ class ShareCardFrame extends StatelessWidget {
             SizedBox(height: px(12)),
             Row(
               children: [
-                _buildStat('$durationStr 分钟', colors),
+                _buildStat(tr(context, '$durationStr 分钟'), colors),
                 SizedBox(width: px(9)),
                 _buildStat('$avgWeight kg', colors),
               ],
@@ -119,9 +120,9 @@ class ShareCardFrame extends StatelessWidget {
             SizedBox(height: px(9)),
             Row(
               children: [
-                _buildStat('$totalSets 组', colors),
+                _buildStat(tr(context, '$totalSets 组'), colors),
                 SizedBox(width: px(9)),
-                _buildStat('$exerciseCount 个', colors),
+                _buildStat(tr(context, '$exerciseCount 个'), colors),
               ],
             ),
             // ── PK 横幅 ───────────────────────────
@@ -141,7 +142,7 @@ class ShareCardFrame extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '输入邀请码，双方得福利',
+                        tr(context, '输入邀请码，双方得福利'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -188,13 +189,13 @@ class ShareCardFrame extends StatelessWidget {
                     gapless: true,
                     backgroundColor: Colors.white,
                     // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
-                    eyeStyle: QrEyeStyle(
+                    eyeStyle: const QrEyeStyle(
                       eyeShape: QrEyeShape.square,
-                      color: const Color(0xFF1C1C1E),
+                      color: Color(0xFF1C1C1E),
                     ),
-                    dataModuleStyle: QrDataModuleStyle(
+                    dataModuleStyle: const QrDataModuleStyle(
                       dataModuleShape: QrDataModuleShape.square,
-                      color: const Color(0xFF1C1C1E),
+                      color: Color(0xFF1C1C1E),
                     ),
                     // 兜底：数据过长无法编码时，避免渲染成白底空容器
                     errorStateBuilder: (context, error) => Center(
@@ -292,7 +293,7 @@ class ShareCardFrame extends StatelessWidget {
                 ),
                 SizedBox(height: px(4)),
                 Text(
-                  '总重量 (KG)',
+                  trn( '总重量 (KG)'),
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.85),
                     fontSize: px(10),
@@ -348,15 +349,15 @@ class ShareCardFrame extends StatelessWidget {
   }
 
   String _labelFor(String value) {
-    if (value.contains('分钟')) return '训练时长';
-    if (value.contains('kg')) return '平均重量';
-    if (value.contains('组')) return '总组数';
-    return '动作数';
+    if (value.contains(trn( '分钟'))) return trn( '训练时长');
+    if (value.contains('kg')) return trn( '平均重量');
+    if (value.contains(trn( '组'))) return trn( '总组数');
+    return trn( '动作数');
   }
 
   /// 本周对阵虚拟对手的横幅
   Widget _buildPkBanner(PosterColors colors, Map<String, dynamic> pk) {
-    final nickname = pk['nickname'] as String? ?? '对手';
+    final nickname = pk['nickname'] as String? ?? trn( '对手');
     final userWon = pk['userWon'] as bool? ?? false;
     final userTimes = pk['userWeeklyTrainings'] as int? ?? 0;
     final oppoTimes = pk['opponentWeeklyTrainings'] as int? ?? 0;
@@ -384,7 +385,7 @@ class ShareCardFrame extends StatelessWidget {
               Icon(Icons.star, size: px(13), color: colors.brand),
               SizedBox(width: px(6)),
               Text(
-                '本周PK',
+                trn( '本周PK'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: px(12),
@@ -400,7 +401,7 @@ class ShareCardFrame extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  userWon ? '领先' : '追赶中',
+                  userWon ? trn( '领先') : trn( '追赶中'),
                   style: TextStyle(
                     color: statusColor,
                     fontSize: px(9),
@@ -410,7 +411,7 @@ class ShareCardFrame extends StatelessWidget {
               ),
               SizedBox(width: px(8)),
               Text(
-                '我 $userTimes次 | $nickname $oppoTimes次',
+                trn( '我 $userTimes次 | $nickname $oppoTimes次'),
                 style: TextStyle(
                   color: colors.textSecondary,
                   fontSize: px(10),

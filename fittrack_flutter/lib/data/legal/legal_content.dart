@@ -1,8 +1,10 @@
+import '../../l10n/i18n.dart';
 // 隐私政策内容常量（PIPL 7 大类覆盖 + 政策更新条款）
 // 同步加载，避免在测试环境中 rootBundle 异步加载问题
 const String privacyPolicyVersion = 'v5.0';
 
-const String privacyPolicyContent = '''# LiftTrack 隐私政策
+String get privacyPolicyContent => _privacyPolicyContentMemo.value;
+final LocaleMemo<String> _privacyPolicyContentMemo = LocaleMemo(() => trn('''# LiftTrack 隐私政策
 
 **版本**: v5.0 | **生效日期**: 2026-09-10
 
@@ -61,13 +63,14 @@ const String privacyPolicyContent = '''# LiftTrack 隐私政策
 ## 八、政策更新
 1. 我们可能适时更新本隐私政策，更新后会在应用内重新提示你阅读并同意
 2. 重大变更会以弹窗等显著方式通知你，并记录你再次同意的时间与版本
-''';
+'''));
 
 // 用户协议内容常量（覆盖四大商店模板要求）
 // 同步加载，避免在测试环境中 rootBundle 异步加载问题
 const String userAgreementVersion = 'v4.0';
 
-const String userAgreementContent = '''# LiftTrack 用户协议
+String get userAgreementContent => _userAgreementContentMemo.value;
+final LocaleMemo<String> _userAgreementContentMemo = LocaleMemo(() => trn('''# LiftTrack 用户协议
 
 **版本**: v4.0 | **生效日期**: 2026-09-03
 
@@ -110,4 +113,4 @@ const String userAgreementContent = '''# LiftTrack 用户协议
 2. 协商不成的，提交开发者所在地有管辖权的人民法院处理
 3. 本协议的订立、效力、解释与履行均适用中华人民共和国法律
 4. 开发者联系方式：邮箱 321686496@qq.com，联系电话 15575712021
-''';
+'''));

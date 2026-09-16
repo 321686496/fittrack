@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 /// 自定义时间选择器 —— 不依赖系统 showTimePicker，
 /// 提供符合 LiftTrack 深色主题风格的滚轮式时间选择。
 class CustomTimePicker extends StatefulWidget {
@@ -85,7 +86,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
               Icon(Icons.access_time, size: 20, color: colors.accentGlow),
               const SizedBox(width: 8),
               Text(
-                '选择提醒时间',
+                tr(context, '选择提醒时间'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 18,
@@ -194,7 +195,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                 Expanded(
                   child: Column(
                     children: [
-                      Text('时', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                      Text(tr(context, '时'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                       const SizedBox(height: 8),
                       Expanded(
                         child: _buildWheel(
@@ -203,7 +204,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                           controller: _hourController,
                           selectedValue: _hour,
                           onChanged: (v) => setState(() => _hour = v),
-                          label: '时',
+                          label: tr(context, '时'),
                         ),
                       ),
                     ],
@@ -225,7 +226,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                 Expanded(
                   child: Column(
                     children: [
-                      Text('分', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                      Text(tr(context, '分'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                       const SizedBox(height: 8),
                       Expanded(
                         child: _buildWheel(
@@ -234,7 +235,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                           controller: _minuteController,
                           selectedValue: _minute,
                           onChanged: (v) => setState(() => _minute = v),
-                          label: '分',
+                          label: tr(context, '分'),
                         ),
                       ),
                     ],
@@ -272,7 +273,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                     side: BorderSide(color: colors.borderColor),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('取消'),
+                  child: Text(tr(context, '取消')),
                 ),
               ),
               const SizedBox(width: 12),
@@ -284,7 +285,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('确认', style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(tr(context, '确认'), style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ),
             ],

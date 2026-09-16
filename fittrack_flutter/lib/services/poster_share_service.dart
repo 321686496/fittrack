@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 
+import '../l10n/i18n.dart';
 /// 海报保存/分享服务（OHOS 平台专用）
 ///
 /// OHOS 平台没有 share_plus 和 image_gallery_saver 的原生实现，
@@ -24,7 +25,7 @@ class PosterShareService {
     if (result == null) {
       throw PlatformException(
         code: 'NULL_RESULT',
-        message: '保存返回 null',
+        message: trn('保存返回 null'),
       );
     }
     return result.toString();

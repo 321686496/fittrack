@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../data/storage.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 /// 通知列表底部弹窗
 ///
 /// 从 Storage 读取真实通知记录并展示。
@@ -63,10 +64,10 @@ class _NotificationListContentState extends State<_NotificationListContent> {
     final now = DateTime.now();
     final dt = DateTime.fromMillisecondsSinceEpoch(createdAt);
     final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return '刚刚';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}分钟前';
-    if (diff.inHours < 24) return '${diff.inHours}小时前';
-    if (diff.inDays < 7) return '${diff.inDays}天前';
+    if (diff.inMinutes < 1) return tr(context, '刚刚');
+    if (diff.inMinutes < 60) return tr(context, '${diff.inMinutes}分钟前');
+    if (diff.inHours < 24) return tr(context, '${diff.inHours}小时前');
+    if (diff.inDays < 7) return tr(context, '${diff.inDays}天前');
     return '${dt.month}/${dt.day}';
   }
 
@@ -92,7 +93,7 @@ class _NotificationListContentState extends State<_NotificationListContent> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('通知', style: Theme.of(context).textTheme.titleLarge),
+                Text(tr(context, '通知'), style: Theme.of(context).textTheme.titleLarge),
                 Row(
                   children: [
                     if (_notifications.any((n) => n['read'] != true))
@@ -101,7 +102,7 @@ class _NotificationListContentState extends State<_NotificationListContent> {
                           Storage.markAllNotificationsRead();
                           _loadNotifications();
                         },
-                        child: const Text('全部已读'),
+                        child: Text(tr(context, '全部已读')),
                       ),
                     if (_notifications.isNotEmpty)
                       TextButton(
@@ -109,7 +110,7 @@ class _NotificationListContentState extends State<_NotificationListContent> {
                           Storage.clearNotifications();
                           _loadNotifications();
                         },
-                        child: const Text('清空'),
+                        child: Text(tr(context, '清空')),
                       ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
@@ -131,7 +132,7 @@ class _NotificationListContentState extends State<_NotificationListContent> {
                         Icon(Icons.notifications_none,
                             size: 64, color: colors.textMuted),
                         const SizedBox(height: 12),
-                        Text('暂无通知',
+                        Text(tr(context, '暂无通知'),
                             style: TextStyle(color: colors.textSecondary)),
                       ],
                     ),

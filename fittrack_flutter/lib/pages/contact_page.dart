@@ -12,6 +12,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_preview_dialog.dart';
 
+import '../l10n/i18n.dart';
 /// 联系我们页面（独立详情页，展示群二维码与群号等联系方式）
 class ContactPage extends StatelessWidget {
   const ContactPage({super.key});
@@ -26,7 +27,7 @@ class ContactPage extends StatelessWidget {
         children: [
           PageHeader(
             onBack: () => Navigator.of(context).pop(),
-            title: '联系我们',
+            title: tr(context, '联系我们'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -53,7 +54,7 @@ class ContactPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '有问题？欢迎随时联系我们',
+                                tr(context, '有问题？欢迎随时联系我们'),
                                 style: TextStyle(
                                   color: colors.textPrimary,
                                   fontSize: 15,
@@ -62,12 +63,12 @@ class ContactPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                '如果你在使用过程中遇到任何问题、觉得有不好用或存在漏洞的地方，可以通过以下方式联系开发者，也可以直接发送邮件到邮箱反馈问题，我们会积极听取并采纳你的意见，把产品做得更好。',
+                                tr(context, '如果你在使用过程中遇到任何问题、觉得有不好用或存在漏洞的地方，可以通过以下方式联系开发者，也可以直接发送邮件到邮箱反馈问题，我们会积极听取并采纳你的意见，把产品做得更好。'),
                                 style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '如果你觉得用得还不错，也欢迎加入官方社群，与爱训练的朋友们一起讨论交流、自律打卡～',
+                                tr(context, '如果你觉得用得还不错，也欢迎加入官方社群，与爱训练的朋友们一起讨论交流、自律打卡～'),
                                 style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
                               ),
                             ],
@@ -92,7 +93,7 @@ class ContactPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   Center(
                     child: Text(
-                      '客服在线时间：每天 9:00 - 22:00',
+                      tr(context, '客服在线时间：每天 9:00 - 22:00'),
                       style: TextStyle(color: colors.textMuted, fontSize: 12),
                     ),
                   ),
@@ -126,7 +127,7 @@ class ContactPage extends StatelessWidget {
                 Icon(Icons.groups_rounded, size: 20, color: colors.accentGlow),
                 const SizedBox(width: 8),
                 Text(
-                  '官方社群',
+                  tr(context, '官方社群'),
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: 16,
@@ -137,7 +138,7 @@ class ContactPage extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '扫码加入社群，与爱训练的朋友一起交流打卡',
+              tr(context, '扫码加入社群，与爱训练的朋友一起交流打卡'),
               style: TextStyle(color: colors.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 16),
@@ -227,11 +228,11 @@ class ContactPage extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.zoom_in, size: 10, color: Colors.white),
-                          SizedBox(width: 2),
-                          Text('点击放大',
-                              style: TextStyle(
+                        children: [
+                          const Icon(Icons.zoom_in, size: 10, color: Colors.white),
+                          const SizedBox(width: 2),
+                          Text(tr(context, '点击放大'),
+                              style: const TextStyle(
                                   fontSize: 9, color: Colors.white)),
                         ],
                       ),
@@ -252,7 +253,7 @@ class ContactPage extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                '群号：${c.value}',
+                tr(context, '群号：${c.value}'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 12,
@@ -264,7 +265,7 @@ class ContactPage extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () => _copyValue(context, c),
               icon: const Icon(Icons.copy_rounded, size: 14),
-              label: const Text('复制群号', style: TextStyle(fontSize: 12)),
+              label: Text(tr(context, '复制群号'), style: const TextStyle(fontSize: 12)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colors.accentGlow,
                 side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -307,12 +308,12 @@ class ContactPage extends StatelessWidget {
         await PosterPreviewDialog.show(
           context,
           imagePath: file.path,
-          title: '${c.label}二维码',
+          title: tr(context, '${c.label}二维码'),
         );
       }
     } catch (_) {
       if (context.mounted) {
-        FitToast.info(context, '二维码预览失败，请稍后重试');
+        FitToast.info(context, tr(context, '二维码预览失败，请稍后重试'));
       }
     }
   }
@@ -376,7 +377,7 @@ class ContactPage extends StatelessWidget {
     final uri = Uri(
       scheme: 'mailto',
       path: c.value,
-      queryParameters: {'subject': 'LiftTrack 反馈'},
+      queryParameters: {'subject': tr(context, 'LiftTrack 反馈')},
     );
     try {
       final launched = await launchUrl(
@@ -384,11 +385,11 @@ class ContactPage extends StatelessWidget {
         mode: LaunchMode.externalApplication,
       );
       if (!launched && context.mounted) {
-        FitToast.info(context, '未找到邮件应用，请复制邮箱：${c.value}');
+        FitToast.info(context, tr(context, '未找到邮件应用，请复制邮箱：${c.value}'));
       }
     } catch (_) {
       if (context.mounted) {
-        FitToast.info(context, '未找到邮件应用，请复制邮箱：${c.value}');
+        FitToast.info(context, tr(context, '未找到邮件应用，请复制邮箱：${c.value}'));
       }
     }
   }
@@ -396,7 +397,7 @@ class ContactPage extends StatelessWidget {
   Future<void> _copyValue(BuildContext context, ContactChannel c) async {
     await Clipboard.setData(ClipboardData(text: c.value));
     if (context.mounted) {
-      FitToast.success(context, '${c.label}已复制');
+      FitToast.success(context, tr(context, '${c.label}已复制'));
     }
   }
 }

@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// 健身卡统计页
 class GymCardStatsPage extends StatefulWidget {
   const GymCardStatsPage({super.key});
@@ -39,7 +40,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     final cardType = card['cardType'] as String? ?? '';
 
     // 次卡：根据剩余次数判断
-    if (cardType == '次卡' && remainingCount >= 0) {
+    if (cardType == tr(context, '次卡') && remainingCount >= 0) {
       if (remainingCount == 0) return 'used_up';
       if (remainingCount <= 3) return 'low_count';
       return 'active';
@@ -69,7 +70,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     if (price <= 0) return 0;
 
     // 次卡：按已用次数分摊
-    if (cardType == '次卡' && totalCount > 0) {
+    if (cardType == tr(context, '次卡') && totalCount > 0) {
       final used = totalCount - (remainingCount >= 0 ? remainingCount : 0);
       return price * (used / totalCount);
     }
@@ -95,7 +96,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     final startDate = card['startDate'] as int? ?? 0;
     final endDate = card['endDate'] as int? ?? 0;
     final cardType = card['cardType'] as String? ?? '';
-    if (cardType == '次卡') return 0;
+    if (cardType == tr(context, '次卡')) return 0;
     if (startDate > 0 && endDate > 0) {
       final start = DateTime.fromMillisecondsSinceEpoch(startDate);
       final end = DateTime.fromMillisecondsSinceEpoch(endDate);
@@ -112,19 +113,19 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
   }
 
   String _formatDate(int timestamp) {
-    if (timestamp <= 0) return '未设置';
+    if (timestamp <= 0) return tr(context, '未设置');
     final d = DateTime.fromMillisecondsSinceEpoch(timestamp);
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
   String _formatMonth(int timestamp) {
-    if (timestamp <= 0) return '未设置';
+    if (timestamp <= 0) return tr(context, '未设置');
     final d = DateTime.fromMillisecondsSinceEpoch(timestamp);
     return '${d.year}-${d.month.toString().padLeft(2, '0')}';
   }
 
   String _formatMoney(double v) {
-    if (v >= 10000) return '${(v / 10000).toStringAsFixed(1)}万';
+    if (v >= 10000) return tr(context, '${(v / 10000).toStringAsFixed(1)}万');
     return v.toStringAsFixed(v == v.roundToDouble() ? 0 : 1);
   }
 
@@ -148,16 +149,16 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '健身卡统计',
+            title: tr(context, '健身卡统计'),
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
             child: !_loaded
                 ? const Center(child: CircularProgressIndicator())
                 : _cards.isEmpty
-                    ? const EmptyState(
+                    ? EmptyState(
                         icon: Icons.credit_card_outlined,
-                        message: '暂无健身卡数据',
+                        message: tr(context, '暂无健身卡数据'),
                       )
                     : RefreshIndicator(
                         onRefresh: () async => _loadStats(),
@@ -208,7 +209,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '总览'),
+          SectionHeader(title: tr(context, '总览')),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -216,7 +217,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                 child: StatCard(
                   icon: Icons.credit_card,
                   value: '${_cards.length}',
-                  label: '总卡数',
+                  label: tr(context, '总卡数'),
                   color: colors.accentGlow,
                 ),
               ),
@@ -225,7 +226,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                 child: StatCard(
                   icon: Icons.check_circle_outline,
                   value: '$active',
-                  label: '活跃',
+                  label: tr(context, '活跃'),
                   color: colors.successColor,
                 ),
               ),
@@ -238,7 +239,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                 child: StatCard(
                   icon: Icons.error_outline,
                   value: '$expired',
-                  label: '已过期',
+                  label: tr(context, '已过期'),
                   color: colors.warningColor,
                 ),
               ),
@@ -247,7 +248,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                 child: StatCard(
                   icon: Icons.alarm_on,
                   value: '$expiring7',
-                  label: '即将到期7天内',
+                  label: tr(context, '即将到期7天内'),
                   color: colors.infoColor,
                 ),
               ),
@@ -270,7 +271,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     };
     final otherColor = colors.infoColor;
 
-    final orderedTypes = <String>['年卡', '季卡', '月卡', '次卡'];
+    final orderedTypes = <String>[tr(context, '年卡'), tr(context, '季卡'), tr(context, '月卡'), tr(context, '次卡')];
     final presentTypes = <String>[
       ...orderedTypes.where((t) => typeCounts.containsKey(t)),
       ...typeCounts.keys.where((t) => !orderedTypes.contains(t)),
@@ -299,13 +300,13 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '卡类型分布'),
+          SectionHeader(title: tr(context, '卡类型分布')),
           const SizedBox(height: 16),
           SizedBox(
             height: 200,
             child: presentTypes.isEmpty
                 ? Center(
-                    child: Text('暂无数据',
+                    child: Text(tr(context, '暂无数据'),
                         style:
                             TextStyle(color: colors.textMuted, fontSize: 13)))
                 : Row(
@@ -345,7 +346,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      '$t $count张',
+                                      tr(context, '$t $count张'),
                                       style: TextStyle(
                                         color: colors.textSecondary,
                                         fontSize: 11,
@@ -385,9 +386,9 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       totalAmount += price;
       allocatedTotal += _calcAllocatedAmount(c);
       totalUsedDays += _calcElapsedDays(c);
-      final t = (c['cardType'] as String? ?? '其他').trim().isEmpty
-          ? '其他'
-          : (c['cardType'] as String? ?? '其他').trim();
+      final t = (c['cardType'] as String? ?? tr(context, '其他')).trim().isEmpty
+          ? tr(context, '其他')
+          : (c['cardType'] as String? ?? tr(context, '其他')).trim();
       typeAmount[t] = (typeAmount[t] ?? 0) + price;
     }
 
@@ -403,33 +404,33 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '投入分析'),
+          SectionHeader(title: tr(context, '投入分析')),
           const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
-                child: _moneyBlock(colors, '总金额', totalAmount,
+                child: _moneyBlock(colors, tr(context, '总金额'), totalAmount,
                     colors.accentGlow, Icons.account_balance_wallet),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _moneyBlock(colors, '已投入', allocatedTotal,
+                child: _moneyBlock(colors, tr(context, '已投入'), allocatedTotal,
                     colors.successColor, Icons.trending_up),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _moneyBlock(colors, '日均成本', dailyAvg,
+                child: _moneyBlock(colors, tr(context, '日均成本'), dailyAvg,
                     colors.infoColor, Icons.calendar_today),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text('按卡类型金额汇总',
+          Text(tr(context, '按卡类型金额汇总'),
               style:
                   TextStyle(color: colors.textSecondary, fontSize: 13)),
           const SizedBox(height: 8),
           if (sortedTypes.isEmpty)
-            Text('暂无数据',
+            Text(tr(context, '暂无数据'),
                 style: TextStyle(color: colors.textMuted, fontSize: 12))
           else
             ...sortedTypes.map((t) {
@@ -446,7 +447,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                         Text(t,
                             style: TextStyle(
                                 color: colors.textPrimary, fontSize: 13)),
-                        Text('${_formatMoney(amt)}元',
+                        Text(tr(context, '${_formatMoney(amt)}元'),
                             style: TextStyle(
                                 color: colors.textSecondary, fontSize: 13)),
                       ],
@@ -480,7 +481,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
           Icon(icon, size: 16, color: color),
           const SizedBox(height: 6),
           Text(
-            '${_formatMoney(value)}元',
+            tr(context, '${_formatMoney(value)}元'),
             style: TextStyle(
               color: colors.textPrimary,
               fontSize: 15,
@@ -521,10 +522,10 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '健身房分布'),
+          SectionHeader(title: tr(context, '健身房分布')),
           const SizedBox(height: 16),
           if (gyms.isEmpty)
-            Text('暂无数据',
+            Text(tr(context, '暂无数据'),
                 style: TextStyle(color: colors.textMuted, fontSize: 13))
           else
             SizedBox(
@@ -615,12 +616,12 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '时间分布'),
+          SectionHeader(title: tr(context, '时间分布')),
           const SizedBox(height: 16),
-          _monthBarChart(colors, '开卡月份', startMonths, startKeys,
+          _monthBarChart(colors, tr(context, '开卡月份'), startMonths, startKeys,
               colors.accentGlow),
           const SizedBox(height: 20),
-          _monthBarChart(colors, '到期月份', endMonths, endKeys,
+          _monthBarChart(colors, tr(context, '到期月份'), endMonths, endKeys,
               colors.accentSecondary),
         ],
       ),
@@ -654,7 +655,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
             style: TextStyle(color: colors.textSecondary, fontSize: 13)),
         const SizedBox(height: 8),
         if (keys.isEmpty)
-          Text('暂无数据',
+          Text(tr(context, '暂无数据'),
               style: TextStyle(color: colors.textMuted, fontSize: 12))
         else
           SizedBox(
@@ -726,7 +727,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
     int totalCountSum = 0;
     int usedCountSum = 0;
     int remainingSum = 0;
-    final countCards = _cards.where((c) => (c['cardType'] as String? ?? '') == '次卡').toList();
+    final countCards = _cards.where((c) => (c['cardType'] as String? ?? '') == tr(context, '次卡')).toList();
 
     for (final c in countCards) {
       final total = c['totalCount'] as int? ?? 0;
@@ -743,10 +744,10 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '次卡使用率'),
+          SectionHeader(title: tr(context, '次卡使用率')),
           const SizedBox(height: 14),
           if (countCards.isEmpty)
-            Text('暂无次卡',
+            Text(tr(context, '暂无次卡'),
                 style: TextStyle(color: colors.textMuted, fontSize: 13))
           else
             Column(
@@ -755,17 +756,17 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                 Row(
                   children: [
                     Expanded(
-                      child: _usageBlock(colors, '总次数', '$totalCountSum',
+                      child: _usageBlock(colors, tr(context, '总次数'), '$totalCountSum',
                           colors.accentGlow),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _usageBlock(colors, '已用次数', '$usedCountSum',
+                      child: _usageBlock(colors, tr(context, '已用次数'), '$usedCountSum',
                           colors.warningColor),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _usageBlock(colors, '剩余次数', '$remainingSum',
+                      child: _usageBlock(colors, tr(context, '剩余次数'), '$remainingSum',
                           colors.successColor),
                     ),
                   ],
@@ -774,7 +775,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('总体使用率',
+                    Text(tr(context, '总体使用率'),
                         style: TextStyle(
                             color: colors.textSecondary, fontSize: 13)),
                     Text('${(usage * 100).toStringAsFixed(1)}%',
@@ -838,10 +839,10 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '即将到期（未来30天）'),
+          SectionHeader(title: tr(context, '即将到期（未来30天）')),
           const SizedBox(height: 12),
           if (expiring.isEmpty)
-            Text('暂无即将到期的健身卡',
+            Text(tr(context, '暂无即将到期的健身卡'),
                 style: TextStyle(color: colors.textMuted, fontSize: 13))
           else
             ...expiring.map((c) {
@@ -865,7 +866,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            c['name']?.toString() ?? '未命名',
+                            c['name']?.toString() ?? tr(context, '未命名'),
                             style: TextStyle(
                               color: colors.textPrimary,
                               fontSize: 14,
@@ -874,7 +875,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${c['gymName']?.toString() ?? '未知健身房'} · 到期 ${_formatDate(c['endDate'] as int? ?? 0)}',
+                            tr(context, '${c['gymName']?.toString() ?? '未知健身房'} · 到期 ${_formatDate(c['endDate'] as int? ?? 0)}'),
                             style: TextStyle(
                                 color: colors.textMuted, fontSize: 12),
                           ),
@@ -892,7 +893,7 @@ class _GymCardStatsPageState extends State<GymCardStatsPage> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        diff == 0 ? '今天到期' : '剩$diff天',
+                        diff == 0 ? tr(context, '今天到期') : tr(context, '剩$diff天'),
                         style: TextStyle(
                           color: isUrgent
                               ? colors.warningColor

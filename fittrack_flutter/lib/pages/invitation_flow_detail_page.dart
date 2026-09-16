@@ -3,6 +3,7 @@ import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// 邀请流程详解页面（双视角完整流程）
 ///
 /// 依据：docs/superpowers/specs/2026-09-09-invitation-flow-detail-design.md
@@ -12,72 +13,72 @@ class InvitationFlowDetailPage extends StatelessWidget {
   const InvitationFlowDetailPage({super.key});
 
   // 邀请人视角：完整 6 步
-  static const List<_FlowStepData> _inviterSteps = [
+  static final List<_FlowStepData> _inviterSteps = [
     _FlowStepData(
       icon: Icons.share,
-      title: '分享邀请码',
-      desc: '复制邀请码或生成邀请海报，通过微信/QQ 发给好友。邀请码永久有效',
+      title: trn( '分享邀请码'),
+      desc: trn( '复制邀请码或生成邀请海报，通过微信/QQ 发给好友。邀请码永久有效'),
     ),
     _FlowStepData(
       icon: Icons.person_add,
-      title: '好友激活邀请码',
-      desc: '好友在「输入邀请码」中输入你的邀请码完成激活。一码一绑，激活后不可更换',
-      reward: '好友 +50 积分',
+      title: trn( '好友激活邀请码'),
+      desc: trn( '好友在「输入邀请码」中输入你的邀请码完成激活。一码一绑，激活后不可更换'),
+      reward: trn( '好友 +50 积分'),
     ),
     _FlowStepData(
       icon: Icons.fitness_center,
-      title: '好友完成首次训练',
-      desc: '好友完成至少 1 组动作的有效训练，训练数据将加密写入激活凭证',
+      title: trn( '好友完成首次训练'),
+      desc: trn( '好友完成至少 1 组动作的有效训练，训练数据将加密写入激活凭证'),
     ),
     _FlowStepData(
       icon: Icons.qr_code_2,
-      title: '好友出示激活凭证',
-      desc: '好友在「我的激活凭证」生成 FIT-ACT 识别码发给你。凭证含加密签名的训练数据快照，可放心展示',
+      title: trn( '好友出示激活凭证'),
+      desc: trn( '好友在「我的激活凭证」生成 FIT-ACT 识别码发给你。凭证含加密签名的训练数据快照，可放心展示'),
     ),
     _FlowStepData(
       icon: Icons.verified,
-      title: '你确认记录成果',
-      desc: '在「记录邀请成果」中扫码或输入好友的识别码，系统自动校验训练达标与防自邀',
+      title: trn( '你确认记录成果'),
+      desc: trn( '在「记录邀请成果」中扫码或输入好友的识别码，系统自动校验训练达标与防自邀'),
     ),
     _FlowStepData(
       icon: Icons.card_giftcard,
-      title: '奖励自动到账',
-      desc: '按累计邀请档位自动发放积分、徽章与皮肤，无需手动领取',
-      reward: '1/3/5/10 人档位：最高 1200 积分',
+      title: trn( '奖励自动到账'),
+      desc: trn( '按累计邀请档位自动发放积分、徽章与皮肤，无需手动领取'),
+      reward: trn( '1/3/5/10 人档位：最高 1200 积分'),
     ),
   ];
 
   // 被邀请人视角：4 步
-  static const List<_FlowStepData> _inviteeSteps = [
+  static final List<_FlowStepData> _inviteeSteps = [
     _FlowStepData(
       icon: Icons.redeem,
-      title: '获取好友邀请码',
-      desc: '向好友索取 FIT-INV-XXXXXX 格式的邀请码',
+      title: trn( '获取好友邀请码'),
+      desc: trn( '向好友索取 FIT-INV-XXXXXX 格式的邀请码'),
     ),
     _FlowStepData(
       icon: Icons.input,
-      title: '输入激活',
-      desc: '在「输入邀请码」中输入邀请码，激活后立即到账',
-      reward: '你 +50 积分',
+      title: trn( '输入激活'),
+      desc: trn( '在「输入邀请码」中输入邀请码，激活后立即到账'),
+      reward: trn( '你 +50 积分'),
     ),
     _FlowStepData(
       icon: Icons.fitness_center,
-      title: '完成首次训练',
-      desc: '完成至少 1 组动作的有效训练，满足凭证达标条件',
+      title: trn( '完成首次训练'),
+      desc: trn( '完成至少 1 组动作的有效训练，满足凭证达标条件'),
     ),
     _FlowStepData(
       icon: Icons.qr_code_2,
-      title: '出示激活凭证',
-      desc: '生成 FIT-ACT 识别码发给邀请你的好友。好友确认后，双方奖励全部到账',
+      title: trn( '出示激活凭证'),
+      desc: trn( '生成 FIT-ACT 识别码发给邀请你的好友。好友确认后，双方奖励全部到账'),
     ),
   ];
 
   // 奖励对照（与邀请页奖励规则档位一致）
-  static const List<_RewardTierData> _rewardTiers = [
-    _RewardTierData(count: 1, inviter: '100 积分 + 引路人徽章', invitee: '50 积分'),
-    _RewardTierData(count: 3, inviter: '300 积分 + 布道者徽章', invitee: '50 积分'),
-    _RewardTierData(count: 5, inviter: '600 积分 + 传道者徽章 + 限定对手皮肤', invitee: '50 积分'),
-    _RewardTierData(count: 10, inviter: '1200 积分 + LiftTrack 大使称号', invitee: '50 积分'),
+  static final List<_RewardTierData> _rewardTiers = [
+    _RewardTierData(count: 1, inviter: trn( '100 积分 + 引路人徽章'), invitee: trn( '50 积分')),
+    _RewardTierData(count: 3, inviter: trn( '300 积分 + 布道者徽章'), invitee: trn( '50 积分')),
+    _RewardTierData(count: 5, inviter: trn( '600 积分 + 传道者徽章 + 限定对手皮肤'), invitee: trn( '50 积分')),
+    _RewardTierData(count: 10, inviter: trn( '1200 积分 + LiftTrack 大使称号'), invitee: trn( '50 积分')),
   ];
 
   @override
@@ -88,8 +89,8 @@ class InvitationFlowDetailPage extends StatelessWidget {
       body: Column(
         children: [
           PageHeader(
-            title: '邀请流程详解',
-            subtitle: '从分享到双方获奖的完整链路',
+            title: tr(context, '邀请流程详解'),
+            subtitle: tr(context, '从分享到双方获奖的完整链路'),
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -98,9 +99,9 @@ class InvitationFlowDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTimelineCard(colors, '邀请人视角', Icons.person, _inviterSteps),
+                  _buildTimelineCard(colors, tr(context, '邀请人视角'), Icons.person, _inviterSteps),
                   const SizedBox(height: 16),
-                  _buildTimelineCard(colors, '被邀请人视角', Icons.group, _inviteeSteps),
+                  _buildTimelineCard(colors, tr(context, '被邀请人视角'), Icons.group, _inviteeSteps),
                   const SizedBox(height: 16),
                   _buildRewardTableCard(colors),
                   const SizedBox(height: 16),
@@ -232,7 +233,7 @@ class InvitationFlowDetailPage extends StatelessWidget {
               Icon(Icons.emoji_events, size: 20, color: colors.accentGlow),
               const SizedBox(width: 8),
               Text(
-                '奖励对照',
+                trn( '奖励对照'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -281,7 +282,7 @@ class InvitationFlowDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '累计邀请 ${t.count} 人',
+                  trn( '累计邀请 ${t.count} 人'),
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: 13,
@@ -298,7 +299,7 @@ class InvitationFlowDetailPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('邀请人', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                      Text(trn( '邀请人'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
                       const SizedBox(height: 2),
                       Text(
                         t.inviter,
@@ -312,7 +313,7 @@ class InvitationFlowDetailPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('被邀请人', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                      Text(trn( '被邀请人'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
                       const SizedBox(height: 2),
                       Text(
                         t.invitee,
@@ -331,12 +332,12 @@ class InvitationFlowDetailPage extends StatelessWidget {
 
   /// 规则说明卡片
   Widget _buildRulesCard(LiftTrackColors colors) {
-    const rules = [
-      '邀请码永久有效，格式 FIT-INV-XXXXXX',
-      '一码一绑：每位用户仅能激活一个邀请码，激活后不可更换',
-      '防自邀：不能激活自己的邀请码或确认自己的凭证',
-      '激活凭证每次生成均反映最新训练数据',
-      '邀请奖励为档位制：累计 1/3/5/10 人时分别发放，非每人均有积分',
+    final rules = [
+      trn( '邀请码永久有效，格式 FIT-INV-XXXXXX'),
+      trn( '一码一绑：每位用户仅能激活一个邀请码，激活后不可更换'),
+      trn( '防自邀：不能激活自己的邀请码或确认自己的凭证'),
+      trn( '激活凭证每次生成均反映最新训练数据'),
+      trn( '邀请奖励为档位制：累计 1/3/5/10 人时分别发放，非每人均有积分'),
     ];
     return CardWidget(
       child: Column(
@@ -347,7 +348,7 @@ class InvitationFlowDetailPage extends StatelessWidget {
               Icon(Icons.info_outline, size: 20, color: colors.accentGlow),
               const SizedBox(width: 8),
               Text(
-                '规则说明',
+                trn( '规则说明'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -385,7 +386,7 @@ class _FlowStepData {
   final String desc;
   final String? reward;
 
-  const _FlowStepData({
+  _FlowStepData({
     required this.icon,
     required this.title,
     required this.desc,
@@ -398,7 +399,7 @@ class _RewardTierData {
   final String inviter;
   final String invitee;
 
-  const _RewardTierData({
+  _RewardTierData({
     required this.count,
     required this.inviter,
     required this.invitee,

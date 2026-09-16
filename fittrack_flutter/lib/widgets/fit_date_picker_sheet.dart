@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import 'common_widgets.dart';
 
+import '../l10n/i18n.dart';
 // ==============================================================
 // 自定义日期选择器（日历网格）
 // 顶部年月切换 + 中部 7 列网格 + 底部"今天/确定"按钮
@@ -158,7 +159,7 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
                 ),
               ),
               Text(
-                '${_displayedMonth.year}年${_displayedMonth.month}月',
+                tr(context, '${_displayedMonth.year}年${_displayedMonth.month}月'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -179,7 +180,7 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
-            children: ['日', '一', '二', '三', '四', '五', '六']
+            children: [tr(context, '日'), tr(context, '一'), tr(context, '二'), tr(context, '三'), tr(context, '四'), tr(context, '五'), tr(context, '六')]
                 .map((w) => Expanded(
                       child: Center(
                         child: Padding(
@@ -220,7 +221,7 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                 ),
-                child: Text('今天', style: TextStyle(color: colors.textSecondary)),
+                child: Text(tr(context, '今天'), style: TextStyle(color: colors.textSecondary)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -235,9 +236,9 @@ class _FitDatePickerSheetState extends State<FitDatePickerSheet> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text(
-                    '确定',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  child: Text(
+                    tr(context, '确定'),
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                   ),
                 ),
               ),

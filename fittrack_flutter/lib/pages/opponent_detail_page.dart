@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
@@ -9,6 +9,7 @@ import '../widgets/page_header.dart';
 import '../widgets/opponent/opponent_renderer.dart';
 import '../widgets/opponent/opponent_skin_config.dart';
 
+import '../l10n/i18n.dart';
 /// 对手详情页 —— P0 最小可用版
 class OpponentDetailPage extends StatefulWidget {
   const OpponentDetailPage({super.key});
@@ -43,10 +44,10 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
     final ok = await VirtualGoodsStore.unlock(goodId);
     if (!mounted) return;
     if (ok) {
-      FitToast.success(context, '解锁成功');
+      FitToast.success(context, tr(context, '解锁成功'));
       setState(() {});
     } else {
-      FitToast.warning(context, '积分不足或暂不可购买');
+      FitToast.warning(context, tr(context, '积分不足或暂不可购买'));
     }
     setState(() => _unlocking = false);
   }
@@ -62,12 +63,12 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
         body: Column(
           children: [
             PageHeader(
-              title: '对手详情',
+              title: tr(context, '对手详情'),
               onBack: () => Navigator.of(context).pop(),
             ),
             Expanded(
               child: Center(
-                child: Text('对手尚未匹配', style: TextStyle(color: colors.textMuted)),
+                child: Text(tr(context, '对手尚未匹配'), style: TextStyle(color: colors.textMuted)),
               ),
             ),
           ],
@@ -82,7 +83,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
       body: Column(
         children: [
           PageHeader(
-            title: '对手详情',
+            title: tr(context, '对手详情'),
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -240,15 +241,15 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('本周战绩', style: TextStyle(
+          Text(tr(context, '本周战绩'), style: TextStyle(
             color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600,
           )),
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildStatItem(colors, '${opp.weeklyTrainings}', '次训练', borderColor),
-              _buildStatItem(colors, '${opp.weeklyWeight}', 'kg 总量', borderColor),
-              _buildStatItem(colors, '${opp.weeklyDuration}', '分钟时长', borderColor),
+              _buildStatItem(colors, '${opp.weeklyTrainings}', tr(context, '次训练'), borderColor),
+              _buildStatItem(colors, '${opp.weeklyWeight}', tr(context, 'kg 总量'), borderColor),
+              _buildStatItem(colors, '${opp.weeklyDuration}', tr(context, '分钟时长'), borderColor),
             ],
           ),
         ],
@@ -287,7 +288,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '${opp.nickname}：${opp.currentStatus}',
+              tr(context, '${opp.nickname}：${opp.currentStatus}'),
               style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.5),
             ),
           ),
@@ -312,7 +313,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
             children: [
               Icon(Icons.palette_outlined, size: 18, color: colors.accentGlow),
               const SizedBox(width: 8),
-              Text('对手皮肤', style: TextStyle(
+              Text(tr(context, '对手皮肤'), style: TextStyle(
                 color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600,
               )),
             ],
@@ -363,16 +364,16 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(skin?.name ?? '默认皮肤', style: TextStyle(
+                          Text(skin?.name ?? tr(context, '默认皮肤'), style: TextStyle(
                             color: colors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600,
                           )),
                           if (skin != null) ...[
                             const SizedBox(height: 4),
-                            Text('招式：${appliedSkinCfg?.signatureMove ?? ''}', style: TextStyle(
+                            Text(tr(context, '招式：${appliedSkinCfg?.signatureMove ?? ''}'), style: TextStyle(
                               color: cardTheme?.glowColor ?? colors.accentGlow,
                               fontSize: 11, fontWeight: FontWeight.w600,
                             )),
-                            Text(skin.isLimited ? '限定款 · 邀请解锁' : '${skin.pointsCost} 积分', style: TextStyle(
+                            Text(skin.isLimited ? tr(context, '限定款 · 邀请解锁') : tr(context, '${skin.pointsCost} 积分'), style: TextStyle(
                               color: colors.textMuted, fontSize: 11,
                             )),
                           ],
@@ -387,7 +388,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
                 Positioned(
                   top: 6,
                   right: 6,
-                  child: BadgeWidget(text: '限定', variant: BadgeVariant.accent),
+                  child: BadgeWidget(text: tr(context, '限定'), variant: BadgeVariant.accent),
                 ),
               // ambassador 金色光晕呼吸动画
               if (isAmbassador && cardTheme != null && cardTheme.showShimmer)
@@ -432,7 +433,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
               child: OutlinedButton.icon(
                 onPressed: () => context.push('/invitation'),
                 icon: const Icon(Icons.card_giftcard, size: 16),
-                label: const Text('邀请好友解锁限定皮肤'),
+                label: Text(tr(context, '邀请好友解锁限定皮肤')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -480,7 +481,7 @@ class _OpponentDetailPageState extends State<OpponentDetailPage>
                   Positioned(
                     top: -2,
                     right: -2,
-                    child: BadgeWidget(text: '限定', variant: BadgeVariant.accent),
+                    child: BadgeWidget(text: tr(context, '限定'), variant: BadgeVariant.accent),
                   ),
               ],
             ),
@@ -631,12 +632,12 @@ class _SkinPreviewSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // 皮肤信息
-            _infoRow(colors, '招牌动作', skinCfg.signatureMove),
+            _infoRow(colors, tr(context, '招牌动作'), skinCfg.signatureMove),
             const SizedBox(height: 8),
-            _infoRow(colors, '价格', skinCfg.pointsCost),
+            _infoRow(colors, tr(context, '价格'), skinCfg.pointsCost),
             if (good.unlockCondition != null) ...[
               const SizedBox(height: 8),
-              _infoRow(colors, '解锁条件', good.unlockCondition!),
+              _infoRow(colors, tr(context, '解锁条件'), good.unlockCondition!),
             ],
             const SizedBox(height: 20),
             // 购买/邀请按钮
@@ -646,7 +647,7 @@ class _SkinPreviewSheet extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: unlocking ? null : onPurchase,
                   icon: const Icon(Icons.stars, size: 18),
-                  label: Text('积分购买 (${good.pointsCost})',
+                  label: Text(tr(context, '积分购买 (${good.pointsCost})'),
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: cardTheme.borderColor,
@@ -666,8 +667,8 @@ class _SkinPreviewSheet extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onInvite,
                   icon: const Icon(Icons.card_giftcard, size: 18),
-                  label: const Text('邀请好友解锁',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  label: Text(tr(context, '邀请好友解锁'),
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.accentGlow,
                     side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -685,7 +686,7 @@ class _SkinPreviewSheet extends StatelessWidget {
               width: double.infinity,
               child: TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('关闭', style: TextStyle(color: colors.textSecondary)),
+                child: Text(tr(context, '关闭'), style: TextStyle(color: colors.textSecondary)),
               ),
             ),
           ],

@@ -5,6 +5,7 @@ import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class RecordsPage extends StatefulWidget {
   const RecordsPage({super.key});
 
@@ -45,20 +46,20 @@ class _RecordsPageState extends State<RecordsPage> {
     final yesterday = today.subtract(const Duration(days: 1));
     final recordDay = DateTime(recordDate.year, recordDate.month, recordDate.day);
 
-    if (recordDay == today) return '今天';
-    if (recordDay == yesterday) return '昨天';
+    if (recordDay == today) return tr(context, '今天');
+    if (recordDay == yesterday) return tr(context, '昨天');
 
     final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
     if (recordDay.isAfter(startOfWeek.subtract(const Duration(days: 1)))) {
-      return '本周';
+      return tr(context, '本周');
     }
 
-    return '更早';
+    return tr(context, '更早');
   }
 
   Map<String, List<Map<String, dynamic>>> _groupRecords() {
     final groups = <String, List<Map<String, dynamic>>>{};
-    final order = ['今天', '昨天', '本周', '更早'];
+    final order = [tr(context, '今天'), tr(context, '昨天'), tr(context, '本周'), tr(context, '更早')];
 
     for (final record in _records) {
       final timestamp = record['date'] as int? ??
@@ -80,23 +81,23 @@ class _RecordsPageState extends State<RecordsPage> {
 
   String _formatDate(int timestamp) {
     final d = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return '${d.month}月${d.day}日 ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    return tr(context, '${d.month}月${d.day}日 ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}');
   }
 
   String _formatDuration(dynamic minutes) {
     final m = (minutes as num?)?.toInt() ?? 0;
-    if (m < 60) return '${m}分钟';
+    if (m < 60) return tr(context, '$m分钟');
     final h = m ~/ 60;
     final rem = m % 60;
-    return rem > 0 ? '${h}小时${rem}分钟' : '${h}小时';
+    return rem > 0 ? tr(context, '$h小时$rem分钟') : tr(context, '$h小时');
   }
 
   void _deleteRecord(String recordId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '确认删除',
-      content: '确定要删除这条训练记录吗？此操作不可恢复。',
-      confirmText: '删除',
+      title: tr(context, '确认删除'),
+      content: tr(context, '确定要删除这条训练记录吗？此操作不可恢复。'),
+      confirmText: tr(context, '删除'),
       confirmColor: Colors.redAccent,
       icon: Icons.delete_outline_rounded,
     );
@@ -118,7 +119,7 @@ class _RecordsPageState extends State<RecordsPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '训练记录',
+            title: tr(context, '训练记录'),
             isTabPage: false,
             onBack: () {
               // 正常 pop 回来源页；若栈内无上级页面则回到首页
@@ -143,7 +144,7 @@ class _RecordsPageState extends State<RecordsPage> {
                               size: 48, color: colors.accentGlow),
                           const SizedBox(height: 16),
                           Text(
-                            '暂无训练记录',
+                            tr(context, '暂无训练记录'),
                             style: TextStyle(
                               color: colors.textPrimary,
                               fontSize: 18,
@@ -152,7 +153,7 @@ class _RecordsPageState extends State<RecordsPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '你的训练记录将显示在这里，包括每个动作的组数、重量和时长',
+                            tr(context, '你的训练记录将显示在这里，包括每个动作的组数、重量和时长'),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: colors.textSecondary,
@@ -165,14 +166,14 @@ class _RecordsPageState extends State<RecordsPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              BadgeWidget(text: '训练详情'),
+                              BadgeWidget(text: tr(context, '训练详情')),
                               const SizedBox(width: 8),
                               BadgeWidget(
-                                  text: '重量追踪',
+                                  text: tr(context, '重量追踪'),
                                   variant: BadgeVariant.info),
                               const SizedBox(width: 8),
                               BadgeWidget(
-                                  text: '时长统计',
+                                  text: tr(context, '时长统计'),
                                   variant: BadgeVariant.success),
                             ],
                           ),
@@ -181,7 +182,7 @@ class _RecordsPageState extends State<RecordsPage> {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () => context.go('/plan'),
-                              child: const Text('开始训练'),
+                              child: Text(tr(context, '开始训练')),
                             ),
                           ),
                         ],
@@ -246,7 +247,7 @@ class _RecordsPageState extends State<RecordsPage> {
             children: [
               Expanded(
                 child: Text(
-                  record['planName'] as String? ?? record['name'] as String? ?? '训练记录',
+                  record['planName'] as String? ?? record['name'] as String? ?? tr(context, '训练记录'),
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: 16,
@@ -301,20 +302,20 @@ class _RecordsPageState extends State<RecordsPage> {
           Row(
             children: [
               _buildStatCell(colors, Icons.timer_outlined,
-                  _formatDuration(record['duration']), '时长'),
+                  _formatDuration(record['duration']), tr(context, '时长')),
               _buildGridDivider(colors),
               _buildStatCell(colors, Icons.fitness_center,
-                  '${record['totalSets'] ?? 0}', '组数'),
+                  '${record['totalSets'] ?? 0}', tr(context, '组数')),
             ],
           ),
           Container(height: 1, color: colors.borderColor.withOpacity(0.6)),
           Row(
             children: [
               _buildStatCell(colors, Icons.monitor_weight_outlined,
-                  '${record['totalWeight'] ?? 0}kg', '重量'),
+                  '${record['totalWeight'] ?? 0}kg', tr(context, '重量')),
               _buildGridDivider(colors),
               _buildStatCell(colors, Icons.sports_gymnastics,
-                  '$exerciseCount', '动作数'),
+                  '$exerciseCount', tr(context, '动作数')),
             ],
           ),
         ],

@@ -12,6 +12,7 @@ import '../themes/app_themes.dart';
 import '../utils/platform_utils.dart';
 import 'common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 海报预览统一弹窗
 ///
 /// 提供三个能力：
@@ -124,7 +125,7 @@ class PosterPreviewDialog {
                                     color: ft.purpleColor, size: 18),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '保存到相册',
+                                  tr(context, '保存到相册'),
                                   style: TextStyle(color: ft.purpleColor),
                                 ),
                               ],
@@ -145,11 +146,11 @@ class PosterPreviewDialog {
                             fit: BoxFit.scaleDown,
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.share_rounded,
+                              children: [
+                                const Icon(Icons.share_rounded,
                                     color: Colors.white, size: 18),
-                                SizedBox(width: 6),
-                                Text('分享', style: TextStyle(color: Colors.white)),
+                                const SizedBox(width: 6),
+                                Text(tr(context, '分享'), style: const TextStyle(color: Colors.white)),
                               ],
                             ),
                           ),
@@ -189,8 +190,8 @@ class PosterPreviewDialog {
             if (!ctx.mounted) return;
             await PermissionService.showPermissionDeniedDialog(
               ctx,
-              permissionName: '存储',
-              reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > LiftTrack > 权限管理」中开启「媒体和文件」权限后重试。',
+              permissionName: trn( '存储'),
+              reason: trn( '保存海报到相册需要存储权限，请在「设置 > 应用 > LiftTrack > 权限管理」中开启「媒体和文件」权限后重试。'),
             );
             return;
           }
@@ -198,16 +199,16 @@ class PosterPreviewDialog {
         // 4. 已授权，执行保存
         await PosterShareService.saveToGallery(imagePath);
         if (!ctx.mounted) return;
-        FitToast.success(ctx, '已保存到相册');
+        FitToast.success(ctx, trn( '已保存到相册'));
       } else if (Platform.isAndroid) {
         // Android: API < 29 需运行时申请存储权限
         if (await _requestAndroidStoragePermission(ctx)) {
           final result = await ImageGallerySaver.saveFile(imagePath);
           if (!ctx.mounted) return;
           if (result is Map && result['isSuccess'] == true) {
-            FitToast.success(ctx, '已保存到相册');
+            FitToast.success(ctx, trn( '已保存到相册'));
           } else {
-            FitToast.error(ctx, '保存失败，请重试');
+            FitToast.error(ctx, trn( '保存失败，请重试'));
           }
         }
       } else {
@@ -215,9 +216,9 @@ class PosterPreviewDialog {
         final result = await ImageGallerySaver.saveFile(imagePath);
         if (!ctx.mounted) return;
         if (result is Map && result['isSuccess'] == true) {
-          FitToast.success(ctx, '已保存到相册');
+          FitToast.success(ctx, trn( '已保存到相册'));
         } else {
-          FitToast.error(ctx, '保存失败，请重试');
+          FitToast.error(ctx, trn( '保存失败，请重试'));
         }
       }
     } on PlatformException catch (e) {
@@ -227,14 +228,14 @@ class PosterPreviewDialog {
       if (e.code == 'PERMISSION_DENIED') {
         await PermissionService.showPermissionDeniedDialog(
           ctx,
-          permissionName: '存储',
-          reason: '保存海报到相册需要存储权限，请在「设置 > 应用 > LiftTrack > 权限管理」中开启「媒体和文件」权限后重试。',
+          permissionName: trn( '存储'),
+          reason: trn( '保存海报到相册需要存储权限，请在「设置 > 应用 > LiftTrack > 权限管理」中开启「媒体和文件」权限后重试。'),
         );
         return;
       }
-      FitToast.error(ctx, '保存失败：$msg');
+      FitToast.error(ctx, trn( '保存失败：$msg'));
     } catch (e) {
-      if (ctx.mounted) FitToast.error(ctx, '保存失败：$e');
+      if (ctx.mounted) FitToast.error(ctx, trn( '保存失败：$e'));
     }
   }
 
@@ -254,13 +255,13 @@ class PosterPreviewDialog {
       // 用户拒绝（含永久拒绝）：引导去设置
       await PermissionService.showPermissionDeniedDialog(
         ctx,
-        permissionName: '存储',
-        reason: '保存海报到相册需要存储权限，请在系统设置中开启存储权限后重试。',
+        permissionName: trn( '存储'),
+        reason: trn( '保存海报到相册需要存储权限，请在系统设置中开启存储权限后重试。'),
       );
       return false;
     } catch (_) {
       if (ctx.mounted) {
-        FitToast.error(ctx, '获取存储权限失败');
+        FitToast.error(ctx, trn( '获取存储权限失败'));
       }
       return false;
     }
@@ -300,9 +301,9 @@ class PosterPreviewDialog {
     } on PlatformException catch (e) {
       if (!ctx.mounted) return;
       final msg = e.message ?? e.code;
-      FitToast.error(ctx, '分享失败：$msg');
+      FitToast.error(ctx, trn( '分享失败：$msg'));
     } catch (e) {
-      if (ctx.mounted) FitToast.error(ctx, '分享失败：$e');
+      if (ctx.mounted) FitToast.error(ctx, trn( '分享失败：$e'));
     }
   }
 }

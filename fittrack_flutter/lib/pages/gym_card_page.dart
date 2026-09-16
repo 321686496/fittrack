@@ -10,6 +10,7 @@ import '../widgets/gym_card_poster.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
 
+import '../l10n/i18n.dart';
 class GymCardPage extends StatefulWidget {
   const GymCardPage({super.key});
 
@@ -76,30 +77,30 @@ class _GymCardPageState extends State<GymCardPage> {
     final cardType = card['cardType'] as String? ?? '';
 
     // 次卡：根据剩余次数判断
-    if (cardType == '次卡' && remainingCount >= 0) {
+    if (cardType == tr(context, '次卡') && remainingCount >= 0) {
       if (remainingCount == 0) {
         return {
           'status': 'used_up',
-          'label': '已用完',
+          'label': tr(context, '已用完'),
           'color': Colors.grey,
           'icon': Icons.block_outlined,
-          'tip': '该次卡已用完所有次数',
+          'tip': tr(context, '该次卡已用完所有次数'),
         };
       } else if (remainingCount <= 3) {
         return {
           'status': 'low_count',
-          'label': '即将用完',
+          'label': tr(context, '即将用完'),
           'color': Colors.orange,
           'icon': Icons.warning_amber_rounded,
-          'tip': '仅剩 $remainingCount 次，注意续卡',
+          'tip': tr(context, '仅剩 $remainingCount 次，注意续卡'),
         };
       } else {
         return {
           'status': 'active',
-          'label': '使用中',
+          'label': tr(context, '使用中'),
           'color': Colors.green,
           'icon': Icons.check_circle_outline,
-          'tip': '剩余 $remainingCount 次',
+          'tip': tr(context, '剩余 $remainingCount 次'),
         };
       }
     }
@@ -112,52 +113,52 @@ class _GymCardPageState extends State<GymCardPage> {
       if (diff < 0) {
         return {
           'status': 'expired',
-          'label': '已过期',
+          'label': tr(context, '已过期'),
           'color': Colors.red,
           'icon': Icons.error_outline,
-          'tip': '已过期 ${-diff} 天，请及时续卡',
+          'tip': tr(context, '已过期 ${-diff} 天，请及时续卡'),
         };
       } else if (diff == 0) {
         return {
           'status': 'expiring_today',
-          'label': '今天到期',
+          'label': tr(context, '今天到期'),
           'color': Colors.red,
           'icon': Icons.alarm_on,
-          'tip': '今天到期，请及时续卡！',
+          'tip': tr(context, '今天到期，请及时续卡！'),
         };
       } else if (diff <= 7) {
         return {
           'status': 'expiring_soon',
-          'label': '即将到期',
+          'label': tr(context, '即将到期'),
           'color': Colors.orange,
           'icon': Icons.warning_amber_rounded,
-          'tip': '还有 $diff 天到期，建议尽快续卡',
+          'tip': tr(context, '还有 $diff 天到期，建议尽快续卡'),
         };
       } else if (diff <= 30) {
         return {
           'status': 'normal',
-          'label': '使用中',
+          'label': tr(context, '使用中'),
           'color': Colors.green,
           'icon': Icons.check_circle_outline,
-          'tip': '还有 $diff 天到期',
+          'tip': tr(context, '还有 $diff 天到期'),
         };
       } else {
         return {
           'status': 'active',
-          'label': '使用中',
+          'label': tr(context, '使用中'),
           'color': Colors.green,
           'icon': Icons.check_circle_outline,
-          'tip': '还有 $diff 天到期',
+          'tip': tr(context, '还有 $diff 天到期'),
         };
       }
     }
 
     return {
       'status': 'unknown',
-      'label': '未设置',
+      'label': tr(context, '未设置'),
       'color': Colors.grey,
       'icon': Icons.help_outline,
-      'tip': '未设置有效期信息',
+      'tip': tr(context, '未设置有效期信息'),
     };
   }
 
@@ -172,9 +173,9 @@ class _GymCardPageState extends State<GymCardPage> {
     if (price <= 0) return '--';
 
     // 次卡：按次数算单次费用
-    if (cardType == '次卡' && totalCount > 0) {
+    if (cardType == tr(context, '次卡') && totalCount > 0) {
       final perTime = price / totalCount;
-      return '${perTime.toStringAsFixed(1)}元/次';
+      return tr(context, '${perTime.toStringAsFixed(1)}元/次');
     }
 
     // 期限卡：按天数算日均费用
@@ -184,7 +185,7 @@ class _GymCardPageState extends State<GymCardPage> {
       final days = end.difference(start).inDays;
       if (days > 0) {
         final daily = price / days;
-        return '${daily.toStringAsFixed(1)}元/天';
+        return tr(context, '${daily.toStringAsFixed(1)}元/天');
       }
     }
 
@@ -200,7 +201,7 @@ class _GymCardPageState extends State<GymCardPage> {
     final totalCount = card['totalCount'] as int? ?? -1;
 
     // 次卡
-    if (cardType == '次卡' && totalCount > 0) {
+    if (cardType == tr(context, '次卡') && totalCount > 0) {
       final used = totalCount - (remainingCount >= 0 ? remainingCount : 0);
       return (used / totalCount).clamp(0.0, 1.0);
     }
@@ -221,7 +222,7 @@ class _GymCardPageState extends State<GymCardPage> {
   }
 
   String _formatDate(int timestamp) {
-    if (timestamp <= 0) return '未设置';
+    if (timestamp <= 0) return tr(context, '未设置');
     final d = DateTime.fromMillisecondsSinceEpoch(timestamp);
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
@@ -243,7 +244,7 @@ class _GymCardPageState extends State<GymCardPage> {
     final rc = existingCard?['remainingCount'] as int?;
     _remainingCountCtrl.text = (rc != null && rc >= 0) ? rc.toString() : '';
 
-    String cardType = existingCard?['cardType'] as String? ?? '年卡';
+    String cardType = existingCard?['cardType'] as String? ?? tr(context, '年卡');
     // 开卡日期默认值改为今天（添加模式）
     int startDate = existingCard?['startDate'] as int? ??
         DateTime.now().millisecondsSinceEpoch;
@@ -258,7 +259,7 @@ class _GymCardPageState extends State<GymCardPage> {
     // 仅当用户未手动改过到期日时执行（次卡无到期日，跳过）
     void maybeAutoCalcEndDate() {
       if (_endDateUserTouched) return;
-      if (cardType == '次卡') return;
+      if (cardType == tr(context, '次卡')) return;
       if (startDate <= 0) return;
       final start = DateTime.fromMillisecondsSinceEpoch(startDate);
       DateTime? newEnd;
@@ -298,32 +299,32 @@ class _GymCardPageState extends State<GymCardPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isEdit ? '编辑健身卡' : '添加健身卡',
+                    isEdit ? tr(context, '编辑健身卡') : tr(context, '添加健身卡'),
                     style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   FitTextField(
                     controller: _nameCtrl,
-                    label: '卡名称 *',
-                    hint: '如：金吉鸟年卡',
+                    label: tr(context, '卡名称 *'),
+                    hint: tr(context, '如：金吉鸟年卡'),
                   ),
                   const SizedBox(height: 12),
                   FitTextField(
                     controller: _gymNameCtrl,
-                    label: '健身房名称',
-                    hint: '如：金吉鸟健身(万达店)',
+                    label: tr(context, '健身房名称'),
+                    hint: tr(context, '如：金吉鸟健身(万达店)'),
                   ),
                   const SizedBox(height: 12),
                   FitTextField(
                     controller: _addressCtrl,
-                    label: '详细地址',
-                    hint: '如：XX市XX区XX路88号',
+                    label: tr(context, '详细地址'),
+                    hint: tr(context, '如：XX市XX区XX路88号'),
                   ),
                   const SizedBox(height: 12),
-                  Text('卡类型', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '卡类型'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 6),
                   FitChipSelector(
-                    options: const ['年卡', '季卡', '月卡', '次卡', '其他'],
+                    options: [tr(context, '年卡'), tr(context, '季卡'), tr(context, '月卡'), tr(context, '次卡'), tr(context, '其他')],
                     selected: cardType,
                     onChanged: (v) {
                       if (!mounted) return;
@@ -336,13 +337,13 @@ class _GymCardPageState extends State<GymCardPage> {
                   const SizedBox(height: 12),
                   FitTextField(
                     controller: _priceCtrl,
-                    label: '价格 (元)',
+                    label: tr(context, '价格 (元)'),
                     hint: '0',
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   ),
                   const SizedBox(height: 12),
                   // 开卡日期
-                  Text('开卡日期', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '开卡日期'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: () async {
@@ -353,7 +354,7 @@ class _GymCardPageState extends State<GymCardPage> {
                             : DateTime.now(),
                         firstDate: DateTime(2020),
                         lastDate: DateTime(2035),
-                        title: '选择开卡日期',
+                        title: tr(context, '选择开卡日期'),
                       );
                       if (picked != null) {
                         if (!mounted) return;
@@ -373,7 +374,7 @@ class _GymCardPageState extends State<GymCardPage> {
                         border: Border.all(color: colors.borderColor),
                       ),
                       child: Text(
-                        startDate > 0 ? _formatDate(startDate) : '选择日期',
+                        startDate > 0 ? _formatDate(startDate) : tr(context, '选择日期'),
                         style: TextStyle(
                           color: startDate > 0 ? colors.textPrimary : colors.textMuted,
                           fontSize: 15,
@@ -383,8 +384,8 @@ class _GymCardPageState extends State<GymCardPage> {
                   ),
                   const SizedBox(height: 12),
                   // 到期日期（非次卡显示）
-                  if (cardType != '次卡') ...[
-                    Text('到期日期', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  if (cardType != tr(context, '次卡')) ...[
+                    Text(tr(context, '到期日期'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                     const SizedBox(height: 6),
                     GestureDetector(
                       onTap: () async {
@@ -395,7 +396,7 @@ class _GymCardPageState extends State<GymCardPage> {
                               : DateTime.now().add(const Duration(days: 365)),
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2035),
-                          title: '选择到期日期',
+                          title: tr(context, '选择到期日期'),
                         );
                         if (picked != null) {
                           if (!mounted) return;
@@ -414,7 +415,7 @@ class _GymCardPageState extends State<GymCardPage> {
                           border: Border.all(color: colors.borderColor),
                         ),
                         child: Text(
-                          endDate > 0 ? _formatDate(endDate) : '选择日期',
+                          endDate > 0 ? _formatDate(endDate) : tr(context, '选择日期'),
                           style: TextStyle(
                             color: endDate > 0 ? colors.textPrimary : colors.textMuted,
                             fontSize: 15,
@@ -425,21 +426,21 @@ class _GymCardPageState extends State<GymCardPage> {
                     const SizedBox(height: 12),
                   ],
                   // 次卡：总次数和剩余次数
-                  if (cardType == '次卡') ...[
+                  if (cardType == tr(context, '次卡')) ...[
                     Row(
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('总次数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                              Text(tr(context, '总次数'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                               const SizedBox(height: 6),
                               TextField(
                                 controller: _totalCountCtrl,
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                                 decoration: InputDecoration(
-                                  hintText: '如：30',
+                                  hintText: tr(context, '如：30'),
                                   hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
                                   filled: true,
                                   fillColor: colors.bgElevated,
@@ -468,14 +469,14 @@ class _GymCardPageState extends State<GymCardPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('剩余次数', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                              Text(tr(context, '剩余次数'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                               const SizedBox(height: 6),
                               TextField(
                                 controller: _remainingCountCtrl,
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                                 decoration: InputDecoration(
-                                  hintText: '如：15',
+                                  hintText: tr(context, '如：15'),
                                   hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
                                   filled: true,
                                   fillColor: colors.bgElevated,
@@ -505,15 +506,15 @@ class _GymCardPageState extends State<GymCardPage> {
                   ],
                   FitTextField(
                     controller: _phoneCtrl,
-                    label: '联系电话',
-                    hint: '健身房联系电话',
+                    label: tr(context, '联系电话'),
+                    hint: tr(context, '健身房联系电话'),
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 12),
                   FitTextField(
                     controller: _remarkCtrl,
-                    label: '备注',
-                    hint: '其他备注信息',
+                    label: tr(context, '备注'),
+                    hint: tr(context, '其他备注信息'),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -521,7 +522,7 @@ class _GymCardPageState extends State<GymCardPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_nameCtrl.text.trim().isEmpty) {
-                          FitToast.warning(context, '请输入卡名称');
+                          FitToast.warning(context, tr(context, '请输入卡名称'));
                           return;
                         }
                         final data = <String, dynamic>{
@@ -539,10 +540,10 @@ class _GymCardPageState extends State<GymCardPage> {
                         };
                         if (isEdit) {
                           Storage.updateGymCard(existingCard['id'] as String, data);
-                          FitToast.success(context, '修改成功');
+                          FitToast.success(context, tr(context, '修改成功'));
                         } else {
                           Storage.addGymCard(data);
-                          FitToast.success(context, '添加成功');
+                          FitToast.success(context, tr(context, '添加成功'));
                         }
                         // 健身卡增删改后重新调度到期提醒（fire-and-forget）
                         GymCardReminderService.instance.reschedule();
@@ -555,7 +556,7 @@ class _GymCardPageState extends State<GymCardPage> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: Text(isEdit ? '保存修改' : '添加', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                      child: Text(isEdit ? tr(context, '保存修改') : tr(context, '添加'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     ),
                   ),
                 ],
@@ -645,12 +646,12 @@ class _GymCardPageState extends State<GymCardPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      cardType == '次卡' ? '使用进度' : '有效期进度',
+                      cardType == tr(context, '次卡') ? tr(context, '使用进度') : tr(context, '有效期进度'),
                       style: TextStyle(color: colors.textSecondary, fontSize: 13),
                     ),
                     Text(
-                      cardType == '次卡'
-                          ? '${totalCount > 0 ? totalCount - (remainingCount >= 0 ? remainingCount : 0) : 0}/${totalCount > 0 ? totalCount : 0}次'
+                      cardType == tr(context, '次卡')
+                          ? tr(context, '${totalCount > 0 ? totalCount - (remainingCount >= 0 ? remainingCount : 0) : 0}/${totalCount > 0 ? totalCount : 0}次')
                           : '${(progress * 100).toStringAsFixed(0)}%',
                       style: TextStyle(color: colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                     ),
@@ -665,27 +666,27 @@ class _GymCardPageState extends State<GymCardPage> {
               ],
 
               // 详细信息
-              _buildDetailRow(colors, Icons.card_membership_outlined, '卡类型', cardType),
+              _buildDetailRow(colors, Icons.card_membership_outlined, tr(context, '卡类型'), cardType),
               if (price > 0) ...[
-                _buildDetailRow(colors, Icons.payments_outlined, '价格', '¥${price.toStringAsFixed(0)}'),
-                _buildDetailRow(colors, Icons.calculate_outlined, '日均费用', dailyCost),
+                _buildDetailRow(colors, Icons.payments_outlined, tr(context, '价格'), '¥${price.toStringAsFixed(0)}'),
+                _buildDetailRow(colors, Icons.calculate_outlined, tr(context, '日均费用'), dailyCost),
               ],
               if (card['startDate'] != null && (card['startDate'] as int) > 0)
-                _buildDetailRow(colors, Icons.play_circle_outline, '开卡日期', _formatDate(card['startDate'] as int)),
-              if (cardType != '次卡' && card['endDate'] != null && (card['endDate'] as int) > 0)
-                _buildDetailRow(colors, Icons.event_outlined, '到期日期', _formatDate(card['endDate'] as int)),
-              if (cardType == '次卡') ...[
+                _buildDetailRow(colors, Icons.play_circle_outline, tr(context, '开卡日期'), _formatDate(card['startDate'] as int)),
+              if (cardType != tr(context, '次卡') && card['endDate'] != null && (card['endDate'] as int) > 0)
+                _buildDetailRow(colors, Icons.event_outlined, tr(context, '到期日期'), _formatDate(card['endDate'] as int)),
+              if (cardType == tr(context, '次卡')) ...[
                 if (totalCount > 0)
-                  _buildDetailRow(colors, Icons.format_list_numbered, '总次数', '$totalCount 次'),
+                  _buildDetailRow(colors, Icons.format_list_numbered, tr(context, '总次数'), tr(context, '$totalCount 次')),
                 if (remainingCount >= 0)
-                  _buildDetailRow(colors, Icons.filter_9_plus_outlined, '剩余次数', '$remainingCount 次'),
+                  _buildDetailRow(colors, Icons.filter_9_plus_outlined, tr(context, '剩余次数'), tr(context, '$remainingCount 次')),
               ],
               if ((card['phone'] as String? ?? '').isNotEmpty)
-                _buildDetailRow(colors, Icons.phone_outlined, '联系电话', card['phone'] as String),
+                _buildDetailRow(colors, Icons.phone_outlined, tr(context, '联系电话'), card['phone'] as String),
               if ((card['address'] as String? ?? '').isNotEmpty)
                 _buildAddressRow(colors, card['address'] as String),
               if ((card['remark'] as String? ?? '').isNotEmpty)
-                _buildDetailRow(colors, Icons.note_outlined, '备注', card['remark'] as String),
+                _buildDetailRow(colors, Icons.note_outlined, tr(context, '备注'), card['remark'] as String),
 
               const SizedBox(height: 20),
               // 操作按钮
@@ -702,7 +703,7 @@ class _GymCardPageState extends State<GymCardPage> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: Text('删除', style: TextStyle(color: colors.warningColor, fontWeight: FontWeight.w600)),
+                      child: Text(tr(context, '删除'), style: TextStyle(color: colors.warningColor, fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -718,7 +719,7 @@ class _GymCardPageState extends State<GymCardPage> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('编辑', style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: Text(tr(context, '编辑'), style: const TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],
@@ -734,13 +735,13 @@ class _GymCardPageState extends State<GymCardPage> {
   void _useOneCount(Map<String, dynamic> card) {
     final remaining = card['remainingCount'] as int? ?? -1;
     if (remaining <= 0) {
-      FitToast.warning(context, '次数已用完');
+      FitToast.warning(context, tr(context, '次数已用完'));
       return;
     }
     Storage.updateGymCard(card['id'] as String, {'remainingCount': remaining - 1});
     // 剩余次数变化可能影响提醒触发，重新调度（fire-and-forget）
     GymCardReminderService.instance.reschedule();
-    FitToast.success(context, '已扣减1次，剩余 ${remaining - 1} 次');
+    FitToast.success(context, tr(context, '已扣减1次，剩余 ${remaining - 1} 次'));
     _loadCards();
   }
 
@@ -754,7 +755,7 @@ class _GymCardPageState extends State<GymCardPage> {
         context,
         posterWidget: GymCardPoster(card: card),
         posterWidth: GymCardPoster.posterWidth,
-        title: '健身卡海报',
+        title: tr(context, '健身卡海报'),
         fileNamePrefix: 'fittrack_gym_card',
       );
     } finally {
@@ -767,9 +768,9 @@ class _GymCardPageState extends State<GymCardPage> {
   void _confirmDelete(Map<String, dynamic> card) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '删除健身卡',
-      content: '确定要删除「${card['name']}」吗？删除后无法恢复。',
-      confirmText: '删除',
+      title: tr(context, '删除健身卡'),
+      content: tr(context, '确定要删除「${card['name']}」吗？删除后无法恢复。'),
+      confirmText: tr(context, '删除'),
       confirmColor: Colors.red,
       icon: Icons.delete_outline,
     );
@@ -777,7 +778,7 @@ class _GymCardPageState extends State<GymCardPage> {
       Storage.deleteGymCard(card['id'] as String);
       // 删除后重新调度到期提醒（fire-and-forget）
       GymCardReminderService.instance.reschedule();
-      FitToast.success(context, '已删除');
+      FitToast.success(context, tr(context, '已删除'));
       _loadCards();
     }
   }
@@ -839,7 +840,7 @@ class _GymCardPageState extends State<GymCardPage> {
           children: [
             Icon(Icons.location_on_outlined, size: 18, color: colors.accentGlow),
             const SizedBox(width: 10),
-            Text('详细地址', style: TextStyle(color: colors.textSecondary, fontSize: 14)),
+            Text(tr(context, '详细地址'), style: TextStyle(color: colors.textSecondary, fontSize: 14)),
             const Spacer(),
             Flexible(
               child: Row(
@@ -906,8 +907,8 @@ class _GymCardPageState extends State<GymCardPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '健身卡',
-            subtitle: '管理你的健身卡信息',
+            title: tr(context, '健身卡'),
+            subtitle: tr(context, '管理你的健身卡信息'),
             onBack: () => Navigator.of(context).pop(),
             onStatsTap: () => context.push('/gym-card-stats'),
           ),
@@ -933,7 +934,7 @@ class _GymCardPageState extends State<GymCardPage> {
                           child: OutlinedButton.icon(
                             onPressed: () => _showAddCardSheet(),
                             icon: Icon(Icons.add, color: colors.accentGlow),
-                            label: Text('添加健身卡', style: TextStyle(color: colors.accentGlow, fontWeight: FontWeight.w600)),
+                            label: Text(tr(context, '添加健身卡'), style: TextStyle(color: colors.accentGlow, fontWeight: FontWeight.w600)),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(color: colors.accentGlow.withOpacity(0.5)),
                               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -966,7 +967,7 @@ class _GymCardPageState extends State<GymCardPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '你有 $count 张健身卡需要关注',
+              tr(context, '你有 $count 张健身卡需要关注'),
               style: TextStyle(color: colors.warningColor, fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
@@ -982,16 +983,16 @@ class _GymCardPageState extends State<GymCardPage> {
         children: [
           Icon(Icons.card_membership_outlined, size: 64, color: colors.textMuted),
           const SizedBox(height: 16),
-          Text('还没有健身卡', style: TextStyle(color: colors.textMuted, fontSize: 16)),
+          Text(tr(context, '还没有健身卡'), style: TextStyle(color: colors.textMuted, fontSize: 16)),
           const SizedBox(height: 8),
-          Text('添加你的健身卡，随时查看到期提醒', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+          Text(tr(context, '添加你的健身卡，随时查看到期提醒'), style: TextStyle(color: colors.textMuted, fontSize: 13)),
           const SizedBox(height: 24),
           SizedBox(
             width: 200,
             child: ElevatedButton.icon(
               onPressed: () => _showAddCardSheet(),
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('添加健身卡', style: TextStyle(fontWeight: FontWeight.w600)),
+              label: Text(tr(context, '添加健身卡'), style: const TextStyle(fontWeight: FontWeight.w600)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.accentGlow,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -1098,14 +1099,14 @@ class _GymCardPageState extends State<GymCardPage> {
               ),
             ),
             // 次卡扣减按钮
-            if (cardType == '次卡' && remainingCount > 0) ...[
+            if (cardType == tr(context, '次卡') && remainingCount > 0) ...[
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () => _useOneCount(card),
                   icon: Icon(Icons.remove_circle_outline, size: 18, color: colors.accentGlow),
-                  label: Text('使用1次 (剩余$remainingCount次)', style: TextStyle(color: colors.accentGlow, fontSize: 13)),
+                  label: Text(tr(context, '使用1次 (剩余$remainingCount次)'), style: TextStyle(color: colors.accentGlow, fontSize: 13)),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: colors.accentGlow.withOpacity(0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 8),

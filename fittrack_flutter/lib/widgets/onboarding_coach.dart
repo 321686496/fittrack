@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/storage.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 class OnboardingCoach extends StatefulWidget {
   /// 选择部位并确认时回调，参数为所选部位
   final ValueChanged<String> onComplete;
@@ -18,7 +19,7 @@ class OnboardingCoach extends StatefulWidget {
 class _OnboardingCoachState extends State<OnboardingCoach> {
   String? _selectedPart;
 
-  static const _parts = ['胸', '背', '腿', '肩', '手臂', '核心'];
+  static final _parts = [trn( '胸'), trn( '背'), trn( '腿'), trn( '肩'), trn( '手臂'), trn( '核心')];
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +44,13 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                '今天练什么部位？',
+                tr(context, '今天练什么部位？'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
               ),
               const SizedBox(height: 8),
               Text(
-                '选择想练的部位，为你自动搜索合适的训练计划',
+                tr(context, '选择想练的部位，为你自动搜索合适的训练计划'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(color: textSecondary),
               ),
@@ -85,11 +86,11 @@ class _OnboardingCoachState extends State<OnboardingCoach> {
                 children: [
                   TextButton(
                     onPressed: widget.onSkip,
-                    child: Text('跳过', style: TextStyle(color: textSecondary)),
+                    child: Text(tr(context, '跳过'), style: TextStyle(color: textSecondary)),
                   ),
                   FilledButton(
                     onPressed: _selectedPart == null ? null : _confirm,
-                    child: const Text('搜索训练计划'),
+                    child: Text(tr(context, '搜索训练计划')),
                   ),
                 ],
               ),

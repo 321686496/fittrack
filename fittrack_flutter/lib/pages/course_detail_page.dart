@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/course_content.dart';
@@ -9,6 +9,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/unlock_panel.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class CourseDetailPage extends StatefulWidget {
   final String courseId;
   const CourseDetailPage({super.key, required this.courseId});
@@ -22,7 +23,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final course = CourseLibrary.getById(widget.courseId);
-    if (course == null) return const Scaffold(body: Center(child: Text('课程不存在')));
+    if (course == null) return Scaffold(body: Center(child: Text(tr(context, '课程不存在'))));
 
     final isUnlocked = PointsService.instance.isFeatureUnlocked(course.id);
 
@@ -45,13 +46,13 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   children: [
                     Icon(Icons.list_alt, size: 18, color: colors.accentGlow),
                     const SizedBox(width: 8),
-                    Text('课程章节',
+                    Text(tr(context, '课程章节'),
                         style: TextStyle(
                             color: colors.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.bold)),
                     const Spacer(),
-                    Text('${course.chapters.length} 章',
+                    Text(tr(context, '${course.chapters.length} 章'),
                         style: TextStyle(color: colors.textMuted, fontSize: 12)),
                   ],
                 ),
@@ -129,17 +130,17 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               _buildInfoChip(colors, course.difficulty.label, colors.accentGlow),
               _buildInfoChip(colors, course.goal.label, colors.infoColor),
               _buildInfoChip(
-                  colors, '${course.chapters.length} 章', colors.purpleColor),
+                  colors, tr(context, '${course.chapters.length} 章'), colors.purpleColor),
               _buildInfoChip(
                 colors,
-                course.pointsCost == 0 ? '免费' : '${course.pointsCost} 积分',
+                course.pointsCost == 0 ? tr(context, '免费') : tr(context, '${course.pointsCost} 积分'),
                 course.pointsCost == 0
                     ? colors.successColor
                     : colors.warningColor,
               ),
               _buildInfoChip(
                 colors,
-                isUnlocked ? '已解锁' : '未解锁',
+                isUnlocked ? tr(context, '已解锁') : tr(context, '未解锁'),
                 isUnlocked ? colors.successColor : colors.textMuted,
               ),
             ],
@@ -171,7 +172,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             children: [
               Icon(Icons.person_outline, size: 14, color: colors.textMuted),
               const SizedBox(width: 4),
-              Text('教练：${course.coachName}',
+              Text(tr(context, '教练：${course.coachName}'),
                   style: TextStyle(color: colors.textMuted, fontSize: 12)),
             ],
           ),
@@ -192,7 +193,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   if (unlocked && mounted) setState(() {});
                 },
                 icon: const Icon(Icons.lock_open, size: 18),
-                label: const Text('解锁全部课程'),
+                label: Text(tr(context, '解锁全部课程')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,

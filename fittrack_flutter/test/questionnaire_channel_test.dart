@@ -15,7 +15,7 @@ void main() {
   test('channelSource is persisted when saved', () async {
     final s = Storage.getSettings();
     s['channelSource'] = '小红书';
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     // Re-read from Storage
     expect(Storage.getSettings()['channelSource'], '小红书');
   });

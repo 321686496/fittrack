@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../data/storage.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 /// 首次创建训练计划引导页
 ///
 /// 首次进入"创建计划"时展示，帮助用户理解创建流程：
@@ -55,7 +56,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '3 步创建你的训练计划',
+                            tr(context, '3 步创建你的训练计划'),
                             style: TextStyle(
                               color: colors.textPrimary,
                               fontSize: 20,
@@ -67,7 +68,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '从零开始也能轻松上手，快来看看怎么创建吧',
+                      tr(context, '从零开始也能轻松上手，快来看看怎么创建吧'),
                       style: TextStyle(color: colors.textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 28),
@@ -75,22 +76,22 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                       colors,
                       step: '1',
                       icon: Icons.edit_outlined,
-                      title: '给计划起个名字',
-                      desc: '填写计划名称，如"增肌计划""减脂计划"，方便日后区分。',
+                      title: tr(context, '给计划起个名字'),
+                      desc: tr(context, '填写计划名称，如"增肌计划""减脂计划"，方便日后区分。'),
                     ),
                     _buildStep(
                       colors,
                       step: '2',
                       icon: Icons.calendar_month_outlined,
-                      title: '安排训练日与动作',
-                      desc: '可以点击「训练类型」选择模板快速生成（三分化/四分化等），也可以从空开始：点右上角「+ 训练日」添加训练日，再点训练日内的「添加动作」选择动作并设置组数、次数、重量。',
+                      title: tr(context, '安排训练日与动作'),
+                      desc: tr(context, '可以点击「训练类型」选择模板快速生成（三分化/四分化等），也可以从空开始：点右上角「+ 训练日」添加训练日，再点训练日内的「添加动作」选择动作并设置组数、次数、重量。'),
                     ),
                     _buildStep(
                       colors,
                       step: '3',
                       icon: Icons.play_circle_outline,
-                      title: '设置难度并保存',
-                      desc: '选择难度等级与适用人群（全部/男性/女性），确认训练日安排后点击「创建计划」，即可开始训练。',
+                      title: tr(context, '设置难度并保存'),
+                      desc: tr(context, '选择难度等级与适用人群（全部/男性/女性），确认训练日安排后点击「创建计划」，即可开始训练。'),
                     ),
                     const SizedBox(height: 20),
                     Container(
@@ -107,7 +108,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              '小提示：保存后随时可以进入计划详情继续编辑训练日与动作。',
+                              tr(context, '小提示：保存后随时可以进入计划详情继续编辑训练日与动作。'),
                               style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.5),
                             ),
                           ),
@@ -130,7 +131,7 @@ class _PlanCreateGuidePageState extends State<PlanCreateGuidePage> {
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('开始创建', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: Text(tr(context, '开始创建'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ),

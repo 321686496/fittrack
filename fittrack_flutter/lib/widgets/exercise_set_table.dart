@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 /// 逐组配置表格：展示动作逐组设置的次数/重量/休息
 ///
 /// 供训练日编辑器（add_plan_page / plan_page）与计划详情页共用，
@@ -36,10 +37,10 @@ class ExerciseSetTable extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Expanded(flex: 2, child: Text('组', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
-                Expanded(flex: 3, child: Text('次数', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-                Expanded(flex: 3, child: Text('重量', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-                Expanded(flex: 3, child: Text('休息', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+                Expanded(flex: 2, child: Text(tr(context, '组'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
+                Expanded(flex: 3, child: Text(tr(context, '次数'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+                Expanded(flex: 3, child: Text(tr(context, '重量'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+                Expanded(flex: 3, child: Text(tr(context, '休息'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
               ],
             ),
           ),
@@ -56,10 +57,10 @@ class ExerciseSetTable extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Expanded(flex: 2, child: Text('第${idx + 1}组', style: TextStyle(color: colors.textSecondary, fontSize: 11))),
+                  Expanded(flex: 2, child: Text(tr(context, '第${idx + 1}组'), style: TextStyle(color: colors.textSecondary, fontSize: 11))),
                   Expanded(flex: 3, child: Text('${s['reps'] ?? '-'}', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.center)),
                   Expanded(flex: 3, child: Text('${formatWeight(s['weight'])}kg', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.center)),
-                  Expanded(flex: 3, child: Text('${s['restTime'] ?? 90}秒', style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.right)),
+                  Expanded(flex: 3, child: Text(tr(context, '${s['restTime'] ?? 90}秒'), style: TextStyle(color: colors.textPrimary, fontSize: 11), textAlign: TextAlign.right)),
                 ],
               ),
             );

@@ -4,6 +4,7 @@
 import '../data/storage.dart';
 import '../data/mock_data.dart';
 
+import '../l10n/i18n.dart';
 class MaxWeightRecord {
   final String exerciseName;
   final double weight;
@@ -169,27 +170,28 @@ class MaxWeightService {
   /// 简单部位推断（通过动作名关键字）
   static String _inferMuscleGroup(String name) {
     final n = name.toLowerCase();
-    if (n.contains('卧推') || n.contains('夹胸') || n.contains('俯卧撑')) return '胸部';
-    if (n.contains('飞鸟') && (n.contains('胸') || n.contains('平'))) return '胸部';
+    if (n.contains('卧推') || n.contains('夹胸') || n.contains('俯卧撑')) return trn('胸部');
+    if (n.contains('飞鸟') && (n.contains('胸') || n.contains('平'))) return trn('胸部');
     if (n.contains('硬拉') || n.contains('划船') || n.contains('引体') ||
         n.contains('下拉') || n.contains('高位') || n.contains('杠铃划') ||
-        n.contains('单臂划')) return '背部';
+        n.contains('单臂划')) return trn('背部');
     if (n.contains('深蹲') || n.contains('腿举') || n.contains('腿屈伸') ||
         n.contains('弓步') || n.contains('提踵') || n.contains('腿弯举') ||
-        n.contains('保加利亚')) return '腿部';
+        n.contains('保加利亚')) return trn('腿部');
     if (n.contains('推举') || n.contains('侧平举') || n.contains('前平举') ||
-        n.contains('肩推') || n.contains('阿诺德')) return '肩膀';
+        n.contains('肩推') || n.contains('阿诺德')) return trn('肩膀');
     if (n.contains('弯举') || n.contains('臂屈伸') || n.contains('锤式') ||
-        n.contains('绳索下压') || n.contains('集中弯')) return '手臂';
+        n.contains('绳索下压') || n.contains('集中弯')) return trn('手臂');
     if (n.contains('卷腹') || n.contains('平板支撑') || n.contains('举腿') ||
-        n.contains('俄罗斯转体') || n.contains('仰卧起坐') || n.contains('腹部')) return '核心';
-    return '其他';
+        n.contains('俄罗斯转体') || n.contains('仰卧起坐') || n.contains('腹部')) return trn('核心');
+    return trn('其他');
   }
 
-  static const List<String> kMuscleGroups = ['胸部', '背部', '腿部', '肩膀', '手臂', '核心', '其他'];
+  static List<String> get kMuscleGroups => _kMuscleGroupsMemo.value;
+  static final LocaleMemo<List<String>> _kMuscleGroupsMemo = LocaleMemo(() => [trn('胸部'), trn('背部'), trn('腿部'), trn('肩膀'), trn('手臂'), trn('核心'), trn('其他')]);
 
   /// 各部位最大重量里程碑（kg），按升序排列
-  static const Map<String, List<double>> kMuscleGroupMilestones = {
+  static final Map<String, List<double>> kMuscleGroupMilestones = {
     '胸部': [20, 40, 60, 80, 100, 120, 140],
     '背部': [20, 40, 60, 80, 100, 120, 140, 160],
     '腿部': [30, 50, 80, 100, 120, 140, 160, 180, 200],

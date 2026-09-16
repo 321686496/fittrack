@@ -5,6 +5,7 @@ import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/exercise_set_table.dart';
 
+import '../l10n/i18n.dart';
 class PlanDetailPage extends StatefulWidget {
   final String planId;
 
@@ -47,9 +48,9 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
   void _deletePlan(String planId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '确认删除',
-      content: '删除后无法恢复，确定要删除这个计划吗？',
-      confirmText: '删除',
+      title: tr(context, '确认删除'),
+      content: tr(context, '删除后无法恢复，确定要删除这个计划吗？'),
+      confirmText: tr(context, '删除'),
       confirmColor: Colors.redAccent,
       icon: Icons.delete_outline_rounded,
     );
@@ -62,13 +63,13 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
   String _statusLabel(String status) {
     switch (status) {
       case 'active':
-        return '进行中';
+        return tr(context, '进行中');
       case 'done':
-        return '已完成';
+        return tr(context, '已完成');
       case 'pending':
-        return '待开始';
+        return tr(context, '待开始');
       case 'paused':
-        return '已暂停';
+        return tr(context, '已暂停');
       default:
         return status;
     }
@@ -101,12 +102,12 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
             children: [
               Icon(Icons.error_outline, size: 64, color: colors.textMuted),
               const SizedBox(height: 16),
-              Text('计划不存在或已删除',
+              Text(tr(context, '计划不存在或已删除'),
                   style: TextStyle(color: colors.textSecondary, fontSize: 16)),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => context.go('/plan'),
-                child: const Text('返回计划页'),
+                child: Text(tr(context, '返回计划页')),
               ),
             ],
           ),
@@ -122,7 +123,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
       appBar: AppBar(
         backgroundColor: colors.bgSecondary,
         title: Text(
-          plan['name'] as String? ?? '训练计划',
+          plan['name'] as String? ?? tr(context, '训练计划'),
           style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -157,7 +158,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                   Row(
                     children: [
                       Text(
-                        '第${plan['week'] ?? 0}/${plan['totalWeeks'] ?? 0}周',
+                        tr(context, '第${plan['week'] ?? 0}/${plan['totalWeeks'] ?? 0}周'),
                         style: TextStyle(color: colors.textSecondary, fontSize: 14),
                       ),
                       const Spacer(),
@@ -179,7 +180,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
             const SizedBox(height: 20),
 
             // Days list
-            const SectionHeader(title: '训练日'),
+            SectionHeader(title: tr(context, '训练日')),
             const SizedBox(height: 12),
             ...days.asMap().entries.map((entry) {
               final index = entry.key;
@@ -197,7 +198,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                       context.push('/add-plan?editPlanId=${plan['id']}');
                     },
                     icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: const Text('编辑计划'),
+                    label: Text(tr(context, '编辑计划')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colors.textSecondary,
                       side: BorderSide(color: colors.borderColor),
@@ -210,7 +211,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                   child: OutlinedButton.icon(
                     onPressed: () => _deletePlan(plan['id'] as String),
                     icon: Icon(Icons.delete_outline, size: 18, color: colors.warningColor),
-                    label: Text('删除计划', style: TextStyle(color: colors.warningColor)),
+                    label: Text(tr(context, '删除计划'), style: TextStyle(color: colors.warningColor)),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: colors.borderColor),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -240,13 +241,13 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
             children: [
               Icon(Icons.today, size: 18, color: colors.accentGlow),
               const SizedBox(width: 6),
-              Text('当前训练日',
+              Text(tr(context, '当前训练日'),
                   style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w600)),
               const Spacer(),
-              Text('点击切换',
+              Text(tr(context, '点击切换'),
                   style: TextStyle(color: colors.textMuted, fontSize: 11)),
             ],
           ),
@@ -278,7 +279,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                             : colors.borderColor),
                   ),
                   child: Text(
-                    '第${idx + 1}天 ${day['label'] ?? ''}',
+                    tr(context, '第${idx + 1}天 ${day['label'] ?? ''}'),
                     style: TextStyle(
                       color: isSelected ? colors.accentGlow : colors.textSecondary,
                       fontSize: 12,
@@ -323,7 +324,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${day['label'] ?? '训练日 ${dayIndex + 1}'}',
+                    tr(context, '${day['label'] ?? '训练日 ${dayIndex + 1}'}'),
                     style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -337,7 +338,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
             ] else ...[
               const SizedBox(height: 8),
               Text(
-                '暂无动作，编辑计划添加',
+                tr(context, '暂无动作，编辑计划添加'),
                 style: TextStyle(color: colors.textMuted, fontSize: 13),
               ),
             ],
@@ -354,7 +355,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('开始训练', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                child: Text(tr(context, '开始训练'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               ),
             ),
           ],
@@ -395,7 +396,7 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  '共${ex['sets'] ?? 0}组',
+                  tr(context, '共${ex['sets'] ?? 0}组'),
                   style: TextStyle(color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -421,9 +422,9 @@ class _PlanDetailPageState extends State<PlanDetailPage> {
       spacing: 6,
       runSpacing: 6,
       children: [
-        _buildStatChip(colors, Icons.repeat, '次数', '$reps'),
-        _buildStatChip(colors, Icons.monitor_weight_outlined, '重量', weightStr),
-        _buildStatChip(colors, Icons.timer_outlined, '休息', '$restTime秒'),
+        _buildStatChip(colors, Icons.repeat, tr(context, '次数'), '$reps'),
+        _buildStatChip(colors, Icons.monitor_weight_outlined, tr(context, '重量'), weightStr),
+        _buildStatChip(colors, Icons.timer_outlined, tr(context, '休息'), tr(context, '$restTime秒')),
       ],
     );
   }

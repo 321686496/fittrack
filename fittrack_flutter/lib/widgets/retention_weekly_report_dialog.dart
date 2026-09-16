@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/retention_chain_service.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 /// v1 新手7天留存链 —— Day7 首份周报弹窗
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md V1-04-04
@@ -108,7 +109,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                         size: 14, color: Colors.white.withOpacity(0.9)),
                     const SizedBox(width: 6),
                     Text(
-                      'LiftTrack · 7日周报',
+                      trn( 'LiftTrack · 7日周报'),
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 11,
@@ -119,9 +120,9 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  '你已经用 LiftTrack 一周了',
-                  style: TextStyle(
+                Text(
+                  trn( '你已经用 LiftTrack 一周了'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -140,7 +141,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   Widget _buildTitle(LiftTrackColors colors) {
     return Text(
-      '本周战绩汇总',
+      trn( '本周战绩汇总'),
       style: TextStyle(
         color: colors.textPrimary,
         fontSize: 16,
@@ -151,9 +152,9 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
 
   Widget _buildSubtitle(LiftTrackColors colors) {
     final d = report.firstTrainingDate;
-    final dateStr = '${d.month}月${d.day}日加入';
+    final dateStr = trn( '${d.month}月${d.day}日加入');
     return Text(
-      '自$dateStr起，你的训练档案已建立',
+      trn( '自$dateStr起，你的训练档案已建立'),
       style: TextStyle(
         color: colors.textMuted,
         fontSize: 12,
@@ -170,9 +171,9 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
           child: _buildStatCard(
             colors,
             icon: Icons.event_available,
-            label: '训练天数',
+            label: trn( '训练天数'),
             value: '${report.trainingDays}',
-            unit: '天',
+            unit: trn( '天'),
             highlight: true,
           ),
         ),
@@ -181,7 +182,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
           child: _buildStatCard(
             colors,
             icon: Icons.fitness_center,
-            label: '总重量',
+            label: trn( '总重量'),
             value: '${report.totalWeight}',
             unit: 'kg',
           ),
@@ -278,7 +279,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '${report.weightAnalogy} · 累计训练 ${report.durationText}',
+              trn( '${report.weightAnalogy} · 累计训练 ${report.durationText}'),
               style: TextStyle(
                 color: colors.textSecondary,
                 fontSize: 12,
@@ -344,7 +345,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '已连续打卡 ${report.streak} 天，保持节奏!',
+              trn( '已连续打卡 ${report.streak} 天，保持节奏!'),
               style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 13,
@@ -373,7 +374,7 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
                 borderRadius: BorderRadius.circular(50),
               ),
             ),
-            child: const Text('稍后再看'),
+            child: Text(tr(context, '稍后再看')),
           ),
         ),
         const SizedBox(width: 12),
@@ -389,9 +390,9 @@ class RetentionWeeklyReportDialog extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              '继续加油',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            child: Text(
+              tr(context, '继续加油'),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ),

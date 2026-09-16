@@ -10,6 +10,7 @@ import '../utils/art_assets.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class PlanLibraryDetailPage extends StatefulWidget {
   final String planId;
   const PlanLibraryDetailPage({super.key, required this.planId});
@@ -30,12 +31,12 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
         body: Column(
           children: [
             PageHeader(
-              title: '计划不存在',
+              title: tr(context, '计划不存在'),
               onBack: () => Navigator.of(context).pop(),
             ),
             Expanded(
               child: Center(
-                child: Text('计划不存在', style: TextStyle(color: ft.textSecondary)),
+                child: Text(tr(context, '计划不存在'), style: TextStyle(color: ft.textSecondary)),
               ),
             ),
           ],
@@ -140,9 +141,9 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
                         color: Colors.white.withOpacity(0.25),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        '精品计划',
-                        style: TextStyle(
+                      child: Text(
+                        tr(context, '精品计划'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -169,12 +170,12 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
 
   Widget _buildStats(SystemPlan plan, LiftTrackColors ft) {
     final List<MapEntry<String, String>> stats = [
-      MapEntry('难度', kDifficultyLabelsZh[plan.difficulty] ?? plan.difficulty),
-      MapEntry('类型', kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType),
-      MapEntry('频率', '每周${plan.recommendedFrequency}练'),
-      MapEntry('周期', '${plan.totalWeeks}周'),
-      MapEntry('休息', '${plan.defaultRestTime}秒'),
-      MapEntry('训练日', '${plan.days.length}天'),
+      MapEntry(tr(context, '难度'), kDifficultyLabelsZh[plan.difficulty] ?? plan.difficulty),
+      MapEntry(tr(context, '类型'), kTrainingTypeLabelsZh[plan.trainingType] ?? plan.trainingType),
+      MapEntry(tr(context, '频率'), tr(context, '每周${plan.recommendedFrequency}练')),
+      MapEntry(tr(context, '周期'), tr(context, '${plan.totalWeeks}周')),
+      MapEntry(tr(context, '休息'), tr(context, '${plan.defaultRestTime}秒')),
+      MapEntry(tr(context, '训练日'), tr(context, '${plan.days.length}天')),
     ];
     return Container(
       padding: const EdgeInsets.all(16),
@@ -226,7 +227,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '计划说明',
+            tr(context, '计划说明'),
             style: TextStyle(
               color: ft.textPrimary,
               fontSize: 16,
@@ -241,7 +242,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
           if (plan.suitableFor.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
-              '适合人群',
+              tr(context, '适合人群'),
               style: TextStyle(
                 color: ft.textPrimary,
                 fontSize: 14,
@@ -285,7 +286,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            '解锁后查看完整训练安排',
+            tr(context, '解锁后查看完整训练安排'),
             style: TextStyle(
               color: ft.textPrimary,
               fontSize: 16,
@@ -294,13 +295,13 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            '本计划共 ${plan.days.length} 个训练日，包含详细动作、组数次数与休息时间',
+            tr(context, '本计划共 ${plan.days.length} 个训练日，包含详细动作、组数次数与休息时间'),
             style: TextStyle(color: ft.textSecondary, fontSize: 13, height: 1.5),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
-            '支付 ${plan.pointsCost} 积分解锁，90 天内可查看与使用',
+            tr(context, '支付 ${plan.pointsCost} 积分解锁，90 天内可查看与使用'),
             style: TextStyle(color: ft.textMuted, fontSize: 12),
             textAlign: TextAlign.center,
           ),
@@ -321,7 +322,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '训练日安排',
+            tr(context, '训练日安排'),
             style: TextStyle(
               color: ft.textPrimary,
               fontSize: 16,
@@ -372,7 +373,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
                   ),
                 ),
                 Text(
-                  '${day.muscle} · ${day.exercises.length}个动作',
+                  tr(context, '${day.muscle} · ${day.exercises.length}个动作'),
                   style: TextStyle(color: ft.textMuted, fontSize: 12),
                 ),
               ],
@@ -439,7 +440,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
                   children: [
                     if (isUnlocked && unlockInfo != null)
                       Text(
-                        '剩余 ${unlockInfo.remainingDays} 天有效',
+                        tr(context, '剩余 ${unlockInfo.remainingDays} 天有效'),
                         style: TextStyle(
                           color: ft.successColor,
                           fontSize: 12,
@@ -447,14 +448,14 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
                       )
                     else
                       Text(
-                        '当前积分: ${PointsService.instance.points}',
+                        tr(context, '当前积分: ${PointsService.instance.points}'),
                         style: TextStyle(color: ft.textMuted, fontSize: 12),
                       ),
                     const SizedBox(height: 4),
                     Text(
                       isUnlocked
-                          ? '已解锁'
-                          : '需 ${plan.pointsCost} 积分解锁（90天有效）',
+                          ? tr(context, '已解锁')
+                          : tr(context, '需 ${plan.pointsCost} 积分解锁（90天有效）'),
                       style: TextStyle(
                         color: isUnlocked ? ft.successColor : ft.warningColor,
                         fontSize: 14,
@@ -475,8 +476,8 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
                 ),
                 child: Text(
                   isUnlocked
-                      ? '采用此计划'
-                      : '支付 ${plan.pointsCost} 积分解锁',
+                      ? tr(context, '采用此计划')
+                      : tr(context, '支付 ${plan.pointsCost} 积分解锁'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -500,20 +501,20 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
       if (!mounted) return;
       switch (result) {
         case UnlockResult.success:
-          FitToast.success(context, '解锁成功！90天内可使用此计划');
+          FitToast.success(context, tr(context, '解锁成功！90天内可使用此计划'));
           setState(() {}); // 刷新 UI
           break;
         case UnlockResult.insufficientPoints:
           FitToast.error(
             context,
-            '积分不足，还差 ${plan.pointsCost - PointsService.instance.points} 积分',
+            tr(context, '积分不足，还差 ${plan.pointsCost - PointsService.instance.points} 积分'),
           );
           break;
         case UnlockResult.alreadyUnlocked:
           setState(() {});
           break;
         case UnlockResult.unknownPlan:
-          FitToast.error(context, '计划不存在');
+          FitToast.error(context, tr(context, '计划不存在'));
           break;
       }
       return;
@@ -537,7 +538,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
       for (final p in existingPlans) {
         if (p['status'] == 'active') {
           await Storage.updatePlanAsync(
-              p['id'] as String, {'status': 'paused', 'badge': '已暂停'});
+              p['id'] as String, {'status': 'paused', 'badge': tr(context, '已暂停')});
         }
       }
       // 添加新计划（携带确认后的建议重量）
@@ -547,12 +548,12 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
 
       if (!mounted) return;
       // 保存成功后跳转首页并提示用户可以开始训练
-      FitToast.success(context, '已采用计划：${plan.name}，开始训练吧！');
+      FitToast.success(context, tr(context, '已采用计划：${plan.name}，开始训练吧！'));
       context.go('/home');
     } catch (e) {
       debugPrint('采用计划失败: $e');
       if (!mounted) return;
-      FitToast.error(context, '采用计划失败，请重试');
+      FitToast.error(context, tr(context, '采用计划失败，请重试'));
     }
   }
 }

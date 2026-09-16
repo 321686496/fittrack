@@ -8,6 +8,7 @@ import 'notification_storage_service.dart';
 import 'ohos_reminder_service.dart';
 import 'reminder_schedule_calculator.dart';
 
+import '../l10n/i18n.dart';
 /// 健身卡到期提醒服务
 ///
 /// 在 App 启动 / 回到前台时检查所有健身卡，根据用户配置的阈值
@@ -27,8 +28,10 @@ class GymCardReminderService {
   static final GymCardReminderService instance = GymCardReminderService._();
 
   static const String _channelId = 'gym_card_expiry_channel';
-  static const String _channelName = '健身卡到期提醒';
-  static const String _channelDesc = '健身卡即将到期或次数不足的提醒';
+  static String get _channelName => _channelNameMemo.value;
+  static final LocaleMemo<String> _channelNameMemo = LocaleMemo(() => trn('健身卡到期提醒'));
+  static String get _channelDesc => _channelDescMemo.value;
+  static final LocaleMemo<String> _channelDescMemo = LocaleMemo(() => trn('健身卡即将到期或次数不足的提醒'));
   static const int _notificationId = 4001; // checkAndPush 即时通知 ID
   static const int _scheduledBaseId = 5000; // 后台一次性提醒起始 ID
   static const int _maxScheduledCards = 20; // 上限，避免 ID 溢出 / 提醒数量超限
@@ -70,7 +73,7 @@ class GymCardReminderService {
         await _plugin
             ?.resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>()
-            ?.createNotificationChannel(const AndroidNotificationChannel(
+            ?.createNotificationChannel(AndroidNotificationChannel(
               _channelId,
               _channelName,
               description: _channelDesc,
@@ -144,7 +147,7 @@ class GymCardReminderService {
       final alerts = <String>[];
 
       for (final card in cards) {
-        final name = card['name'] as String? ?? '未命名卡';
+        final name = card['name'] as String? ?? trn('未命名卡');
         final cardType = card['cardType'] as String? ?? '';
         final endDate = card['endDate'] as int? ?? 0;
         final remaining = card['remainingCount'] as int? ?? -1;
@@ -154,9 +157,9 @@ class GymCardReminderService {
             remaining >= 0 &&
             remaining <= countThreshold) {
           if (remaining == 0) {
-            alerts.add('「$name」已用完所有次数');
+            alerts.add(trn('「$name」已用完所有次数'));
           } else {
-            alerts.add('「$name」仅剩 $remaining 次');
+            alerts.add(trn('「$name」仅剩 $remaining 次'));
           }
           continue;
         }
@@ -167,11 +170,11 @@ class GymCardReminderService {
           final now = DateTime.now();
           final diff = end.difference(now).inDays;
           if (diff < 0) {
-            alerts.add('「$name」已过期 ${-diff} 天');
+            alerts.add(trn('「$name」已过期 ${-diff} 天'));
           } else if (diff == 0) {
-            alerts.add('「$name」今天到期');
+            alerts.add(trn('「$name」今天到期'));
           } else if (diff <= daysThreshold) {
-            alerts.add('「$name」还有 $diff 天到期');
+            alerts.add(trn('「$name」还有 $diff 天到期'));
           }
         }
       }
@@ -182,9 +185,9 @@ class GymCardReminderService {
 
       // 合并推送（最多展示前 3 条，避免通知过长）
       final display = alerts.take(3).join('，');
-      final suffix = alerts.length > 3 ? ' 等 ${alerts.length} 张' : '';
-      const title = '健身卡提醒';
-      final content = '$display$suffix，请及时续卡';
+      final suffix = alerts.length > 3 ? trn(' 等 ${alerts.length} 张') : '';
+      final title = trn('健身卡提醒');
+      final content = trn('$display$suffix，请及时续卡');
 
       await _sendNotification(title, content);
 
@@ -253,7 +256,7 @@ class GymCardReminderService {
         return;
       }
 
-      const title = '健身卡提醒';
+      final title = trn('健身卡提醒');
       final limited = candidates.take(_maxScheduledCards).toList();
 
       if (isOhos) {
@@ -317,7 +320,7 @@ class GymCardReminderService {
       debugPrint('[GymCardReminder] 提醒日 10:00 已过，顺延到 1 分钟后提醒');
     }
 
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
       channelDescription: _channelDesc,
@@ -325,7 +328,7 @@ class GymCardReminderService {
       priority: Priority.high,
       enableVibration: true,
     );
-    const details = NotificationDetails(android: androidDetails);
+    final details = NotificationDetails(android: androidDetails);
 
     try {
       await _plugin!.zonedSchedule(
@@ -395,16 +398,16 @@ class GymCardReminderService {
     try {
       if (isOhos) {
         // OHOS：使用 flutter_local_notifications（OHOS fork 版本支持 OhosNotificationDetails）
-        const ohosDetails = OhosNotificationDetails(
+        final ohosDetails = OhosNotificationDetails(
           OhosNotificationSlotType.SOCIAL_COMMUNICATION,
           slotDesc: _channelDesc,
           importance: OhosImportance.high,
           enableVibration: true,
         );
-        const details = NotificationDetails(ohos: ohosDetails);
+        final details = NotificationDetails(ohos: ohosDetails);
         await _plugin!.show(_notificationId, title, content, details);
       } else {
-        const androidDetails = AndroidNotificationDetails(
+        final androidDetails = AndroidNotificationDetails(
           _channelId,
           _channelName,
           channelDescription: _channelDesc,
@@ -412,7 +415,7 @@ class GymCardReminderService {
           priority: Priority.high,
           enableVibration: true,
         );
-        const details = NotificationDetails(android: androidDetails);
+        final details = NotificationDetails(android: androidDetails);
         await _plugin!.show(_notificationId, title, content, details);
       }
     } catch (e) {

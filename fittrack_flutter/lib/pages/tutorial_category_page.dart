@@ -6,6 +6,7 @@ import '../data/tutorial_content.dart';
 import '../themes/app_themes.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// 教学分类详情页（v1.3 新增）
 ///
 /// 由 AllTutorialsPage 的瀑布流卡片点击进入。
@@ -35,13 +36,13 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
         body: Column(
           children: [
             PageHeader(
-              title: '未知分类',
+              title: tr(context, '未知分类'),
               isTabPage: false,
               onBack: () => Navigator.of(context).pop(),
             ),
             Expanded(
               child: Center(
-                child: Text('分类不存在',
+                child: Text(tr(context, '分类不存在'),
                     style: TextStyle(color: ft.textMuted, fontSize: 14)),
               ),
             ),
@@ -104,7 +105,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
   /// 系统化课程列表
   Widget _buildCourseList(LiftTrackColors ft, List<Course> courses) {
     if (courses.isEmpty) {
-      return _buildEmpty(ft, '暂无系统化课程');
+      return _buildEmpty(ft, tr(context, '暂无系统化课程'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -155,9 +156,9 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
                           _buildMetaChip(ft,
                               c.difficulty.label, ft.accentGlow.withOpacity(0.15), ft.accentGlow),
                           _buildMetaChip(ft,
-                              '${c.chapters.length} 章', ft.infoColor.withOpacity(0.15), ft.infoColor),
+                              tr(context, '${c.chapters.length} 章'), ft.infoColor.withOpacity(0.15), ft.infoColor),
                           _buildMetaChip(ft,
-                              c.pointsCost == 0 ? '免费' : '${c.pointsCost}积分',
+                              c.pointsCost == 0 ? tr(context, '免费') : tr(context, '${c.pointsCost}积分'),
                               c.pointsCost == 0
                                   ? ft.successColor.withOpacity(0.15)
                                   : ft.warningColor.withOpacity(0.15),
@@ -182,7 +183,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
   Widget _buildTutorialList(
       LiftTrackColors ft, List<Tutorial> tutorials, _CategoryMeta meta) {
     if (tutorials.isEmpty) {
-      return _buildEmpty(ft, '暂无${meta.title}');
+      return _buildEmpty(ft, tr(context, '暂无${meta.title}'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -258,7 +259,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
                   Text(
                     unlocked
                         ? '${t.coachName} · ${t.primaryMuscle.label}'
-                        : '${t.coachName} · 点击查看介绍',
+                        : tr(context, '${t.coachName} · 点击查看介绍'),
                     style: TextStyle(color: ft.textMuted, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -266,7 +267,7 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
                   if (unlocked && t.equipment != null) ...[
                     const SizedBox(height: 2),
                     Text(
-                      '器械：${t.equipment}',
+                      tr(context, '器械：${t.equipment}'),
                       style: TextStyle(color: ft.textMuted, fontSize: 11),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -318,18 +319,18 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
 
     switch (key) {
       case 'system':
-        return const _CategoryMeta(
-          title: '系统化课程',
-          subtitle: '从零基础到进阶的完整体系',
+        return _CategoryMeta(
+          title: tr(context, '系统化课程'),
+          subtitle: tr(context, '从零基础到进阶的完整体系'),
           type: null,
           requiresUnlock: false,
           isUnlocked: true,
           unlockHint: '',
         );
       case 'basic':
-        return const _CategoryMeta(
-          title: '基础教学',
-          subtitle: '免费开放 · 覆盖全肌群基础动作',
+        return _CategoryMeta(
+          title: tr(context, '基础教学'),
+          subtitle: tr(context, '免费开放 · 覆盖全肌群基础动作'),
           type: TutorialType.basic,
           requiresUnlock: false,
           isUnlocked: true,
@@ -337,30 +338,30 @@ class _TutorialCategoryPageState extends State<TutorialCategoryPage> {
         );
       case 'advanced':
         return _CategoryMeta(
-          title: '进阶教学',
-          subtitle: '邀请 1 人激活解锁 3 个进阶动作',
+          title: tr(context, '进阶教学'),
+          subtitle: tr(context, '邀请 1 人激活解锁 3 个进阶动作'),
           type: TutorialType.advanced,
           requiresUnlock: true,
           isUnlocked: advancedUnlockedCount > 0,
-          unlockHint: '邀请 1 人激活即可解锁全部进阶教学',
+          unlockHint: tr(context, '邀请 1 人激活即可解锁全部进阶教学'),
         );
       case 'topic':
         return _CategoryMeta(
-          title: '专题教学包',
-          subtitle: '累计邀请 3 人激活解锁完整分化指南',
+          title: tr(context, '专题教学包'),
+          subtitle: tr(context, '累计邀请 3 人激活解锁完整分化指南'),
           type: TutorialType.topic,
           requiresUnlock: true,
           isUnlocked: invitedCount >= 3,
-          unlockHint: '累计邀请 3 人激活即可解锁全部专题教学',
+          unlockHint: tr(context, '累计邀请 3 人激活即可解锁全部专题教学'),
         );
       case 'master':
         return _CategoryMeta(
-          title: '高手教学',
-          subtitle: '累计邀请 5 人激活解锁高手级课程',
+          title: tr(context, '高手教学'),
+          subtitle: tr(context, '累计邀请 5 人激活解锁高手级课程'),
           type: TutorialType.master,
           requiresUnlock: true,
           isUnlocked: masterUnlocked,
-          unlockHint: '累计邀请 5 人激活即可解锁全部高手教学',
+          unlockHint: tr(context, '累计邀请 5 人激活即可解锁全部高手教学'),
         );
       default:
         return null;
@@ -377,7 +378,7 @@ class _CategoryMeta {
   final bool isUnlocked;
   final String unlockHint;
 
-  const _CategoryMeta({
+  _CategoryMeta({
     required this.title,
     required this.subtitle,
     required this.type,

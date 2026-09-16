@@ -3,6 +3,7 @@ import '../services/points_service.dart';
 import '../services/ad_service.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 class UnlockPanel {
   static Future<bool> show({
     required BuildContext context,
@@ -12,7 +13,7 @@ class UnlockPanel {
     required String featureId,
   }) async {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
-    final adsEnabled = AdService.adsEnabled;
+    const adsEnabled = AdService.adsEnabled;
     final currentPoints = PointsService.instance.points;
 
     final result = await showModalBottomSheet<bool>(
@@ -48,8 +49,8 @@ class UnlockPanel {
               _buildOption(
                 ctx, colors,
                 icon: Icons.ondemand_video,
-                label: '看广告免费解锁',
-                subtitle: '观看15秒广告即可解锁',
+                label: tr(context, '看广告免费解锁'),
+                subtitle: tr(context, '观看15秒广告即可解锁'),
                 onTap: () async {
                   final adResult = await AdService.instance.showRewardedVideo();
                   if (adResult == AdResult.success || adResult == AdResult.notAvailable) {
@@ -63,7 +64,7 @@ class UnlockPanel {
                 Expanded(child: Divider(color: colors.borderColor)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('或', style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                  child: Text(tr(context, '或'), style: TextStyle(color: colors.textMuted, fontSize: 12)),
                 ),
                 Expanded(child: Divider(color: colors.borderColor)),
               ]),
@@ -72,10 +73,10 @@ class UnlockPanel {
             _buildOption(
               ctx, colors,
               icon: Icons.stars,
-              label: '消耗 $pointsCost 积分解锁',
+              label: tr(context, '消耗 $pointsCost 积分解锁'),
               subtitle: currentPoints >= pointsCost
-                ? '当前积分：$currentPoints'
-                : '积分不足（当前：$currentPoints）',
+                ? tr(context, '当前积分：$currentPoints')
+                : tr(context, '积分不足（当前：$currentPoints）'),
               enabled: currentPoints >= pointsCost,
               onTap: () async {
                 final ok = await PointsService.instance.unlockFeature(featureId, pointsCost);

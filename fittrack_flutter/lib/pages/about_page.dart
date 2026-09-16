@@ -4,6 +4,7 @@ import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// 关于页面（独立页面，替代原"关于"弹窗）
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -18,7 +19,7 @@ class AboutPage extends StatelessWidget {
         children: [
           PageHeader(
             onBack: () => Navigator.of(context).pop(),
-            title: '关于 LiftTrack',
+            title: tr(context, '关于 LiftTrack'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -47,7 +48,7 @@ class AboutPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            'LiftTrack（燃力）',
+                            tr(context, 'LiftTrack（燃力）'),
                             style: TextStyle(
                               color: colors.textPrimary,
                               fontSize: 20,
@@ -56,12 +57,12 @@ class AboutPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '版本 1.0.0',
+                            tr(context, '版本 1.0.0'),
                             style: TextStyle(color: colors.textMuted, fontSize: 13),
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            '一款简洁高效的健身训练助手，帮助你制定个性化训练计划、记录每次训练数据、追踪身体数据变化、统计训练成就。',
+                            tr(context, '一款简洁高效的健身训练助手，帮助你制定个性化训练计划、记录每次训练数据、追踪身体数据变化、统计训练成就。'),
                             textAlign: TextAlign.center,
                             style: TextStyle(color: colors.textSecondary, fontSize: 14, height: 1.6),
                           ),
@@ -75,17 +76,17 @@ class AboutPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SectionHeader(title: '核心功能'),
+                        SectionHeader(title: tr(context, '核心功能')),
                         const SizedBox(height: 4),
-                        _buildFeature(colors, Icons.edit_calendar_outlined, '个性化训练计划', '支持自定义与系统模板计划'),
+                        _buildFeature(colors, Icons.edit_calendar_outlined, tr(context, '个性化训练计划'), tr(context, '支持自定义与系统模板计划')),
                         const DividerWidget(indent: 40),
-                        _buildFeature(colors, Icons.play_circle_outline, '训练执行与记录', '组间休息倒计时、实时记录'),
+                        _buildFeature(colors, Icons.play_circle_outline, tr(context, '训练执行与记录'), tr(context, '组间休息倒计时、实时记录')),
                         const DividerWidget(indent: 40),
-                        _buildFeature(colors, Icons.query_stats, '统计与进度追踪', '周度统计、肌肉分布、身体数据趋势'),
+                        _buildFeature(colors, Icons.query_stats, tr(context, '统计与进度追踪'), tr(context, '周度统计、肌肉分布、身体数据趋势')),
                         const DividerWidget(indent: 40),
-                        _buildFeature(colors, Icons.school_outlined, '教学课程与动作库', '系统化课程与海量动作教学'),
+                        _buildFeature(colors, Icons.school_outlined, tr(context, '教学课程与动作库'), tr(context, '系统化课程与海量动作教学')),
                         const DividerWidget(indent: 40),
-                        _buildFeature(colors, Icons.privacy_tip_outlined, '本地数据存储', '所有数据仅保存在设备本地'),
+                        _buildFeature(colors, Icons.privacy_tip_outlined, tr(context, '本地数据存储'), tr(context, '所有数据仅保存在设备本地')),
                       ],
                     ),
                   ),
@@ -94,15 +95,15 @@ class AboutPage extends StatelessWidget {
                   CardWidget(
                     child: Column(
                       children: [
-                        _buildMenuTile(colors, Icons.description_outlined, '隐私政策', () {
+                        _buildMenuTile(colors, Icons.description_outlined, tr(context, '隐私政策'), () {
                           context.push('/privacy-full');
                         }),
                         const DividerWidget(indent: 44),
-                        _buildMenuTile(colors, Icons.article_outlined, '用户协议', () {
+                        _buildMenuTile(colors, Icons.article_outlined, tr(context, '用户协议'), () {
                           context.push('/agreement');
                         }),
                         const DividerWidget(indent: 44),
-                        _buildMenuTile(colors, Icons.help_outline, '帮助与反馈', () {
+                        _buildMenuTile(colors, Icons.help_outline, tr(context, '帮助与反馈'), () {
                           context.push('/help-feedback');
                         }),
                       ],

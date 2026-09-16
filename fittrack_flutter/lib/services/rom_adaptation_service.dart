@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../utils/platform_utils.dart';
 
+import '../l10n/i18n.dart';
 /// 国产 ROM 适配引导服务
 ///
 /// 所有设备信息和 ROM 检测都在原生侧完成，Dart 层只做 MethodChannel 封装，
@@ -66,10 +67,10 @@ class RomAdaptationService {
     if (isOhos) return '';
     try {
       final result = await _channel?.invokeMethod<String>('getGuidanceTitle');
-      return result ?? '请确保 LiftTrack 允许后台运行';
+      return result ?? trn('请确保 LiftTrack 允许后台运行');
     } catch (e) {
       debugPrint('RomAdaptation: getGuidanceTitle error: $e');
-      return '请确保 LiftTrack 允许后台运行';
+      return trn('请确保 LiftTrack 允许后台运行');
     }
   }
 
@@ -78,10 +79,10 @@ class RomAdaptationService {
     if (isOhos) return '';
     try {
       final result = await _channel?.invokeMethod<String>('getGuidanceSteps');
-      return result ?? '请确保 LiftTrack 允许后台运行和自启动';
+      return result ?? trn('请确保 LiftTrack 允许后台运行和自启动');
     } catch (e) {
       debugPrint('RomAdaptation: getGuidanceSteps error: $e');
-      return '请确保 LiftTrack 允许后台运行和自启动';
+      return trn('请确保 LiftTrack 允许后台运行和自启动');
     }
   }
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -7,6 +6,7 @@ import '../data/storage.dart';
 import '../utils/platform_utils.dart';
 import 'ohos_reminder_service.dart';
 
+import '../l10n/i18n.dart';
 class SmartPushService {
   static final SmartPushService instance = SmartPushService._();
   SmartPushService._();
@@ -66,8 +66,8 @@ class SmartPushService {
       if (isOhos) {
         // OHOS：原生倒计时代理提醒（20:00 触发一次，持续由 App 重新调度保证）
         await OhosReminderService.instance.scheduleSmartPushReminder(
-          title: 'LiftTrack 提醒',
-          content: '今天还没有训练，来一组保持节奏！',
+          title: trn('LiftTrack 提醒'),
+          content: trn('今天还没有训练，来一组保持节奏！'),
           timeStr: '20:00',
         );
         return;
@@ -79,7 +79,7 @@ class SmartPushService {
       if (!now.isBefore(target) || lastPush == Storage.getTodayStr()) {
         target = target.add(const Duration(days: 1));
       }
-      await _scheduleAt(target, '今天还没有训练，来一组保持节奏！');
+      await _scheduleAt(target, trn('今天还没有训练，来一组保持节奏！'));
     } catch (e) {
       debugPrint('[SmartPush] scheduleDailyCheck error: $e');
     }
@@ -98,20 +98,20 @@ class SmartPushService {
   /// Android/iOS：调度一次 20:00 提醒（inexact，兼容无精确闹钟权限）
   Future<void> _scheduleAt(DateTime target, String message) async {
     final plugin = FlutterLocalNotificationsPlugin();
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: AndroidNotificationDetails(
         'smart_push_channel',
-        '智能训练提醒',
-        channelDescription: '每日 20:00 的智能训练提醒',
+        trn('智能训练提醒'),
+        channelDescription: trn('每日 20:00 的智能训练提醒'),
         importance: Importance.defaultImportance,
       ),
-      iOS: DarwinNotificationDetails(),
+      iOS: const DarwinNotificationDetails(),
     );
     final scheduled = tz.TZDateTime.from(target, tz.local);
     try {
       await plugin.zonedSchedule(
         _notificationId,
-        'LiftTrack 提醒',
+        trn('LiftTrack 提醒'),
         message,
         scheduled,
         details,
@@ -147,7 +147,7 @@ class SmartPushService {
     final s = Storage.getSettings();
     s['lastPushDate'] = Storage.getTodayStr();
     s['pushCountIn7Days'] = (s['pushCountIn7Days'] ?? 0) + 1;
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
   }
 
   _PushStrategy _decideStrategy(List<Map<String, dynamic>> records) {
@@ -172,10 +172,10 @@ class SmartPushService {
     final streak = _computeStreak(records);
     if (streak >= 7) {
       return _PushStrategy(
-        message: '你的训练日历有 $streak 个连续方块，今天别断！',
+        message: trn('你的训练日历有 $streak 个连续方块，今天别断！'),
       );
     }
-    return _PushStrategy(message: '今天是你的训练日，准备好了吗？');
+    return _PushStrategy(message: trn('今天是你的训练日，准备好了吗？'));
   }
 
   int _computeStreak(List<Map<String, dynamic>> records) {
@@ -198,7 +198,7 @@ class SmartPushService {
     if (isOhos) {
       // OHOS：前台兜底立即推送
       await OhosReminderService.instance.publishSmartPushNow(
-        title: 'LiftTrack 提醒',
+        title: trn('LiftTrack 提醒'),
         content: message,
       );
       return;
@@ -207,15 +207,15 @@ class SmartPushService {
     final plugin = FlutterLocalNotificationsPlugin();
     await plugin.show(
       _notificationId,
-      'LiftTrack 提醒',
+      trn('LiftTrack 提醒'),
       message,
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
           'smart_push_channel',
-          '智能训练提醒',
+          trn('智能训练提醒'),
           importance: Importance.defaultImportance,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
     );
   }
@@ -224,7 +224,7 @@ class SmartPushService {
     // Reset today's push avoidance
     final s = Storage.getSettings();
     s['lastPushDate'] = Storage.getTodayStr();
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     // 训练完成后重新评估每日调度（今天已训练 → 取消 20:00 提醒）
     await scheduleDailyCheck();
   }
@@ -232,7 +232,7 @@ class SmartPushService {
 
 class _PushStrategy {
   final String message;
-  const _PushStrategy({required this.message});
-  static const none = _PushStrategy(message: '');
+  _PushStrategy({required this.message});
+  static final none = _PushStrategy(message: '');
   bool get shouldPush => message.isNotEmpty;
 }

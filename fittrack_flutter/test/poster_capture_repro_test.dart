@@ -47,8 +47,8 @@ void main() {
                         ),
                       ),
                     ),
-                    Positioned.fill(
-                      child: ColoredBox(color: const Color(0xFF111111)),
+                    const Positioned.fill(
+                      child: ColoredBox(color: Color(0xFF111111)),
                     ),
                   ],
                 ),

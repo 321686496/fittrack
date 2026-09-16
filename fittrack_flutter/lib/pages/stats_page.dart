@@ -7,6 +7,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
+import '../l10n/i18n.dart';
 class StatsPage extends StatefulWidget {
   const StatsPage({super.key});
 
@@ -38,17 +39,17 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   Map<String, int> _dailyDuration = {};   // 当日总时长 (分钟)
 
   // ── Muscle color map ─────────────────────────────────────────
-  static const Map<String, Color> _muscleColors = {
-    '胸': Color(0xFF3b82f6),
-    '胸部': Color(0xFF3b82f6),
-    '背': Color(0xFF0ea5e9),
-    '背部': Color(0xFF0ea5e9),
-    '腿': Color(0xFF22c55e),
-    '腿部': Color(0xFF22c55e),
-    '肩': Color(0xFFf59e0b),
-    '肩部': Color(0xFFf59e0b),
-    '手臂': Color(0xFFa855f7),
-    '核心': Color(0xFFef4444),
+  static final Map<String, Color> _muscleColors = {
+    '胸': const Color(0xFF3b82f6),
+    '胸部': const Color(0xFF3b82f6),
+    '背': const Color(0xFF0ea5e9),
+    '背部': const Color(0xFF0ea5e9),
+    '腿': const Color(0xFF22c55e),
+    '腿部': const Color(0xFF22c55e),
+    '肩': const Color(0xFFf59e0b),
+    '肩部': const Color(0xFFf59e0b),
+    '手臂': const Color(0xFFa855f7),
+    '核心': const Color(0xFFef4444),
   };
 
   // ── Lifecycle ────────────────────────────────────────────────
@@ -133,7 +134,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       dailyCounts[i] = 0;
     }
 
-    const dayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    final dayLabels = [tr(context, '周一'), tr(context, '周二'), tr(context, '周三'), tr(context, '周四'), tr(context, '周五'), tr(context, '周六'), tr(context, '周日')];
 
     for (final r in _records) {
       final ts = r['date'] as int?;
@@ -173,7 +174,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
     // Ensure at least 1 entry so chart is not empty
     if (_monthChartData.isEmpty) {
       _monthChartData = [
-        {'label': '本周', 'value': 0}
+        {'label': tr(context, '本周'), 'value': 0}
       ];
     }
   }
@@ -397,7 +398,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       final m = minutes % 60;
       return m > 0 ? '${h}h${m}m' : '${h}h';
     }
-    return '$minutes分钟';
+    return tr(context, '$minutes分钟');
   }
 
   String _formatWeight(int grams) {
@@ -419,7 +420,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
         body: Column(
           children: [
             PageHeader(
-              title: '训练统计',
+              title: tr(context, '训练统计'),
               isTabPage: true,
             ),
             Expanded(
@@ -435,37 +436,37 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                     children: [
                       const SizedBox(height: 16),
                       // ── 详细统计（值为0）───────────────────────
-                      const SectionHeader(title: '详细统计'),
+                      SectionHeader(title: tr(context, '详细统计')),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Expanded(child: StatCard(icon: Icons.fitness_center, value: '0', label: '总训练次数', color: colors.accentGlow)),
+                          Expanded(child: StatCard(icon: Icons.fitness_center, value: '0', label: tr(context, '总训练次数'), color: colors.accentGlow)),
                           const SizedBox(width: 12),
-                          Expanded(child: StatCard(icon: Icons.timer_outlined, value: '0分钟', label: '总训练时长', color: colors.infoColor)),
+                          Expanded(child: StatCard(icon: Icons.timer_outlined, value: tr(context, '0分钟'), label: tr(context, '总训练时长'), color: colors.infoColor)),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: '0kg', label: '累计重量', color: colors.warningColor)),
+                          Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: '0kg', label: tr(context, '累计重量'), color: colors.warningColor)),
                           const SizedBox(width: 12),
-                          Expanded(child: StatCard(icon: Icons.local_fire_department, value: '0', label: '消耗卡路里', color: colors.successColor)),
+                          Expanded(child: StatCard(icon: Icons.local_fire_department, value: '0', label: tr(context, '消耗卡路里'), color: colors.successColor)),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: StatCard(icon: Icons.trending_up, value: '0分钟', label: '平均时长', color: colors.purpleColor)),
+                          Expanded(child: StatCard(icon: Icons.trending_up, value: tr(context, '0分钟'), label: tr(context, '平均时长'), color: colors.purpleColor)),
                           const SizedBox(width: 12),
-                          Expanded(child: StatCard(icon: Icons.scale_outlined, value: '0kg', label: '平均重量', color: colors.accentSecondary)),
+                          Expanded(child: StatCard(icon: Icons.scale_outlined, value: '0kg', label: tr(context, '平均重量'), color: colors.accentSecondary)),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: StatCard(icon: Icons.repeat, value: '0', label: '总训练组数', color: colors.infoColor)),
+                          Expanded(child: StatCard(icon: Icons.repeat, value: '0', label: tr(context, '总训练组数'), color: colors.infoColor)),
                           const SizedBox(width: 12),
-                          Expanded(child: StatCard(icon: Icons.calendar_today_outlined, value: '0', label: '本月训练', color: colors.successColor)),
+                          Expanded(child: StatCard(icon: Icons.calendar_today_outlined, value: '0', label: tr(context, '本月训练'), color: colors.successColor)),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -481,7 +482,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                                 size: 48, color: colors.accentGlow),
                             const SizedBox(height: 16),
                             Text(
-                              '暂无训练数据',
+                              tr(context, '暂无训练数据'),
                               style: TextStyle(
                                 color: colors.textPrimary,
                                 fontSize: 18,
@@ -490,7 +491,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '完成你的第一次训练，开始记录健身历程',
+                              tr(context, '完成你的第一次训练，开始记录健身历程'),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: colors.textSecondary,
@@ -502,7 +503,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () => context.go('/plan'),
-                                child: const Text('去训练'),
+                                child: Text(tr(context, '去训练')),
                               ),
                             ),
                           ],
@@ -528,7 +529,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '训练统计',
+            title: tr(context, '训练统计'),
             isTabPage: true,
           ),
           Expanded(
@@ -544,23 +545,23 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                   children: [
                     const SizedBox(height: 16),
                     // ── 详细统计 ────────────────────────────────
-                    const SectionHeader(title: '详细统计'),
+                    SectionHeader(title: tr(context, '详细统计')),
                     const SizedBox(height: 8),
                     // 第一行：基础统计
                     Row(
                       children: [
-                        Expanded(child: StatCard(icon: Icons.fitness_center, value: '$totalTrainings', label: '总训练次数', color: colors.accentGlow)),
+                        Expanded(child: StatCard(icon: Icons.fitness_center, value: '$totalTrainings', label: tr(context, '总训练次数'), color: colors.accentGlow)),
                         const SizedBox(width: 12),
-                        Expanded(child: StatCard(icon: Icons.timer_outlined, value: _formatDuration(totalDuration.toInt()), label: '总训练时长', color: colors.infoColor)),
+                        Expanded(child: StatCard(icon: Icons.timer_outlined, value: _formatDuration(totalDuration.toInt()), label: tr(context, '总训练时长'), color: colors.infoColor)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     // 第二行：重量与热量
                     Row(
                       children: [
-                        Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: _formatWeight(totalWeight.toInt()), label: '累计重量', color: colors.warningColor)),
+                        Expanded(child: StatCard(icon: Icons.monitor_weight_outlined, value: _formatWeight(totalWeight.toInt()), label: tr(context, '累计重量'), color: colors.warningColor)),
                         const SizedBox(width: 12),
-                        Expanded(child: StatCard(icon: Icons.local_fire_department, value: '$calories', label: '消耗卡路里', color: colors.successColor)),
+                        Expanded(child: StatCard(icon: Icons.local_fire_department, value: '$calories', label: tr(context, '消耗卡路里'), color: colors.successColor)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -569,15 +570,15 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                       children: [
                         Expanded(child: StatCard(
                           icon: Icons.trending_up,
-                          value: totalTrainings > 0 ? _formatDuration((totalDuration / totalTrainings).round()) : '0分钟',
-                          label: '平均时长',
+                          value: totalTrainings > 0 ? _formatDuration((totalDuration / totalTrainings).round()) : tr(context, '0分钟'),
+                          label: tr(context, '平均时长'),
                           color: colors.purpleColor,
                         )),
                         const SizedBox(width: 12),
                         Expanded(child: StatCard(
                           icon: Icons.scale_outlined,
                           value: totalTrainings > 0 ? _formatWeight((totalWeight / totalTrainings).round()) : '0kg',
-                          label: '平均重量',
+                          label: tr(context, '平均重量'),
                           color: colors.accentSecondary,
                         )),
                       ],
@@ -589,7 +590,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                         Expanded(child: StatCard(
                           icon: Icons.repeat,
                           value: '${_records.fold<int>(0, (sum, r) => sum + ((r['setRecords'] as Map?)?.length ?? 0))}',
-                          label: '总训练组数',
+                          label: tr(context, '总训练组数'),
                           color: colors.infoColor,
                         )),
                         const SizedBox(width: 12),
@@ -601,7 +602,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                             final recordDate = DateTime.fromMillisecondsSinceEpoch(date);
                             return recordDate.month == now.month && recordDate.year == now.year;
                           }).length}',
-                          label: '本月训练',
+                          label: tr(context, '本月训练'),
                           color: colors.successColor,
                         )),
                       ],
@@ -613,7 +614,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                     const SizedBox(height: 24),
 
                     // ── Training frequency chart ─────────────────
-                    const SectionHeader(title: '训练频率'),
+                    SectionHeader(title: tr(context, '训练频率')),
                     const SizedBox(height: 12),
                     _buildFrequencyChart(colors),
                     const SizedBox(height: 24),
@@ -636,7 +637,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
                     // ── Muscle distribution ──────────────────────
                     if (_muscleData.isNotEmpty) ...[
-                      const SectionHeader(title: '肌群分布'),
+                      SectionHeader(title: tr(context, '肌群分布')),
                       const SizedBox(height: 12),
                       _buildMuscleDistribution(colors),
                       const SizedBox(height: 24),
@@ -644,7 +645,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
                     // ── Personal records ─────────────────────────
                     if (_personalRecords.isNotEmpty) ...[
-                      const SectionHeader(title: '个人记录'),
+                      SectionHeader(title: tr(context, '个人记录')),
                       const SizedBox(height: 12),
                       _buildPersonalRecords(colors),
                       const SizedBox(height: 24),
@@ -687,11 +688,11 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
     String weekdayLabel(int row) {
       switch (row) {
         case 0:
-          return '一';
+          return tr(context, '一');
         case 2:
-          return '三';
+          return tr(context, '三');
         case 4:
-          return '五';
+          return tr(context, '五');
         default:
           return '';
       }
@@ -700,9 +701,9 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
     // 月份标签（月份变化时显示）
     String monthLabel(int col) {
       final colStart = rangeStart.add(Duration(days: col * 7));
-      if (col == 0) return '${colStart.month}月';
+      if (col == 0) return tr(context, '${colStart.month}月');
       final prevColStart = rangeStart.add(Duration(days: (col - 1) * 7));
-      if (colStart.month != prevColStart.month) return '${colStart.month}月';
+      if (colStart.month != prevColStart.month) return tr(context, '${colStart.month}月');
       return '';
     }
 
@@ -716,7 +717,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '训练活跃度',
+                tr(context, '训练活跃度'),
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
@@ -724,7 +725,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                 ),
               ),
               Text(
-                '过去12周',
+                tr(context, '过去12周'),
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 12,
@@ -858,7 +859,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '少',
+                  tr(context, '少'),
                   style: TextStyle(color: colors.textMuted, fontSize: 10),
                 ),
                 const SizedBox(width: 4),
@@ -875,7 +876,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                 ],
                 const SizedBox(width: 4),
                 Text(
-                  '多',
+                  tr(context, '多'),
                   style: TextStyle(color: colors.textMuted, fontSize: 10),
                 ),
               ],
@@ -925,11 +926,11 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Center(
-                      child: Text('当日无训练记录', style: TextStyle(color: colors.textSecondary, fontSize: 14)),
+                      child: Text(tr(context, '当日无训练记录'), style: TextStyle(color: colors.textSecondary, fontSize: 14)),
                     ),
                   )
                 else ...[
-                  Text('${dayRecords.length} 条训练记录',
+                  Text(tr(context, '${dayRecords.length} 条训练记录'),
                       style: TextStyle(fontSize: 12, color: colors.textSecondary)),
                   const SizedBox(height: 12),
                   ...dayRecords.map((r) => _buildDayRecordCard(r, colors)),
@@ -955,13 +956,13 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            (r['name'] as String?) ?? '训练',
+            (r['name'] as String?) ?? tr(context, '训练'),
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary),
           ),
           if ((r['planName'] as String?)?.isNotEmpty == true)
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text('计划：${r['planName']}',
+              child: Text(tr(context, '计划：${r['planName']}'),
                   style: TextStyle(fontSize: 12, color: colors.textSecondary)),
             ),
           const SizedBox(height: 8),
@@ -969,10 +970,10 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
             spacing: 12,
             runSpacing: 4,
             children: [
-              Text('组数: ${r['totalSets'] ?? 0}', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
-              Text('总量: ${r['totalWeight'] ?? 0} kg', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
-              Text('时长: ${r['duration'] ?? 0} 分钟', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
-              Text('动作: ${r['exerciseCount'] ?? 0} 个', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+              Text(tr(context, '组数: ${r['totalSets'] ?? 0}'), style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+              Text(tr(context, '总量: ${r['totalWeight'] ?? 0} kg'), style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+              Text(tr(context, '时长: ${r['duration'] ?? 0} 分钟'), style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+              Text(tr(context, '动作: ${r['exerciseCount'] ?? 0} 个'), style: TextStyle(fontSize: 12, color: colors.textSecondary)),
             ],
           ),
           if ((r['muscles'] as List?)?.isNotEmpty == true) ...[
@@ -1013,11 +1014,11 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
           // Toggle
           Row(
             children: [
-              _buildToggleBtn('周', _showWeek, () {
+              _buildToggleBtn(tr(context, '周'), _showWeek, () {
                 setState(() => _showWeek = true);
               }, colors),
               const SizedBox(width: 8),
-              _buildToggleBtn('月', !_showWeek, () {
+              _buildToggleBtn(tr(context, '月'), !_showWeek, () {
                 setState(() => _showWeek = false);
               }, colors),
             ],
@@ -1270,20 +1271,20 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('训练容量趋势',
+          Text(tr(context, '训练容量趋势'),
               style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('近6周总重量 (kg)',
+          Text(tr(context, '近6周总重量 (kg)'),
               style: TextStyle(color: colors.textMuted, fontSize: 12)),
           const SizedBox(height: 20),
           if (maxVol == 0)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text('暂无训练数据',
+                child: Text(tr(context, '暂无训练数据'),
                     style: TextStyle(color: colors.textMuted, fontSize: 13)),
               ),
             )
@@ -1304,7 +1305,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
                         children: [
                           if (value > 0)
                             Text(
-                              '${value.toStringAsFixed(0)}',
+                              value.toStringAsFixed(0),
                               style: TextStyle(
                                   color: colors.accentGlow,
                                   fontSize: 10,
@@ -1347,13 +1348,13 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('动作热度榜',
+          Text(tr(context, '动作热度榜'),
               style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('Top 5 训练次数',
+          Text(tr(context, 'Top 5 训练次数'),
               style: TextStyle(color: colors.textMuted, fontSize: 12)),
           const SizedBox(height: 16),
           ...data.map((item) {
@@ -1442,13 +1443,13 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('训练时长趋势',
+          Text(tr(context, '训练时长趋势'),
               style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('近6周总时长 (小时)',
+          Text(tr(context, '近6周总时长 (小时)'),
               style: TextStyle(color: colors.textMuted, fontSize: 12)),
           const SizedBox(height: 16),
           SizedBox(
@@ -1478,13 +1479,13 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('PR 进度追踪',
+          Text(tr(context, 'PR 进度追踪'),
               style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('近6周最大重量 (kg)',
+          Text(tr(context, '近6周最大重量 (kg)'),
               style: TextStyle(color: colors.textMuted, fontSize: 12)),
           const SizedBox(height: 16),
           SizedBox(

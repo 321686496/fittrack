@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../data/legal/legal_content.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 /// 协议同意弹窗（首次启动或协议版本升级时，在 splash 页展示）
 ///
 /// 展示《用户协议》《隐私政策》摘要与查看入口，用户必须选择「同意并继续」
@@ -58,7 +59,7 @@ class PrivacyConsentDialog extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              '欢迎使用 LiftTrack',
+              tr(context, '欢迎使用 LiftTrack'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.textPrimary,
@@ -68,7 +69,7 @@ class PrivacyConsentDialog extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '感谢你选择 LiftTrack。在使用前，请阅读并同意以下协议。\n我们非常重视你的隐私，你的所有数据仅保存在设备本地。',
+              tr(context, '感谢你选择 LiftTrack。在使用前，请阅读并同意以下协议。\n我们非常重视你的隐私，你的所有数据仅保存在设备本地。'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.textSecondary,
@@ -81,14 +82,14 @@ class PrivacyConsentDialog extends StatelessWidget {
             _LinkTile(
               colors: colors,
               icon: Icons.article_outlined,
-              title: '《用户协议》',
+              title: tr(context, '《用户协议》'),
               onTap: () => context.push('/agreement'),
             ),
             const SizedBox(height: 10),
             _LinkTile(
               colors: colors,
               icon: Icons.description_outlined,
-              title: '《隐私政策》',
+              title: tr(context, '《隐私政策》'),
               onTap: () => context.push('/privacy-full'),
             ),
             const SizedBox(height: 20),
@@ -103,7 +104,7 @@ class PrivacyConsentDialog extends StatelessWidget {
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('同意并继续', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                child: Text(tr(context, '同意并继续'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: 8),
@@ -116,12 +117,12 @@ class PrivacyConsentDialog extends StatelessWidget {
                   side: BorderSide(color: colors.textMuted.withOpacity(0.4)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: Text('不同意并退出', style: TextStyle(color: colors.textMuted, fontSize: 14)),
+                child: Text(tr(context, '不同意并退出'), style: TextStyle(color: colors.textMuted, fontSize: 14)),
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              '协议版本 $privacyPolicyVersion · 更新于 2026-09-10',
+              tr(context, '协议版本 $privacyPolicyVersion · 更新于 2026-09-10'),
               textAlign: TextAlign.center,
               style: TextStyle(color: colors.textMuted.withOpacity(0.8), fontSize: 11),
             ),

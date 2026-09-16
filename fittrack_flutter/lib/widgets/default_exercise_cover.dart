@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/i18n.dart';
 /// 动作默认封面：按分类映射 emoji + 渐变色，使用 CustomPaint 绘制。
 ///
 /// 入参 [category] 兼容简称（"胸"/"肩"/"背"/"腿"/"臂"/"核心"/"有氧"/"其他"）
@@ -17,28 +18,28 @@ class DefaultExerciseCover extends StatelessWidget {
   /// 解析分类对应的封面配置（emoji + 渐变两色）。
   static _CoverSpec _resolve(String category) {
     final c = category;
-    if (c.contains('胸')) {
-      return const _CoverSpec('💪', Color(0xFFef4444), Color(0xFFf97316));
+    if (c.contains(trn( '胸'))) {
+      return _CoverSpec('💪', const Color(0xFFef4444), const Color(0xFFf97316));
     }
-    if (c.contains('肩')) {
-      return const _CoverSpec('🤸', Color(0xFF3b82f6), Color(0xFF06b6d4));
+    if (c.contains(trn( '肩'))) {
+      return _CoverSpec('🤸', const Color(0xFF3b82f6), const Color(0xFF06b6d4));
     }
-    if (c.contains('背')) {
-      return const _CoverSpec('🏹', Color(0xFF8b5cf6), Color(0xFF6366f1));
+    if (c.contains(trn( '背'))) {
+      return _CoverSpec('🏹', const Color(0xFF8b5cf6), const Color(0xFF6366f1));
     }
-    if (c.contains('腿')) {
-      return const _CoverSpec('🦵', Color(0xFF10b981), Color(0xFF059669));
+    if (c.contains(trn( '腿'))) {
+      return _CoverSpec('🦵', const Color(0xFF10b981), const Color(0xFF059669));
     }
-    if (c.contains('臂')) {
-      return const _CoverSpec('💪', Color(0xFFf59e0b), Color(0xFFef4444));
+    if (c.contains(trn( '臂'))) {
+      return _CoverSpec('💪', const Color(0xFFf59e0b), const Color(0xFFef4444));
     }
-    if (c.contains('核心')) {
-      return const _CoverSpec('🎯', Color(0xFFec4899), Color(0xFFf43f5e));
+    if (c.contains(trn( '核心'))) {
+      return _CoverSpec('🎯', const Color(0xFFec4899), const Color(0xFFf43f5e));
     }
-    if (c.contains('有氧') || c.contains('跑步')) {
-      return const _CoverSpec('🏃', Color(0xFF06b6d4), Color(0xFF3b82f6));
+    if (c.contains(trn( '有氧')) || c.contains(trn( '跑步'))) {
+      return _CoverSpec('🏃', const Color(0xFF06b6d4), const Color(0xFF3b82f6));
     }
-    return const _CoverSpec('🏋️', Color(0xFF64748b), Color(0xFF475569));
+    return _CoverSpec('🏋️', const Color(0xFF64748b), const Color(0xFF475569));
   }
 
   @override
@@ -60,7 +61,7 @@ class _CoverSpec {
   final Color startColor;
   final Color endColor;
 
-  const _CoverSpec(this.emoji, this.startColor, this.endColor);
+  _CoverSpec(this.emoji, this.startColor, this.endColor);
 }
 
 class _DefaultCoverPainter extends CustomPainter {

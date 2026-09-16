@@ -1,13 +1,15 @@
 /// 提醒调度相关的纯计算逻辑，便于单元测试。
 library;
 
+import '../l10n/i18n.dart';
+
 /// 健身卡提醒候选（一张卡对应一个后台提醒）。
 class ReminderCandidate {
   final String name;
   final DateTime remindDate;
   final String content;
 
-  const ReminderCandidate({
+  ReminderCandidate({
     required this.name,
     required this.remindDate,
     required this.content,
@@ -44,7 +46,7 @@ List<ReminderCandidate> computeGymCardCandidates({
   final today = DateTime(now.year, now.month, now.day);
 
   for (final card in cards) {
-    final name = card['name'] as String? ?? '未命名卡';
+    final name = card['name'] as String? ?? trn('未命名卡');
     final cardType = card['cardType'] as String? ?? '';
     final endDate = card['endDate'] as int? ?? 0;
     final remaining = card['remainingCount'] as int? ?? -1;
@@ -52,8 +54,8 @@ List<ReminderCandidate> computeGymCardCandidates({
     // 次卡：剩余次数 <= 阈值时今天提醒
     if (cardType == '次卡' && remaining >= 0 && remaining <= countThreshold) {
       final content = remaining == 0
-          ? '「$name」已用完所有次数'
-          : '「$name」仅剩 $remaining 次';
+          ? trn('「$name」已用完所有次数')
+          : trn('「$name」仅剩 $remaining 次');
       candidates.add(ReminderCandidate(
         name: name,
         remindDate: today,
@@ -72,11 +74,11 @@ List<ReminderCandidate> computeGymCardCandidates({
     final diff = endDay.difference(today).inDays;
     final String content;
     if (diff < 0) {
-      content = '「$name」已过期 ${-diff} 天';
+      content = trn('「$name」已过期 ${-diff} 天');
     } else if (diff == 0) {
-      content = '「$name」今天到期';
+      content = trn('「$name」今天到期');
     } else {
-      content = '「$name」还有 $diff 天到期';
+      content = trn('「$name」还有 $diff 天到期');
     }
     candidates.add(ReminderCandidate(
       name: name,

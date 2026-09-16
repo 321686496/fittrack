@@ -7,6 +7,7 @@ import '../themes/app_themes.dart';
 import '../utils/art_assets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class PlanLibraryCategoryPage extends StatefulWidget {
   final String goal;
   const PlanLibraryCategoryPage({super.key, required this.goal});
@@ -73,13 +74,13 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
                   ),
                 ),
                 if (filtered.isEmpty)
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48),
+                      padding: const EdgeInsets.symmetric(vertical: 48),
                       child: Center(
                         child: Text(
-                          '当前筛选条件下暂无计划',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                          tr(context, '当前筛选条件下暂无计划'),
+                          style: const TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                       ),
                     ),
@@ -116,7 +117,7 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
       runSpacing: 8,
       children: options.map((d) {
         final selected = _selectedDifficulty == d;
-        final label = d == null ? '全部难度' : kDifficultyLabelsZh[d];
+        final label = d == null ? tr(context, '全部难度') : kDifficultyLabelsZh[d];
         return ChoiceChip(
           label: Text(label!),
           selected: selected,
@@ -162,10 +163,10 @@ class _PlanLibraryCategoryPageState extends State<PlanLibraryCategoryPage> {
   }
 
   Widget _buildGenderChips(LiftTrackColors ft) {
-    const options = <Map<String, String?>>[
-      {'value': null, 'label': '全部人群'},
-      {'value': 'male', 'label': '男性'},
-      {'value': 'female', 'label': '女性'},
+    final options = <Map<String, String?>>[
+      {'value': null, 'label': tr(context, '全部人群')},
+      {'value': 'male', 'label': tr(context, '男性')},
+      {'value': 'female', 'label': tr(context, '女性')},
     ];
     return Wrap(
       spacing: 8,
@@ -271,7 +272,7 @@ class _PlanListCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            '精品',
+                            tr(context, '精品'),
                             style: TextStyle(
                               color: ft.warningColor,
                               fontSize: 11,
@@ -283,10 +284,7 @@ class _PlanListCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${kDifficultyLabelsZh[plan.difficulty]} · '
-                    '${kTrainingTypeLabelsZh[plan.trainingType]} · '
-                    '每周${plan.recommendedFrequency}练 · '
-                    '${plan.totalWeeks}周',
+                    '${kDifficultyLabelsZh[plan.difficulty]} · ${kTrainingTypeLabelsZh[plan.trainingType]} · ${tr(context, '每周${plan.recommendedFrequency}练 · ${plan.totalWeeks}周')}',
                     style: TextStyle(color: ft.textSecondary, fontSize: 13),
                   ),
                   if (plan.tags.isNotEmpty) ...[
@@ -314,7 +312,7 @@ class _PlanListCard extends StatelessWidget {
                 children: [
                   if (isUnlocked)
                     Text(
-                      '已解锁',
+                      tr(context, '已解锁'),
                       style: TextStyle(
                         color: ft.successColor,
                         fontSize: 13,
@@ -331,7 +329,7 @@ class _PlanListCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '积分',
+                      tr(context, '积分'),
                       style: TextStyle(color: ft.textMuted, fontSize: 11),
                     ),
                   ],
@@ -339,7 +337,7 @@ class _PlanListCard extends StatelessWidget {
               )
             else
               Text(
-                '免费',
+                tr(context, '免费'),
                 style: TextStyle(
                   color: ft.successColor,
                   fontSize: 14,

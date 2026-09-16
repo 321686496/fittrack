@@ -8,6 +8,7 @@ import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
 
+import '../l10n/i18n.dart';
 /// 训练笔记详情页
 ///
 /// 点击笔记列表卡片进入，展示该笔记的完整内容：
@@ -77,7 +78,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               : Column(
                   children: [
                     PageHeader(
-                      title: '笔记详情',
+                      title: tr(context, '笔记详情'),
                       subtitle: _note!.dateLabel,
                       onBack: () => context.pop(),
                     ),
@@ -104,7 +105,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
       backgroundColor: colors.bgSecondary,
       body: Column(
         children: [
-          PageHeader(title: '笔记详情', onBack: () => context.pop()),
+          PageHeader(title: tr(context, '笔记详情'), onBack: () => context.pop()),
           Expanded(
             child: Center(
               child: Column(
@@ -113,7 +114,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                   Icon(Icons.note_alt_outlined,
                       size: 64, color: colors.textMuted),
                   const SizedBox(height: 16),
-                  Text('笔记不存在或已删除',
+                  Text(tr(context, '笔记不存在或已删除'),
                       style: TextStyle(
                           color: colors.textSecondary, fontSize: 15)),
                 ],
@@ -155,7 +156,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '感受 · ${note.feelingLabel}',
+                  tr(context, '感受 · ${note.feelingLabel}'),
                   style: TextStyle(
                     color: colors.accentGlow,
                     fontSize: 12,
@@ -261,9 +262,9 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     final totalWeight = ((r['totalWeight'] ?? 0) as num).toInt();
     final totalSets = ((r['totalSets'] ?? 0) as num).toInt();
     final mins = (duration / 60).round();
-    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : '全身训练';
+    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : tr(context, '全身训练');
     final planName =
-        r['planName'] as String? ?? r['name'] as String? ?? '训练记录';
+        r['planName'] as String? ?? r['name'] as String? ?? tr(context, '训练记录');
 
     return GestureDetector(
       onTap: () => context.push('/records/${r['id']}'),
@@ -283,7 +284,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 Icon(Icons.link, size: 14, color: colors.accentGlow),
                 const SizedBox(width: 6),
                 Text(
-                  '关联训练记录',
+                  tr(context, '关联训练记录'),
                   style: TextStyle(
                     color: colors.accentGlow,
                     fontSize: 12,
@@ -320,7 +321,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 _miniStat(colors, Icons.monitor_weight_outlined,
                     '${totalWeight}kg'),
                 const SizedBox(width: 14),
-                _miniStat(colors, Icons.repeat, '$totalSets 组'),
+                _miniStat(colors, Icons.repeat, tr(context, '$totalSets 组')),
               ],
             ),
           ],
@@ -363,7 +364,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               child: ElevatedButton.icon(
                 onPressed: _share,
                 icon: const Icon(Icons.share_outlined, size: 17),
-                label: const Text('分享海报'),
+                label: Text(tr(context, '分享海报')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.accentGlow,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -381,7 +382,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 onPressed: () =>
                     context.push('/note/edit/${_note!.id}').then((_) => _load()),
                 icon: const Icon(Icons.edit_outlined, size: 16),
-                label: const Text('编辑'),
+                label: Text(tr(context, '编辑')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -441,7 +442,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 color: colors.accentGlow,
               ),
               title: Text(
-                note.isFeatured ? '取消精选' : '标记精选',
+                note.isFeatured ? tr(context, '取消精选') : tr(context, '标记精选'),
                 style: TextStyle(color: colors.textPrimary),
               ),
               onTap: () async {
@@ -452,16 +453,16 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
             ),
             ListTile(
               leading: Icon(Icons.delete_outline, color: Colors.red.shade400),
-              title: Text('删除笔记',
+              title: Text(tr(context, '删除笔记'),
                   style: TextStyle(color: Colors.red.shade400)),
               onTap: () async {
                 Navigator.pop(ctx);
                 final confirmed = await ConfirmDialog.show(
                   context,
-                  title: '删除笔记',
-                  content: '确定删除这篇笔记？此操作不可恢复。',
-                  confirmText: '删除',
-                  cancelText: '取消',
+                  title: tr(context, '删除笔记'),
+                  content: tr(context, '确定删除这篇笔记？此操作不可恢复。'),
+                  confirmText: tr(context, '删除'),
+                  cancelText: tr(context, '取消'),
                   confirmColor: Colors.red.shade400,
                   icon: Icons.delete_outline_rounded,
                 );
@@ -483,13 +484,13 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
       context,
       posterWidget: NotePosterContent(note: _note!, boundRecord: _record),
       posterWidth: NotePosterContent.posterWidth,
-      title: '训练笔记海报',
+      title: tr(context, '训练笔记海报'),
       fileNamePrefix: 'fittrack_note',
     );
   }
 
   IconData _moodIcon(String id) {
-    const map = {
+    final map = {
       'local_fire_department': Icons.local_fire_department,
       'bolt': Icons.bolt,
       'fitness_center': Icons.fitness_center,

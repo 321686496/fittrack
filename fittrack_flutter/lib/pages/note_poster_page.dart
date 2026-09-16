@@ -6,6 +6,7 @@ import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
 
+import '../l10n/i18n.dart';
 /// 笔记海报页面
 ///
 /// 复用 [PosterCaptureHelper.captureAndPreview] 统一的内容自适应截图流程，
@@ -43,12 +44,12 @@ class _NotePosterPageState extends State<NotePosterPage> {
           boundRecord: widget.boundRecord,
         ),
         posterWidth: NotePosterContent.posterWidth,
-        title: '训练笔记海报',
+        title: tr(context, '训练笔记海报'),
         fileNamePrefix: 'fittrack_note',
       );
     } catch (e) {
       if (mounted) {
-        FitToast.error(context, '海报生成失败：$e');
+        FitToast.error(context, tr(context, '海报生成失败：$e'));
       }
     } finally {
       if (mounted) {
@@ -67,7 +68,7 @@ class _NotePosterPageState extends State<NotePosterPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '笔记海报',
+            title: tr(context, '笔记海报'),
             isTabPage: false,
             onBack: () => Navigator.of(context).pop(),
           ),
@@ -86,7 +87,7 @@ class _NotePosterPageState extends State<NotePosterPage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    _capturing ? '正在生成海报...' : '生成完成',
+                    _capturing ? tr(context, '正在生成海报...') : tr(context, '生成完成'),
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 15,

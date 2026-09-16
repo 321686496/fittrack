@@ -11,6 +11,7 @@ import '../services/rom_adaptation_service.dart';
 import '../services/ohos_scan_service.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 通用二维码扫码页（相机扫码 + 相册选图兜底）
 ///
 /// 解析到二维码后返回原始文本：`Navigator.pop(context, rawText)`。
@@ -140,7 +141,7 @@ class _QrScanPageState extends State<QrScanPage> {
       if (mounted) {
         setState(() => _nativeScanning = false);
         if (e.code != 'USER_CANCELED') {
-          FitToast.error(context, '无法启动相机扫码，请重试');
+          FitToast.error(context, tr(context, '无法启动相机扫码，请重试'));
         }
       }
     } catch (_) {
@@ -196,10 +197,10 @@ class _QrScanPageState extends State<QrScanPage> {
                   right: 0,
                   child: !_cameraActive
                       ? const SizedBox.shrink()
-                      : const Text(
-                          '将二维码对准框内即可自动扫描',
+                      : Text(
+                          tr(context, '将二维码对准框内即可自动扫描'),
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                          style: const TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                 ),
                 Positioned(
@@ -219,7 +220,7 @@ class _QrScanPageState extends State<QrScanPage> {
                                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
                                 : const Icon(Icons.photo_library_outlined, size: 18),
-                            label: Text(_picking ? '识别中...' : '从相册选择二维码图片'),
+                            label: Text(_picking ? tr(context, '识别中...') : tr(context, '从相册选择二维码图片')),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black54,
                               foregroundColor: Colors.white,
@@ -244,10 +245,10 @@ class _QrScanPageState extends State<QrScanPage> {
       alignment: Alignment.center,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          CircularProgressIndicator(color: Colors.white70),
-          SizedBox(height: 12),
-          Text('正在启动相机扫码...', style: TextStyle(color: Colors.white70, fontSize: 13)),
+        children: [
+          const CircularProgressIndicator(color: Colors.white70),
+          const SizedBox(height: 12),
+          Text(tr(context, '正在启动相机扫码...'), style: const TextStyle(color: Colors.white70, fontSize: 13)),
         ],
       ),
     );
@@ -264,21 +265,21 @@ class _QrScanPageState extends State<QrScanPage> {
         children: [
           const Icon(Icons.qr_code_scanner, size: 56, color: Colors.white38),
           const SizedBox(height: 16),
-          const Text(
-            '使用相机扫码',
-            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          Text(
+            tr(context, '使用相机扫码'),
+            style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '点击"相机扫码"启动系统扫码，或从相册选择二维码图片。',
+          Text(
+            tr(context, '点击"相机扫码"启动系统扫码，或从相册选择二维码图片。'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _nativeScanning ? null : _startNativeScan,
             icon: const Icon(Icons.camera_alt_outlined, size: 18),
-            label: Text(_nativeScanning ? '启动中...' : '相机扫码'),
+            label: Text(_nativeScanning ? tr(context, '启动中...') : tr(context, '相机扫码')),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
@@ -290,7 +291,7 @@ class _QrScanPageState extends State<QrScanPage> {
           OutlinedButton.icon(
             onPressed: _picking ? null : _pickQrImage,
             icon: const Icon(Icons.photo_library_outlined, size: 18),
-            label: const Text('从相册选择二维码图片'),
+            label: Text(tr(context, '从相册选择二维码图片')),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
               side: const BorderSide(color: Colors.white38),
@@ -308,10 +309,10 @@ class _QrScanPageState extends State<QrScanPage> {
       alignment: Alignment.center,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          CircularProgressIndicator(color: Colors.white70),
-          SizedBox(height: 12),
-          Text('正在申请相机权限...', style: TextStyle(color: Colors.white70, fontSize: 13)),
+        children: [
+          const CircularProgressIndicator(color: Colors.white70),
+          const SizedBox(height: 12),
+          Text(tr(context, '正在申请相机权限...'), style: const TextStyle(color: Colors.white70, fontSize: 13)),
         ],
       ),
     );
@@ -328,15 +329,15 @@ class _QrScanPageState extends State<QrScanPage> {
         children: [
           const Icon(Icons.photo_library_outlined, size: 56, color: Colors.white38),
           const SizedBox(height: 16),
-          const Text(
-            '使用相册扫码',
-            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          Text(
+            tr(context, '使用相册扫码'),
+            style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '当前设备暂不支持相机扫码，请从相册选择二维码图片进行识别。',
+          Text(
+            tr(context, '当前设备暂不支持相机扫码，请从相册选择二维码图片进行识别。'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -348,7 +349,7 @@ class _QrScanPageState extends State<QrScanPage> {
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                   )
                 : const Icon(Icons.photo_library_outlined, size: 18),
-            label: Text(_picking ? '识别中...' : '从相册选择二维码图片'),
+            label: Text(_picking ? tr(context, '识别中...') : tr(context, '从相册选择二维码图片')),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
@@ -372,21 +373,21 @@ class _QrScanPageState extends State<QrScanPage> {
         children: [
           const Icon(Icons.no_photography_outlined, size: 56, color: Colors.white38),
           const SizedBox(height: 16),
-          const Text(
-            '需要相机权限',
-            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          Text(
+            tr(context, '需要相机权限'),
+            style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '用于扫描二维码。您也可以使用下方"从相册选择二维码图片"导入。',
+          Text(
+            tr(context, '用于扫描二维码。您也可以使用下方"从相册选择二维码图片"导入。'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: _retryPermission,
             icon: const Icon(Icons.lock_open, size: 18),
-            label: const Text('授权相机'),
+            label: Text(tr(context, '授权相机')),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
               side: const BorderSide(color: Colors.white38),
@@ -408,15 +409,15 @@ class _QrScanPageState extends State<QrScanPage> {
         children: [
           const Icon(Icons.no_photography_outlined, size: 56, color: Colors.white38),
           const SizedBox(height: 16),
-          const Text(
-            '无法启动相机',
-            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
+          Text(
+            tr(context, '无法启动相机'),
+            style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '请检查相机权限，或使用下方"从相册选择二维码图片"导入',
+          Text(
+            tr(context, '请检查相机权限，或使用下方"从相册选择二维码图片"导入'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
@@ -429,7 +430,7 @@ class _QrScanPageState extends State<QrScanPage> {
               }
             },
             icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('重试相机'),
+            label: Text(tr(context, '重试相机')),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
               side: const BorderSide(color: Colors.white38),
@@ -452,12 +453,12 @@ class _QrScanPageState extends State<QrScanPage> {
       final bytes = await xfile.readAsBytes();
       final rawText = await _decodeQrFromBytes(bytes);
       if (rawText == null || rawText.isEmpty) {
-        if (mounted) FitToast.error(context, '未在图片中识别到二维码，请换一张清晰的图片');
+        if (mounted) FitToast.error(context, tr(context, '未在图片中识别到二维码，请换一张清晰的图片'));
         return;
       }
       _finish(rawText);
     } catch (e) {
-      if (mounted) FitToast.error(context, '图片解析失败，请重试');
+      if (mounted) FitToast.error(context, tr(context, '图片解析失败，请重试'));
     } finally {
       if (mounted) setState(() => _picking = false);
     }

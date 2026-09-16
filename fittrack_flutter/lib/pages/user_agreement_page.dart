@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/legal/legal_content.dart';
 
+import '../l10n/i18n.dart';
 /// 用户协议页面（完整法律文本，从"设置"入口进入）
 ///
 /// 与启动流程使用的同意弹窗（splash 页，带同意/拒绝按钮）不同，
@@ -83,7 +84,7 @@ class _UserAgreementPageState extends State<UserAgreementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('用户协议')),
+      appBar: AppBar(title: Text(tr(context, '用户协议'))),
       body: _loaded
           ? SingleChildScrollView(
               padding: const EdgeInsets.all(24),

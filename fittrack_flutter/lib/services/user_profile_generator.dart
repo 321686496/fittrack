@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+import '../l10n/i18n.dart';
 /// 用户名与头像生成系统
 /// 根据用户填写的问卷信息（性别、健身目标、健身水平等）
 /// 自动匹配生成贴切的用户名和头像
@@ -13,40 +14,45 @@ class UserProfileGenerator {
   // ==================== 用户名生成 ====================
 
   // 男性用户名前缀
-  static const _malePrefixes = [
-    '铁血', '力量', '钢铁', '猛虎', '雄鹰',
-    '战神', '雷霆', '烈焰', '狂风', '磐石',
-    '苍狼', '龙腾', '破晓', '星辰', '山岳',
-  ];
+  static List<String> get _malePrefixes => _malePrefixesMemo.value;
+  static final LocaleMemo<List<String>> _malePrefixesMemo = LocaleMemo(() => [
+    trn('铁血'), trn('力量'), trn('钢铁'), trn('猛虎'), trn('雄鹰'),
+    trn('战神'), trn('雷霆'), trn('烈焰'), trn('狂风'), trn('磐石'),
+    trn('苍狼'), trn('龙腾'), trn('破晓'), trn('星辰'), trn('山岳'),
+  ]);
 
   // 女性用户名前缀
-  static const _femalePrefixes = [
-    '灵动', '优雅', '柔韧', '飞燕', '花语',
-    '晨曦', '清露', '蝶舞', '星月', '流云',
-    '彩霞', '碧波', '紫烟', '梦蝶', '雪舞',
-  ];
+  static List<String> get _femalePrefixes => _femalePrefixesMemo.value;
+  static final LocaleMemo<List<String>> _femalePrefixesMemo = LocaleMemo(() => [
+    trn('灵动'), trn('优雅'), trn('柔韧'), trn('飞燕'), trn('花语'),
+    trn('晨曦'), trn('清露'), trn('蝶舞'), trn('星月'), trn('流云'),
+    trn('彩霞'), trn('碧波'), trn('紫烟'), trn('梦蝶'), trn('雪舞'),
+  ]);
 
   // 中性用户名前缀
-  static const _neutralPrefixes = [
-    '自由', '无畏', '坚韧', '超越', '突破',
-    '逐梦', '奋进', '凌云', '追光', '破浪',
-  ];
+  static List<String> get _neutralPrefixes => _neutralPrefixesMemo.value;
+  static final LocaleMemo<List<String>> _neutralPrefixesMemo = LocaleMemo(() => [
+    trn('自由'), trn('无畏'), trn('坚韧'), trn('超越'), trn('突破'),
+    trn('逐梦'), trn('奋进'), trn('凌云'), trn('追光'), trn('破浪'),
+  ]);
 
   // 健身目标对应后缀
-  static const _goalSuffixes = {
-    '增肌': ['巨兽', '重炮', '铁壁', '堡垒', '重装'],
-    '减脂': ['轻风', '利刃', '闪电', '疾风', '锋芒'],
-    '塑形': ['精工', '匠人', '雕塑', '流线', '完美'],
-    '保持健康': ['行者', '达人', '健将', '活力', '常青'],
-  };
+  static Map<String, List<String>> get _goalSuffixes => _goalSuffixesMemo.value;
+  static final LocaleMemo<Map<String, List<String>>> _goalSuffixesMemo = LocaleMemo(() => {
+    '增肌': [trn('巨兽'), trn('重炮'), trn('铁壁'), trn('堡垒'), trn('重装')],
+    '减脂': [trn('轻风'), trn('利刃'), trn('闪电'), trn('疾风'), trn('锋芒')],
+    '塑形': [trn('精工'), trn('匠人'), trn('雕塑'), trn('流线'), trn('完美')],
+    '保持健康': [trn('行者'), trn('达人'), trn('健将'), trn('活力'), trn('常青')],
+  });
 
   // 健身水平对应修饰词
-  static const _levelModifiers = {
-    '新手': '萌新',
-    '初级': '新锐',
-    '中级': '精英',
-    '高级': '大师',
-  };
+  static Map<String, String> get _levelModifiers => _levelModifiersMemo.value;
+  static final LocaleMemo<Map<String, String>> _levelModifiersMemo = LocaleMemo(() => {
+    '新手': trn('萌新'),
+    '初级': trn('新锐'),
+    '中级': trn('精英'),
+    '高级': trn('大师'),
+  });
 
   /// 根据问卷信息生成用户名
   static String generateUserName({
@@ -84,7 +90,7 @@ class UserProfileGenerator {
   // ==================== 头像生成 ====================
 
   /// 头像配置：emoji + 背景色
-  static const _avatarConfigs = [
+  static final _avatarConfigs = [
     {'emoji': '💪', 'bgColor': 0xFFFF6B35}, // 橙色
     {'emoji': '🏋️', 'bgColor': 0xFF4ECDC4}, // 青色
     {'emoji': '🔥', 'bgColor': 0xFFE74C3C}, // 红色
@@ -104,7 +110,7 @@ class UserProfileGenerator {
   ];
 
   /// 健身目标对应头像
-  static const _goalAvatars = {
+  static final _goalAvatars = {
     '增肌': ['💪', '🏋️', '🦁', '🐉', '🐻'],
     '减脂': ['🔥', '⚡', '🦅', '🐯', '🐺'],
     '塑形': ['🎯', '🌟', '🦄', '🦋', '🐬'],
@@ -112,7 +118,7 @@ class UserProfileGenerator {
   };
 
   /// 健身水平对应背景色
-  static const _levelColors = {
+  static final _levelColors = {
     '新手': [0xFF4ECDC4, 0xFF1ABC9C, 0xFF00B894], // 清新绿
     '初级': [0xFF3498DB, 0xFF6C5CE7, 0xFF4ECDC4], // 活力蓝
     '中级': [0xFFF39C12, 0xFFE67E22, 0xFFFF6B35], // 进阶橙

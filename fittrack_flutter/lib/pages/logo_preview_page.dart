@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/i18n.dart';
 /// Logo 设计预览页 — 用代码精确绘制多个 Logo 方案
 class LogoPreviewPage extends StatelessWidget {
   const LogoPreviewPage({super.key});
@@ -9,7 +10,7 @@ class LogoPreviewPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
-        title: const Text('LiftTrack Logo 预览', style: TextStyle(color: Colors.white)),
+        title: Text(tr(context, 'LiftTrack Logo 预览'), style: const TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF1A1A1A),
         elevation: 0,
       ),
@@ -18,97 +19,97 @@ class LogoPreviewPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _SectionTitle('方案 1: L + 杠铃片（字母 L 图形化）'),
+            _SectionTitle(tr(context, '方案 1: L + 杠铃片（字母 L 图形化）')),
             const SizedBox(height: 16),
             Row(
               children: [
                 _LogoCard(
-                  label: '1A · 竖 L + 底部杠铃片',
+                  label: tr(context, '1A · 竖 L + 底部杠铃片'),
                   child: const _LogoLBarbell(),
                 ),
                 const SizedBox(width: 16),
                 _LogoCard(
-                  label: '1B · 圆角方框版',
+                  label: tr(context, '1B · 圆角方框版'),
                   child: const _LogoLBarbellRounded(),
                 ),
               ],
             ),
             const SizedBox(height: 32),
-            const _SectionTitle('方案 2: 哑铃（纯图形）'),
+            _SectionTitle(tr(context, '方案 2: 哑铃（纯图形）')),
             const SizedBox(height: 16),
             Row(
               children: [
                 _LogoCard(
-                  label: '2A · 几何哑铃',
+                  label: tr(context, '2A · 几何哑铃'),
                   child: const _LogoDumbbell(),
                 ),
                 const SizedBox(width: 16),
                 _LogoCard(
-                  label: '2B · 圆角方框版',
+                  label: tr(context, '2B · 圆角方框版'),
                   child: const _LogoDumbbellRounded(),
                 ),
               ],
             ),
             const SizedBox(height: 32),
-            const _SectionTitle('方案 3: 向上箭头/山峰（举起象征）'),
+            _SectionTitle(tr(context, '方案 3: 向上箭头/山峰（举起象征）')),
             const SizedBox(height: 16),
             Row(
               children: [
                 _LogoCard(
-                  label: '3A · 实心箭头',
+                  label: tr(context, '3A · 实心箭头'),
                   child: const _LogoArrow(),
                 ),
                 const SizedBox(width: 16),
                 _LogoCard(
-                  label: '3B · 空心箭头',
+                  label: tr(context, '3B · 空心箭头'),
                   child: const _LogoArrowOutline(),
                 ),
               ],
             ),
             const SizedBox(height: 32),
-            const _SectionTitle('方案 4: LT 字母徽章'),
+            _SectionTitle(tr(context, '方案 4: LT 字母徽章')),
             const SizedBox(height: 16),
             Row(
               children: [
                 _LogoCard(
-                  label: '4A · LT 嵌套',
+                  label: tr(context, '4A · LT 嵌套'),
                   child: const _LogoLTBadge(),
                 ),
                 const SizedBox(width: 16),
                 _LogoCard(
-                  label: '4B · 圆形徽章',
+                  label: tr(context, '4B · 圆形徽章'),
                   child: const _LogoLTCircle(),
                 ),
               ],
             ),
             const SizedBox(height: 32),
-            const _SectionTitle('方案 5: 杠铃片截面（圆环）'),
+            _SectionTitle(tr(context, '方案 5: 杠铃片截面（圆环）')),
             const SizedBox(height: 16),
             Row(
               children: [
                 _LogoCard(
-                  label: '5A · 不完整圆环',
+                  label: tr(context, '5A · 不完整圆环'),
                   child: const _LogoRing(),
                 ),
                 const SizedBox(width: 16),
                 _LogoCard(
-                  label: '5B · 双环追踪',
+                  label: tr(context, '5B · 双环追踪'),
                   child: const _LogoDoubleRing(),
                 ),
               ],
             ),
             const SizedBox(height: 32),
-            const _SectionTitle('方案 6: L + 哑铃组合'),
+            _SectionTitle(tr(context, '方案 6: L + 哑铃组合')),
             const SizedBox(height: 16),
             Row(
               children: [
                 _LogoCard(
-                  label: '6A · L 横杠=哑铃杆',
+                  label: tr(context, '6A · L 横杠=哑铃杆'),
                   child: const _LogoLDumbbell(),
                 ),
                 const SizedBox(width: 16),
                 _LogoCard(
-                  label: '6B · 圆角方框版',
+                  label: tr(context, '6B · 圆角方框版'),
                   child: const _LogoLDumbbellRounded(),
                 ),
               ],
@@ -193,7 +194,7 @@ class _LBarbellPainter extends CustomPainter {
     // L 竖线
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(30, 10, 16, 60),
+        const Rect.fromLTWH(30, 10, 16, 60),
         const Radius.circular(3),
       ),
       paint,
@@ -201,7 +202,7 @@ class _LBarbellPainter extends CustomPainter {
     // L 横线（底部）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(30, 58, 50, 16),
+        const Rect.fromLTWH(30, 58, 50, 16),
         const Radius.circular(3),
       ),
       paint,
@@ -209,21 +210,21 @@ class _LBarbellPainter extends CustomPainter {
     // 杠铃片（底部横线下方，3 个堆叠）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(34, 76, 10, 16),
+        const Rect.fromLTWH(34, 76, 10, 16),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(48, 76, 10, 16),
+        const Rect.fromLTWH(48, 76, 10, 16),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(62, 76, 10, 16),
+        const Rect.fromLTWH(62, 76, 10, 16),
         const Radius.circular(2),
       ),
       paint,
@@ -264,7 +265,7 @@ class _LBarbellWhitePainter extends CustomPainter {
     // L 竖线
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(28, 12, 14, 52),
+        const Rect.fromLTWH(28, 12, 14, 52),
         const Radius.circular(2),
       ),
       paint,
@@ -272,7 +273,7 @@ class _LBarbellWhitePainter extends CustomPainter {
     // L 横线
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(28, 54, 44, 14),
+        const Rect.fromLTWH(28, 54, 44, 14),
         const Radius.circular(2),
       ),
       paint,
@@ -280,21 +281,21 @@ class _LBarbellWhitePainter extends CustomPainter {
     // 杠铃片
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(32, 70, 8, 14),
+        const Rect.fromLTWH(32, 70, 8, 14),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(44, 70, 8, 14),
+        const Rect.fromLTWH(44, 70, 8, 14),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(56, 70, 8, 14),
+        const Rect.fromLTWH(56, 70, 8, 14),
         const Radius.circular(2),
       ),
       paint,
@@ -328,7 +329,7 @@ class _DumbbellPainter extends CustomPainter {
     // 杠铃杆
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(20, 44, 60, 12),
+        const Rect.fromLTWH(20, 44, 60, 12),
         const Radius.circular(3),
       ),
       paint,
@@ -336,7 +337,7 @@ class _DumbbellPainter extends CustomPainter {
     // 左侧配重（外）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(8, 32, 14, 36),
+        const Rect.fromLTWH(8, 32, 14, 36),
         const Radius.circular(4),
       ),
       paint,
@@ -344,7 +345,7 @@ class _DumbbellPainter extends CustomPainter {
     // 左侧配重（内）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(18, 36, 8, 28),
+        const Rect.fromLTWH(18, 36, 8, 28),
         const Radius.circular(3),
       ),
       paint,
@@ -352,7 +353,7 @@ class _DumbbellPainter extends CustomPainter {
     // 右侧配重（外）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(78, 32, 14, 36),
+        const Rect.fromLTWH(78, 32, 14, 36),
         const Radius.circular(4),
       ),
       paint,
@@ -360,7 +361,7 @@ class _DumbbellPainter extends CustomPainter {
     // 右侧配重（内）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(74, 36, 8, 28),
+        const Rect.fromLTWH(74, 36, 8, 28),
         const Radius.circular(3),
       ),
       paint,
@@ -401,7 +402,7 @@ class _DumbbellWhitePainter extends CustomPainter {
     // 杠铃杆
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(22, 44, 56, 12),
+        const Rect.fromLTWH(22, 44, 56, 12),
         const Radius.circular(3),
       ),
       paint,
@@ -409,7 +410,7 @@ class _DumbbellWhitePainter extends CustomPainter {
     // 左外
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(10, 34, 14, 32),
+        const Rect.fromLTWH(10, 34, 14, 32),
         const Radius.circular(4),
       ),
       paint,
@@ -417,7 +418,7 @@ class _DumbbellWhitePainter extends CustomPainter {
     // 左内
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(20, 38, 8, 24),
+        const Rect.fromLTWH(20, 38, 8, 24),
         const Radius.circular(3),
       ),
       paint,
@@ -425,7 +426,7 @@ class _DumbbellWhitePainter extends CustomPainter {
     // 右外
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(76, 34, 14, 32),
+        const Rect.fromLTWH(76, 34, 14, 32),
         const Radius.circular(4),
       ),
       paint,
@@ -433,7 +434,7 @@ class _DumbbellWhitePainter extends CustomPainter {
     // 右内
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(72, 38, 8, 24),
+        const Rect.fromLTWH(72, 38, 8, 24),
         const Radius.circular(3),
       ),
       paint,
@@ -548,7 +549,7 @@ class _LTBadgePainter extends CustomPainter {
     // 外框
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(5, 5, 90, 90),
+        const Rect.fromLTWH(5, 5, 90, 90),
         const Radius.circular(8),
       ),
       paint,
@@ -559,7 +560,7 @@ class _LTBadgePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(12, 12, 76, 76),
+        const Rect.fromLTWH(12, 12, 76, 76),
         const Radius.circular(5),
       ),
       bgPaint,
@@ -567,14 +568,14 @@ class _LTBadgePainter extends CustomPainter {
     // L 字母
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(20, 22, 16, 56),
+        const Rect.fromLTWH(20, 22, 16, 56),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(20, 64, 36, 14),
+        const Rect.fromLTWH(20, 64, 36, 14),
         const Radius.circular(2),
       ),
       paint,
@@ -582,14 +583,14 @@ class _LTBadgePainter extends CustomPainter {
     // T 字母
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(48, 22, 32, 14),
+        const Rect.fromLTWH(48, 22, 32, 14),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(58, 22, 12, 42),
+        const Rect.fromLTWH(58, 22, 12, 42),
         const Radius.circular(2),
       ),
       paint,
@@ -637,14 +638,14 @@ class _LTCirclePainter extends CustomPainter {
     // L
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(24, 24, 12, 42),
+        const Rect.fromLTWH(24, 24, 12, 42),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(24, 54, 26, 12),
+        const Rect.fromLTWH(24, 54, 26, 12),
         const Radius.circular(2),
       ),
       paint,
@@ -652,14 +653,14 @@ class _LTCirclePainter extends CustomPainter {
     // T
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(44, 24, 28, 12),
+        const Rect.fromLTWH(44, 24, 28, 12),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(54, 24, 10, 32),
+        const Rect.fromLTWH(54, 24, 10, 32),
         const Radius.circular(2),
       ),
       paint,
@@ -693,7 +694,7 @@ class _RingPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     canvas.drawArc(
-      Rect.fromLTWH(10, 10, 80, 80),
+      const Rect.fromLTWH(10, 10, 80, 80),
       -0.3, // 起始角度（稍微偏移，制造缺口）
       5.8, // 弧度（不到 2π，留缺口）
       false,
@@ -728,7 +729,7 @@ class _DoubleRingPainter extends CustomPainter {
     // 外环
     paint.strokeWidth = 8;
     canvas.drawArc(
-      Rect.fromLTWH(8, 8, 84, 84),
+      const Rect.fromLTWH(8, 8, 84, 84),
       -0.2,
       5.6,
       false,
@@ -737,7 +738,7 @@ class _DoubleRingPainter extends CustomPainter {
     // 内环
     paint.strokeWidth = 6;
     canvas.drawArc(
-      Rect.fromLTWH(24, 24, 52, 52),
+      const Rect.fromLTWH(24, 24, 52, 52),
       2.5,
       4.8,
       false,
@@ -772,7 +773,7 @@ class _LDumbbellPainter extends CustomPainter {
     // L 竖线（杠铃杆左半）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(14, 10, 12, 50),
+        const Rect.fromLTWH(14, 10, 12, 50),
         const Radius.circular(3),
       ),
       paint,
@@ -780,7 +781,7 @@ class _LDumbbellPainter extends CustomPainter {
     // L 横线（杠铃杆）
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(14, 48, 60, 12),
+        const Rect.fromLTWH(14, 48, 60, 12),
         const Radius.circular(3),
       ),
       paint,
@@ -788,7 +789,7 @@ class _LDumbbellPainter extends CustomPainter {
     // 左配重
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(6, 38, 10, 32),
+        const Rect.fromLTWH(6, 38, 10, 32),
         const Radius.circular(3),
       ),
       paint,
@@ -796,7 +797,7 @@ class _LDumbbellPainter extends CustomPainter {
     // 右配重
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(72, 38, 10, 32),
+        const Rect.fromLTWH(72, 38, 10, 32),
         const Radius.circular(3),
       ),
       paint,
@@ -804,7 +805,7 @@ class _LDumbbellPainter extends CustomPainter {
     // 右内配重
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(64, 42, 8, 24),
+        const Rect.fromLTWH(64, 42, 8, 24),
         const Radius.circular(2),
       ),
       paint,
@@ -845,7 +846,7 @@ class _LDumbbellWhitePainter extends CustomPainter {
     // L 竖线
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(16, 12, 10, 44),
+        const Rect.fromLTWH(16, 12, 10, 44),
         const Radius.circular(2),
       ),
       paint,
@@ -853,7 +854,7 @@ class _LDumbbellWhitePainter extends CustomPainter {
     // L 横线
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(16, 46, 52, 10),
+        const Rect.fromLTWH(16, 46, 52, 10),
         const Radius.circular(2),
       ),
       paint,
@@ -861,7 +862,7 @@ class _LDumbbellWhitePainter extends CustomPainter {
     // 左配重
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(8, 38, 10, 28),
+        const Rect.fromLTWH(8, 38, 10, 28),
         const Radius.circular(3),
       ),
       paint,
@@ -869,7 +870,7 @@ class _LDumbbellWhitePainter extends CustomPainter {
     // 右配重
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(66, 38, 10, 28),
+        const Rect.fromLTWH(66, 38, 10, 28),
         const Radius.circular(3),
       ),
       paint,
@@ -877,7 +878,7 @@ class _LDumbbellWhitePainter extends CustomPainter {
     // 右内配重
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(58, 42, 8, 20),
+        const Rect.fromLTWH(58, 42, 8, 20),
         const Radius.circular(2),
       ),
       paint,

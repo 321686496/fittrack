@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 import 'themes/app_themes.dart';
 import 'data/storage.dart';
+import 'l10n/i18n.dart';
 import 'data/system_plan_library.dart';
 import 'services/permission_service.dart';
 import 'services/rest_notification_service.dart';
@@ -49,6 +51,8 @@ void main() {
 
     try {
       await Storage.init();
+      // 恢复语言偏好（依赖 Storage，必须在其之后）
+      await LocaleController.instance.init();
       // 加载系统训练计划库 + 预加载 SQLite 缓存：并行执行（无相互依赖）
       await Future.wait([
         SystemPlanLibrary.instance.load(),
@@ -168,6 +172,9 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     _globalRouter = _router;
     // 设置全局主题变更回调
     app_router.onThemeChanged = _onThemeChanged;
+    // 语言切换后重建整棵树：既刷新 MaterialApp.locale（影响日期选择器等
+    // Material 内置组件），也让依赖 LocaleScope 的组件拿到新语言
+    LocaleController.instance.addListener(_onLocaleChanged);
     _restartTimedTimerIfNeeded();
     // Android: 启动后延迟检查 ROM 适配
     if (!isOhos) {
@@ -179,9 +186,14 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
 
   @override
   void dispose() {
+    LocaleController.instance.removeListener(_onLocaleChanged);
     WidgetsBinding.instance.removeObserver(this);
     _timedRefreshTimer?.cancel();
     super.dispose();
+  }
+
+  void _onLocaleChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -324,23 +336,48 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   Widget build(BuildContext context) {
     if (_usesDayNightThemes) {
       // system / timed：日间用 lightThemeId、夜间用 darkThemeId
-      return MaterialApp.router(
-        title: 'LiftTrack',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.getTheme(_lightThemeId),
-        darkTheme: AppTheme.getTheme(_darkThemeId),
-        themeMode: _resolveThemeMode(),
-        routerConfig: _router,
+      return LocaleScope(
+        controller: LocaleController.instance,
+        child: MaterialApp.router(
+          title: 'LiftTrack',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.getTheme(_lightThemeId),
+          darkTheme: AppTheme.getTheme(_darkThemeId),
+          themeMode: _resolveThemeMode(),
+          routerConfig: _router,
+          // ── 多语言 ──
+          // 用户选「跟随系统」时 locale 为 null，交由下方回调按支持列表解析
+          locale: LocaleController.instance.locale,
+          supportedLocales: LocaleController.supportedLocales,
+          localeResolutionCallback: LocaleController.localeResolutionCallback,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+        ),
       );
     }
     // off：始终浅色，用用户手选主题
-    return MaterialApp.router(
-      title: 'LiftTrack',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.getTheme(_currentThemeId),
-      darkTheme: AppTheme.getTheme(_currentThemeId),
-      themeMode: ThemeMode.light,
-      routerConfig: _router,
+    return LocaleScope(
+      controller: LocaleController.instance,
+      child: MaterialApp.router(
+        title: 'LiftTrack',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.getTheme(_currentThemeId),
+        darkTheme: AppTheme.getTheme(_currentThemeId),
+        themeMode: ThemeMode.light,
+        routerConfig: _router,
+        // ── 多语言 ──
+        locale: LocaleController.instance.locale,
+        supportedLocales: LocaleController.supportedLocales,
+        localeResolutionCallback: LocaleController.localeResolutionCallback,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+      ),
     );
   }
 }

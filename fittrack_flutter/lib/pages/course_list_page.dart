@@ -1,9 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/course_content.dart';
 import '../utils/art_assets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class CourseListPage extends StatelessWidget {
   const CourseListPage({super.key});
 
@@ -12,7 +13,7 @@ class CourseListPage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          PageHeader(title: '系统化课程', subtitle: '从入门到精通的完整训练体系', onBack: () => Navigator.of(context).pop()),
+          PageHeader(title: tr(context, '系统化课程'), subtitle: tr(context, '从入门到精通的完整训练体系'), onBack: () => Navigator.of(context).pop()),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -73,7 +74,7 @@ class CourseListPage extends StatelessWidget {
                                       const SizedBox(height: 4),
                                       Text(c.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13)),
                                       const SizedBox(height: 8),
-                                      Text('${c.chapters.length}章 · ${c.pointsCost}积分', style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                                      Text(tr(context, '${c.chapters.length}章 · ${c.pointsCost}积分'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
                                     ],
                                   ),
                                 ),

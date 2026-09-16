@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 class BottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -11,12 +12,12 @@ class BottomNav extends StatelessWidget {
     required this.onTap,
   });
 
-  static const _items = [
-    _NavItem(label: '首页', icon: Icons.home_outlined, activeIcon: Icons.home),
-    _NavItem(label: '计划', icon: Icons.assignment_outlined, activeIcon: Icons.assignment),
-    _NavItem(label: '教学', icon: Icons.school_outlined, activeIcon: Icons.school),
-    _NavItem(label: '统计', icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart),
-    _NavItem(label: '我的', icon: Icons.person_outline, activeIcon: Icons.person),
+  static final _items = [
+    _NavItem(label: trn( '首页'), icon: Icons.home_outlined, activeIcon: Icons.home),
+    _NavItem(label: trn( '计划'), icon: Icons.assignment_outlined, activeIcon: Icons.assignment),
+    _NavItem(label: trn( '教学'), icon: Icons.school_outlined, activeIcon: Icons.school),
+    _NavItem(label: trn( '统计'), icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart),
+    _NavItem(label: trn( '我的'), icon: Icons.person_outline, activeIcon: Icons.person),
   ];
 
   @override
@@ -77,7 +78,7 @@ class _NavItem {
   final IconData icon;
   final IconData activeIcon;
 
-  const _NavItem({
+  _NavItem({
     required this.label,
     required this.icon,
     required this.activeIcon,

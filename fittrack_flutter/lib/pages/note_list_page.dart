@@ -8,6 +8,7 @@ import '../widgets/note_poster.dart';
 import '../widgets/page_header.dart';
 import '../widgets/poster_capture_helper.dart';
 
+import '../l10n/i18n.dart';
 /// v1 训练笔记列表页
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md V1-11-03
@@ -65,7 +66,7 @@ class _NoteListPageState extends State<NoteListPage> {
     final map = <String, List<TrainingNote>>{};
     for (final n in _filteredNotes) {
       final d = DateTime.fromMillisecondsSinceEpoch(n.createTime);
-      final key = '${d.year}年${d.month}月';
+      final key = tr(context, '${d.year}年${d.month}月');
       map.putIfAbsent(key, () => []).add(n);
     }
     // 按月倒序
@@ -93,20 +94,20 @@ class _NoteListPageState extends State<NoteListPage> {
         children: [
           PageHeader(
             onBack: () => context.pop(),
-            title: '训练笔记',
+            title: tr(context, '训练笔记'),
             subtitle:
-                '${_notes.length} 篇笔记 · ${_notes.where((n) => n.isFeatured).length} 篇精选',
+                tr(context, '${_notes.length} 篇笔记 · ${_notes.where((n) => n.isFeatured).length} 篇精选'),
           ),
           // v1 V1-11: 筛选条
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: Row(
               children: [
-                _buildFilterChip(colors, '全部', !_featuredOnly, () {
+                _buildFilterChip(colors, tr(context, '全部'), !_featuredOnly, () {
                   setState(() => _featuredOnly = false);
                 }),
                 const SizedBox(width: 8),
-                _buildFilterChip(colors, '精选', _featuredOnly, () {
+                _buildFilterChip(colors, tr(context, '精选'), _featuredOnly, () {
                   setState(() => _featuredOnly = true);
                 }),
               ],
@@ -182,7 +183,7 @@ class _NoteListPageState extends State<NoteListPage> {
               size: 64, color: colors.textMuted.withOpacity(0.5)),
           const SizedBox(height: 16),
           Text(
-            _featuredOnly ? '还没有精选笔记' : '还没有训练笔记',
+            _featuredOnly ? tr(context, '还没有精选笔记') : tr(context, '还没有训练笔记'),
             style: TextStyle(
                 color: colors.textMuted,
                 fontSize: 14,
@@ -190,7 +191,7 @@ class _NoteListPageState extends State<NoteListPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            _featuredOnly ? '在笔记详情中标记精选' : '点击右下角按钮开始记录',
+            _featuredOnly ? tr(context, '在笔记详情中标记精选') : tr(context, '点击右下角按钮开始记录'),
             style: TextStyle(color: colors.textMuted, fontSize: 12),
           ),
         ],
@@ -290,7 +291,7 @@ class _NoteListPageState extends State<NoteListPage> {
                       posterWidget:
                           NotePosterContent(note: note, boundRecord: record),
                       posterWidth: NotePosterContent.posterWidth,
-                      title: '训练笔记海报',
+                      title: tr(context, '训练笔记海报'),
                       fileNamePrefix: 'fittrack_note',
                     );
                   },
@@ -358,9 +359,9 @@ class _NoteListPageState extends State<NoteListPage> {
   /// 绑定的训练记录横幅：展示肌群 · 时长 · 总重量 · 组数
   List<Widget> _buildRecordSection(
       LiftTrackColors colors, TrainingNote note) {
-    if (note.recordId == null) return const [];
+    if (note.recordId == null) return [];
     final record = Storage.getRecordById(note.recordId!);
-    if (record == null) return const [];
+    if (record == null) return [];
     return [
       const SizedBox(height: 8),
       _buildRecordBanner(colors, record),
@@ -374,7 +375,7 @@ class _NoteListPageState extends State<NoteListPage> {
     final totalWeight = ((r['totalWeight'] ?? 0) as num).toInt();
     final totalSets = ((r['totalSets'] ?? 0) as num).toInt();
     final mins = (duration / 60).round();
-    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : '全身训练';
+    final muscleStr = muscles.isNotEmpty ? muscles.join('、') : tr(context, '全身训练');
 
     return Container(
       width: double.infinity,
@@ -413,7 +414,7 @@ class _NoteListPageState extends State<NoteListPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${mins}min · $totalWeight kg · $totalSets 组',
+                  tr(context, '${mins}min · $totalWeight kg · $totalSets 组'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: colors.textMuted, fontSize: 11),
@@ -488,7 +489,7 @@ class _NoteListPageState extends State<NoteListPage> {
                 color: colors.accentGlow,
               ),
               title: Text(
-                note.isFeatured ? '取消精选' : '标记精选',
+                note.isFeatured ? tr(context, '取消精选') : tr(context, '标记精选'),
                 style: TextStyle(color: colors.textPrimary),
               ),
               onTap: () async {
@@ -500,7 +501,7 @@ class _NoteListPageState extends State<NoteListPage> {
             ),
             ListTile(
               leading: Icon(Icons.delete_outline, color: Colors.red.shade400),
-              title: Text('删除笔记', style: TextStyle(color: Colors.red.shade400)),
+              title: Text(tr(context, '删除笔记'), style: TextStyle(color: Colors.red.shade400)),
               onTap: () async {
                 Navigator.pop(ctx);
                 final confirmed = await _confirmDelete(colors);
@@ -520,10 +521,10 @@ class _NoteListPageState extends State<NoteListPage> {
   Future<bool?> _confirmDelete(LiftTrackColors colors) {
     return ConfirmDialog.show(
       context,
-      title: '删除笔记',
-      content: '确定删除这篇笔记？此操作不可恢复。',
-      confirmText: '删除',
-      cancelText: '取消',
+      title: tr(context, '删除笔记'),
+      content: tr(context, '确定删除这篇笔记？此操作不可恢复。'),
+      confirmText: tr(context, '删除'),
+      cancelText: tr(context, '取消'),
       confirmColor: Colors.red.shade400,
       icon: Icons.delete_outline_rounded,
     );

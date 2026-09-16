@@ -6,6 +6,7 @@ import '../data/mock_data.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 class RecordDetailPage extends StatefulWidget {
   final String recordId;
 
@@ -47,15 +48,15 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
 
   String _formatDate(int timestamp) {
     final d = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return '${d.year}年${d.month}月${d.day}日 ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    return tr(context, '${d.year}年${d.month}月${d.day}日 ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}');
   }
 
   String _formatDuration(dynamic minutes) {
     final m = (minutes as num?)?.toInt() ?? 0;
-    if (m < 60) return '${m}分钟';
+    if (m < 60) return tr(context, '$m分钟');
     final h = m ~/ 60;
     final rem = m % 60;
-    return rem > 0 ? '${h}小时${rem}分钟' : '${h}小时';
+    return rem > 0 ? tr(context, '$h小时$rem分钟') : tr(context, '$h小时');
   }
 
   /// 三级反查动作名：自定义动作库 → 计划内嵌动作 → 内置动作
@@ -88,9 +89,9 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
   void _deleteRecord(String recordId) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '确认删除',
-      content: '确定要删除这条训练记录吗？此操作不可恢复。',
-      confirmText: '删除',
+      title: tr(context, '确认删除'),
+      content: tr(context, '确定要删除这条训练记录吗？此操作不可恢复。'),
+      confirmText: tr(context, '删除'),
       confirmColor: Colors.redAccent,
       icon: Icons.delete_outline_rounded,
     );
@@ -122,12 +123,12 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             children: [
               Icon(Icons.error_outline, size: 64, color: colors.textMuted),
               const SizedBox(height: 16),
-              Text('记录不存在或已删除',
+              Text(tr(context, '记录不存在或已删除'),
                   style: TextStyle(color: colors.textSecondary, fontSize: 16)),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => context.pop(),
-                child: const Text('返回'),
+                child: Text(tr(context, '返回')),
               ),
             ],
           ),
@@ -145,14 +146,14 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     // setRecords 的 key 是动作 id，需要解析成动作名展示
     final exLookup = _buildExerciseNameLookup();
     final exerciseNames = setRecords.keys
-        .map((k) => exLookup[k.toString()] ?? '未知动作')
+        .map((k) => exLookup[k.toString()] ?? tr(context, '未知动作'))
         .toList();
 
     // 容量分析数据（仅含有实际组数的动作）
     final volumeData = <Map<String, dynamic>>[];
     for (final entry in setRecords.entries) {
       // 值可能非 List（历史/导入的畸形数据），类型不匹配时按无组数据处理
-      final setsList = entry.value is List ? entry.value as List : const [];
+      final setsList = entry.value is List ? entry.value as List : [];
       if (setsList.isEmpty) continue;
       double vol = 0;
       for (final s in setsList) {
@@ -162,7 +163,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         }
       }
       volumeData.add({
-        'name': exLookup[entry.key.toString()] ?? '未知动作',
+        'name': exLookup[entry.key.toString()] ?? tr(context, '未知动作'),
         'volume': vol,
       });
     }
@@ -172,7 +173,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
       appBar: AppBar(
         backgroundColor: colors.bgSecondary,
         title: Text(
-          '训练详情',
+          tr(context, '训练详情'),
           style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -200,7 +201,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          record['planName'] as String? ?? record['name'] as String? ?? '训练记录',
+                          record['planName'] as String? ?? record['name'] as String? ?? tr(context, '训练记录'),
                           style: TextStyle(
                             color: colors.textPrimary,
                             fontSize: 18,
@@ -234,16 +235,16 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildDetailStat(colors, Icons.timer_outlined,
-                          _formatDuration(record['duration']), '训练时长'),
+                          _formatDuration(record['duration']), tr(context, '训练时长')),
                       _buildDetailStat(colors, Icons.fitness_center,
-                          '${record['totalSets'] ?? 0}', '总组数'),
+                          '${record['totalSets'] ?? 0}', tr(context, '总组数')),
                       _buildDetailStat(colors, Icons.monitor_weight_outlined,
-                          '${record['totalWeight'] ?? 0}kg', '总重量'),
+                          '${record['totalWeight'] ?? 0}kg', tr(context, '总重量')),
                       _buildDetailStat(colors, Icons.sports_gymnastics,
-                          '${record['exerciseCount'] ?? exerciseNames.length}', '动作数'),
+                          '${record['exerciseCount'] ?? exerciseNames.length}', tr(context, '动作数')),
                       if (pureDuration != null && pureDuration > 0)
                         _buildDetailStat(colors, Icons.timer,
-                            '${(pureDuration.toInt() / 60).round()}min', '纯训练'),
+                            '${(pureDuration.toInt() / 60).round()}min', tr(context, '纯训练')),
                     ],
                   ),
                 ],
@@ -259,11 +260,11 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             // 动作详情列表
             if (exerciseNames.isNotEmpty) ...[
               const SizedBox(height: 20),
-              SectionHeader(title: '训练动作'),
+              SectionHeader(title: tr(context, '训练动作')),
               const SizedBox(height: 12),
               ...setRecords.entries.map((entry) {
                 final exId = entry.key.toString();
-                final exName = exLookup[exId] ?? '未知动作';
+                final exName = exLookup[exId] ?? tr(context, '未知动作');
                 return _buildExerciseDetailCard(colors, exName, entry.value);
               }),
             ],
@@ -271,7 +272,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             // 休息记录
             if (restLog.isNotEmpty) ...[
               const SizedBox(height: 20),
-              SectionHeader(title: '休息记录'),
+              SectionHeader(title: tr(context, '休息记录')),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -306,12 +307,12 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              exercise.isNotEmpty ? exercise : '休息 ${idx + 1}',
+                              exercise.isNotEmpty ? exercise : tr(context, '休息 ${idx + 1}'),
                               style: TextStyle(color: colors.textSecondary, fontSize: 13),
                             ),
                           ),
                           Text(
-                            skipped ? '已跳过' : '$actual秒',
+                            skipped ? tr(context, '已跳过') : tr(context, '$actual秒'),
                             style: TextStyle(
                               color: skipped ? colors.warningColor : colors.textPrimary,
                               fontSize: 13,
@@ -397,7 +398,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                   ),
                 ),
                 Text(
-                  '${sets.length}组',
+                  tr(context, '${sets.length}组'),
                   style: TextStyle(
                     color: colors.accentGlow,
                     fontSize: 13,
@@ -421,12 +422,12 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               child: Row(
                 children: [
                   _buildSummaryStat(
-                      colors, '总容量', '${_fmtKg(totalVolume)}kg'),
+                      colors, tr(context, '总容量'), '${_fmtKg(totalVolume)}kg'),
                   _buildSummaryDivider(colors),
                   _buildSummaryStat(
-                      colors, '最重组', '${_fmtKg(bestWeight)}kg×$bestReps'),
+                      colors, tr(context, '最重组'), '${_fmtKg(bestWeight)}kg×$bestReps'),
                   _buildSummaryDivider(colors),
-                  _buildSummaryStat(colors, '总次数', '$totalReps次'),
+                  _buildSummaryStat(colors, tr(context, '总次数'), tr(context, '$totalReps次')),
                 ],
               ),
             ),
@@ -483,7 +484,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '× $reps次',
+                            tr(context, '× $reps次'),
                             style: TextStyle(
                               color: colors.textSecondary,
                               fontSize: 14,
@@ -523,7 +524,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             Padding(
               padding: const EdgeInsets.all(14),
               child: Text(
-                '暂无组数据',
+                tr(context, '暂无组数据'),
                 style: TextStyle(color: colors.textMuted, fontSize: 13),
               ),
             ),
@@ -602,9 +603,9 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         children: [
           Row(
             children: [
-              const Expanded(child: SectionHeader(title: '容量分析')),
+              Expanded(child: SectionHeader(title: tr(context, '容量分析'))),
               Text(
-                '合计 ${_fmtKg(totalVolume)}kg',
+                tr(context, '合计 ${_fmtKg(totalVolume)}kg'),
                 style: TextStyle(
                   color: colors.accentGlow,
                   fontSize: 14,

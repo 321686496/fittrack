@@ -8,6 +8,7 @@ import 'notification_storage_service.dart';
 import 'ohos_reminder_service.dart';
 import 'reminder_schedule_calculator.dart';
 
+import '../l10n/i18n.dart';
 /// 每日训练提醒调度服务
 ///
 /// 根据用户设置（开关 + trainingTime "HH:mm"）调度每日提醒，时间严格取自
@@ -27,8 +28,10 @@ class DailyReminderService {
   static final DailyReminderService instance = DailyReminderService._();
 
   static const String _channelId = 'daily_training_channel';
-  static const String _channelName = '每日训练提醒';
-  static const String _channelDesc = '每日定时训练提醒通知';
+  static String get _channelName => _channelNameMemo.value;
+  static final LocaleMemo<String> _channelNameMemo = LocaleMemo(() => trn('每日训练提醒'));
+  static String get _channelDesc => _channelDescMemo.value;
+  static final LocaleMemo<String> _channelDescMemo = LocaleMemo(() => trn('每日定时训练提醒通知'));
   static const int _notificationId = 3001;
 
   FlutterLocalNotificationsPlugin? _plugin;
@@ -65,7 +68,7 @@ class DailyReminderService {
       await _plugin
           ?.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(const AndroidNotificationChannel(
+          ?.createNotificationChannel(AndroidNotificationChannel(
             _channelId,
             _channelName,
             description: _channelDesc,
@@ -144,8 +147,8 @@ class DailyReminderService {
       if (isOhos) {
         // OHOS：调用原生代理提醒（每日重复由原生侧实现）
         final ok = await OhosReminderService.instance.scheduleTrainingReminder(
-          title: '训练时间到',
-          content: '今天也要坚持训练哦，开始你的训练吧！',
+          title: trn('训练时间到'),
+          content: trn('今天也要坚持训练哦，开始你的训练吧！'),
           timeStr: timeStr,
         );
         debugPrint('[DailyReminder] OHOS scheduled at $timeStr -> $ok');
@@ -175,7 +178,7 @@ class DailyReminderService {
       next.second,
     );
 
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
       channelDescription: _channelDesc,
@@ -184,9 +187,9 @@ class DailyReminderService {
       enableVibration: true,
     );
     // 必须同时提供 iOS 详情，否则 iOS 上前台横幅/声音展示会被默认关闭
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(),
+      iOS: const DarwinNotificationDetails(),
     );
 
     // Android：每日重复触发（可靠，无需反复打开 App）。
@@ -198,8 +201,8 @@ class DailyReminderService {
     try {
       await _plugin!.zonedSchedule(
         _notificationId,
-        '训练时间到',
-        '今天也要坚持训练哦，开始你的训练吧！',
+        trn('训练时间到'),
+        trn('今天也要坚持训练哦，开始你的训练吧！'),
         scheduled,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -212,11 +215,11 @@ class DailyReminderService {
       // ExactAlarmPermissionException）。降级为 inexactAllowWhileIdle，
       // 避免静默失败导致通知完全不触发。
       debugPrint(
-          '[DailyReminder] 精确闹钟不可用，降级为 inexactAllowWhileIdle 调度');
+          trn('[DailyReminder] 精确闹钟不可用，降级为 inexactAllowWhileIdle 调度'));
       await _plugin!.zonedSchedule(
         _notificationId,
-        '训练时间到',
-        '今天也要坚持训练哦，开始你的训练吧！',
+        trn('训练时间到'),
+        trn('今天也要坚持训练哦，开始你的训练吧！'),
         scheduled,
         details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -273,8 +276,8 @@ class DailyReminderService {
       if (now.isAfter(scheduledTime)) {
         // 训练时间已过，写入通知记录
         NotificationStorageService.instance.addDailyTrainingNotification(
-          '训练提醒',
-          '今天是你的训练日，准备好了吗？',
+          trn('训练提醒'),
+          trn('今天是你的训练日，准备好了吗？'),
         );
         // 记录今日已写入
         final s = Storage.getSettings();

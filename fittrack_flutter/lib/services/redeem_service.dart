@@ -31,7 +31,7 @@ class RedeemService {
     list.add(code);
     final s = Storage.getSettings();
     s['redeemedCodes'] = list;
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     await Storage.setPremium(true, source: 'redeem_code');
     return RedeemResult.success;
   }

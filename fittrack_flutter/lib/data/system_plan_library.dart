@@ -3,21 +3,22 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../l10n/i18n.dart';
 /// 系统训练计划库 — 从 assets/data/system_plans/*.json 加载内置计划
 /// 数据驱动架构，方便 Phase 3 远程下发
 
 // ── 常量 ───────────────────────────────────────────────────────────
 
-const List<String> kPlanGoals = ['bulk', 'cut', 'shape', 'keep', 'strength'];
+List<String> kPlanGoals = ['bulk', 'cut', 'shape', 'keep', 'strength'];
 
-const List<String> kPlanDifficulties = [
+List<String> kPlanDifficulties = [
   'beginner',
   'elementary',
   'intermediate',
   'advanced',
 ];
 
-const List<String> kPlanTrainingTypes = [
+List<String> kPlanTrainingTypes = [
   '3day_split',
   '4day_split',
   '5day_split',
@@ -26,41 +27,45 @@ const List<String> kPlanTrainingTypes = [
   'hiit',
 ];
 
-const Map<String, String> kGoalLabelsZh = {
-  'bulk': '增肌',
-  'cut': '减脂',
-  'shape': '塑形',
-  'keep': '保持健康',
-  'strength': '力量',
-};
+Map<String, String> get kGoalLabelsZh => _kGoalLabelsZhMemo.value;
+final LocaleMemo<Map<String, String>> _kGoalLabelsZhMemo = LocaleMemo(() => {
+  'bulk': trn('增肌'),
+  'cut': trn('减脂'),
+  'shape': trn('塑形'),
+  'keep': trn('保持健康'),
+  'strength': trn('力量'),
+});
 
-const Map<String, String> kDifficultyLabelsZh = {
-  'beginner': '入门',
-  'elementary': '初级',
-  'intermediate': '进阶',
-  'advanced': '高级',
-};
+Map<String, String> get kDifficultyLabelsZh => _kDifficultyLabelsZhMemo.value;
+final LocaleMemo<Map<String, String>> _kDifficultyLabelsZhMemo = LocaleMemo(() => {
+  'beginner': trn('入门'),
+  'elementary': trn('初级'),
+  'intermediate': trn('进阶'),
+  'advanced': trn('高级'),
+});
 
-const Map<String, String> kTrainingTypeLabelsZh = {
-  '3day_split': '三分化',
-  '4day_split': '四分化',
-  '5day_split': '五分化',
-  '6day_split': '六分化',
-  'full_body': '全身训练',
+Map<String, String> get kTrainingTypeLabelsZh => _kTrainingTypeLabelsZhMemo.value;
+final LocaleMemo<Map<String, String>> _kTrainingTypeLabelsZhMemo = LocaleMemo(() => {
+  '3day_split': trn('三分化'),
+  '4day_split': trn('四分化'),
+  '5day_split': trn('五分化'),
+  '6day_split': trn('六分化'),
+  'full_body': trn('全身训练'),
   'hiit': 'HIIT',
-};
+});
 
 /// 适用人群（gender）常量：all=全部人群 / male=男性 / female=女性
-const List<String> kPlanGenders = ['all', 'male', 'female'];
+List<String> kPlanGenders = ['all', 'male', 'female'];
 
-const Map<String, String> kGenderLabelsZh = {
-  'all': '全部人群',
-  'male': '男性',
-  'female': '女性',
-};
+Map<String, String> get kGenderLabelsZh => _kGenderLabelsZhMemo.value;
+final LocaleMemo<Map<String, String>> _kGenderLabelsZhMemo = LocaleMemo(() => {
+  'all': trn('全部人群'),
+  'male': trn('男性'),
+  'female': trn('女性'),
+});
 
 /// 按难度的积分价格（精品计划）
-const Map<String, int> kDifficultyPointsCost = {
+Map<String, int> kDifficultyPointsCost = {
   'beginner': 100,
   'elementary': 200,
   'intermediate': 400,
@@ -80,7 +85,7 @@ class SystemPlanExercise {
   final int restTime;
   final double? weight;
 
-  const SystemPlanExercise({
+  SystemPlanExercise({
     required this.id,
     required this.name,
     required this.sets,
@@ -116,7 +121,7 @@ class SystemPlanDay {
   final String muscle;
   final List<SystemPlanExercise> exercises;
 
-  const SystemPlanDay({
+  SystemPlanDay({
     required this.day,
     required this.label,
     required this.muscle,
@@ -162,7 +167,7 @@ class SystemPlan {
   final String? coverImage; // 专属封面（可选），为空回退 goalArtAsset(goal)
   final List<SystemPlanDay> days;
 
-  const SystemPlan({
+  SystemPlan({
     required this.id,
     required this.name,
     required this.goal,

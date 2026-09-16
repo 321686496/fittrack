@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../data/storage.dart';
 
+import '../l10n/i18n.dart';
 /// 海报基准尺寸（与 design/share_posters_gallery.html 保持一致）
 const double kPosterW = 1080.0;
 const double kPosterH = 1920.0;
@@ -34,7 +35,7 @@ class PosterColors {
   final Color warning;
   final bool isDark;
 
-  const PosterColors({
+  PosterColors({
     required this.bgTop,
     required this.bgBottom,
     required this.brand,
@@ -60,108 +61,108 @@ class PosterColors {
     }
     switch (themeId) {
       case 'vitality-sport':
-        return const PosterColors(
-          bgTop: Color(0xFFF5EDE8),
-          bgBottom: Color(0xFFF1E3DB),
-          brand: Color(0xFFC4705A),
-          brandSecondary: Color(0xFFD6906F),
-          textPrimary: Color(0xFF3E3733),
-          textSecondary: Color(0xFF6E655E),
-          textMuted: Color(0xFFA79D94),
-          cardBg: Color(0x1AC4705A),
-          cardBorder: Color(0x2EC4705A),
-          success: Color(0xFF8FB6A8),
-          warning: Color(0xFFD9B48A),
+        return PosterColors(
+          bgTop: const Color(0xFFF5EDE8),
+          bgBottom: const Color(0xFFF1E3DB),
+          brand: const Color(0xFFC4705A),
+          brandSecondary: const Color(0xFFD6906F),
+          textPrimary: const Color(0xFF3E3733),
+          textSecondary: const Color(0xFF6E655E),
+          textMuted: const Color(0xFFA79D94),
+          cardBg: const Color(0x1AC4705A),
+          cardBorder: const Color(0x2EC4705A),
+          success: const Color(0xFF8FB6A8),
+          warning: const Color(0xFFD9B48A),
           isDark: false,
         );
       case 'blossom':
-        return const PosterColors(
-          bgTop: Color(0xFFF6ECEF),
-          bgBottom: Color(0xFFF1E1E7),
-          brand: Color(0xFFC68B96),
-          brandSecondary: Color(0xFFD6A1AC),
-          textPrimary: Color(0xFF3D3036),
-          textSecondary: Color(0xFF6E5A62),
-          textMuted: Color(0xFFA8949B),
-          cardBg: Color(0x1AC68B96),
-          cardBorder: Color(0x33C68B96),
-          success: Color(0xFF8FB0A0),
-          warning: Color(0xFFD6B58A),
+        return PosterColors(
+          bgTop: const Color(0xFFF6ECEF),
+          bgBottom: const Color(0xFFF1E1E7),
+          brand: const Color(0xFFC68B96),
+          brandSecondary: const Color(0xFFD6A1AC),
+          textPrimary: const Color(0xFF3D3036),
+          textSecondary: const Color(0xFF6E5A62),
+          textMuted: const Color(0xFFA8949B),
+          cardBg: const Color(0x1AC68B96),
+          cardBorder: const Color(0x33C68B96),
+          success: const Color(0xFF8FB0A0),
+          warning: const Color(0xFFD6B58A),
           isDark: false,
         );
       case 'silver-care':
-        return const PosterColors(
-          bgTop: Color(0xFFEFF3EE),
-          bgBottom: Color(0xFFE5EDE3),
-          brand: Color(0xFF7FA08A),
-          brandSecondary: Color(0xFF93B09B),
-          textPrimary: Color(0xFF2E362F),
-          textSecondary: Color(0xFF5C685E),
-          textMuted: Color(0xFF97A099),
-          cardBg: Color(0x1F7FA08A),
-          cardBorder: Color(0x387FA08A),
-          success: Color(0xFF7FA08A),
-          warning: Color(0xFFD0A868),
+        return PosterColors(
+          bgTop: const Color(0xFFEFF3EE),
+          bgBottom: const Color(0xFFE5EDE3),
+          brand: const Color(0xFF7FA08A),
+          brandSecondary: const Color(0xFF93B09B),
+          textPrimary: const Color(0xFF2E362F),
+          textSecondary: const Color(0xFF5C685E),
+          textMuted: const Color(0xFF97A099),
+          cardBg: const Color(0x1F7FA08A),
+          cardBorder: const Color(0x387FA08A),
+          success: const Color(0xFF7FA08A),
+          warning: const Color(0xFFD0A868),
           isDark: false,
         );
       case 'fresh-minimal':
-        return const PosterColors(
-          bgTop: Color(0xFFEDF1F5),
-          bgBottom: Color(0xFFE2EBF0),
-          brand: Color(0xFF7E9DAE),
-          brandSecondary: Color(0xFF96B4C3),
-          textPrimary: Color(0xFF2F3940),
-          textSecondary: Color(0xFF5B6A72),
-          textMuted: Color(0xFF96A4AC),
-          cardBg: Color(0x1F7E9DAE),
-          cardBorder: Color(0x387E9DAE),
-          success: Color(0xFF7FA08A),
-          warning: Color(0xFFD0A868),
+        return PosterColors(
+          bgTop: const Color(0xFFEDF1F5),
+          bgBottom: const Color(0xFFE2EBF0),
+          brand: const Color(0xFF7E9DAE),
+          brandSecondary: const Color(0xFF96B4C3),
+          textPrimary: const Color(0xFF2F3940),
+          textSecondary: const Color(0xFF5B6A72),
+          textMuted: const Color(0xFF96A4AC),
+          cardBg: const Color(0x1F7E9DAE),
+          cardBorder: const Color(0x387E9DAE),
+          success: const Color(0xFF7FA08A),
+          warning: const Color(0xFFD0A868),
           isDark: false,
         );
       case 'iron-forge':
-        return const PosterColors(
-          bgTop: Color(0xFF1D1516),
-          bgBottom: Color(0xFF241C1B),
-          brand: Color(0xFFC08478),
-          brandSecondary: Color(0xFFD09A8C),
-          textPrimary: Color(0xFFF4ECE9),
-          textSecondary: Color(0xFFBBA79F),
-          textMuted: Color(0xFF6E5E5A),
-          cardBg: Color(0x24C08478),
-          cardBorder: Color(0x47C08478),
-          success: Color(0xFF8FB6A8),
-          warning: Color(0xFFD9B48A),
+        return PosterColors(
+          bgTop: const Color(0xFF1D1516),
+          bgBottom: const Color(0xFF241C1B),
+          brand: const Color(0xFFC08478),
+          brandSecondary: const Color(0xFFD09A8C),
+          textPrimary: const Color(0xFFF4ECE9),
+          textSecondary: const Color(0xFFBBA79F),
+          textMuted: const Color(0xFF6E5E5A),
+          cardBg: const Color(0x24C08478),
+          cardBorder: const Color(0x47C08478),
+          success: const Color(0xFF8FB6A8),
+          warning: const Color(0xFFD9B48A),
           isDark: true,
         );
       case 'neon-cyber':
-        return const PosterColors(
-          bgTop: Color(0xFF1B1720),
-          bgBottom: Color(0xFF221C2C),
-          brand: Color(0xFFA695B8),
-          brandSecondary: Color(0xFFB9A9CC),
-          textPrimary: Color(0xFFF1EBF5),
-          textSecondary: Color(0xFFB9AEC4),
-          textMuted: Color(0xFF6E6280),
-          cardBg: Color(0x24A695B8),
-          cardBorder: Color(0x47A695B8),
-          success: Color(0xFF8FB0A0),
-          warning: Color(0xFFD6B58A),
+        return PosterColors(
+          bgTop: const Color(0xFF1B1720),
+          bgBottom: const Color(0xFF221C2C),
+          brand: const Color(0xFFA695B8),
+          brandSecondary: const Color(0xFFB9A9CC),
+          textPrimary: const Color(0xFFF1EBF5),
+          textSecondary: const Color(0xFFB9AEC4),
+          textMuted: const Color(0xFF6E6280),
+          cardBg: const Color(0x24A695B8),
+          cardBorder: const Color(0x47A695B8),
+          success: const Color(0xFF8FB0A0),
+          warning: const Color(0xFFD6B58A),
           isDark: true,
         );
       case 'black-gold':
-        return const PosterColors(
-          bgTop: Color(0xFF171512),
-          bgBottom: Color(0xFF201B15),
-          brand: Color(0xFFC9A96A),
-          brandSecondary: Color(0xFFDEBF7A),
-          textPrimary: Color(0xFFF4EFDF),
-          textSecondary: Color(0xFFB9AE93),
-          textMuted: Color(0xFF6E6252),
-          cardBg: Color(0x24C9A96A),
-          cardBorder: Color(0x4DC9A96A),
-          success: Color(0xFF8FB0A0),
-          warning: Color(0xFFDEBF7A),
+        return PosterColors(
+          bgTop: const Color(0xFF171512),
+          bgBottom: const Color(0xFF201B15),
+          brand: const Color(0xFFC9A96A),
+          brandSecondary: const Color(0xFFDEBF7A),
+          textPrimary: const Color(0xFFF4EFDF),
+          textSecondary: const Color(0xFFB9AE93),
+          textMuted: const Color(0xFF6E6252),
+          cardBg: const Color(0x24C9A96A),
+          cardBorder: const Color(0x4DC9A96A),
+          success: const Color(0xFF8FB0A0),
+          warning: const Color(0xFFDEBF7A),
           isDark: true,
         );
       default:
@@ -443,13 +444,13 @@ class PosterQrFooter extends StatelessWidget {
             backgroundColor: Colors.white,
             // 二维码用近黑色高对比绘制，避免使用主题 textPrimary（部分浅色主题
             // 下颜色太浅，整体缩小后几乎看不清，也影响扫码）。
-            eyeStyle: QrEyeStyle(
+            eyeStyle: const QrEyeStyle(
               eyeShape: QrEyeShape.square,
-              color: const Color(0xFF1C1C1E),
+              color: Color(0xFF1C1C1E),
             ),
-            dataModuleStyle: QrDataModuleStyle(
+            dataModuleStyle: const QrDataModuleStyle(
               dataModuleShape: QrDataModuleShape.square,
-              color: const Color(0xFF1C1C1E),
+              color: Color(0xFF1C1C1E),
             ),
             // 兜底：数据过长无法编码时，避免渲染成白底空容器
             errorStateBuilder: (context, error) => Center(
@@ -536,7 +537,7 @@ class PosterDownloadFooter extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _downloadPill(
-                  colors, Icons.grid_view_rounded, '华为应用市场 · LiftTrack'),
+                  colors, Icons.grid_view_rounded, tr(context, '华为应用市场 · LiftTrack')),
               SizedBox(width: px(6)),
               _downloadPill(colors, Icons.apple, 'App Store · LiftTrack'),
             ],
@@ -574,12 +575,12 @@ class PosterDownloadFooter extends StatelessWidget {
 }
 
 /// 海报底部下载引导的情绪化文案池（每次分享随机展示一条）
-const List<String> kPosterEmotionalSlogans = [
-  '别辜负每一次想练的冲动',
-  '每一滴汗水，都算数',
-  '坚持，是对自己最好的礼物',
-  '想练就练，别等明天',
-  '别让它只是想想而已',
+List<String> kPosterEmotionalSlogans = [
+  trn( '别辜负每一次想练的冲动'),
+  trn( '每一滴汗水，都算数'),
+  trn( '坚持，是对自己最好的礼物'),
+  trn( '想练就练，别等明天'),
+  trn( '别让它只是想想而已'),
 ];
 
 /// 从 [kPosterEmotionalSlogans] 随机选取一条情感文案

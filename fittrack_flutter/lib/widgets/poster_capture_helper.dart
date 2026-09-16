@@ -6,6 +6,7 @@ import '../themes/app_themes.dart';
 import 'common_widgets.dart';
 import 'poster_preview_dialog.dart';
 
+import '../l10n/i18n.dart';
 /// 海报截图辅助工具
 ///
 /// 提供统一的"屏上渲染 → 截图 → 预览弹窗"流程，
@@ -153,7 +154,7 @@ class PosterCaptureHelper {
       entry.remove();
       if (!context.mounted) return;
 
-      final msg = '海报生成失败：$e';
+      final msg = tr(context, '海报生成失败：$e');
       if (onError != null) {
         onError(msg);
       } else {

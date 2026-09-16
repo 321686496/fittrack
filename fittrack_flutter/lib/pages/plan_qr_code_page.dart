@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../data/storage.dart';
@@ -7,6 +7,7 @@ import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class PlanQrCodePage extends StatefulWidget {
   final String planId;
   const PlanQrCodePage({super.key, required this.planId});
@@ -29,7 +30,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
   void _generate() {
     final plan = Storage.getPlanById(widget.planId);
     if (plan == null) {
-      setState(() => _errorMessage = '计划不存在');
+      setState(() => _errorMessage = tr(context, '计划不存在'));
       return;
     }
 
@@ -42,7 +43,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
     shareData.remove('currentDayIndex');
 
     final settings = Storage.getSettings();
-    final author = settings['nickname'] as String? ?? '匿名用户';
+    final author = settings['nickname'] as String? ?? tr(context, '匿名用户');
     final withAuthor = ShareCodeService.instance.attachAuthorSignature(shareData, author);
 
     final shareString = ShareCodeService.instance.generateShareableString(withAuthor);
@@ -50,7 +51,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
 
     if (shareString.length > 2900) {
       setState(() {
-        _errorMessage = '计划数据过大（${shareString.length}字符），二维码无法承载。\n请使用文本分享码方式分享。';
+        _errorMessage = tr(context, '计划数据过大（${shareString.length}字符），二维码无法承载。\n请使用文本分享码方式分享。');
       });
       return;
     }
@@ -69,7 +70,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
       body: Column(
         children: [
           PageHeader(
-            title: '计划二维码',
+            title: tr(context, '计划二维码'),
             isTabPage: false,
             onBack: () => Navigator.of(context).pop(),
           ),
@@ -121,7 +122,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
               size: 240,
               gapless: true,
               errorStateBuilder: (ctx, err) => Center(
-                child: Text('二维码生成失败', style: TextStyle(color: ft.warningColor, fontSize: 14)),
+                child: Text(tr(context, '二维码生成失败'), style: TextStyle(color: ft.warningColor, fontSize: 14)),
               ),
             ),
           ),
@@ -136,24 +137,24 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
             ),
             child: Column(
               children: [
-                Text('分享码', style: TextStyle(color: ft.textSecondary, fontSize: 12)),
+                Text(tr(context, '分享码'), style: TextStyle(color: ft.textSecondary, fontSize: 12)),
                 const SizedBox(height: 4),
                 SelectableText(_shareCode!, style: TextStyle(color: ft.accentGlow, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: 2)),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          Text('好友可通过扫码或粘贴分享串导入此计划', style: TextStyle(color: ft.textMuted, fontSize: 12), textAlign: TextAlign.center),
+          Text(tr(context, '好友可通过扫码或粘贴分享串导入此计划'), style: TextStyle(color: ft.textMuted, fontSize: 12), textAlign: TextAlign.center),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: _shareString!));
-                FitToast.success(context, '分享串已复制');
+                FitToast.success(context, tr(context, '分享串已复制'));
               },
               icon: const Icon(Icons.copy, size: 18),
-              label: const Text('复制分享串'),
+              label: Text(tr(context, '复制分享串')),
               style: OutlinedButton.styleFrom(
                 foregroundColor: ft.accentGlow,
                 side: BorderSide(color: ft.accentGlow.withOpacity(0.3)),

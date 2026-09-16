@@ -12,7 +12,7 @@ void main() {
   test('does not push when pushCountIn7Days >= 2', () async {
     final s = Storage.getSettings();
     s['pushCountIn7Days'] = 2;
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     final should = SmartPushService.instance.shouldPushNow();
     expect(should, false);
   });
@@ -20,7 +20,7 @@ void main() {
   test('does not push when user opted out', () async {
     final s = Storage.getSettings();
     s['smartPushEnabled'] = false;
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     final should = SmartPushService.instance.shouldPushNow();
     expect(should, false);
   });
@@ -29,7 +29,7 @@ void main() {
     final s = Storage.getSettings();
     s['lastPushDate'] = Storage.getTodayStr();
     s['pushCountIn7Days'] = 0;
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     final should = SmartPushService.instance.shouldPushNow();
     expect(should, false);
   });
@@ -42,7 +42,7 @@ void main() {
     s['smartPushEnabled'] = true;
     s['lastPushDate'] = lastPushDate;
     s['pushCountIn7Days'] = 2;
-    await Storage.saveSettings(s);
+    Storage.saveSettings(s);
     SmartPushService.instance.shouldPushNow();
     expect(Storage.getSettings()['pushCountIn7Days'], 0);
   });

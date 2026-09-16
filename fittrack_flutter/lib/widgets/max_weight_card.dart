@@ -6,6 +6,7 @@ import '../services/max_weight_service.dart';
 import '../data/weight_comparisons.dart';
 import 'common_widgets.dart';
 
+import '../l10n/i18n.dart';
 class MaxWeightCard extends StatelessWidget {
   final VoidCallback? onTap;
 
@@ -28,7 +29,7 @@ class MaxWeightCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '开始训练记录你的最大重量',
+                  tr(context, '开始训练记录你的最大重量'),
                   style: TextStyle(color: ft.textMuted, fontSize: 14),
                 ),
               ),
@@ -54,7 +55,7 @@ class MaxWeightCard extends StatelessWidget {
                 Icon(Icons.fitness_center, color: ft.accentGlow, size: 22),
                 const SizedBox(width: 8),
                 Text(
-                  '举起最大重量',
+                  tr(context, '举起最大重量'),
                   style: TextStyle(
                     color: ft.textPrimary,
                     fontSize: 16,
@@ -63,7 +64,7 @@ class MaxWeightCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '查看详情 →',
+                  tr(context, '查看详情 →'),
                   style: TextStyle(color: ft.accentGlow, fontSize: 12),
                 ),
               ],
@@ -84,7 +85,7 @@ class MaxWeightCard extends StatelessWidget {
             // 趣味对比
             Center(
               child: Text(
-                '${comparison.emoji} 相当于${comparison.label}',
+                tr(context, '${comparison.emoji} 相当于${comparison.label}'),
                 style: TextStyle(color: ft.textSecondary, fontSize: 14),
               ),
             ),
@@ -92,7 +93,7 @@ class MaxWeightCard extends StatelessWidget {
             // 最近一次
             Center(
               child: Text(
-                '最近一次：${globalMax.exerciseName} · ${_formatDate(globalMax.date)}',
+                tr(context, '最近一次：${globalMax.exerciseName} · ${_formatDate(globalMax.date)}'),
                 style: TextStyle(color: ft.textMuted, fontSize: 12),
               ),
             ),
@@ -105,8 +106,8 @@ class MaxWeightCard extends StatelessWidget {
   String _formatDate(DateTime d) {
     final now = DateTime.now();
     final diff = now.difference(d);
-    if (diff.inDays <= 1) return '今天';
-    if (diff.inDays <= 7) return '${diff.inDays}天前';
+    if (diff.inDays <= 1) return trn( '今天');
+    if (diff.inDays <= 7) return trn( '${diff.inDays}天前');
     return '${d.month}/${d.day}';
   }
 }

@@ -7,6 +7,7 @@ import 'platform/platform_services.dart';
 import '../utils/platform_utils.dart';
 import 'sound_service.dart';
 
+import '../l10n/i18n.dart';
 /// 休息结束提醒服务
 ///
 /// 提供振动提醒 + 本地通知 + 后台代理提醒 三重机制：
@@ -20,8 +21,10 @@ class RestNotificationService {
   static final RestNotificationService instance = RestNotificationService._();
 
   static const String _channelId = 'rest_channel';
-  static const String _channelName = '训练休息提醒';
-  static const String _channelDesc = '组间休息结束时的提醒通知';
+  static String get _channelName => _channelNameMemo.value;
+  static final LocaleMemo<String> _channelNameMemo = LocaleMemo(() => trn('训练休息提醒'));
+  static String get _channelDesc => _channelDescMemo.value;
+  static final LocaleMemo<String> _channelDescMemo = LocaleMemo(() => trn('组间休息结束时的提醒通知'));
   static const int _notificationId = 1001;
 
   FlutterLocalNotificationsPlugin? _plugin;
@@ -71,7 +74,7 @@ class RestNotificationService {
       await _plugin!
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(const AndroidNotificationChannel(
+          ?.createNotificationChannel(AndroidNotificationChannel(
             _channelId,
             _channelName,
             description: _channelDesc,
@@ -177,8 +180,8 @@ class RestNotificationService {
       await cancelScheduledNotification();
 
       // I4 修复：'休息结束' 为字面量，使用 const 代替 final（prefer_const_declarations）。
-      const title = '休息结束';
-      final content = '$exerciseName 的休息时间已结束，开始下一组训练吧！';
+      final title = trn('休息结束');
+      final content = trn('$exerciseName 的休息时间已结束，开始下一组训练吧！');
 
       // 所有平台：Dart Timer 保底（前台有效）
       _scheduleWithDartTimer(exerciseName: exerciseName, delaySeconds: delaySeconds);
@@ -222,7 +225,7 @@ class RestNotificationService {
     if (!_initialized || _plugin == null) return;
     SoundService.instance.play(SoundType.restEnd);
     try {
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         _channelId,
         _channelName,
         channelDescription: _channelDesc,
@@ -231,21 +234,21 @@ class RestNotificationService {
         enableVibration: true,
         fullScreenIntent: true,
       );
-      const ohosDetails = OhosNotificationDetails(
+      final ohosDetails = OhosNotificationDetails(
         OhosNotificationSlotType.SOCIAL_COMMUNICATION,
         slotDesc: _channelDesc,
         importance: OhosImportance.high,
         enableVibration: true,
       );
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         ohos: ohosDetails,
       );
 
       await _plugin!.show(
         _notificationId,
-        '休息结束',
-        '$exerciseName 的休息时间已结束，开始下一组训练吧！',
+        trn('休息结束'),
+        trn('$exerciseName 的休息时间已结束，开始下一组训练吧！'),
         details,
       );
       debugPrint('showRestEndNotification() success');

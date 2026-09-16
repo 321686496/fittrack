@@ -4,6 +4,7 @@ import '../data/mock_data.dart';
 import '../data/storage.dart';
 import 'common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 训练动作选择器 —— 共享组件
 ///
 /// 从动作库中选择动作并配置参数（组数/次数/重量/休息时间），
@@ -164,7 +165,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
             child: Row(
               children: [
                 Text(
-                  _selectedExercise != null ? '设置动作参数' : '选择动作',
+                  _selectedExercise != null ? tr(context, '设置动作参数') : tr(context, '选择动作'),
                   style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -189,7 +190,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     // 合并内置动作和自定义动作
     final allExercises = Storage.getAllExercises();
     final customExercises = Storage.getCustomExercises();
-    const categories = MockData.categories;
+    final categories = MockData.categories;
 
     return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -211,9 +212,9 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                   children: [
                     Icon(Icons.add_circle_outline, size: 20, color: colors.accentGlow),
                     const SizedBox(width: 10),
-                    Text('自定义动作', style: TextStyle(color: colors.accentGlow, fontSize: 14, fontWeight: FontWeight.w600)),
+                    Text(tr(context, '自定义动作'), style: TextStyle(color: colors.accentGlow, fontSize: 14, fontWeight: FontWeight.w600)),
                     const Spacer(),
-                    Text('创建', style: TextStyle(color: colors.accentGlow, fontSize: 12)),
+                    Text(tr(context, '创建'), style: TextStyle(color: colors.accentGlow, fontSize: 12)),
                   ],
                 ),
               ),
@@ -223,20 +224,20 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
           if (customExercises.isNotEmpty) ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 8, top: 8),
-              child: Text('我的自定义', style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+              child: Text(tr(context, '我的自定义'), style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
             ),
             ...customExercises.map((ex) => _buildExerciseItem(colors, ex, isCustom: true)),
           ],
           // 内置动作按分类展示
           ...categories.map((category) {
-            final filtered = category == '全部'
+            final filtered = category == tr(context, '全部')
                 ? allExercises.where((e) => e['isCustom'] != true).toList()
                 : allExercises.where((e) => e['category'] == category && e['isCustom'] != true).toList();
             if (filtered.isEmpty) return const SizedBox.shrink();
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (category != '全部')
+                if (category != tr(context, '全部'))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8, top: 8),
                     child: Text(
@@ -284,7 +285,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                             color: colors.accentGlow.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(3),
                           ),
-                          child: Text('自定义', style: TextStyle(color: colors.accentGlow, fontSize: 9, fontWeight: FontWeight.w600)),
+                          child: Text(tr(context, '自定义'), style: TextStyle(color: colors.accentGlow, fontSize: 9, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ],
@@ -317,8 +318,8 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
 
   void _showCustomExerciseDialog(LiftTrackColors colors) {
     final nameCtrl = TextEditingController();
-    final categoryCtrl = TextEditingController(text: '自定义');
-    final equipCtrl = TextEditingController(text: '自重');
+    final categoryCtrl = TextEditingController(text: tr(context, '自定义'));
+    final equipCtrl = TextEditingController(text: tr(context, '自重'));
 
     FitBottomSheet.show(
       context: context,
@@ -333,7 +334,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
               children: [
                 Row(
                   children: [
-                    Text('创建自定义动作', style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(tr(context, '创建自定义动作'), style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     GestureDetector(
                       onTap: () => Navigator.of(ctx).pop(),
@@ -342,25 +343,25 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text('动作名称', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                Text(tr(context, '动作名称'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 6),
                 TextField(
                   controller: nameCtrl,
                   style: TextStyle(color: colors.textPrimary),
                   decoration: InputDecoration(
-                    hintText: '如：波比跳',
+                    hintText: tr(context, '如：波比跳'),
                     hintStyle: TextStyle(color: colors.textMuted),
                     filled: true,
                     fillColor: colors.bgCard,
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('分类', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                Text(tr(context, '分类'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: ['自定义', '胸部', '背部', '腿部', '肩部', '手臂', '核心', '跑步'].map((cat) {
+                  children: [tr(context, '自定义'), tr(context, '胸部'), tr(context, '背部'), tr(context, '腿部'), tr(context, '肩部'), tr(context, '手臂'), tr(context, '核心'), tr(context, '跑步')].map((cat) {
                     final isSelected = categoryCtrl.text == cat;
                     return GestureDetector(
                       onTap: () => setSheetState(() => categoryCtrl.text = cat),
@@ -377,12 +378,12 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                   }).toList(),
                 ),
                 const SizedBox(height: 12),
-                Text('器械', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                Text(tr(context, '器械'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: ['自重', '哑铃', '杠铃', '器械', '跑步机'].map((eq) {
+                  children: [tr(context, '自重'), tr(context, '哑铃'), tr(context, '杠铃'), tr(context, '器械'), tr(context, '跑步机')].map((eq) {
                     final isSelected = equipCtrl.text == eq;
                     return GestureDetector(
                       onTap: () => setSheetState(() => equipCtrl.text = eq),
@@ -404,7 +405,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (nameCtrl.text.trim().isEmpty) {
-                        FitToast.warning(context, '请输入动作名称');
+                        FitToast.warning(context, tr(context, '请输入动作名称'));
                         return;
                       }
                       Storage.addCustomExercise({
@@ -414,7 +415,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                       });
                       Navigator.of(ctx).pop();
                       setState(() {});
-                      FitToast.success(context, '自定义动作已创建');
+                      FitToast.success(context, tr(context, '自定义动作已创建'));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.accentGlow,
@@ -422,7 +423,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('创建', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                    child: Text(tr(context, '创建'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -491,12 +492,12 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
           _buildModeToggle(colors),
           const SizedBox(height: 16),
           // 组数（共用）
-          _buildLabelRow(colors, '组数', '共 ${_setsCtrl.text} 组'),
+          _buildLabelRow(colors, tr(context, '组数'), tr(context, '共 ${_setsCtrl.text} 组')),
           const SizedBox(height: 6),
           _buildStepperRow(
             colors,
             controller: _setsCtrl,
-            unit: '组',
+            unit: tr(context, '组'),
             step: 1,
             min: 1,
             isInt: true,
@@ -510,18 +511,18 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
 
           if (!_perSetMode) ...[
             // 统一参数：次数 / 重量 / 休息
-            _buildLabelRow(colors, '每组次数', '所有组相同'),
+            _buildLabelRow(colors, tr(context, '每组次数'), tr(context, '所有组相同')),
             const SizedBox(height: 6),
             _buildStepperRow(
               colors,
               controller: _repsCtrl,
-              unit: '次/组',
+              unit: tr(context, '次/组'),
               step: 1,
               min: 1,
               isInt: true,
             ),
             const SizedBox(height: 16),
-            _buildLabelRow(colors, '每组重量', '所有组相同'),
+            _buildLabelRow(colors, tr(context, '每组重量'), tr(context, '所有组相同')),
             const SizedBox(height: 6),
             _buildStepperRow(
               colors,
@@ -532,12 +533,12 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
               isInt: false,
             ),
             const SizedBox(height: 16),
-            _buildLabelRow(colors, '组间休息', '所有组相同'),
+            _buildLabelRow(colors, tr(context, '组间休息'), tr(context, '所有组相同')),
             const SizedBox(height: 6),
             _buildStepperRow(
               colors,
               controller: _restTimeCtrl,
-              unit: '秒',
+              unit: tr(context, '秒'),
               step: 15,
               min: 0,
               isInt: true,
@@ -588,7 +589,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                 ),
               ),
               child: Text(
-                widget.initialExercise != null ? '确认修改' : '确认添加',
+                widget.initialExercise != null ? tr(context, '确认修改') : tr(context, '确认添加'),
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
             ),
@@ -611,12 +612,12 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
       child: Row(
         children: [
           Expanded(
-            child: _buildToggleItem(colors, '统一参数', Icons.layers, !_perSetMode, () {
+            child: _buildToggleItem(colors, tr(context, '统一参数'), Icons.layers, !_perSetMode, () {
               setState(() => _perSetMode = false);
             }),
           ),
           Expanded(
-            child: _buildToggleItem(colors, '逐组设置', Icons.view_list, _perSetMode, () {
+            child: _buildToggleItem(colors, tr(context, '逐组设置'), Icons.view_list, _perSetMode, () {
               setState(() => _perSetMode = true);
             }),
           ),
@@ -663,9 +664,9 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
       children: [
         Row(
           children: [
-            Text('逐组参数设置', style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+            Text(tr(context, '逐组参数设置'), style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
             const Spacer(),
-            Text('每组可独立调整', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+            Text(tr(context, '每组可独立调整'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
           ],
         ),
         const SizedBox(height: 8),
@@ -678,10 +679,10 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
           ),
           child: Row(
             children: [
-              SizedBox(width: 38, child: Text('组', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
-              Expanded(child: Text('次数', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('重量(kg)', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('休息(秒)', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              SizedBox(width: 38, child: Text(tr(context, '组'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
+              Expanded(child: Text(tr(context, '次数'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text(tr(context, '重量(kg)'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text(tr(context, '休息(秒)'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
               const SizedBox(width: 28),
             ],
           ),
@@ -705,7 +706,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
         children: [
           SizedBox(
             width: 38,
-            child: Text('第${index + 1}组', style: TextStyle(color: colors.textSecondary, fontSize: 11)),
+            child: Text(tr(context, '第${index + 1}组'), style: TextStyle(color: colors.textSecondary, fontSize: 11)),
           ),
           Expanded(
             child: _buildMiniField(colors, _setRepsCtrls[index], TextInputType.number),

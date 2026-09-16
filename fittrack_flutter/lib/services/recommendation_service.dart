@@ -7,6 +7,7 @@ import '../data/system_plan_library.dart';
 import 'invitation_service.dart';
 import '../utils/gender_filter.dart';
 
+import '../l10n/i18n.dart';
 class BannerItem {
   final String type; // teaching / premium / invitation / achievement
   final String title;
@@ -15,7 +16,7 @@ class BannerItem {
   final String? route;
   final Map<String, dynamic>? extra;
 
-  const BannerItem({
+  BannerItem({
     required this.type,
     required this.title,
     required this.subtitle,
@@ -28,8 +29,8 @@ class BannerItem {
     final progress = InvitationService.instance.getReferralProgress();
     return BannerItem(
       type: 'invitation',
-      title: '邀请有礼',
-      subtitle: '最高 2000 积分等你拿',
+      title: trn('邀请有礼'),
+      subtitle: trn('最高 2000 积分等你拿'),
       icon: 'card_giftcard',
       route: '/invitation',
       extra: {
@@ -40,10 +41,10 @@ class BannerItem {
     );
   }
 
-  factory BannerItem.achievementChallenge() => const BannerItem(
+  factory BannerItem.achievementChallenge() => BannerItem(
     type: 'achievement',
-    title: '成就挑战',
-    subtitle: '解锁新徽章',
+    title: trn('成就挑战'),
+    subtitle: trn('解锁新徽章'),
     icon: 'emoji_events',
     route: '/achievements',
   );
@@ -76,7 +77,7 @@ class RecommendationService {
       items.add(BannerItem(
         type: 'teaching',
         title: t.name,
-        subtitle: '推荐教学 · ${t.difficulty}',
+        subtitle: trn('推荐教学 · ${t.difficulty}'),
         icon: 'school',
         route: '/tutorial/${t.id}',
       ));
@@ -88,7 +89,7 @@ class RecommendationService {
       items.add(BannerItem(
         type: 'premium',
         title: c.title,
-        subtitle: '${c.pointsCost} 积分解锁',
+        subtitle: trn('${c.pointsCost} 积分解锁'),
         icon: 'lock',
         route: '/course/${c.id}',
       ));
@@ -101,8 +102,8 @@ class RecommendationService {
         final rec = planRecs.first;
         items.add(BannerItem(
           type: 'plan',
-          title: '推荐计划：${rec.plan.name}',
-          subtitle: rec.reasons.isNotEmpty ? rec.reasons.first : '为你智能推荐',
+          title: trn('推荐计划：${rec.plan.name}'),
+          subtitle: rec.reasons.isNotEmpty ? rec.reasons.first : trn('为你智能推荐'),
           icon: 'fitness_center',
           route: '/plan-library/detail/${rec.plan.id}',
           extra: {'planId': rec.plan.id, 'score': rec.score},

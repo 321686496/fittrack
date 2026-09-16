@@ -22,11 +22,11 @@ class ExerciseWeightSuggestion {
   final double? weight; // 自重动作为 null
   final WeightSource source;
 
-  const ExerciseWeightSuggestion({this.weight, required this.source});
+  ExerciseWeightSuggestion({this.weight, required this.source});
 }
 
 // ── 类别基础占比（入门男性，体重百分比）──
-const Map<ExerciseCategory, double> _categoryRatio = {
+Map<ExerciseCategory, double> _categoryRatio = {
   ExerciseCategory.compoundPush: 0.45,
   ExerciseCategory.compoundPull: 0.40,
   ExerciseCategory.compoundLeg: 0.70,
@@ -36,7 +36,7 @@ const Map<ExerciseCategory, double> _categoryRatio = {
 };
 
 // ── 水平系数（settings['fitnessLevel'] 实际值）──
-const Map<String, double> _levelMultiplier = {
+Map<String, double> _levelMultiplier = {
   '新手': 1.0,
   '初级': 1.15,
   '中级': 1.30,
@@ -52,7 +52,7 @@ const double _isolationMax = 50.0;
 ExerciseCategory classifyExercise(String name) {
   final n = name.replaceAll(RegExp(r'\s+'), '');
   // 自重/有氧（优先，避免"自重深蹲"误入复合下肢等）
-  const bodyweightKeywords = [
+  final bodyweightKeywords = [
     '自重深蹲', '俯卧撑', '引体向上', '卷腹', '平板支撑', '波比跳', '俄罗斯转体',
     '悬垂举腿', '仰卧举腿', '开合跳', '高抬腿', '登山跑', '鸟狗式', '死虫式',
     '深蹲跳', '箭步跳', '慢跑', '游泳', '动感单车', '椭圆机', '战绳', '农夫行走',
@@ -62,27 +62,27 @@ ExerciseCategory classifyExercise(String name) {
     if (n.contains(k)) return ExerciseCategory.bodyweight;
   }
   // 复合下肢
-  const legKeywords = ['前蹲', '深蹲', '硬拉', '腿举', '箭步蹲', '弓步蹲', '保加利亚分腿蹲', '壶铃摆动', '力量翻', '箱式深蹲'];
+  final legKeywords = ['前蹲', '深蹲', '硬拉', '腿举', '箭步蹲', '弓步蹲', '保加利亚分腿蹲', '壶铃摆动', '力量翻', '箱式深蹲'];
   for (final k in legKeywords) {
     if (n.contains(k)) return ExerciseCategory.compoundLeg;
   }
   // 复合上肢推
-  const pushKeywords = ['卧推', '推举', '实力举', '双杠臂屈伸', '阿诺德'];
+  final pushKeywords = ['卧推', '推举', '实力举', '双杠臂屈伸', '阿诺德'];
   for (final k in pushKeywords) {
     if (n.contains(k)) return ExerciseCategory.compoundPush;
   }
   // 复合上肢拉（"直臂下压"用全称，避免误吞孤立"三头肌下压"）
-  const pullKeywords = ['下拉', '划船', '直臂下压'];
+  final pullKeywords = ['下拉', '划船', '直臂下压'];
   for (final k in pullKeywords) {
     if (n.contains(k)) return ExerciseCategory.compoundPull;
   }
   // 孤立下肢（"腿弯举"需在孤立上肢"弯举"之前判断）
-  const isoLegKeywords = ['腿弯举', '腿屈伸', '提踵', '臀桥', '山羊挺身'];
+  final isoLegKeywords = ['腿弯举', '腿屈伸', '提踵', '臀桥', '山羊挺身'];
   for (final k in isoLegKeywords) {
     if (n.contains(k)) return ExerciseCategory.isolationLower;
   }
   // 孤立上肢（未命中默认归入此类）
-  const isoUpperKeywords = ['下压', '夹胸', '飞鸟', '平举', '面拉', '弯举', '臂屈伸', '三头', '法式推举'];
+  final isoUpperKeywords = ['下压', '夹胸', '飞鸟', '平举', '面拉', '弯举', '臂屈伸', '三头', '法式推举'];
   for (final k in isoUpperKeywords) {
     if (n.contains(k)) return ExerciseCategory.isolationUpper;
   }
@@ -143,7 +143,7 @@ class WeightRecommendationService {
         final category = classifyExercise(ex.name);
         if (category == ExerciseCategory.bodyweight) {
           result[ex.id] =
-              const ExerciseWeightSuggestion(source: WeightSource.bodyweight);
+              ExerciseWeightSuggestion(source: WeightSource.bodyweight);
           continue;
         }
         final history = _historyWeight(ex.name, r, ups);

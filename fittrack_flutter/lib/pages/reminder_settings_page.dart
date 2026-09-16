@@ -9,6 +9,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/custom_time_picker.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// 训练提醒设置页面
 class ReminderSettingsPage extends StatefulWidget {
   const ReminderSettingsPage({super.key});
@@ -77,7 +78,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
         children: [
           PageHeader(
             onBack: () => context.pop(),
-            title: '训练提醒',
+            title: tr(context, '训练提醒'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -85,7 +86,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SectionHeader(title: '休息提醒'),
+                  SectionHeader(title: tr(context, '休息提醒')),
                   const SizedBox(height: 10),
                   CardWidget(
                     child: Column(
@@ -94,8 +95,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                         _buildSwitchTile(
                           colors,
                           icon: Icons.notifications_active_outlined,
-                          title: '休息结束提醒',
-                          subtitle: '组间休息倒计时结束时发送通知',
+                          title: tr(context, '休息结束提醒'),
+                          subtitle: tr(context, '组间休息倒计时结束时发送通知'),
                           value: _restNotificationEnabled,
                           onChanged: (v) {
                             setState(() => _restNotificationEnabled = v);
@@ -108,16 +109,16 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                             }
                           },
                         ),
-                        DividerWidget(indent: 44),
+                        const DividerWidget(indent: 44),
                         // 横幅通知引导（点击跳转引导页）
                         _buildBannerGuideTile(colors),
-                        DividerWidget(indent: 44),
+                        const DividerWidget(indent: 44),
                         // 提示音（受主开关控制）
                         _buildSwitchTile(
                           colors,
                           icon: Icons.volume_up_outlined,
-                          title: '提示音',
-                          subtitle: '休息结束时播放提示音',
+                          title: tr(context, '提示音'),
+                          subtitle: tr(context, '休息结束时播放提示音'),
                           value: _restSoundEnabled,
                           onChanged: _restNotificationEnabled
                               ? (v) {
@@ -126,13 +127,13 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                                 }
                               : null,
                         ),
-                        DividerWidget(indent: 44),
+                        const DividerWidget(indent: 44),
                         // 振动（受主开关控制）
                         _buildSwitchTile(
                           colors,
                           icon: Icons.vibration,
-                          title: '振动提醒',
-                          subtitle: '休息结束时振动提醒',
+                          title: tr(context, '振动提醒'),
+                          subtitle: tr(context, '休息结束时振动提醒'),
                           value: _restVibrationEnabled,
                           onChanged: _restNotificationEnabled
                               ? (v) {
@@ -141,13 +142,13 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                                 }
                               : null,
                         ),
-                        DividerWidget(indent: 44),
+                        const DividerWidget(indent: 44),
                         // 休息结束后自动结束
                         _buildSwitchTile(
                           colors,
                           icon: Icons.timer_outlined,
-                          title: '休息结束后自动结束',
-                          subtitle: '到点自动结束并关闭休息弹窗, 适合自制力强的用户',
+                          title: tr(context, '休息结束后自动结束'),
+                          subtitle: tr(context, '到点自动结束并关闭休息弹窗, 适合自制力强的用户'),
                           value: _autoEndAfterRest,
                           onChanged: (v) {
                             setState(() => _autoEndAfterRest = v);
@@ -158,7 +159,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  SectionHeader(title: '默认休息时间'),
+                  SectionHeader(title: tr(context, '默认休息时间')),
                   const SizedBox(height: 10),
                   CardWidget(
                     child: Column(
@@ -174,7 +175,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '组间休息时间',
+                                      tr(context, '组间休息时间'),
                                       style: TextStyle(
                                         color: colors.textPrimary,
                                         fontSize: 14,
@@ -183,7 +184,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      '每个动作组间的默认休息秒数',
+                                      tr(context, '每个动作组间的默认休息秒数'),
                                       style: TextStyle(
                                         color: colors.textMuted,
                                         fontSize: 11,
@@ -199,7 +200,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  '$_defaultRestTime 秒',
+                                  tr(context, '$_defaultRestTime 秒'),
                                   style: TextStyle(
                                     color: colors.accentGlow,
                                     fontSize: 15,
@@ -231,8 +232,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('15秒', style: TextStyle(color: colors.textMuted, fontSize: 11)),
-                              Text('300秒', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                              Text(tr(context, '15秒'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
+                              Text(tr(context, '300秒'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
                             ],
                           ),
                         ),
@@ -240,7 +241,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  SectionHeader(title: '每日训练提醒'),
+                  SectionHeader(title: tr(context, '每日训练提醒')),
                   const SizedBox(height: 10),
                   CardWidget(
                     child: Column(
@@ -248,8 +249,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                         _buildSwitchTile(
                           colors,
                           icon: Icons.fitness_center_outlined,
-                          title: '每日训练提醒',
-                          subtitle: '在指定时间推送训练提醒通知',
+                          title: tr(context, '每日训练提醒'),
+                          subtitle: tr(context, '在指定时间推送训练提醒通知'),
                           value: _dailyTrainingEnabled,
                           onChanged: (v) {
                             setState(() => _dailyTrainingEnabled = v);
@@ -259,14 +260,14 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                           },
                         ),
                         if (_dailyTrainingEnabled) ...[
-                          DividerWidget(indent: 44),
+                          const DividerWidget(indent: 44),
                           _buildTimePickerTile(colors),
                         ],
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  SectionHeader(title: '健身卡到期提醒'),
+                  SectionHeader(title: tr(context, '健身卡到期提醒')),
                   const SizedBox(height: 10),
                   CardWidget(
                     child: Column(
@@ -274,8 +275,8 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                         _buildSwitchTile(
                           colors,
                           icon: Icons.card_membership_outlined,
-                          title: '健身卡到期提醒',
-                          subtitle: '健身卡即将到期或次数不足时提醒',
+                          title: tr(context, '健身卡到期提醒'),
+                          subtitle: tr(context, '健身卡即将到期或次数不足时提醒'),
                           value: _gymCardExpiryEnabled,
                           onChanged: (v) {
                             setState(() => _gymCardExpiryEnabled = v);
@@ -289,16 +290,16 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                           },
                         ),
                         if (_gymCardExpiryEnabled) ...[
-                          DividerWidget(indent: 44),
+                          const DividerWidget(indent: 44),
                           _buildThresholdSliderTile(
                             colors,
                             icon: Icons.event_outlined,
-                            title: '到期天数阈值',
-                            subtitle: '期限卡剩余天数 ≤ 该值时提醒',
+                            title: tr(context, '到期天数阈值'),
+                            subtitle: tr(context, '期限卡剩余天数 ≤ 该值时提醒'),
                             value: _expiryDaysThreshold,
                             min: 1,
                             max: 60,
-                            unit: '天',
+                            unit: tr(context, '天'),
                             onChanged: (v) {
                               setState(() => _expiryDaysThreshold = v.round());
                             },
@@ -309,16 +310,16 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                               GymCardReminderService.instance.reschedule();
                             },
                           ),
-                          DividerWidget(indent: 44),
+                          const DividerWidget(indent: 44),
                           _buildThresholdSliderTile(
                             colors,
                             icon: Icons.confirmation_number_outlined,
-                            title: '剩余次数阈值',
-                            subtitle: '次卡剩余次数 ≤ 该值时提醒',
+                            title: tr(context, '剩余次数阈值'),
+                            subtitle: tr(context, '次卡剩余次数 ≤ 该值时提醒'),
                             value: _lowCountThreshold,
                             min: 1,
                             max: 30,
-                            unit: '次',
+                            unit: tr(context, '次'),
                             onChanged: (v) {
                               setState(() => _lowCountThreshold = v.round());
                             },
@@ -361,7 +362,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '横幅通知',
+                    tr(context, '横幅通知'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 14,
@@ -370,7 +371,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '点击查看如何开启顶部横幅提醒',
+                    tr(context, '点击查看如何开启顶部横幅提醒'),
                     style: TextStyle(color: colors.textMuted, fontSize: 11),
                   ),
                 ],
@@ -462,7 +463,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '提醒时间',
+                    tr(context, '提醒时间'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 14,
@@ -471,7 +472,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '每天在此时间推送训练提醒',
+                    tr(context, '每天在此时间推送训练提醒'),
                     style: TextStyle(
                       color: colors.textMuted,
                       fontSize: 11,
@@ -488,7 +489,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                _trainingTime.isNotEmpty ? _trainingTime : '未设置',
+                _trainingTime.isNotEmpty ? _trainingTime : tr(context, '未设置'),
                 style: TextStyle(
                   color: _trainingTime.isNotEmpty
                       ? colors.accentGlow
@@ -610,7 +611,7 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
               Icon(Icons.info_outline, size: 18, color: colors.accentGlow),
               const SizedBox(width: 8),
               Text(
-                '提示',
+                tr(context, '提示'),
                 style: TextStyle(
                   color: colors.accentGlow,
                   fontSize: 13,
@@ -621,10 +622,10 @@ class _ReminderSettingsPageState extends State<ReminderSettingsPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            '• 应用在前台时，休息结束会立即通知\n'
-            '• 训练完成时会振动提醒（可在上方开关控制）\n'
-            '• 应用在后台时，切回应用后会立即提醒\n'
-            '• 后台代理提醒权限正在申请中，后续版本将支持后台通知',
+            tr(context, '• 应用在前台时，休息结束会立即通知\n')
+             + tr(context, '• 训练完成时会振动提醒（可在上方开关控制）\n')
+             + tr(context, '• 应用在后台时，切回应用后会立即提醒\n')
+             + tr(context, '• 后台代理提醒权限正在申请中，后续版本将支持后台通知'),
             style: TextStyle(
               color: colors.textSecondary,
               fontSize: 12,

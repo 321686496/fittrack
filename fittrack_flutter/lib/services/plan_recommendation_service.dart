@@ -3,11 +3,12 @@ import '../data/storage.dart';
 import '../data/system_plan_library.dart';
 import '../utils/gender_filter.dart';
 
+import '../l10n/i18n.dart';
 /// 评分结果（避免使用 Dart 3 record 语法）
 class ScoreResult {
   final double points;
   final String? reason;
-  const ScoreResult(this.points, [this.reason]);
+  ScoreResult(this.points, [this.reason]);
 }
 
 /// 推荐结果项
@@ -16,7 +17,7 @@ class PlanRecommendation {
   final double score; // 0-100
   final List<String> reasons; // 推荐理由（中文，最多 3 条）
 
-  const PlanRecommendation({
+  PlanRecommendation({
     required this.plan,
     required this.score,
     required this.reasons,
@@ -187,7 +188,7 @@ class PlanRecommendationService {
     } else {
       points = 5.0;
     }
-    return ScoreResult(points, '难度匹配当前训练水平');
+    return ScoreResult(points, trn('难度匹配当前训练水平'));
   }
 
   ScoreResult _scoreFrequency(
@@ -197,7 +198,7 @@ class PlanRecommendationService {
     if (recentRecords.isEmpty) {
       // 新用户：推荐低频计划
       final points = planFreq <= 3 ? 20.0 : 10.0;
-      return ScoreResult(points, '适合新手的训练频率');
+      return ScoreResult(points, trn('适合新手的训练频率'));
     }
     // 去重训练日
     final days = <String>{};
@@ -218,7 +219,7 @@ class PlanRecommendationService {
     } else {
       points = 5.0;
     }
-    return ScoreResult(points, '频率契合你近期的训练节奏');
+    return ScoreResult(points, trn('频率契合你近期的训练节奏'));
   }
 
   ScoreResult _scoreBmi(
@@ -227,33 +228,33 @@ class PlanRecommendationService {
   ) {
     final height = (bodyData['height'] as num?)?.toDouble() ?? 0;
     final weight = (bodyData['weight'] as num?)?.toDouble() ?? 0;
-    if (height <= 0 || weight <= 0) return const ScoreResult(8.0);
+    if (height <= 0 || weight <= 0) return ScoreResult(8.0);
 
     final bmi = weight / (height * height / 10000);
     String bmiCategory;
     if (bmi < 18.5) {
-      bmiCategory = '偏瘦';
+      bmiCategory = trn('偏瘦');
     } else if (bmi < 24) {
-      bmiCategory = '正常';
+      bmiCategory = trn('正常');
     } else if (bmi < 28) {
-      bmiCategory = '超重';
+      bmiCategory = trn('超重');
     } else {
-      bmiCategory = '肥胖';
+      bmiCategory = trn('肥胖');
     }
 
     // 简单关键词匹配
     if (suitableFor.contains(bmiCategory) ||
         suitableFor.contains(bmi.toStringAsFixed(0))) {
-      return const ScoreResult(15.0, '符合你的身体指标');
+      return ScoreResult(15.0, trn('符合你的身体指标'));
     }
-    return const ScoreResult(7.0);
+    return ScoreResult(7.0);
   }
 
   ScoreResult _scoreMusclePreference(
     SystemPlan plan,
     List<Map<String, dynamic>> recentRecords,
   ) {
-    if (recentRecords.isEmpty) return const ScoreResult(8.0);
+    if (recentRecords.isEmpty) return ScoreResult(8.0);
 
     // 统计用户近期训练肌群分布
     // 注意：record['setRecords'] 的结构是 Map<String(exId), List<{set,weight,reps}>>
@@ -270,7 +271,7 @@ class PlanRecommendationService {
         }
       }
     }
-    if (muscleCount.isEmpty) return const ScoreResult(8.0);
+    if (muscleCount.isEmpty) return ScoreResult(8.0);
 
     // 统计计划覆盖的肌群
     final planMuscles = <String>{};
@@ -295,9 +296,9 @@ class PlanRecommendationService {
     // 检查用户历史计划中是否使用过此系统计划
     final used = userPlans.any((p) => p['sourcePlanId'] == planId);
     if (used) {
-      return const ScoreResult(3.0); // 已用过加分低
+      return ScoreResult(3.0); // 已用过加分低
     }
-    return const ScoreResult(15.0, '全新计划，为你推荐');
+    return ScoreResult(15.0, trn('全新计划，为你推荐'));
   }
 
   // ── 辅助 ──────────────────────────────────────────────────────

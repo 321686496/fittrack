@@ -1,10 +1,11 @@
-﻿// lib/pages/plan_library_home_page.dart
+// lib/pages/plan_library_home_page.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/system_plan_library.dart';
 import '../themes/app_themes.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class PlanLibraryHomePage extends StatelessWidget {
   const PlanLibraryHomePage({super.key});
 
@@ -16,8 +17,8 @@ class PlanLibraryHomePage extends StatelessWidget {
       body: Column(
         children: [
           PageHeader(
-            title: '系统训练计划库',
-            subtitle: '选择你的训练目标',
+            title: tr(context, '系统训练计划库'),
+            subtitle: tr(context, '选择你的训练目标'),
             onBack: () => Navigator.of(context).pop(),
             onSearchTap: () => context.push('/plan-search'),
           ),
@@ -28,7 +29,7 @@ class PlanLibraryHomePage extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   sliver: SliverToBoxAdapter(
                     child: Text(
-                      '选择你的训练目标',
+                      tr(context, '选择你的训练目标'),
                       style: TextStyle(
                         color: ft.textPrimary,
                         fontSize: 18,
@@ -114,12 +115,12 @@ class _GoalCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${plans.length}个计划',
+                    tr(context, '${plans.length}个计划'),
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '含 $premiumCount 个精品',
+                    tr(context, '含 $premiumCount 个精品'),
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],

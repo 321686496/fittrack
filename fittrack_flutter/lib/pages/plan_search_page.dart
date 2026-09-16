@@ -6,6 +6,7 @@ import '../services/plan_unlock_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 计划库搜索页
 ///
 /// 设计依据：docs/superpowers/specs/2026-08-01-app-optimization-design.md §2.4
@@ -194,9 +195,9 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                       _filterTrainingType == null
                   ? _buildLanding(colors)
                   : (_results.isEmpty
-                      ? const EmptyState(
+                      ? EmptyState(
                           icon: Icons.search_off,
-                          message: '未找到匹配的训练计划',
+                          message: tr(context, '未找到匹配的训练计划'),
                         )
                       : _buildResultList(colors)),
             ),
@@ -245,7 +246,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                 },
                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                 decoration: InputDecoration(
-                  hintText: '搜索计划 / 目标 / 难度 / 类型',
+                  hintText: tr(context, '搜索计划 / 目标 / 难度 / 类型'),
                   hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
                   prefixIcon:
                       Icon(Icons.search, color: colors.textMuted, size: 20),
@@ -275,7 +276,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               child: Text(
-                '取消',
+                tr(context, '取消'),
                 style: TextStyle(
                   color: colors.accentGlow,
                   fontSize: 15,
@@ -313,7 +314,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                           : colors.textMuted),
                   const SizedBox(width: 6),
                   Text(
-                    '筛选',
+                    tr(context, '筛选'),
                     style: TextStyle(
                       color: hasActiveFilter
                           ? colors.accentGlow
@@ -352,7 +353,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                           }
                         : null,
                     child: Text(
-                      '重置',
+                      tr(context, '重置'),
                       style: TextStyle(
                         color: hasActiveFilter
                             ? colors.accentGlow
@@ -388,7 +389,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                 children: [
                   _filterSection(
                     colors,
-                    label: '目标',
+                    label: tr(context, '目标'),
                     options: kPlanGoals
                         .map((g) => _FilterOption(g, kGoalLabelsZh[g] ?? g))
                         .toList(),
@@ -399,7 +400,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                   const SizedBox(height: 10),
                   _filterSection(
                     colors,
-                    label: '难度',
+                    label: tr(context, '难度'),
                     options: kPlanDifficulties
                         .map((d) =>
                             _FilterOption(d, kDifficultyLabelsZh[d] ?? d))
@@ -412,7 +413,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                   const SizedBox(height: 10),
                   _filterSection(
                     colors,
-                    label: '训练类型',
+                    label: tr(context, '训练类型'),
                     options: kPlanTrainingTypes
                         .map((t) =>
                             _FilterOption(t, kTrainingTypeLabelsZh[t] ?? t))
@@ -440,8 +441,8 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text('应用筛选',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: Text(tr(context, '应用筛选'),
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],
@@ -515,7 +516,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('历史搜索',
+              Text(tr(context, '历史搜索'),
                   style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 15,
@@ -527,7 +528,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                     Icon(Icons.delete_outline,
                         size: 14, color: colors.textMuted),
                     const SizedBox(width: 2),
-                    Text('清空',
+                    Text(tr(context, '清空'),
                         style: TextStyle(
                             color: colors.textMuted, fontSize: 12)),
                   ],
@@ -550,7 +551,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
           ),
           const SizedBox(height: 24),
         ],
-        Text('热门推荐',
+        Text(tr(context, '热门推荐'),
             style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 15,
@@ -633,7 +634,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
                         variant: _difficultyVariant(p.difficulty),
                       ),
                       BadgeWidget(
-                        text: '${p.totalWeeks}周',
+                        text: tr(context, '${p.totalWeeks}周'),
                         variant: BadgeVariant.info,
                       ),
                     ],
@@ -653,9 +654,9 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (isUnlocked)
-                  const BadgeWidget(text: '已解锁', variant: BadgeVariant.success)
+                  BadgeWidget(text: tr(context, '已解锁'), variant: BadgeVariant.success)
                 else
-                  BadgeWidget(text: '${p.pointsCost}积分', variant: BadgeVariant.purple),
+                  BadgeWidget(text: tr(context, '${p.pointsCost}积分'), variant: BadgeVariant.purple),
                 const SizedBox(height: 6),
                 Icon(Icons.chevron_right, color: colors.textMuted, size: 20),
               ],
@@ -711,7 +712,7 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
 class _FilterOption {
   final String value;
   final String label;
-  const _FilterOption(this.value, this.label);
+  _FilterOption(this.value, this.label);
 }
 
 /// 历史搜索 chip

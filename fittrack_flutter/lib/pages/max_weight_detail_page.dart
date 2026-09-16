@@ -7,6 +7,7 @@ import '../data/weight_comparisons.dart';
 import '../services/max_weight_service.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class MaxWeightDetailPage extends StatelessWidget {
   const MaxWeightDetailPage({super.key});
 
@@ -22,7 +23,7 @@ class MaxWeightDetailPage extends StatelessWidget {
       body: Column(
         children: [
           PageHeader(
-            title: '最大重量纪录',
+            title: tr(context, '最大重量纪录'),
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -73,7 +74,7 @@ class MaxWeightDetailPage extends StatelessWidget {
               Icon(Icons.emoji_events, color: ft.warningColor, size: 40),
               const SizedBox(height: 12),
               Text(
-                '最大重量里程碑',
+                trn( '最大重量里程碑'),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -82,7 +83,7 @@ class MaxWeightDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '挑战以下重量目标，逐一解锁里程碑\n开始训练，记录你的每一次突破',
+                trn( '挑战以下重量目标，逐一解锁里程碑\n开始训练，记录你的每一次突破'),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: ft.textSecondary, fontSize: 13, height: 1.5),
               ),
@@ -125,7 +126,7 @@ class MaxWeightDetailPage extends StatelessWidget {
               Icon(Icons.flag, color: ft.accentGlow, size: 20),
               const SizedBox(width: 8),
               Text(
-                '里程碑进度',
+                trn( '里程碑进度'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -191,12 +192,12 @@ class MaxWeightDetailPage extends StatelessWidget {
               const SizedBox(width: 8),
               if (currentMax != null)
                 Text(
-                  '当前 ${currentMax.toStringAsFixed(1)} kg',
+                  trn( '当前 ${currentMax.toStringAsFixed(1)} kg'),
                   style: TextStyle(fontSize: 12, color: ft.accentGlow),
                 )
               else
                 Text(
-                  '尚未记录',
+                  trn( '尚未记录'),
                   style: TextStyle(fontSize: 12, color: ft.textMuted),
                 ),
               const Spacer(),
@@ -303,7 +304,7 @@ class MaxWeightDetailPage extends StatelessWidget {
               Icon(Icons.emoji_events, color: ft.warningColor, size: 18),
               const SizedBox(width: 6),
               Text(
-                '总纪录',
+                trn( '总纪录'),
                 style: TextStyle(
                   fontSize: 14,
                   color: ft.textSecondary,
@@ -323,7 +324,7 @@ class MaxWeightDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${comparison.emoji} 相当于${comparison.label}',
+            trn( '${comparison.emoji} 相当于${comparison.label}'),
             style: TextStyle(fontSize: 14, color: ft.textSecondary),
           ),
           const SizedBox(height: 10),

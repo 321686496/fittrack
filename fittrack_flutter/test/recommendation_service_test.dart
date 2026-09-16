@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import '../lib/data/storage.dart';
-import '../lib/services/recommendation_service.dart';
+import 'package:fittrack_flutter/data/storage.dart';
+import 'package:fittrack_flutter/services/recommendation_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

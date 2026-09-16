@@ -5,6 +5,7 @@ import '../services/device_identity_service.dart';
 import '../services/clipboard_invite_service.dart';
 import 'common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// v1 一键裂变 —— 邀请码激活横幅
 ///
 /// 依据：docs/versions/v1-获客留存版/03_开发目标.md 任务4a-4.3/4.4
@@ -43,7 +44,7 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              Icon(Icons.card_giftcard, size: 20, color: Colors.white),
+              const Icon(Icons.card_giftcard, size: 20, color: Colors.white),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -51,7 +52,7 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '发现邀请码',
+                      tr(context, '发现邀请码'),
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 12,
@@ -76,7 +77,7 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
                   foregroundColor: Colors.white.withOpacity(0.8),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                 ),
-                child: const Text('忽略', style: TextStyle(fontSize: 13)),
+                child: Text(tr(context, '忽略'), style: const TextStyle(fontSize: 13)),
               ),
               // 激活
               ElevatedButton(
@@ -98,8 +99,8 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.black54),
                       )
-                    : const Text('激活',
-                        style: TextStyle(
+                    : Text(tr(context, '激活'),
+                        style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w700)),
               ),
             ],
@@ -132,23 +133,23 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
     bool success = false;
     switch (result) {
       case InvitationResult.success:
-        msg = '激活成功！已获得 50 积分奖励';
+        msg = tr(context, '激活成功！已获得 50 积分奖励');
         success = true;
         break;
       case InvitationResult.invalidFormat:
-        msg = '邀请码格式错误';
+        msg = tr(context, '邀请码格式错误');
         break;
       case InvitationResult.invalidSignature:
-        msg = '邀请码无效';
+        msg = tr(context, '邀请码无效');
         break;
       case InvitationResult.selfInvite:
-        msg = '不能输入自己的邀请码';
+        msg = tr(context, '不能输入自己的邀请码');
         break;
       case InvitationResult.alreadyActivated:
-        msg = '已激活过邀请码';
+        msg = tr(context, '已激活过邀请码');
         break;
       case InvitationResult.mutualInvite:
-        msg = '你们已互相邀请过，不能重复绑定';
+        msg = tr(context, '你们已互相邀请过，不能重复绑定');
         break;
     }
 

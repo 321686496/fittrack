@@ -5,6 +5,7 @@ import '../data/storage.dart';
 import '../widgets/page_header.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 风格主题设置页面
 /// 支持"跟随系统"模式，可分别选择日间/夜间主题
 class ThemeSettingsPage extends StatefulWidget {
@@ -124,7 +125,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         children: [
           PageHeader(
             onBack: () => context.pop(),
-            title: '风格主题',
+            title: tr(context, '风格主题'),
           ),
           // ---- 夜间模式建议引导（非阻塞，用户主动关闭）----
           if (_nightSuggestionVisible) _buildNightSuggestion(colors),
@@ -162,13 +163,13 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('已到夜间，是否开启夜间模式？',
+                    Text(tr(context, '已到夜间，是否开启夜间模式？'),
                         style: TextStyle(
                             color: colors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
-                    Text('开启后将于每天 $_timedDarkTime 自动进入深色模式',
+                    Text(tr(context, '开启后将于每天 $_timedDarkTime 自动进入深色模式'),
                         style: TextStyle(color: colors.textMuted, fontSize: 12)),
                   ],
                 ),
@@ -190,7 +191,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
             children: [
               TextButton(
                 onPressed: _dismissNightSuggestion,
-                child: Text('暂不', style: TextStyle(color: colors.textMuted)),
+                child: Text(tr(context, '暂不'), style: TextStyle(color: colors.textMuted)),
               ),
               ElevatedButton(
                 onPressed: () => _enableNightFromSuggestion('system'),
@@ -200,7 +201,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('跟随系统'),
+                child: Text(tr(context, '跟随系统')),
               ),
               ElevatedButton(
                 onPressed: () => _enableNightFromSuggestion('timed'),
@@ -210,7 +211,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('定点自动'),
+                child: Text(tr(context, '定点自动')),
               ),
             ],
           ),
@@ -229,7 +230,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   void _dismissNightSuggestion() {
     _markNightPrompted();
     setState(() => _nightSuggestionVisible = false);
-    FitToast.info(context, '已关闭引导，可随时在下方的『自动深色模式』中开启夜间模式');
+    FitToast.info(context, tr(context, '已关闭引导，可随时在下方的『自动深色模式』中开启夜间模式'));
   }
 
   void _enableNightFromSuggestion(String mode) {
@@ -244,11 +245,11 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   // ============ 自动深色模式选择器 ============
 
   Widget _buildAutoDarkModeSelector(LiftTrackColors colors) {
-    final onChanged = (String? v) {
+    onChanged(String? v) {
       if (v == null) return;
       setState(() => _autoDarkMode = v);
       _saveAndNotify();
-    };
+    }
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -262,8 +263,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         children: [
           RadioListTile<String>(
             dense: true,
-            title: const Text('关闭'),
-            subtitle: const Text('始终使用浅色主题'),
+            title: Text(tr(context, '关闭')),
+            subtitle: Text(tr(context, '始终使用浅色主题')),
             value: 'off',
             groupValue: _autoDarkMode,
             activeColor: colors.accentGlow,
@@ -271,8 +272,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
           ),
           RadioListTile<String>(
             dense: true,
-            title: const Text('跟随系统'),
-            subtitle: const Text('根据系统设置自动切换日间/夜间'),
+            title: Text(tr(context, '跟随系统')),
+            subtitle: Text(tr(context, '根据系统设置自动切换日间/夜间')),
             value: 'system',
             groupValue: _autoDarkMode,
             activeColor: colors.accentGlow,
@@ -280,8 +281,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
           ),
           RadioListTile<String>(
             dense: true,
-            title: const Text('定点自动'),
-            subtitle: const Text('到点后自动切换深色模式'),
+            title: Text(tr(context, '定点自动')),
+            subtitle: Text(tr(context, '到点后自动切换深色模式')),
             value: 'timed',
             groupValue: _autoDarkMode,
             activeColor: colors.accentGlow,
@@ -290,7 +291,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
           if (_autoDarkMode == 'timed')
             ListTile(
               dense: true,
-              title: Text('自动开启时间', style: TextStyle(color: colors.textPrimary)),
+              title: Text(tr(context, '自动开启时间'), style: TextStyle(color: colors.textPrimary)),
               subtitle: Text(_timedDarkTime, style: TextStyle(color: colors.textMuted)),
               trailing: Icon(Icons.schedule, color: colors.accentGlow),
               onTap: () => _pickTimedTime(colors),
@@ -321,7 +322,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionLabel('日间主题', Icons.wb_sunny, colors),
+          _buildSectionLabel(tr(context, '日间主题'), Icons.wb_sunny, colors),
           const SizedBox(height: 8),
           _buildThemeChipGroup(
             allThemeIds: LiftTrackTheme.lightThemeIds,
@@ -330,7 +331,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
             colors: colors,
           ),
           const SizedBox(height: 24),
-          _buildSectionLabel('夜间主题', Icons.nightlight_round, colors),
+          _buildSectionLabel(tr(context, '夜间主题'), Icons.nightlight_round, colors),
           const SizedBox(height: 8),
           _buildThemeChipGroup(
             allThemeIds: LiftTrackTheme.darkThemeIds,
@@ -407,16 +408,16 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionLabel('预览效果', Icons.preview, colors),
+        _buildSectionLabel(tr(context, '预览效果'), Icons.preview, colors),
         const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
-              child: _buildMiniPreview(_lightThemeId, '日间', colors),
+              child: _buildMiniPreview(_lightThemeId, tr(context, '日间'), colors),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildMiniPreview(_darkThemeId, '夜间', colors),
+              child: _buildMiniPreview(_darkThemeId, tr(context, '夜间'), colors),
             ),
           ],
         ),
@@ -544,7 +545,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text('滑动选择你喜欢的主题', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+            child: Text(tr(context, '滑动选择你喜欢的主题'), style: TextStyle(color: colors.textMuted, fontSize: 13)),
           ),
         ),
         Expanded(
@@ -613,7 +614,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              '当前主题',
+                              tr(context, '当前主题'),
                               style: TextStyle(color: colors.accentGlow, fontSize: 11, fontWeight: FontWeight.w500),
                             ),
                           ),
@@ -886,7 +887,7 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             child: Text(
-              isApplied ? '已应用' : '应用此主题',
+              isApplied ? tr(context, '已应用') : tr(context, '应用此主题'),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),

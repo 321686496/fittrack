@@ -32,6 +32,7 @@ import '../services/ohos_reminder_service.dart';
 import '../router.dart';
 import '../widgets/first_training_feedback_sheet.dart';
 
+import '../l10n/i18n.dart';
 /// 休息状态机阶段
 enum RestPhase { idle, resting, restingOvertime }
 
@@ -159,8 +160,8 @@ class _TrainingPageState extends State<TrainingPage>
         if (!mounted) return;
         PermissionService.showPermissionDeniedDialog(
           context,
-          permissionName: '通知',
-          reason: '休息结束提醒需要通知权限才能在后台向您发送提醒，请在设置中开启通知权限。',
+          permissionName: tr(context, '通知'),
+          reason: tr(context, '休息结束提醒需要通知权限才能在后台向您发送提醒，请在设置中开启通知权限。'),
         );
       });
     }
@@ -390,7 +391,7 @@ class _TrainingPageState extends State<TrainingPage>
       if (lib['id'] == exId) {
         final category = lib['category'] as String? ?? '';
         final equip = lib['equip'] as String? ?? '';
-        return category == '跑步' || equip == '自重' || equip == '无';
+        return category == tr(context, '跑步') || equip == tr(context, '自重') || equip == tr(context, '无');
       }
     }
     return false;
@@ -872,7 +873,7 @@ class _TrainingPageState extends State<TrainingPage>
 
   /// 跨天恢复弹窗
   void _showCrossDayDialog(Map<String, dynamic> data) {
-    final planName = data['planName'] as String? ?? '训练';
+    final planName = data['planName'] as String? ?? tr(context, '训练');
     final startedAtDate = data['startedAtDate'] as String? ?? '';
     final setRecords = data['setRecords'] as Map?;
     final completedSets = setRecords?.values
@@ -883,23 +884,23 @@ class _TrainingPageState extends State<TrainingPage>
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Text('上次训练未完成'),
-        content: Text('您在 $startedAtDate 开始的"$planName"训练未完成，'
-            '已完成 $completedSets 组。\n\n保存为训练记录（以当前时间为结束）?'),
+        title: Text(tr(context, '上次训练未完成')),
+        content: Text(tr(context, '您在 $startedAtDate 开始的"$planName"训练未完成，')
+             + tr(context, '已完成 $completedSets 组。\n\n保存为训练记录（以当前时间为结束）?')),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               _autoSaveAsIncomplete(data);
             },
-            child: const Text('保存为记录'),
+            child: Text(tr(context, '保存为记录')),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               Storage.clearInProgressTraining();
             },
-            child: const Text('丢弃'),
+            child: Text(tr(context, '丢弃')),
           ),
         ],
       ),
@@ -922,7 +923,7 @@ class _TrainingPageState extends State<TrainingPage>
           setRecords.values.fold<int>(0, (sum, list) => sum + list.length);
 
       Storage.addRecord({
-        'name': data['planName'] ?? '未完成训练',
+        'name': data['planName'] ?? tr(context, '未完成训练'),
         'date': DateTime.now().millisecondsSinceEpoch,
         'duration': duration,
         'pureDuration': duration * 60,
@@ -974,7 +975,7 @@ class _TrainingPageState extends State<TrainingPage>
     }
 
     final savedRecord = Storage.addRecord({
-      'name': _dayConfig?['label'] ?? '训练',
+      'name': _dayConfig?['label'] ?? tr(context, '训练'),
       'date': DateTime.now().millisecondsSinceEpoch,
       'duration': duration,
       'pureDuration': pureDurationSec,
@@ -1030,9 +1031,9 @@ class _TrainingPageState extends State<TrainingPage>
           final ach = all.where((a) => a.id == id).first;
           await InfoDialog.show(
             context,
-            title: '解锁新成就',
+            title: tr(context, '解锁新成就'),
             content: '${ach.title}\n${ach.description}',
-            actionText: '好的',
+            actionText: tr(context, '好的'),
             icon: Icons.emoji_events,
             iconColor: Theme.of(context).colorScheme.primary,
           );
@@ -1139,7 +1140,7 @@ class _TrainingPageState extends State<TrainingPage>
 
     final record = <String, dynamic>{
       // 海报主标题优先使用计划名（训练名称），否则退回训练日标签
-      'name': _plan?['name'] ?? _dayConfig?['label'] ?? '训练',
+      'name': _plan?['name'] ?? _dayConfig?['label'] ?? tr(context, '训练'),
       'dayLabel': _dayConfig?['label'],
       'totalWeight': totalWeight,
       'totalSets': _completedSets,
@@ -1154,12 +1155,12 @@ class _TrainingPageState extends State<TrainingPage>
         context,
         posterWidget: ShareCardFrame(record: record),
         posterWidth: ShareCardFrame.posterWidth,
-        title: '训练记录海报',
+        title: tr(context, '训练记录海报'),
         fileNamePrefix: 'fittrack_training',
       );
     } catch (e) {
       if (mounted) {
-        FitToast.error(context, '生成分享卡片失败：$e');
+        FitToast.error(context, tr(context, '生成分享卡片失败：$e'));
       }
     }
   }
@@ -1198,12 +1199,12 @@ class _TrainingPageState extends State<TrainingPage>
         children: [
           PageHeader(
             onBack: _onBackPressed,
-            title: '训练',
+            title: tr(context, '训练'),
           ),
-          const Expanded(
+          Expanded(
             child: EmptyState(
               icon: Icons.fitness_center_outlined,
-              message: '没有找到训练动作',
+              message: tr(context, '没有找到训练动作'),
             ),
           ),
         ],
@@ -1225,8 +1226,8 @@ class _TrainingPageState extends State<TrainingPage>
         children: [
           PageHeader(
             onBack: _onBackPressed,
-            title: _dayConfig?['label'] ?? '训练',
-            subtitle: '第${_currentExIdx + 1}/${_exercises.length}个动作',
+            title: _dayConfig?['label'] ?? tr(context, '训练'),
+            subtitle: tr(context, '第${_currentExIdx + 1}/${_exercises.length}个动作'),
           ),
           // Overall progress
           Padding(
@@ -1238,12 +1239,12 @@ class _TrainingPageState extends State<TrainingPage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '整体进度',
+                      tr(context, '整体进度'),
                       style:
                           TextStyle(color: colors.textSecondary, fontSize: 13),
                     ),
                     Text(
-                      '$_completedSets/$_totalSets 组',
+                      tr(context, '$_completedSets/$_totalSets 组'),
                       style:
                           TextStyle(color: colors.textSecondary, fontSize: 13),
                     ),
@@ -1347,7 +1348,7 @@ class _TrainingPageState extends State<TrainingPage>
                         Row(
                           children: [
                             Text(
-                              '第 ${_currentSetIdx + 1}/$totalSets 组',
+                              tr(context, '第 ${_currentSetIdx + 1}/$totalSets 组'),
                               style: TextStyle(
                                 color: colors.accentGlow,
                                 fontSize: 16,
@@ -1356,7 +1357,7 @@ class _TrainingPageState extends State<TrainingPage>
                             ),
                             const SizedBox(width: 16),
                             Text(
-                              '目标: ${_targetRepsForCurrentSet()}次',
+                              tr(context, '目标: ${_targetRepsForCurrentSet()}次'),
                               style: TextStyle(
                                 color: colors.textSecondary,
                                 fontSize: 14,
@@ -1364,7 +1365,7 @@ class _TrainingPageState extends State<TrainingPage>
                             ),
                             const SizedBox(width: 16),
                             Text(
-                              '休息: ${_getRestTimeForCurrentExercise()}秒',
+                              tr(context, '休息: ${_getRestTimeForCurrentExercise()}秒'),
                               style: TextStyle(
                                 color: colors.textMuted,
                                 fontSize: 13,
@@ -1376,7 +1377,7 @@ class _TrainingPageState extends State<TrainingPage>
                         if (records.isNotEmpty) ...[
                           const SizedBox(height: 16),
                           Text(
-                            '已完成组',
+                            tr(context, '已完成组'),
                             style: TextStyle(
                               color: colors.textMuted,
                               fontSize: 13,
@@ -1396,8 +1397,8 @@ class _TrainingPageState extends State<TrainingPage>
                                 ),
                                 child: Text(
                                   isBodyweight
-                                      ? '第${r['set']}组 ×${r['reps']}'
-                                      : '第${r['set']}组 ${r['weight']}kg×${r['reps']}',
+                                      ? tr(context, '第${r['set']}组 ×${r['reps']}')
+                                      : tr(context, '第${r['set']}组 ${r['weight']}kg×${r['reps']}'),
                                   style: TextStyle(
                                     color: colors.successColor,
                                     fontSize: 12,
@@ -1417,7 +1418,7 @@ class _TrainingPageState extends State<TrainingPage>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '重量 (kg)',
+                                      tr(context, '重量 (kg)'),
                                       style: TextStyle(
                                         color: colors.textSecondary,
                                         fontSize: 13,
@@ -1434,7 +1435,7 @@ class _TrainingPageState extends State<TrainingPage>
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
                                       decoration: InputDecoration(
-                                        hintText: '输入重量',
+                                        hintText: tr(context, '输入重量'),
                                         hintStyle:
                                             TextStyle(color: colors.textMuted),
                                         filled: true,
@@ -1472,7 +1473,7 @@ class _TrainingPageState extends State<TrainingPage>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '次数',
+                                    tr(context, '次数'),
                                     style: TextStyle(
                                       color: colors.textSecondary,
                                       fontSize: 13,
@@ -1487,7 +1488,7 @@ class _TrainingPageState extends State<TrainingPage>
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold),
                                     decoration: InputDecoration(
-                                      hintText: '输入次数',
+                                      hintText: tr(context, '输入次数'),
                                       hintStyle:
                                           TextStyle(color: colors.textMuted),
                                       filled: true,
@@ -1530,7 +1531,7 @@ class _TrainingPageState extends State<TrainingPage>
                               ),
                             ),
                             child: Text(
-                              '完成第${_currentSetIdx + 1}组',
+                              tr(context, '完成第${_currentSetIdx + 1}组'),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -1623,7 +1624,7 @@ class _TrainingPageState extends State<TrainingPage>
       }
     }
 
-    final exName = ex['name'] as String? ?? '当前动作';
+    final exName = ex['name'] as String? ?? tr(context, '当前动作');
     final hasContent =
         desc.isNotEmpty || muscles.isNotEmpty || steps.isNotEmpty;
 
@@ -1647,7 +1648,7 @@ class _TrainingPageState extends State<TrainingPage>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '动作指导 · $exName',
+                        tr(context, '动作指导 · $exName'),
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -1687,7 +1688,7 @@ class _TrainingPageState extends State<TrainingPage>
                                         CrossAxisAlignment.start,
                                     children: [
                                       if (desc.isNotEmpty) ...[
-                                        Text('动作说明',
+                                        Text(tr(context, '动作说明'),
                                             style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600,
@@ -1701,7 +1702,7 @@ class _TrainingPageState extends State<TrainingPage>
                                         const SizedBox(height: 10),
                                       ],
                                       if (muscles.isNotEmpty) ...[
-                                        Text('目标肌群',
+                                        Text(tr(context, '目标肌群'),
                                             style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600,
@@ -1734,7 +1735,7 @@ class _TrainingPageState extends State<TrainingPage>
                                         const SizedBox(height: 10),
                                       ],
                                       if (steps.isNotEmpty) ...[
-                                        Text('训练步骤',
+                                        Text(tr(context, '训练步骤'),
                                             style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600,
@@ -1849,7 +1850,7 @@ class _TrainingPageState extends State<TrainingPage>
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 16),
-                                      child: Text('暂无动作指导',
+                                      child: Text(tr(context, '暂无动作指导'),
                                           style: TextStyle(
                                               fontSize: 12,
                                               color: colors.textSecondary)),
@@ -1883,8 +1884,8 @@ class _TrainingPageState extends State<TrainingPage>
         : '';
     // overtime 阶段显示 "+Ns" 形式，resting 阶段显示剩余秒数
     final secondsText = isOvertime ? '+$_restSeconds' : '$_restSeconds';
-    final statusText = isOvertime ? '已超时' : '休息中';
-    final buttonText = isOvertime ? '结束休息' : '跳过休息';
+    final statusText = isOvertime ? tr(context, '已超时') : tr(context, '休息中');
+    final buttonText = isOvertime ? tr(context, '结束休息') : tr(context, '跳过休息');
     // overtime 阶段用警告色高亮按钮
     final buttonColor = isOvertime ? colors.warningColor : colors.accentGlow;
 
@@ -1924,7 +1925,7 @@ class _TrainingPageState extends State<TrainingPage>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '秒',
+                  tr(context, '秒'),
                   style: TextStyle(
                     color: colors.textMuted,
                     fontSize: 16,
@@ -1951,8 +1952,8 @@ class _TrainingPageState extends State<TrainingPage>
                       Expanded(
                         child: Text(
                           isOvertime
-                              ? '休息时间已超，按需结束休息开始下一组。'
-                              : '你可以离开 App 去喝口水、活动一下，休息结束时我们会发送通知提醒你开始下一组。',
+                              ? tr(context, '休息时间已超，按需结束休息开始下一组。')
+                              : tr(context, '你可以离开 App 去喝口水、活动一下，休息结束时我们会发送通知提醒你开始下一组。'),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.white.withOpacity(0.7),
@@ -2013,7 +2014,7 @@ class _TrainingPageState extends State<TrainingPage>
         children: [
           PageHeader(
             onBack: _onBackPressed,
-            title: '训练完成',
+            title: tr(context, '训练完成'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -2037,7 +2038,7 @@ class _TrainingPageState extends State<TrainingPage>
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '训练完成',
+                    tr(context, '训练完成'),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 24,
@@ -2056,26 +2057,26 @@ class _TrainingPageState extends State<TrainingPage>
                     children: [
                       StatCard(
                         icon: Icons.timer_outlined,
-                        value: '$duration分钟',
-                        label: '训练时长',
+                        value: tr(context, '$duration分钟'),
+                        label: tr(context, '训练时长'),
                         color: colors.accentGlow,
                       ),
                       StatCard(
                         icon: Icons.fitness_center,
                         value: '$_completedSets',
-                        label: '总组数',
+                        label: tr(context, '总组数'),
                         color: colors.infoColor,
                       ),
                       StatCard(
                         icon: Icons.monitor_weight_outlined,
                         value: '${totalWeight}kg',
-                        label: '总重量',
+                        label: tr(context, '总重量'),
                         color: colors.warningColor,
                       ),
                       StatCard(
                         icon: Icons.sports_gymnastics,
                         value: '${_exercises.length}',
-                        label: '动作数',
+                        label: tr(context, '动作数'),
                         color: colors.purpleColor,
                       ),
                     ],
@@ -2086,7 +2087,7 @@ class _TrainingPageState extends State<TrainingPage>
                   // Rest log
                   if (_restLog.isNotEmpty) ...[
                     const SizedBox(height: 24),
-                    const SectionHeader(title: '休息记录'),
+                    SectionHeader(title: tr(context, '休息记录')),
                     const SizedBox(height: 8),
                     ..._restLog.map((log) => Padding(
                           padding: const EdgeInsets.only(bottom: 8),
@@ -2107,7 +2108,7 @@ class _TrainingPageState extends State<TrainingPage>
                                       color: colors.textPrimary, fontSize: 14),
                                 ),
                                 Text(
-                                  '休息${log['actualRestSeconds']}秒',
+                                  tr(context, '休息${log['actualRestSeconds']}秒'),
                                   style: TextStyle(
                                       color: colors.textSecondary,
                                       fontSize: 13),
@@ -2129,9 +2130,9 @@ class _TrainingPageState extends State<TrainingPage>
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        '返回首页',
-                        style: TextStyle(
+                      child: Text(
+                        tr(context, '返回首页'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -2144,7 +2145,7 @@ class _TrainingPageState extends State<TrainingPage>
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.share_outlined),
-                      label: const Text('分享训练成果'),
+                      label: Text(tr(context, '分享训练成果')),
                       onPressed: () =>
                           _shareTrainingCard(totalWeight, duration),
                     ),
@@ -2156,7 +2157,7 @@ class _TrainingPageState extends State<TrainingPage>
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.edit_note),
-                        label: const Text('写训练笔记'),
+                        label: Text(tr(context, '写训练笔记')),
                         onPressed: () =>
                             context.push('/note/edit/record_$_savedRecordId'),
                       ),
@@ -2177,21 +2178,21 @@ class _TrainingPageState extends State<TrainingPage>
                             if (result == AdResult.success ||
                                 result == AdResult.notAvailable) {
                               setState(() => _detailedReportUnlocked = true);
-                              FitToast.success(context, '已解锁详细数据报告');
+                              FitToast.success(context, tr(context, '已解锁详细数据报告'));
                             } else if (result == AdResult.userDismissed) {
-                              FitToast.info(context, '广告未观看完成');
+                              FitToast.info(context, tr(context, '广告未观看完成'));
                             } else {
-                              FitToast.error(context, '广告加载失败，请稍后重试');
+                              FitToast.error(context, tr(context, '广告加载失败，请稍后重试'));
                             }
                           },
                           icon: const Icon(Icons.play_circle_outline),
-                          label: const Text('看广告解锁详细报告'),
+                          label: Text(tr(context, '看广告解锁详细报告')),
                         ),
                       ),
                     ),
                   if (_detailedReportUnlocked) ...[
                     const SizedBox(height: 16),
-                    const SectionHeader(title: '详细数据报告'),
+                    SectionHeader(title: tr(context, '详细数据报告')),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -2204,24 +2205,24 @@ class _TrainingPageState extends State<TrainingPage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _detailRow(
-                              '平均每组重量',
+                              tr(context, '平均每组重量'),
                               _completedSets > 0
                                   ? '${(totalWeight / _completedSets).toStringAsFixed(1)} kg'
                                   : '0 kg',
                               colors),
                           const SizedBox(height: 8),
                           _detailRow(
-                              '训练密度',
-                              '${(_completedSets / (duration > 0 ? duration : 1)).toStringAsFixed(2)} 组/分',
+                              tr(context, '训练密度'),
+                              tr(context, '${(_completedSets / (duration > 0 ? duration : 1)).toStringAsFixed(2)} 组/分'),
                               colors),
                           const SizedBox(height: 8),
-                          _detailRow('完成动作数', '${_exercises.length} 个', colors),
+                          _detailRow(tr(context, '完成动作数'), tr(context, '${_exercises.length} 个'), colors),
                           const SizedBox(height: 8),
                           _detailRow(
-                              '平均休息时长',
+                              tr(context, '平均休息时长'),
                               _restLog.isEmpty
-                                  ? '0 秒'
-                                  : '${(_restLog.fold<int>(0, (sum, l) => sum + (l['actualRestSeconds'] as num).toInt()) / _restLog.length).round()} 秒',
+                                  ? tr(context, '0 秒')
+                                  : tr(context, '${(_restLog.fold<int>(0, (sum, l) => sum + (l['actualRestSeconds'] as num).toInt()) / _restLog.length).round()} 秒'),
                               colors),
                         ],
                       ),
@@ -2327,7 +2328,7 @@ class _TrainingPageState extends State<TrainingPage>
                 Icon(Icons.emoji_events, size: 18, color: colors.accentGlow),
                 const SizedBox(width: 6),
                 Text(
-                  '本周PK · vs ${opponent.nickname}',
+                  tr(context, '本周PK · vs ${opponent.nickname}'),
                   style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 14,
@@ -2352,7 +2353,7 @@ class _TrainingPageState extends State<TrainingPage>
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    userWon ? '领先' : '追赶中',
+                    userWon ? tr(context, '领先') : tr(context, '追赶中'),
                     style: TextStyle(
                       color:
                           userWon ? colors.successColor : colors.warningColor,
@@ -2380,7 +2381,7 @@ class _TrainingPageState extends State<TrainingPage>
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '招式：${hasSkin ? skin!.signatureMove : '默认招式'}',
+                    tr(context, '招式：${hasSkin ? skin!.signatureMove : '默认招式'}'),
                     style: TextStyle(
                       color: signatureColor,
                       fontSize: 11,
@@ -2392,7 +2393,7 @@ class _TrainingPageState extends State<TrainingPage>
             ),
             const SizedBox(height: 12),
             // 双方进度条对比
-            _buildPKBar(colors, '我', userWeeklyTrainings, outcome.userScore,
+            _buildPKBar(colors, tr(context, '我'), userWeeklyTrainings, outcome.userScore,
                 colors.accentGlow),
             const SizedBox(height: 8),
             _buildPKBar(
@@ -2406,13 +2407,13 @@ class _TrainingPageState extends State<TrainingPage>
             Row(
               children: [
                 Text(
-                  '超越同水平 $percentile% 用户',
+                  tr(context, '超越同水平 $percentile% 用户'),
                   style: TextStyle(color: colors.textSecondary, fontSize: 12),
                 ),
                 const Spacer(),
                 if (opponent.currentStatus != null)
                   Text(
-                    '${opponent.nickname}：${opponent.currentStatus}',
+                    tr(context, '${opponent.nickname}：${opponent.currentStatus}'),
                     style: TextStyle(
                         color: colors.textMuted,
                         fontSize: 11,
@@ -2454,7 +2455,7 @@ class _TrainingPageState extends State<TrainingPage>
         const SizedBox(width: 8),
         SizedBox(
           width: 30,
-          child: Text('$trainings次',
+          child: Text(tr(context, '$trainings次'),
               style: TextStyle(color: colors.textSecondary, fontSize: 11),
               textAlign: TextAlign.end),
         ),

@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 class OnboardingPage extends StatefulWidget {
   final VoidCallback onComplete;
   final void Function(Map<String, dynamic> profileData) onQuestionnaireComplete;
@@ -22,18 +23,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final List<Map<String, dynamic>> _slides = [
     {
       'icon': Icons.assignment_outlined,
-      'title': '智能训练计划',
-      'desc': '根据你的目标定制专属训练方案',
+      'title': trn( '智能训练计划'),
+      'desc': trn( '根据你的目标定制专属训练方案'),
     },
     {
       'icon': Icons.fitness_center,
-      'title': '详细动作指导',
-      'desc': '每个动作都有详细步骤和要点说明',
+      'title': trn( '详细动作指导'),
+      'desc': trn( '每个动作都有详细步骤和要点说明'),
     },
     {
       'icon': Icons.bar_chart,
-      'title': '数据追踪分析',
-      'desc': '全面记录训练数据，见证每一次进步',
+      'title': trn( '数据追踪分析'),
+      'desc': trn( '全面记录训练数据，见证每一次进步'),
     },
   ];
 
@@ -75,7 +76,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 child: TextButton(
                   onPressed: widget.onComplete,
                   child: Text(
-                    '跳过',
+                    tr(context, '跳过'),
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 15,
@@ -139,7 +140,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     ),
                   ),
                   child: Text(
-                    _currentPage < _slides.length - 1 ? '下一步' : '开始问卷',
+                    _currentPage < _slides.length - 1 ? tr(context, '下一步') : tr(context, '开始问卷'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

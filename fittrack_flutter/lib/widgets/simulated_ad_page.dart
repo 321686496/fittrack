@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 class SimulatedAdPage extends StatefulWidget {
   final VoidCallback onComplete;
   const SimulatedAdPage({super.key, required this.onComplete});
@@ -44,7 +45,7 @@ class _SimulatedAdPageState extends State<SimulatedAdPage> {
                 child: _canSkip
                   ? TextButton(
                       onPressed: widget.onComplete,
-                      child: const Text('跳过', style: TextStyle(fontSize: 14)),
+                      child: Text(tr(context, '跳过'), style: const TextStyle(fontSize: 14)),
                     )
                   : Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -65,11 +66,11 @@ class _SimulatedAdPageState extends State<SimulatedAdPage> {
                   children: [
                     Icon(Icons.ondemand_video, size: 64, color: colors.accentGlow),
                     const SizedBox(height: 16),
-                    Text('广告模拟中...', style: TextStyle(
+                    Text(tr(context, '广告模拟中...'), style: TextStyle(
                       color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.w600,
                     )),
                     const SizedBox(height: 8),
-                    Text('真实SDK接入后替换此处', style: TextStyle(
+                    Text(tr(context, '真实SDK接入后替换此处'), style: TextStyle(
                       color: colors.textMuted, fontSize: 13,
                     )),
                   ],

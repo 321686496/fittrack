@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import '../lib/data/storage.dart';
-import '../lib/themes/app_themes.dart';
-import '../lib/widgets/recommendation_banner.dart';
+import 'package:fittrack_flutter/data/storage.dart';
+import 'package:fittrack_flutter/themes/app_themes.dart';
+import 'package:fittrack_flutter/widgets/recommendation_banner.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -6,6 +6,7 @@ import '../services/recommendation_service.dart';
 import '../themes/app_themes.dart';
 import '../utils/art_assets.dart';
 
+import '../l10n/i18n.dart';
 class RecommendationBanner extends StatefulWidget {
   const RecommendationBanner({super.key});
 
@@ -192,7 +193,7 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '立即查看 →',
+                      tr(context, '立即查看 →'),
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.95),
                         fontSize: 12,
@@ -220,11 +221,11 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
 
     final String ctaText;
     if (totalReferrals == 0) {
-      ctaText = '邀请好友，双方得积分 →';
+      ctaText = tr(context, '邀请好友，双方得积分 →');
     } else if (remaining > 0) {
-      ctaText = '还差 $remaining 人解锁奖励 →';
+      ctaText = tr(context, '还差 $remaining 人解锁奖励 →');
     } else {
-      ctaText = '查看全部奖励 →';
+      ctaText = tr(context, '查看全部奖励 →');
     }
 
     return GestureDetector(
@@ -323,9 +324,9 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            '大使',
-                            style: TextStyle(
+                          child: Text(
+                            tr(context, '大使'),
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -338,8 +339,8 @@ class _RecommendationBannerState extends State<RecommendationBanner> {
                   // 进度文案
                   Text(
                     isAmbassador
-                        ? '已邀请 $totalReferrals 人 · 大使'
-                        : '已邀请 $totalReferrals / $nextMilestone 人',
+                        ? tr(context, '已邀请 $totalReferrals 人 · 大使')
+                        : tr(context, '已邀请 $totalReferrals / $nextMilestone 人'),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,

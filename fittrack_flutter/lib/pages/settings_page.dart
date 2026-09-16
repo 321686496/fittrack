@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
+import '../l10n/i18n.dart';
 import '../data/storage.dart';
 import '../services/sound_service.dart';
 import '../widgets/common_widgets.dart';
@@ -111,7 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (weight != null && weight > 0) settings['defaultWeight'] = weight;
 
     Storage.saveSettings(settings);
-    FitToast.success(context, '训练默认值已保存');
+    FitToast.success(context, tr(context, '训练默认值已保存'));
   }
 
   Future<void> _exportData() async {
@@ -119,11 +120,11 @@ class _SettingsPageState extends State<SettingsPage> {
       final json = Storage.exportAllDataJson();
       await Clipboard.setData(ClipboardData(text: json));
       if (mounted) {
-        FitToast.success(context, '数据已复制到剪贴板');
+        FitToast.success(context, tr(context, '数据已复制到剪贴板'));
       }
     } catch (e) {
       if (mounted) {
-        FitToast.error(context, '导出失败');
+        FitToast.error(context, tr(context, '导出失败'));
       }
     }
   }
@@ -131,9 +132,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _importData() async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '导入数据',
-      content: '请确保已将数据 JSON 复制到剪贴板。导入将覆盖当前所有数据，是否继续？',
-      confirmText: '导入',
+      title: tr(context, '导入数据'),
+      content: tr(context, '请确保已将数据 JSON 复制到剪贴板。导入将覆盖当前所有数据，是否继续？'),
+      confirmText: tr(context, '导入'),
       confirmColor: Colors.blue,
       icon: Icons.download_outlined,
     );
@@ -142,21 +143,21 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       final clipData = await Clipboard.getData(Clipboard.kTextPlain);
       if (clipData?.text == null || clipData!.text!.isEmpty) {
-        if (mounted) FitToast.error(context, '剪贴板为空');
+        if (mounted) FitToast.error(context, tr(context, '剪贴板为空'));
         return;
       }
       final data = jsonDecode(clipData.text!) as Map<String, dynamic>;
       final success = await Storage.importDataAsync(data);
       if (mounted) {
         if (success) {
-          FitToast.success(context, '数据导入成功');
+          FitToast.success(context, tr(context, '数据导入成功'));
         } else {
-          FitToast.error(context, '数据格式不正确');
+          FitToast.error(context, tr(context, '数据格式不正确'));
         }
       }
     } catch (e) {
       if (mounted) {
-        FitToast.error(context, '导入失败：数据格式错误');
+        FitToast.error(context, tr(context, '导入失败：数据格式错误'));
       }
     }
   }
@@ -164,16 +165,16 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _clearData() async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '清除所有数据',
-      content: '此操作将删除所有训练计划和记录，且无法恢复。',
-      confirmText: '清除',
+      title: tr(context, '清除所有数据'),
+      content: tr(context, '此操作将删除所有训练计划和记录，且无法恢复。'),
+      confirmText: tr(context, '清除'),
       confirmColor: Colors.redAccent,
       icon: Icons.delete_forever_outlined,
     );
     if (confirmed == true) {
       await Storage.clearAll();
       if (mounted) {
-        FitToast.success(context, '数据已清除');
+        FitToast.success(context, tr(context, '数据已清除'));
       }
     }
   }
@@ -218,12 +219,12 @@ class _SettingsPageState extends State<SettingsPage> {
     // 显示提示弹窗，引导用户去系统设置开启权限
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '前往应用设置',
-      content: '即将跳转到系统应用管理页面，请在应用信息中：\n\n'
-          '1. 开启「通知权限」\n'
-          '2. 开启「横幅通知」（休息结束提醒会在顶部弹出）\n'
-          '3. 开启「锁屏通知」（锁屏时也能看到提醒）',
-      confirmText: '去设置',
+      title: tr(context, '前往应用设置'),
+      content: tr(context, '即将跳转到系统应用管理页面，请在应用信息中：\n\n')
+           + tr(context, '1. 开启「通知权限」\n')
+           + tr(context, '2. 开启「横幅通知」（休息结束提醒会在顶部弹出）\n')
+           + tr(context, '3. 开启「锁屏通知」（锁屏时也能看到提醒）'),
+      confirmText: tr(context, '去设置'),
       icon: Icons.settings,
     );
     if (confirmed == true) {
@@ -233,7 +234,7 @@ class _SettingsPageState extends State<SettingsPage> {
       } catch (e) {
         // 如果 channel 不可用，显示提示
         if (mounted) {
-          FitToast.warning(context, '请前往 设置 > 通知管理 > LiftTrack 开启权限和横幅通知');
+          FitToast.warning(context, tr(context, '请前往 设置 > 通知管理 > LiftTrack 开启权限和横幅通知'));
         }
       }
       // 返回后重新检查权限状态
@@ -247,13 +248,13 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: '权限管理'),
+          SectionHeader(title: tr(context, '权限管理')),
           const SizedBox(height: 12),
-          _buildPermissionItem(colors, Icons.notifications_outlined, '通知权限', '训练提醒和休息结束通知（需开启横幅通知）', _hasNotificationPermission),
+          _buildPermissionItem(colors, Icons.notifications_outlined, tr(context, '通知权限'), tr(context, '训练提醒和休息结束通知（需开启横幅通知）'), _hasNotificationPermission),
           const DividerWidget(),
-          _buildPermissionItem(colors, Icons.vibration, '震动权限', '训练结束时震动提醒', _hasVibratePermission),
+          _buildPermissionItem(colors, Icons.vibration, tr(context, '震动权限'), tr(context, '训练结束时震动提醒'), _hasVibratePermission),
           const DividerWidget(),
-          _buildPermissionItem(colors, Icons.schedule, '后台运行', '保证后台计时和提醒正常工作', _hasBackgroundPermission),
+          _buildPermissionItem(colors, Icons.schedule, tr(context, '后台运行'), tr(context, '保证后台计时和提醒正常工作'), _hasBackgroundPermission),
         ],
       ),
     );
@@ -287,7 +288,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                granted ? '已开启' : '未开启',
+                granted ? tr(context, '已开启') : tr(context, '未开启'),
                 style: TextStyle(
                   color: granted ? colors.successColor : colors.warningColor,
                   fontSize: 11,
@@ -313,7 +314,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           PageHeader(
             onBack: () => context.pop(),
-            title: '设置',
+            title: tr(context, '设置'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -321,29 +322,33 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionHeader(title: '风格主题'),
+                  SectionHeader(title: tr(context, '风格主题')),
                   const SizedBox(height: 10),
                   _buildThemeEntry(colors),
                   const SizedBox(height: 20),
-                  const SectionHeader(title: '训练设置'),
+                  SectionHeader(title: tr(context, '语言 / Language')),
+                  const SizedBox(height: 10),
+                  _buildLanguageSettings(colors),
+                  const SizedBox(height: 20),
+                  SectionHeader(title: tr(context, '训练设置')),
                   const SizedBox(height: 10),
                   _buildTrainingSettings(colors),
                   const SizedBox(height: 20),
-                  const SectionHeader(title: '活跃度配色'),
+                  SectionHeader(title: tr(context, '活跃度配色')),
                   const SizedBox(height: 10),
                   _buildActivityColorModeSettings(colors),
                   const SizedBox(height: 20),
-                  const SectionHeader(title: '音效设置'),
+                  SectionHeader(title: tr(context, '音效设置')),
                   const SizedBox(height: 10),
                   _buildSoundSettings(colors),
                   const SizedBox(height: 20),
-                  const SectionHeader(title: '数据管理'),
+                  SectionHeader(title: tr(context, '数据管理')),
                   const SizedBox(height: 10),
                   _buildDataMenu(colors),
                   const SizedBox(height: 20),
                   _buildPermissionMenu(colors),
                   const SizedBox(height: 20),
-                  const SectionHeader(title: '其他'),
+                  SectionHeader(title: tr(context, '其他')),
                   const SizedBox(height: 10),
                   _buildOtherMenu(colors),
                   const SizedBox(height: 30),
@@ -375,7 +380,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '风格主题',
+                      tr(context, '风格主题'),
                       style: TextStyle(
                         color: colors.textPrimary,
                         fontSize: 15,
@@ -421,34 +426,34 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingRow(
             colors,
             icon: Icons.timer_outlined,
-            label: '默认休息时间 (秒)',
+            label: tr(context, '默认休息时间 (秒)'),
             controller: _restTimeController,
-            unit: '秒',
+            unit: tr(context, '秒'),
           ),
           const DividerWidget(indent: 0),
           const SizedBox(height: 8),
           _buildSettingRow(
             colors,
             icon: Icons.repeat,
-            label: '默认组数',
+            label: tr(context, '默认组数'),
             controller: _defaultSetsController,
-            unit: '组',
+            unit: tr(context, '组'),
           ),
           const DividerWidget(indent: 0),
           const SizedBox(height: 8),
           _buildSettingRow(
             colors,
             icon: Icons.format_list_numbered,
-            label: '默认每组次数',
+            label: tr(context, '默认每组次数'),
             controller: _defaultRepsController,
-            unit: '次',
+            unit: tr(context, '次'),
           ),
           const DividerWidget(indent: 0),
           const SizedBox(height: 8),
           _buildSettingRow(
             colors,
             icon: Icons.monitor_weight_outlined,
-            label: '默认重量 (kg)',
+            label: tr(context, '默认重量 (kg)'),
             controller: _defaultWeightController,
             unit: 'kg',
             isDecimal: true,
@@ -466,7 +471,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('保存设置', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              child: Text(tr(context, '保存设置'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
             ),
           ),
         ],
@@ -530,8 +535,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildSoundSettings(LiftTrackColors colors) {
     return CardWidget(
       child: SwitchListTile(
-        title: Text('音效', style: TextStyle(color: colors.textPrimary)),
-        subtitle: Text('训练反馈与提示音效',
+        title: Text(tr(context, '音效'), style: TextStyle(color: colors.textPrimary)),
+        subtitle: Text(tr(context, '训练反馈与提示音效'),
             style: TextStyle(color: colors.textMuted, fontSize: 12)),
         value: SoundService.instance.isEnabled,
         activeColor: colors.accentGlow,
@@ -557,11 +562,11 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Row(
           children: [
             Expanded(
-              child: Text('配色依据', style: TextStyle(fontSize: 14, color: colors.textPrimary)),
+              child: Text(tr(context, '配色依据'), style: TextStyle(fontSize: 14, color: colors.textPrimary)),
             ),
-            _buildModeChip(colors, '训练容量', 'capacity', isCapacity),
+            _buildModeChip(colors, tr(context, '训练容量'), 'capacity', isCapacity),
             const SizedBox(width: 8),
-            _buildModeChip(colors, '训练时长', 'duration', !isCapacity),
+            _buildModeChip(colors, tr(context, '训练时长'), 'duration', !isCapacity),
           ],
         ),
       ),
@@ -602,11 +607,11 @@ class _SettingsPageState extends State<SettingsPage> {
     return CardWidget(
       child: Column(
         children: [
-          _buildMenuTile(colors, Icons.upload_file_outlined, '导出数据', '复制所有数据到剪贴板', _exportData),
+          _buildMenuTile(colors, Icons.upload_file_outlined, tr(context, '导出数据'), tr(context, '复制所有数据到剪贴板'), _exportData),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.download_outlined, '导入数据', '从剪贴板粘贴数据', _importData),
+          _buildMenuTile(colors, Icons.download_outlined, tr(context, '导入数据'), tr(context, '从剪贴板粘贴数据'), _importData),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.delete_outline, '清除数据', '删除所有训练计划和记录', _clearData, color: Colors.redAccent),
+          _buildMenuTile(colors, Icons.delete_outline, tr(context, '清除数据'), tr(context, '删除所有训练计划和记录'), _clearData, color: Colors.redAccent),
         ],
       ),
     );
@@ -616,31 +621,31 @@ class _SettingsPageState extends State<SettingsPage> {
     return CardWidget(
       child: Column(
         children: [
-          _buildMenuTile(colors, Icons.share_outlined, '计划分享', '导入或分享训练计划', () {
+          _buildMenuTile(colors, Icons.share_outlined, tr(context, '计划分享'), tr(context, '导入或分享训练计划'), () {
             context.push('/share-code');
           }),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.alarm_outlined, '训练提醒', '设置休息提醒与通知', () {
+          _buildMenuTile(colors, Icons.alarm_outlined, tr(context, '训练提醒'), tr(context, '设置休息提醒与通知'), () {
             context.push('/reminder-settings');
           }),
           const DividerWidget(indent: 44),
           // v1 获客留存版：隐藏"兑换 Pro"入口（Pro/兑换码体系已编码但 v1 不启用）
           // 后续版本可通过条件判断恢复入口：if (Storage.isPremiumNotifier.value == false) ...
-          _buildMenuTile(colors, Icons.privacy_tip_outlined, '隐私与安全', '查看隐私保护与权限说明', _showPrivacyInfo),
+          _buildMenuTile(colors, Icons.privacy_tip_outlined, tr(context, '隐私与安全'), tr(context, '查看隐私保护与权限说明'), _showPrivacyInfo),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.description_outlined, '隐私政策', '查看完整隐私政策文本', () {
+          _buildMenuTile(colors, Icons.description_outlined, tr(context, '隐私政策'), tr(context, '查看完整隐私政策文本'), () {
             context.push('/privacy-full');
           }),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.description_outlined, '用户协议', '查看完整用户协议文本', () {
+          _buildMenuTile(colors, Icons.description_outlined, tr(context, '用户协议'), tr(context, '查看完整用户协议文本'), () {
             context.push('/agreement');
           }),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.shield_outlined, '数据与隐私', '管理数据授权与清除全部数据', () {
+          _buildMenuTile(colors, Icons.shield_outlined, tr(context, '数据与隐私'), tr(context, '管理数据授权与清除全部数据'), () {
             context.push('/data-privacy');
           }),
           const DividerWidget(indent: 44),
-          _buildMenuTile(colors, Icons.info_outline, '关于 LiftTrack', '版本 1.0.0', _showAbout),
+          _buildMenuTile(colors, Icons.info_outline, tr(context, '关于 LiftTrack'), tr(context, '版本 1.0.0'), _showAbout),
         ],
       ),
     );
@@ -684,5 +689,53 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildLanguageSettings(LiftTrackColors colors) {
+    final language = LocaleController.instance.language;
+    return CardWidget(
+      child: _buildMenuTile(
+        colors,
+        Icons.translate,
+        tr(context, '语言 / Language'),
+        _languageLabel(language),
+        _showLanguagePicker,
+      ),
+    );
+  }
+
+  String _languageLabel(AppLanguage lang) {
+    switch (lang) {
+      case AppLanguage.zh:
+        return tr(context, '简体中文');
+      case AppLanguage.en:
+        return 'English';
+      case AppLanguage.system:
+        return tr(context, '跟随系统 / System');
+    }
+  }
+
+  Future<void> _showLanguagePicker() async {
+    final current = LocaleController.instance.language;
+    final selected = await showModalBottomSheet<AppLanguage>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final lang in AppLanguage.values)
+              ListTile(
+                title: Text(_languageLabel(lang)),
+                trailing: current == lang ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(ctx, lang),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (selected != null && selected != current) {
+      await LocaleController.instance.setLanguage(selected);
+      if (mounted) setState(() {});
+    }
   }
 }

@@ -64,6 +64,7 @@ import 'pages/logo_preview_page.dart';
 import 'widgets/bottom_nav.dart';
 import 'widgets/common_widgets.dart';
 
+import 'l10n/i18n.dart';
 // 全局 NavigatorKey
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -540,7 +541,7 @@ class _AppShellState extends State<AppShell> {
     }
     _lastBackPressed = now;
     if (mounted) {
-      FitToast.info(context, '再按一次返回键退出应用');
+      FitToast.info(context, tr(context, '再按一次返回键退出应用'));
     } else {
       SystemNavigator.pop();
     }
@@ -579,7 +580,7 @@ class _AppShellState extends State<AppShell> {
               child: BottomNav(
                 currentIndex: widget.currentIndex,
                 onTap: (index) {
-                  const paths = ['/home', '/plan', '/tutorial', '/stats', '/profile'];
+                  final paths = ['/home', '/plan', '/tutorial', '/stats', '/profile'];
                   if (index < paths.length) {
                     context.go(paths[index]);
                   }

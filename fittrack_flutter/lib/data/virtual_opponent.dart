@@ -3,6 +3,7 @@ import 'dart:math';
 import 'storage.dart';
 import '../widgets/opponent/opponent_skin_config.dart';
 
+import '../l10n/i18n.dart';
 /// v1 虚拟对手系统 —— 数据模型与生成引擎
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md §E1
@@ -16,14 +17,14 @@ import '../widgets/opponent/opponent_skin_config.dart';
 class Range {
   final int min;
   final int max;
-  const Range(this.min, this.max);
+  Range(this.min, this.max);
 }
 
 /// 对战结果（用户得分 / 对手得分）
 class MatchOutcome {
   final double userScore;
   final double opponentScore;
-  const MatchOutcome(this.userScore, this.opponentScore);
+  MatchOutcome(this.userScore, this.opponentScore);
 }
 
 /// 对手水平层级
@@ -38,13 +39,13 @@ extension OpponentTierExt on OpponentTier {
   String get label {
     switch (this) {
       case OpponentTier.casual:
-        return '休闲';
+        return trn('休闲');
       case OpponentTier.regular:
-        return '规律';
+        return trn('规律');
       case OpponentTier.active:
-        return '活跃';
+        return trn('活跃');
       case OpponentTier.hardcore:
-        return '硬核';
+        return trn('硬核');
     }
   }
 
@@ -52,13 +53,13 @@ extension OpponentTierExt on OpponentTier {
   Range get weeklyTrainingRange {
     switch (this) {
       case OpponentTier.casual:
-        return const Range(1, 2);
+        return Range(1, 2);
       case OpponentTier.regular:
-        return const Range(2, 3);
+        return Range(2, 3);
       case OpponentTier.active:
-        return const Range(3, 4);
+        return Range(3, 4);
       case OpponentTier.hardcore:
-        return const Range(4, 7);
+        return Range(4, 7);
     }
   }
 
@@ -66,13 +67,13 @@ extension OpponentTierExt on OpponentTier {
   Range get sessionDurationRange {
     switch (this) {
       case OpponentTier.casual:
-        return const Range(40, 60);
+        return Range(40, 60);
       case OpponentTier.regular:
-        return const Range(60, 75);
+        return Range(60, 75);
       case OpponentTier.active:
-        return const Range(60, 90);
+        return Range(60, 90);
       case OpponentTier.hardcore:
-        return const Range(75, 90);
+        return Range(75, 90);
     }
   }
 
@@ -80,13 +81,13 @@ extension OpponentTierExt on OpponentTier {
   Range get sessionWeightRange {
     switch (this) {
       case OpponentTier.casual:
-        return const Range(800, 2500);
+        return Range(800, 2500);
       case OpponentTier.regular:
-        return const Range(2000, 5000);
+        return Range(2000, 5000);
       case OpponentTier.active:
-        return const Range(4000, 9000);
+        return Range(4000, 9000);
       case OpponentTier.hardcore:
-        return const Range(7000, 15000);
+        return Range(7000, 15000);
     }
   }
 }
@@ -188,30 +189,32 @@ class VirtualOpponentEngine {
   static final _random = Random();
 
   /// 人设模板池（增加真实感）
-  static const List<String> _personaTemplates = [
-    '周三雷打不动练腿的程序员',
-    '只爱卧推的健身狂热者',
-    '晨跑夜练的双修党',
-    '减脂期硬核控制饮食的会计师',
-    '周末战士·平时加班的运营',
-    '追求PR的力量举爱好者',
-    '复合动作至上派',
-    '孤立动作细节控',
-    '三分化严格执行者',
-    '五分化进阶玩家',
-  ];
+  static List<String> get _personaTemplates => _personaTemplatesMemo.value;
+  static final LocaleMemo<List<String>> _personaTemplatesMemo = LocaleMemo(() => [
+    trn('周三雷打不动练腿的程序员'),
+    trn('只爱卧推的健身狂热者'),
+    trn('晨跑夜练的双修党'),
+    trn('减脂期硬核控制饮食的会计师'),
+    trn('周末战士·平时加班的运营'),
+    trn('追求PR的力量举爱好者'),
+    trn('复合动作至上派'),
+    trn('孤立动作细节控'),
+    trn('三分化严格执行者'),
+    trn('五分化进阶玩家'),
+  ]);
 
   /// 偶尔动态池（含 null 表示无动态，约占 3/8）
-  static const List<String?> _statusTemplates = [
-    '今天加班没练',
-    '感冒了，休息一天',
-    '出差中，本周只能练1次',
-    '昨天练太狠，今天歇',
-    '本周已达标，奖励自己休息',
+  static List<String?> get _statusTemplates => _statusTemplatesMemo.value;
+  static final LocaleMemo<List<String?>> _statusTemplatesMemo = LocaleMemo(() => [
+    trn('今天加班没练'),
+    trn('感冒了，休息一天'),
+    trn('出差中，本周只能练1次'),
+    trn('昨天练太狠，今天歇'),
+    trn('本周已达标，奖励自己休息'),
     null, // 60% 无动态
     null,
     null,
-  ];
+  ]);
 
   /// 生成单个虚拟对手
   VirtualOpponent generateOne(String id, OpponentTier tier) {
@@ -276,9 +279,13 @@ class VirtualOpponentEngine {
     final skin = OpponentSkinConfig.byId(opponent.appliedSkinId);
     final bias = skin.trainBias;
     double weightMultiplier = 1.0;
-    if (bias.cardioWeight > 0.4) weightMultiplier = 0.5;
-    else if (bias.compoundWeight > 0.5) weightMultiplier = 1.3;
-    else if (bias.isolationWeight > 0.4) weightMultiplier = 0.7;
+    if (bias.cardioWeight > 0.4) {
+      weightMultiplier = 0.5;
+    } else if (bias.compoundWeight > 0.5) {
+      weightMultiplier = 1.3;
+    } else if (bias.isolationWeight > 0.4) {
+      weightMultiplier = 0.7;
+    }
 
     int totalWeight = 0;
     int totalDuration = 0;
@@ -349,9 +356,13 @@ class VirtualOpponentEngine {
       final skin = OpponentSkinConfig.byId(opponent.appliedSkinId);
       final bias = skin.trainBias;
       double weightMultiplier = 1.0;
-      if (bias.cardioWeight > 0.4) weightMultiplier = 0.5;
-      else if (bias.compoundWeight > 0.5) weightMultiplier = 1.3;
-      else if (bias.isolationWeight > 0.4) weightMultiplier = 0.7;
+      if (bias.cardioWeight > 0.4) {
+        weightMultiplier = 0.5;
+      } else if (bias.compoundWeight > 0.5) {
+        weightMultiplier = 1.3;
+      } else if (bias.isolationWeight > 0.4) {
+        weightMultiplier = 0.7;
+      }
       final weight = (baseWeight * weightMultiplier).round();
 
       opponent.weeklyTrainings += 1;
@@ -435,8 +446,8 @@ class VirtualOpponentEngine {
   }
 
   String _generateNickname() {
-    const prefixes = ['钢铁', '肌肉', '力量', '健身', '燃力', '铁血', '极致', '永不'];
-    const suffixes = ['小子', '达人', '战士', '教练', '老铁', '队长', '先生', '小姐'];
+    final prefixes = [trn('钢铁'), trn('肌肉'), trn('力量'), trn('健身'), trn('燃力'), trn('铁血'), trn('极致'), trn('永不')];
+    final suffixes = [trn('小子'), trn('达人'), trn('战士'), trn('教练'), trn('老铁'), trn('队长'), trn('先生'), trn('小姐')];
     return '${prefixes[_random.nextInt(prefixes.length)]}'
         '${suffixes[_random.nextInt(suffixes.length)]}';
   }

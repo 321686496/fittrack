@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/tutorial_content.dart';
 import 'poster_theme.dart';
 
+import '../l10n/i18n.dart';
 /// 动作分享海报 #6（教学动作分享卡片，对应 HTML #6）
 ///
 /// 结构：品牌头(右上肌群徽标) → 动作名+副标 → 2×2 步骤卡片网格 → 分割线
@@ -61,7 +62,7 @@ class TutorialPoster extends StatelessWidget {
             SizedBox(height: px(8)),
             SizedBox(height: px(16)),
             Text(
-              '${t.name} · 标准动作',
+              tr(context, '${t.name} · 标准动作'),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -73,7 +74,7 @@ class TutorialPoster extends StatelessWidget {
             ),
             SizedBox(height: px(4)),
             Text(
-              '${t.difficulty.label} · ${t.equipment ?? '无器械'} · ${t.coachName}',
+              tr(context, '${t.difficulty.label} · ${t.equipment ?? '无器械'} · ${t.coachName}'),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -125,7 +126,7 @@ class TutorialPoster extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '动作要点',
+          trn( '动作要点'),
           style: TextStyle(
             color: colors.textPrimary,
             fontSize: px(12),
@@ -291,7 +292,7 @@ class TutorialPoster extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '输入邀请码，双方得福利',
+                    trn( '输入邀请码，双方得福利'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -321,7 +322,7 @@ class TutorialPoster extends StatelessWidget {
         SizedBox(height: px(14)),
         PosterDownloadFooter(
           colors: colors,
-          headline: '去哪下载 · 应用市场搜索 LiftTrack',
+          headline: trn( '去哪下载 · 应用市场搜索 LiftTrack'),
         ),
       ],
     );

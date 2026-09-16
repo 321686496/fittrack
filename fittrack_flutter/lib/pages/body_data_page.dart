@@ -1,10 +1,11 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 /// 身体数据页面：查看与编辑身体数据，自动计算 BMI，并展示完整历史趋势
 class BodyDataPage extends StatefulWidget {
   const BodyDataPage({super.key});
@@ -92,17 +93,17 @@ class _BodyDataPageState extends State<BodyDataPage> {
     if (height == null || weight == null || height <= 0) return '';
     final heightM = height / 100;
     final bmi = weight / (heightM * heightM);
-    if (bmi < 18.5) return '偏瘦';
-    if (bmi < 24) return '正常';
-    if (bmi < 28) return '偏胖';
-    return '肥胖';
+    if (bmi < 18.5) return tr(context, '偏瘦');
+    if (bmi < 24) return tr(context, '正常');
+    if (bmi < 28) return tr(context, '偏胖');
+    return tr(context, '肥胖');
   }
 
   void _save() {
     final height = double.tryParse(_heightController.text) ?? 0;
     final weight = double.tryParse(_weightController.text) ?? 0;
     if (height <= 0 || weight <= 0) {
-      FitToast.warning(context, '请填写身高和体重');
+      FitToast.warning(context, tr(context, '请填写身高和体重'));
       return;
     }
 
@@ -122,7 +123,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
       'thighCircumference': double.tryParse(_thighCircumferenceController.text) ?? 0,
       'targetWeight': double.tryParse(_targetWeightController.text) ?? 0,
       'restingHeartRate': double.tryParse(_restingHeartRateController.text) ?? 0,
-      'lastUpdate': '刚刚',
+      'lastUpdate': tr(context, '刚刚'),
     };
 
     // 保存前先将旧数据存入历史（仅当旧数据非空时）
@@ -138,7 +139,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
     settings['weight'] = weight;
     Storage.saveSettings(settings);
 
-    FitToast.success(context, '身体数据已保存');
+    FitToast.success(context, tr(context, '身体数据已保存'));
 
     // 重新加载历史与已保存数据，刷新展示
     _loadData();
@@ -170,8 +171,8 @@ class _BodyDataPageState extends State<BodyDataPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '身体数据',
-            subtitle: '记录与更新你的身体数据',
+            title: tr(context, '身体数据'),
+            subtitle: tr(context, '记录与更新你的身体数据'),
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -183,17 +184,17 @@ class _BodyDataPageState extends State<BodyDataPage> {
                   // 基础数据 + BMI
                   _buildBasicSection(colors),
                   const SizedBox(height: 20),
-                  const SectionHeader(title: '详细身体数据'),
+                  SectionHeader(title: tr(context, '详细身体数据')),
                   const SizedBox(height: 10),
                   _buildDetailsGrid(colors),
                   const SizedBox(height: 20),
                   // 身体变化趋势（情绪文案 + 折线图）
-                  const SectionHeader(title: '身体变化趋势'),
+                  SectionHeader(title: tr(context, '身体变化趋势')),
                   const SizedBox(height: 10),
                   _buildTrendSection(colors),
                   const SizedBox(height: 20),
                   // 历史记录列表
-                  const SectionHeader(title: '历史记录'),
+                  SectionHeader(title: tr(context, '历史记录')),
                   const SizedBox(height: 10),
                   _buildHistoryList(colors),
                   const SizedBox(height: 100),
@@ -215,7 +216,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '基础数据',
+            tr(context, '基础数据'),
             style: TextStyle(
               color: colors.textMuted,
               fontSize: 12,
@@ -227,8 +228,8 @@ class _BodyDataPageState extends State<BodyDataPage> {
               Expanded(
                 child: FitTextField(
                   controller: _heightController,
-                  label: '身高 (cm)',
-                  hint: '例如：175',
+                  label: tr(context, '身高 (cm)'),
+                  hint: tr(context, '例如：175'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 ),
               ),
@@ -236,8 +237,8 @@ class _BodyDataPageState extends State<BodyDataPage> {
               Expanded(
                 child: FitTextField(
                   controller: _weightController,
-                  label: '体重 (kg)',
-                  hint: '例如：72.5',
+                  label: tr(context, '体重 (kg)'),
+                  hint: tr(context, '例如：72.5'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 ),
               ),
@@ -260,7 +261,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'BMI 指数',
+                      tr(context, 'BMI 指数'),
                       style: TextStyle(color: colors.textSecondary, fontSize: 12),
                     ),
                     const SizedBox(height: 2),
@@ -290,14 +291,14 @@ class _BodyDataPageState extends State<BodyDataPage> {
   /// 详细身体数据：2 列布局（Row + Column），每个字段用 Expanded 包裹，避免溢出
   Widget _buildDetailsGrid(LiftTrackColors colors) {
     final fields = <List<dynamic>>[
-      ['体脂率 (%)', _bodyFatController, '5 - 50'],
-      ['胸围 (cm)', _chestController, '50 - 150'],
-      ['腰围 (cm)', _waistController, '40 - 130'],
-      ['臀围 (cm)', _hipController, '50 - 150'],
-      ['上臂围 (cm)', _armCircumferenceController, '15 - 60'],
-      ['大腿围 (cm)', _thighCircumferenceController, '30 - 80'],
-      ['目标体重 (kg)', _targetWeightController, '30 - 200'],
-      ['静息心率 (bpm)', _restingHeartRateController, '40 - 120'],
+      [tr(context, '体脂率 (%)'), _bodyFatController, '5 - 50'],
+      [tr(context, '胸围 (cm)'), _chestController, '50 - 150'],
+      [tr(context, '腰围 (cm)'), _waistController, '40 - 130'],
+      [tr(context, '臀围 (cm)'), _hipController, '50 - 150'],
+      [tr(context, '上臂围 (cm)'), _armCircumferenceController, '15 - 60'],
+      [tr(context, '大腿围 (cm)'), _thighCircumferenceController, '30 - 80'],
+      [tr(context, '目标体重 (kg)'), _targetWeightController, '30 - 200'],
+      [tr(context, '静息心率 (bpm)'), _restingHeartRateController, '40 - 120'],
     ];
 
     // 每 2 个字段为一行，用 Expanded 包裹避免固定宽高比导致的溢出
@@ -354,7 +355,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Center(
                 child: Text(
-                  '保存至少 2 次数据后显示趋势图',
+                  tr(context, '保存至少 2 次数据后显示趋势图'),
                   style: TextStyle(color: colors.textMuted, fontSize: 13),
                 ),
               ),
@@ -403,21 +404,21 @@ class _BodyDataPageState extends State<BodyDataPage> {
 
     if (absDiff < 0.1) {
       // 体重持平
-      text = '体重保持稳定，继续坚持！';
+      text = tr(context, '体重保持稳定，继续坚持！');
       color = colors.textSecondary;
       icon = Icons.trending_flat;
     } else if (diff < 0) {
       // 体重下降
-      text = '已减重 ${absDiff.toStringAsFixed(1)} kg，继续加油！💪';
+      text = tr(context, '已减重 ${absDiff.toStringAsFixed(1)} kg，继续加油！💪');
       color = colors.successColor;
       icon = Icons.trending_down;
     } else {
       // 体重上升
       if (isMuscleGainGoal) {
-        text = '肌肉增长中，离目标越来越近！💪';
+        text = tr(context, '肌肉增长中，离目标越来越近！💪');
         color = colors.successColor;
       } else {
-        text = '体重增加 ${absDiff.toStringAsFixed(1)} kg，注意饮食控制';
+        text = tr(context, '体重增加 ${absDiff.toStringAsFixed(1)} kg，注意饮食控制');
         color = colors.warningColor;
       }
       icon = Icons.trending_up;
@@ -457,12 +458,12 @@ class _BodyDataPageState extends State<BodyDataPage> {
             Icon(Icons.history, size: 36, color: colors.textMuted),
             const SizedBox(height: 8),
             Text(
-              '暂无历史记录',
+              tr(context, '暂无历史记录'),
               style: TextStyle(color: colors.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 4),
             Text(
-              '保存后将显示历史记录',
+              tr(context, '保存后将显示历史记录'),
               style: TextStyle(color: colors.textMuted, fontSize: 11),
             ),
           ],
@@ -487,7 +488,7 @@ class _BodyDataPageState extends State<BodyDataPage> {
   Widget _buildHistoryRecordCard(LiftTrackColors colors, Map<String, dynamic> record) {
     // 日期
     final ts = record['timestamp'];
-    String dateStr = '未知日期';
+    String dateStr = tr(context, '未知日期');
     if (ts is int) {
       final d = DateTime.fromMillisecondsSinceEpoch(ts);
       dateStr = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -500,10 +501,10 @@ class _BodyDataPageState extends State<BodyDataPage> {
 
     final stats = <Widget>[];
     if (weight > 0) {
-      stats.add(_buildStatChip(colors, '体重', '${_formatNum(weight)} kg', colors.accentGlow));
+      stats.add(_buildStatChip(colors, tr(context, '体重'), '${_formatNum(weight)} kg', colors.accentGlow));
     }
     if (bodyFat > 0) {
-      stats.add(_buildStatChip(colors, '体脂率', '${_formatNum(bodyFat)} %', colors.infoColor));
+      stats.add(_buildStatChip(colors, tr(context, '体脂率'), '${_formatNum(bodyFat)} %', colors.infoColor));
     }
     if (bmi > 0) {
       stats.add(_buildStatChip(colors, 'BMI', _formatNum(bmi), colors.purpleColor));
@@ -590,9 +591,9 @@ class _BodyDataPageState extends State<BodyDataPage> {
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: const Text(
-              '保存',
-              style: TextStyle(
+            child: Text(
+              tr(context, '保存'),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),

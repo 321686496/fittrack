@@ -9,6 +9,7 @@ import '../services/points_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class ChapterReadPage extends StatefulWidget {
   final String courseId;
   final String chapterId;
@@ -42,7 +43,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
 
     if (mounted) {
       setState(() => _learned = true);
-      FitToast.success(context, '恭喜获得 $reward 积分');
+      FitToast.success(context, tr(context, '恭喜获得 $reward 积分'));
     }
   }
 
@@ -51,7 +52,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
     final course = CourseLibrary.getById(widget.courseId);
     final chapter = course?.chapters.where((c) => c.id == widget.chapterId).firstOrNull;
-    if (chapter == null) return const Scaffold(body: Center(child: Text('章节不存在')));
+    if (chapter == null) return Scaffold(body: Center(child: Text(tr(context, '章节不存在'))));
 
     return Scaffold(
       body: Column(
@@ -71,7 +72,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _learned ? null : () => _completeLearning(chapter),
-                        child: Text(_learned ? '已学习' : '完成学习 +${chapter.pointsReward ?? 10} 积分'),
+                        child: Text(_learned ? tr(context, '已学习') : tr(context, '完成学习 +${chapter.pointsReward ?? 10} 积分')),
                       ),
                     ),
                   ),
@@ -131,7 +132,7 @@ class _ChapterReadPageState extends State<ChapterReadPage> {
         }),
         if (chapter.recommendedExerciseIds.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Text('推荐动作', style: TextStyle(
+          Text(tr(context, '推荐动作'), style: TextStyle(
             color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.bold,
           )),
           const SizedBox(height: 12),

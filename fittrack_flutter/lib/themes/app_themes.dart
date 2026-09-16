@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/i18n.dart';
 /// Custom theme extension for LiftTrack extra colors
 @immutable
 class LiftTrackColors extends ThemeExtension<LiftTrackColors> {
@@ -112,50 +113,50 @@ class AppTheme {
   static List<Map<String, dynamic>> get themes => [
         {
           'id': 'vitality-sport',
-          'name': '活力运动',
-          'desc': '动感活力，年轻有劲',
+          'name': trn('活力运动'),
+          'desc': trn('动感活力，年轻有劲'),
           'icon': '🔥',
           'colors': [0xFFFF6B35, 0xFFFFFFFF, 0xFF222222],
         },
         {
           'id': 'iron-forge',
-          'name': '硬核铁馆',
-          'desc': '粗犷原始，力量感十足',
+          'name': trn('硬核铁馆'),
+          'desc': trn('粗犷原始，力量感十足'),
           'icon': '🏋️',
           'colors': [0xFF0a0e14, 0xFFef4444, 0xFFf97316],
         },
         {
           'id': 'blossom',
-          'name': '柔美花语',
-          'desc': '柔和圆润，优雅精致',
+          'name': trn('柔美花语'),
+          'desc': trn('柔和圆润，优雅精致'),
           'icon': '🌸',
           'colors': [0xFFfdf2f8, 0xFFec4899, 0xFFf472b6],
         },
         {
           'id': 'silver-care',
-          'name': '长者关怀',
-          'desc': '大字高对比，清晰易读',
+          'name': trn('长者关怀'),
+          'desc': trn('大字高对比，清晰易读'),
           'icon': '🛡️',
           'colors': [0xFFffffff, 0xFF059669, 0xFF10b981],
         },
         {
           'id': 'fresh-minimal',
-          'name': '清新极简',
-          'desc': '大量留白，极简克制',
+          'name': trn('清新极简'),
+          'desc': trn('大量留白，极简克制'),
           'icon': '🍃',
           'colors': [0xFFf8fafc, 0xFF0ea5e9, 0xFF38bdf8],
         },
         {
           'id': 'neon-cyber',
-          'name': '赛博霓虹',
-          'desc': '霓虹发光，数字未来感',
+          'name': trn('赛博霓虹'),
+          'desc': trn('霓虹发光，数字未来感'),
           'icon': '🎮',
           'colors': [0xFF0a0015, 0xFFd946ef, 0xFF22d3ee],
         },
         {
           'id': 'black-gold',
-          'name': '黑金尊享',
-          'desc': '奢华精致，沉稳尊贵',
+          'name': trn('黑金尊享'),
+          'desc': trn('奢华精致，沉稳尊贵'),
           'icon': '👑',
           'colors': [0xFF0c0a09, 0xFFf59e0b, 0xFFfbbf24],
         },
@@ -365,14 +366,14 @@ class AppTheme {
         purpleColor: Color(0xFFa855f7),
       ),
     ],
-    cardTheme: CardTheme(
-      color: const Color(0xFF141c28),
+    cardTheme: const CardTheme(
+      color: Color(0xFF141c28),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
-        side: const BorderSide(color: Color(0x14FFFFFF), width: 3),
+        side: BorderSide(color: Color(0x14FFFFFF), width: 3),
       ),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Color(0xFF0a0e14),
@@ -391,9 +392,9 @@ class AppTheme {
         backgroundColor: const Color(0xFFef4444),
         foregroundColor: const Color(0xFF000000),
         elevation: 0,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.zero,
-          side: const BorderSide(color: Color(0xFFef4444), width: 3),
+          side: BorderSide(color: Color(0xFFef4444), width: 3),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         textStyle: const TextStyle(
@@ -450,22 +451,22 @@ class AppTheme {
       bodyMedium: TextStyle(color: Color(0xFF94a3b8)),
       bodySmall: TextStyle(color: Color(0xFF475569)),
     ),
-    inputDecorationTheme: InputDecorationTheme(
+    inputDecorationTheme: const InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF0f1520),
+      fillColor: Color(0xFF0f1520),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: const BorderSide(color: Color(0x14FFFFFF), width: 3),
+        borderSide: BorderSide(color: Color(0x14FFFFFF), width: 3),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: const BorderSide(color: Color(0x14FFFFFF), width: 3),
+        borderSide: BorderSide(color: Color(0x14FFFFFF), width: 3),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: const BorderSide(color: Color(0x80ef4444), width: 3),
+        borderSide: BorderSide(color: Color(0x80ef4444), width: 3),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
     dividerTheme: const DividerThemeData(
       color: Color(0x14FFFFFF),
@@ -477,24 +478,24 @@ class AppTheme {
       unselectedItemColor: Color(0xFF475569),
       type: BottomNavigationBarType.fixed,
     ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: const Color(0xFFef4444),
-      foregroundColor: const Color(0xFF000000),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: Color(0xFFef4444),
+      foregroundColor: Color(0xFF000000),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
-        side: const BorderSide(color: Color(0xFFef4444), width: 3),
+        side: BorderSide(color: Color(0xFFef4444), width: 3),
       ),
     ),
-    chipTheme: ChipThemeData(
-      backgroundColor: const Color(0xFF141c28),
-      selectedColor: const Color(0xFFef4444),
-      labelStyle: const TextStyle(
+    chipTheme: const ChipThemeData(
+      backgroundColor: Color(0xFF141c28),
+      selectedColor: Color(0xFFef4444),
+      labelStyle: TextStyle(
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
-        side: const BorderSide(color: Color(0x14FFFFFF), width: 3),
+        side: BorderSide(color: Color(0x14FFFFFF), width: 3),
       ),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
@@ -1375,7 +1376,7 @@ class AppTheme {
 /// 便捷主题访问类
 class LiftTrackTheme {
   /// ???? ID ??
-  static const List<String> lightThemeIds = [
+  static final List<String> lightThemeIds = [
     'vitality-sport',
     'blossom',
     'silver-care',
@@ -1383,7 +1384,7 @@ class LiftTrackTheme {
   ];
 
   /// ???? ID ??
-  static const List<String> darkThemeIds = [
+  static final List<String> darkThemeIds = [
     'iron-forge',
     'neon-cyber',
     'black-gold',

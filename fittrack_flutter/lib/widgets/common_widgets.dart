@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 
+import '../l10n/i18n.dart';
 // ── SectionHeader ──────────────────────────────────────────────
 
 class SectionHeader extends StatelessWidget {
@@ -671,7 +672,7 @@ class ConfirmDialog extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      cancelText ?? '取消',
+                      cancelText ?? tr(context, '取消'),
                       style: TextStyle(color: colors.textSecondary),
                     ),
                   ),
@@ -689,7 +690,7 @@ class ConfirmDialog extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: Text(confirmText ?? '确认'),
+                    child: Text(confirmText ?? tr(context, '确认')),
                   ),
                 ),
               ],
@@ -803,7 +804,7 @@ class InfoDialog extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: Text(actionText ?? '知道了'),
+                child: Text(actionText ?? tr(context, '知道了')),
               ),
             ),
           ],
@@ -867,7 +868,7 @@ class AchievementDialog extends StatelessWidget {
             Text(icon, style: const TextStyle(fontSize: 56)),
             const SizedBox(height: 16),
             Text(
-              '恭喜达成成就！',
+              tr(context, '恭喜达成成就！'),
               style: TextStyle(
                 color: colors.accentGlow,
                 fontSize: 16,
@@ -909,7 +910,7 @@ class AchievementDialog extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text('太棒了'),
+                child: Text(tr(context, '太棒了')),
               ),
             ),
           ],

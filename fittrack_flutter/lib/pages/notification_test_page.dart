@@ -1,6 +1,5 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -11,6 +10,7 @@ import '../widgets/page_header.dart';
 import 'package:go_router/go_router.dart';
 import '../utils/platform_utils.dart';
 
+import '../l10n/i18n.dart';
 /// 通知测试页面 —— 用于验证通知功能是否可用
 class NotificationTestPage extends StatefulWidget {
   const NotificationTestPage({super.key});
@@ -98,29 +98,29 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     _log('Attempting to show notification NOW...');
     try {
       final plugin = RestNotificationService.instance.plugin ?? _plugin!;
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'test_channel',
-        '测试通知渠道',
-        channelDescription: '用于测试通知是否可用',
+        tr(context, '测试通知渠道'),
+        channelDescription: tr(context, '用于测试通知是否可用'),
         importance: Importance.high,
         priority: Priority.high,
         enableVibration: true,
       );
-      const ohosDetails = OhosNotificationDetails(
+      final ohosDetails = OhosNotificationDetails(
         OhosNotificationSlotType.SOCIAL_COMMUNICATION,
-        slotDesc: '测试通知渠道',
+        slotDesc: tr(context, '测试通知渠道'),
         importance: OhosImportance.high,
         enableVibration: true,
       );
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         ohos: ohosDetails,
       );
 
       await plugin.show(
         9999,
-        '测试通知',
-        '如果你看到了这条通知，说明通知功能正常！',
+        tr(context, '测试通知'),
+        tr(context, '如果你看到了这条通知，说明通知功能正常！'),
         details,
       );
       _log('plugin.show() called successfully - check notification bar');
@@ -133,7 +133,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     _log('Attempting showRestEndNotification via service...');
     try {
       await RestNotificationService.instance.showRestEndNotification(
-        exerciseName: '测试动作',
+        exerciseName: tr(context, '测试动作'),
       );
       _log('showRestEndNotification() called - check notification bar');
     } catch (e) {
@@ -149,29 +149,29 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
       _log('Scheduled time: $scheduledDate');
       _log('Current time: ${tz.TZDateTime.now(tz.local)}');
 
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'test_channel',
-        '测试通知渠道',
-        channelDescription: '用于测试通知是否可用',
+        tr(context, '测试通知渠道'),
+        channelDescription: tr(context, '用于测试通知是否可用'),
         importance: Importance.high,
         priority: Priority.high,
         enableVibration: true,
       );
-      const ohosDetails = OhosNotificationDetails(
+      final ohosDetails = OhosNotificationDetails(
         OhosNotificationSlotType.SOCIAL_COMMUNICATION,
-        slotDesc: '测试通知渠道',
+        slotDesc: tr(context, '测试通知渠道'),
         importance: OhosImportance.high,
         enableVibration: true,
       );
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         ohos: ohosDetails,
       );
 
       await plugin.zonedSchedule(
         9998,
-        '5秒定时通知',
-        '这是5秒后到达的定时通知测试',
+        tr(context, '5秒定时通知'),
+        tr(context, '这是5秒后到达的定时通知测试'),
         scheduledDate,
         details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -191,28 +191,28 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
         _log('Dart Timer fired! Calling show()...');
         try {
           final plugin = RestNotificationService.instance.plugin ?? _plugin!;
-          const androidDetails = AndroidNotificationDetails(
+          final androidDetails = AndroidNotificationDetails(
             'test_channel',
-            '测试通知渠道',
-            channelDescription: '用于测试通知是否可用',
+            tr(context, '测试通知渠道'),
+            channelDescription: tr(context, '用于测试通知是否可用'),
             importance: Importance.high,
             priority: Priority.high,
             enableVibration: true,
           );
-          const ohosDetails = OhosNotificationDetails(
+          final ohosDetails = OhosNotificationDetails(
             OhosNotificationSlotType.SOCIAL_COMMUNICATION,
-            slotDesc: '测试通知渠道',
+            slotDesc: tr(context, '测试通知渠道'),
             importance: OhosImportance.high,
             enableVibration: true,
           );
-          const details = NotificationDetails(
+          final details = NotificationDetails(
             android: androidDetails,
             ohos: ohosDetails,
           );
           await plugin.show(
             9997,
-            'Dart Timer 5秒通知',
-            '这是通过 Dart Timer + show() 发出的5秒定时通知',
+            tr(context, 'Dart Timer 5秒通知'),
+            tr(context, '这是通过 Dart Timer + show() 发出的5秒定时通知'),
             details,
           );
           _log('show() after Timer called successfully');
@@ -230,7 +230,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     _log('Scheduling via service in 5 seconds...');
     try {
       await RestNotificationService.instance.scheduleRestEndNotification(
-        exerciseName: '测试动作',
+        exerciseName: tr(context, '测试动作'),
         delaySeconds: 5,
       );
       _log('scheduleRestEndNotification() called - wait 5 seconds');
@@ -269,7 +269,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
         children: [
           PageHeader(
             onBack: () => context.pop(),
-            title: '通知测试',
+            title: tr(context, '通知测试'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -282,58 +282,58 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
                   const SizedBox(height: 16),
 
                   // Action buttons
-                  _buildSectionTitle(colors, '基础操作'),
+                  _buildSectionTitle(colors, tr(context, '基础操作')),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _buildButton(colors, '重新初始化', Icons.refresh, _reInit),
-                      _buildButton(colors, '请求权限', Icons.notifications_active, _requestPermission),
-                      _buildButton(colors, '振动测试', Icons.vibration, _vibrate),
+                      _buildButton(colors, tr(context, '重新初始化'), Icons.refresh, _reInit),
+                      _buildButton(colors, tr(context, '请求权限'), Icons.notifications_active, _requestPermission),
+                      _buildButton(colors, tr(context, '振动测试'), Icons.vibration, _vibrate),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  _buildSectionTitle(colors, '直接发送通知'),
+                  _buildSectionTitle(colors, tr(context, '直接发送通知')),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _buildButton(colors, '立即通知(plugin)', Icons.notifications, _showNow),
-                      _buildButton(colors, '立即通知(service)', Icons.notifications, _showWithService),
+                      _buildButton(colors, tr(context, '立即通知(plugin)'), Icons.notifications, _showNow),
+                      _buildButton(colors, tr(context, '立即通知(service)'), Icons.notifications, _showWithService),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  _buildSectionTitle(colors, '定时通知'),
+                  _buildSectionTitle(colors, tr(context, '定时通知')),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _buildButton(colors, '5秒后(zonedSchedule)', Icons.schedule, _schedule5s),
-                      _buildButton(colors, '5秒后(Dart Timer)', Icons.timer, _scheduleDartTimer5s),
-                      _buildButton(colors, '5秒后(service)', Icons.schedule, _scheduleViaService),
+                      _buildButton(colors, tr(context, '5秒后(zonedSchedule)'), Icons.schedule, _schedule5s),
+                      _buildButton(colors, tr(context, '5秒后(Dart Timer)'), Icons.timer, _scheduleDartTimer5s),
+                      _buildButton(colors, tr(context, '5秒后(service)'), Icons.schedule, _scheduleViaService),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  _buildSectionTitle(colors, '其他'),
+                  _buildSectionTitle(colors, tr(context, '其他')),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _buildButton(colors, '取消所有通知', Icons.cancel, _cancelAll),
-                      _buildButton(colors, '清除日志', Icons.delete_outline, () => setState(() => _logs.clear())),
+                      _buildButton(colors, tr(context, '取消所有通知'), Icons.cancel, _cancelAll),
+                      _buildButton(colors, tr(context, '清除日志'), Icons.delete_outline, () => setState(() => _logs.clear())),
                     ],
                   ),
                   const SizedBox(height: 20),
 
                   // Log output
-                  _buildSectionTitle(colors, '日志输出'),
+                  _buildSectionTitle(colors, tr(context, '日志输出')),
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
@@ -344,7 +344,7 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: _logs.isEmpty
-                        ? const Text('暂无日志', style: TextStyle(color: Colors.grey, fontSize: 12))
+                        ? Text(tr(context, '暂无日志'), style: const TextStyle(color: Colors.grey, fontSize: 12))
                         : SingleChildScrollView(
                             reverse: true,
                             child: Column(
@@ -392,14 +392,14 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('状态信息', style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+          Text(tr(context, '状态信息'), style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          _buildStatusRow(colors, '平台', isOhos ? 'OHOS (HarmonyOS)' : Platform.operatingSystem),
-          _buildStatusRow(colors, 'Service 已初始化', _isInitialized ? '是' : '否',
+          _buildStatusRow(colors, tr(context, '平台'), isOhos ? 'OHOS (HarmonyOS)' : Platform.operatingSystem),
+          _buildStatusRow(colors, tr(context, 'Service 已初始化'), _isInitialized ? tr(context, '是') : tr(context, '否'),
               valueColor: _isInitialized ? Colors.greenAccent : Colors.redAccent),
-          _buildStatusRow(colors, '权限已授予', _permissionGranted ? '是' : '否',
+          _buildStatusRow(colors, tr(context, '权限已授予'), _permissionGranted ? tr(context, '是') : tr(context, '否'),
               valueColor: _permissionGranted ? Colors.greenAccent : Colors.orangeAccent),
-          _buildStatusRow(colors, '时区', tz.local.name),
+          _buildStatusRow(colors, tr(context, '时区'), tz.local.name),
         ],
       ),
     );

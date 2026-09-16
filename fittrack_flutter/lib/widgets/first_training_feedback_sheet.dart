@@ -5,6 +5,7 @@ import '../router.dart';
 import '../themes/app_themes.dart';
 import 'common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 首次训练体验反馈弹窗。
 ///
 /// 在用户完成第一次训练、返回首页后弹出，询问训练使用感受；
@@ -65,7 +66,7 @@ class _FirstTrainingFeedbackSheet extends StatelessWidget {
           Icon(Icons.fitness_center, color: colors.accentGlow, size: 56),
           const SizedBox(height: 16),
           Text(
-            '第一次训练完成，感觉怎么样？',
+            tr(context, '第一次训练完成，感觉怎么样？'),
             style: TextStyle(
               color: colors.textPrimary,
               fontSize: 17,
@@ -75,13 +76,13 @@ class _FirstTrainingFeedbackSheet extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '感谢你选择我们开始训练！如果过程中有哪里觉得不好用、操作不顺手，或者发现了漏洞，欢迎告诉我们。',
+            tr(context, '感谢你选择我们开始训练！如果过程中有哪里觉得不好用、操作不顺手，或者发现了漏洞，欢迎告诉我们。'),
             style: TextStyle(color: colors.textSecondary, fontSize: 14, height: 1.6),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            '我们会积极听取你宝贵的意见，把产品做得更好。',
+            tr(context, '我们会积极听取你宝贵的意见，把产品做得更好。'),
             style: TextStyle(color: colors.textMuted, fontSize: 13),
             textAlign: TextAlign.center,
           ),
@@ -91,14 +92,14 @@ class _FirstTrainingFeedbackSheet extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: onFeedback,
               icon: const Icon(Icons.forum_outlined),
-              label: const Text('我要反馈'),
+              label: Text(tr(context, '我要反馈')),
             ),
           ),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              '目前用得不错',
+              tr(context, '目前用得不错'),
               style: TextStyle(color: colors.textMuted, fontSize: 14),
             ),
           ),

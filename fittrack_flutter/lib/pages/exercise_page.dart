@@ -12,6 +12,7 @@ import '../widgets/default_exercise_cover.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tutorial_share_card.dart';
 
+import '../l10n/i18n.dart';
 class ExercisePage extends StatefulWidget {
   const ExercisePage({super.key});
 
@@ -20,13 +21,13 @@ class ExercisePage extends StatefulWidget {
 }
 
 class _ExercisePageState extends State<ExercisePage> {
-  String _selectedCategory = '全部';
+  String _selectedCategory = trn( '全部');
   String _searchQuery = '';
   Map<String, dynamic>? _selectedExercise;
 
   List<Map<String, dynamic>> get _filteredExercises {
     var list = Storage.getAllExercises();
-    if (_selectedCategory != '全部') {
+    if (_selectedCategory != tr(context, '全部')) {
       list = list.where((e) => e['category'] == _selectedCategory).toList();
     }
     if (_searchQuery.isNotEmpty) {
@@ -93,7 +94,7 @@ class _ExercisePageState extends State<ExercisePage> {
           width: double.infinity, height: height);
     }
     return DefaultExerciseCover(
-      category: (ex['category'] as String?) ?? '其他',
+      category: (ex['category'] as String?) ?? tr(context, '其他'),
       size: height ?? 180,
     );
   }
@@ -101,7 +102,7 @@ class _ExercisePageState extends State<ExercisePage> {
   void _showPlanPicker(Map<String, dynamic> exercise) {
     final plans = Storage.getPlans();
     if (plans.isEmpty) {
-      FitToast.warning(context, '暂无可用计划，请先创建计划');
+      FitToast.warning(context, tr(context, '暂无可用计划，请先创建计划'));
       return;
     }
 
@@ -138,7 +139,7 @@ class _ExercisePageState extends State<ExercisePage> {
         : <String>[];
     final description = (ex['description'] as String?)?.isNotEmpty == true
         ? ex['description'] as String
-        : (MockData.exerciseDescriptions[id] ?? '暂无描述');
+        : (MockData.exerciseDescriptions[id] ?? tr(context, '暂无描述'));
     // 训练步骤标题作为分享文本要点
     final steps = (ex['steps'] as List?)?.isNotEmpty == true
         ? List<Map<String, dynamic>>.from(ex['steps'] as List)
@@ -159,23 +160,23 @@ class _ExercisePageState extends State<ExercisePage> {
       type: TutorialType.basic,
       difficulty: TutorialDifficulty.beginner,
       primaryMuscle: _muscleGroup(muscles),
-      equipment: (ex['equip'] as String?) ?? '无器械',
+      equipment: (ex['equip'] as String?) ?? tr(context, '无器械'),
       keyPoints: keyPoints,
-      commonMistakes: const <String>[],
-      coachName: 'LiftTrack 教练',
+      commonMistakes: <String>[],
+      coachName: tr(context, 'LiftTrack 教练'),
     );
   }
 
   /// 根据肌肉名称（或分类）推断主肌群，用于海报徽标
   MuscleGroup _muscleGroup(List<String> muscles) {
     String label = muscles.isNotEmpty ? muscles.first : '';
-    if (label.isEmpty) label = _selectedExercise?['category'] as String? ?? '胸部';
-    if (label.contains('胸')) return MuscleGroup.chest;
-    if (label.contains('背')) return MuscleGroup.back;
-    if (label.contains('腿')) return MuscleGroup.leg;
-    if (label.contains('肩')) return MuscleGroup.shoulder;
-    if (label.contains('手') || label.contains('臂')) return MuscleGroup.arm;
-    if (label.contains('核')) return MuscleGroup.core;
+    if (label.isEmpty) label = _selectedExercise?['category'] as String? ?? tr(context, '胸部');
+    if (label.contains(tr(context, '胸'))) return MuscleGroup.chest;
+    if (label.contains(tr(context, '背'))) return MuscleGroup.back;
+    if (label.contains(tr(context, '腿'))) return MuscleGroup.leg;
+    if (label.contains(tr(context, '肩'))) return MuscleGroup.shoulder;
+    if (label.contains(tr(context, '手')) || label.contains(tr(context, '臂'))) return MuscleGroup.arm;
+    if (label.contains(tr(context, '核'))) return MuscleGroup.core;
     return MuscleGroup.chest;
   }
 
@@ -215,8 +216,8 @@ class _ExercisePageState extends State<ExercisePage> {
       children: [
         PageHeader(
           onBack: () => context.pop(),
-          title: '动作库',
-          subtitle: '浏览所有训练动作',
+          title: tr(context, '动作库'),
+          subtitle: tr(context, '浏览所有训练动作'),
         ),
         // Category tabs
         Container(
@@ -270,7 +271,7 @@ class _ExercisePageState extends State<ExercisePage> {
             onChanged: (v) => setState(() => _searchQuery = v),
             style: TextStyle(color: colors.textPrimary, fontSize: 14),
             decoration: InputDecoration(
-              hintText: '搜索动作...',
+              hintText: tr(context, '搜索动作...'),
               hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
               prefixIcon:
                   Icon(Icons.search, size: 20, color: colors.textMuted),
@@ -298,7 +299,7 @@ class _ExercisePageState extends State<ExercisePage> {
           child: filtered.isEmpty
               ? EmptyState(
                   icon: Icons.search_off,
-                  message: '没有找到匹配的动作',
+                  message: tr(context, '没有找到匹配的动作'),
                 )
               : GridView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -370,7 +371,7 @@ class _ExercisePageState extends State<ExercisePage> {
     final exId = ex['id'] as String;
     final description = (ex['description'] as String?)?.isNotEmpty == true
         ? ex['description'] as String
-        : (MockData.exerciseDescriptions[exId] ?? '暂无描述');
+        : (MockData.exerciseDescriptions[exId] ?? tr(context, '暂无描述'));
     final muscles = (ex['muscles'] as List?)?.isNotEmpty == true
         ? List<String>.from(ex['muscles'] as List)
         : (MockData.exerciseMuscles[exId] ?? <String>[]);
@@ -413,7 +414,7 @@ class _ExercisePageState extends State<ExercisePage> {
                 ),
                 const SizedBox(height: 20),
                 // Description
-                SectionHeader(title: '动作说明'),
+                SectionHeader(title: tr(context, '动作说明')),
                 const SizedBox(height: 10),
                 Text(
                   description,
@@ -426,7 +427,7 @@ class _ExercisePageState extends State<ExercisePage> {
                 const SizedBox(height: 24),
                 // Training steps cards
                 if (steps.isNotEmpty) ...[
-                  SectionHeader(title: '训练步骤'),
+                  SectionHeader(title: tr(context, '训练步骤')),
                   const SizedBox(height: 12),
                   ...steps.asMap().entries.map((entry) {
                     final idx = entry.key;
@@ -436,7 +437,7 @@ class _ExercisePageState extends State<ExercisePage> {
                   const SizedBox(height: 24),
                 ],
                 // Target muscles
-                SectionHeader(title: '目标肌群'),
+                SectionHeader(title: tr(context, '目标肌群')),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
@@ -456,7 +457,7 @@ class _ExercisePageState extends State<ExercisePage> {
                       child: OutlinedButton.icon(
                         onPressed: () => _shareExercise(ex),
                         icon: const Icon(Icons.share_outlined, size: 18),
-                        label: const Text('分享'),
+                        label: Text(tr(context, '分享')),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: colors.accentGlow,
                           side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -472,7 +473,7 @@ class _ExercisePageState extends State<ExercisePage> {
                       child: ElevatedButton.icon(
                         onPressed: () => _showPlanPicker(ex),
                         icon: const Icon(Icons.add, size: 20),
-                        label: const Text('添加到计划'),
+                        label: Text(tr(context, '添加到计划')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colors.accentGlow,
                           foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -591,7 +592,7 @@ class _ExercisePageState extends State<ExercisePage> {
                     size: 14, color: colors.accentGlow),
                 const SizedBox(width: 4),
                 Text(
-                  '关键姿势',
+                  tr(context, '关键姿势'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -785,7 +786,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     days[_selectedDayIndex]['exercises'] = exercises;
     Storage.updatePlan(plan['id'] as String, {'days': days});
 
-    FitToast.success(context, '已添加「${widget.exercise['name']}」到「${plan['name']}」的第${_selectedDayIndex + 1}天');
+    FitToast.success(context, tr(context, '已添加「${widget.exercise['name']}」到「${plan['name']}」的第${_selectedDayIndex + 1}天'));
     Navigator.of(context).pop();
   }
 
@@ -820,7 +821,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
 
   Widget _buildHeader(LiftTrackColors colors) {
     final ex = widget.exercise;
-    final stepTitles = ['选择计划', '选择训练日', '配置参数'];
+    final stepTitles = [tr(context, '选择计划'), tr(context, '选择训练日'), tr(context, '配置参数')];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       child: Column(
@@ -839,7 +840,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  '添加「${ex['name']}」到计划',
+                  tr(context, '添加「${ex['name']}」到计划'),
                   style: TextStyle(color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -901,12 +902,12 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
         final days = (plan['days'] as List?) ?? [];
         final status = plan['status'] ?? 'active';
         final statusLabel = status == 'active'
-            ? '进行中'
+            ? tr(context, '进行中')
             : status == 'pending'
-                ? '待开始'
+                ? tr(context, '待开始')
                 : status == 'paused'
-                    ? '已暂停'
-                    : '已完成';
+                    ? tr(context, '已暂停')
+                    : tr(context, '已完成');
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: GestureDetector(
@@ -937,7 +938,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$statusLabel · ${days.length}个训练日',
+                          tr(context, '$statusLabel · ${days.length}个训练日'),
                           style: TextStyle(color: colors.textMuted, fontSize: 12),
                         ),
                       ],
@@ -960,7 +961,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
 
     if (days.isEmpty) {
       return Center(
-        child: Text('该计划暂无训练日', style: TextStyle(color: colors.textMuted, fontSize: 14)),
+        child: Text(tr(context, '该计划暂无训练日'), style: TextStyle(color: colors.textMuted, fontSize: 14)),
       );
     }
 
@@ -970,7 +971,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
         final i = entry.key;
         final day = entry.value as Map;
         final exercises = (day['exercises'] as List?) ?? [];
-        final dayName = day['name'] ?? '第${i + 1}天';
+        final dayName = day['name'] ?? tr(context, '第${i + 1}天');
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: GestureDetector(
@@ -1013,7 +1014,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${exercises.length}个动作',
+                          tr(context, '${exercises.length}个动作'),
                           style: TextStyle(color: colors.textMuted, fontSize: 12),
                         ),
                       ],
@@ -1035,8 +1036,8 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
     final plan = _selectedPlan!;
     final days = (plan['days'] as List?) ?? [];
     final dayName = _selectedDayIndex < days.length
-        ? (days[_selectedDayIndex]['name'] ?? '第${_selectedDayIndex + 1}天')
-        : '第${_selectedDayIndex + 1}天';
+        ? (days[_selectedDayIndex]['name'] ?? tr(context, '第${_selectedDayIndex + 1}天'))
+        : tr(context, '第${_selectedDayIndex + 1}天');
     final sets = int.tryParse(_setsCtrl.text) ?? 3;
 
     return Column(
@@ -1068,9 +1069,9 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
         _buildModeToggle(colors),
         const SizedBox(height: 14),
         // 组数
-        _buildLabelRow(colors, '组数', '共 ${_setsCtrl.text} 组'),
+        _buildLabelRow(colors, tr(context, '组数'), tr(context, '共 ${_setsCtrl.text} 组')),
         const SizedBox(height: 6),
-        _buildStepperRow(colors, controller: _setsCtrl, unit: '组', step: 1, min: 1, isInt: true, onChanged: () {
+        _buildStepperRow(colors, controller: _setsCtrl, unit: tr(context, '组'), step: 1, min: 1, isInt: true, onChanged: () {
           final v = int.tryParse(_setsCtrl.text) ?? 1;
           if (v >= 1) _syncSetControllers(v, null, 10, 20.0, 90);
           setState(() {});
@@ -1078,17 +1079,17 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
         const SizedBox(height: 14),
 
         if (!_perSetMode) ...[
-          _buildLabelRow(colors, '每组次数', '所有组相同'),
+          _buildLabelRow(colors, tr(context, '每组次数'), tr(context, '所有组相同')),
           const SizedBox(height: 6),
-          _buildStepperRow(colors, controller: _repsCtrl, unit: '次/组', step: 1, min: 1, isInt: true),
+          _buildStepperRow(colors, controller: _repsCtrl, unit: tr(context, '次/组'), step: 1, min: 1, isInt: true),
           const SizedBox(height: 14),
-          _buildLabelRow(colors, '每组重量', '所有组相同'),
+          _buildLabelRow(colors, tr(context, '每组重量'), tr(context, '所有组相同')),
           const SizedBox(height: 6),
           _buildStepperRow(colors, controller: _weightCtrl, unit: 'kg', step: 2.5, min: 0, isInt: false),
           const SizedBox(height: 14),
-          _buildLabelRow(colors, '组间休息', '所有组相同'),
+          _buildLabelRow(colors, tr(context, '组间休息'), tr(context, '所有组相同')),
           const SizedBox(height: 6),
-          _buildStepperRow(colors, controller: _restTimeCtrl, unit: '秒', step: 15, min: 0, isInt: true),
+          _buildStepperRow(colors, controller: _restTimeCtrl, unit: tr(context, '秒'), step: 15, min: 0, isInt: true),
         ] else ...[
           _buildPerSetEditor(colors, sets),
         ],
@@ -1106,10 +1107,10 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildToggleItem(colors, '统一参数', Icons.layers, !_perSetMode, () {
+          Expanded(child: _buildToggleItem(colors, tr(context, '统一参数'), Icons.layers, !_perSetMode, () {
             setState(() => _perSetMode = false);
           })),
-          Expanded(child: _buildToggleItem(colors, '逐组设置', Icons.view_list, _perSetMode, () {
+          Expanded(child: _buildToggleItem(colors, tr(context, '逐组设置'), Icons.view_list, _perSetMode, () {
             setState(() => _perSetMode = true);
           })),
         ],
@@ -1153,9 +1154,9 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
       children: [
         Row(
           children: [
-            Text('逐组参数设置', style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+            Text(tr(context, '逐组参数设置'), style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
             const Spacer(),
-            Text('每组可独立调整', style: TextStyle(color: colors.textMuted, fontSize: 11)),
+            Text(tr(context, '每组可独立调整'), style: TextStyle(color: colors.textMuted, fontSize: 11)),
           ],
         ),
         const SizedBox(height: 8),
@@ -1168,10 +1169,10 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
           ),
           child: Row(
             children: [
-              SizedBox(width: 38, child: Text('组', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
-              Expanded(child: Text('次数', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('重量(kg)', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('休息(秒)', style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              SizedBox(width: 38, child: Text(tr(context, '组'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600))),
+              Expanded(child: Text(tr(context, '次数'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text(tr(context, '重量(kg)'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text(tr(context, '休息(秒)'), style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
               const SizedBox(width: 28),
             ],
           ),
@@ -1190,7 +1191,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
       ),
       child: Row(
         children: [
-          SizedBox(width: 38, child: Text('第${index + 1}组', style: TextStyle(color: colors.textSecondary, fontSize: 11))),
+          SizedBox(width: 38, child: Text(tr(context, '第${index + 1}组'), style: TextStyle(color: colors.textSecondary, fontSize: 11))),
           Expanded(child: _buildMiniField(colors, _setRepsCtrls[index], TextInputType.number)),
           Expanded(child: _buildMiniField(colors, _setWeightCtrls[index], const TextInputType.numberWithOptions(decimal: true))),
           Expanded(child: _buildMiniField(colors, _setRestCtrls[index], TextInputType.number)),
@@ -1327,14 +1328,14 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
             Expanded(
               child: TextButton(
                 onPressed: () => setState(() => _step = 1),
-                child: Text('重新选择训练日', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+                child: Text(tr(context, '重新选择训练日'), style: TextStyle(color: colors.textMuted, fontSize: 13)),
               ),
             )
           else
             Expanded(
               child: TextButton(
                 onPressed: () => setState(() => _step = 0),
-                child: Text('重新选择计划', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+                child: Text(tr(context, '重新选择计划'), style: TextStyle(color: colors.textMuted, fontSize: 13)),
               ),
             ),
           const SizedBox(width: 10),
@@ -1349,7 +1350,7 @@ class _AddToPlanSheetState extends State<_AddToPlanSheet> {
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('确认添加', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                child: Text(tr(context, '确认添加'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
               ),
             ),
         ],
@@ -1473,21 +1474,21 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
           children: [
             ListTile(
               leading: Icon(Icons.photo_outlined, color: colors.textSecondary),
-              title: Text('从相册选择',
+              title: Text(tr(context, '从相册选择'),
                   style: TextStyle(color: colors.textPrimary, fontSize: 15)),
               onTap: () => Navigator.of(ctx).pop('gallery'),
             ),
             ListTile(
               leading: Icon(Icons.camera_alt_outlined,
                   color: colors.textSecondary),
-              title: Text('拍照',
+              title: Text(tr(context, '拍照'),
                   style: TextStyle(color: colors.textPrimary, fontSize: 15)),
               onTap: () => Navigator.of(ctx).pop('camera'),
             ),
             ListTile(
               leading:
                   Icon(Icons.image_aspect_ratio, color: colors.textSecondary),
-              title: Text('使用默认封面',
+              title: Text(tr(context, '使用默认封面'),
                   style: TextStyle(color: colors.textPrimary, fontSize: 15)),
               onTap: () => Navigator.of(ctx).pop('default'),
             ),
@@ -1520,10 +1521,10 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
       await File(xfile.path).copy(target);
       if (!mounted) return;
       setState(() => _coverImagePath = target);
-      FitToast.success(context, '封面图片已选择');
+      FitToast.success(context, tr(context, '封面图片已选择'));
     } catch (e) {
       if (mounted) {
-        FitToast.error(context, '选择图片失败，请检查相册权限后重试');
+        FitToast.error(context, tr(context, '选择图片失败，请检查相册权限后重试'));
       }
     }
   }
@@ -1531,19 +1532,19 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
   void _onSave() {
     if (_nameCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入动作名称')),
+        SnackBar(content: Text(tr(context, '请输入动作名称'))),
       );
       return;
     }
     if (_descCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入动作描述')),
+        SnackBar(content: Text(tr(context, '请输入动作描述'))),
       );
       return;
     }
     if (_stepCtrls.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请至少添加一个步骤')),
+        SnackBar(content: Text(tr(context, '请至少添加一个步骤'))),
       );
       return;
     }
@@ -1618,8 +1619,8 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('保存',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              child: Text(tr(context, '保存'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
             ),
           ),
         ),
@@ -1636,7 +1637,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '添加动作',
+              tr(context, '添加动作'),
               style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 16,
@@ -1702,7 +1703,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(colors, '封面图', hint: '可选'),
+        _buildLabel(colors, tr(context, '封面图'), hint: tr(context, '可选')),
         const SizedBox(height: 6),
         GestureDetector(
           onTap: _pickCover,
@@ -1745,7 +1746,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                               size: 13, color: Colors.white.withOpacity(0.9)),
                           const SizedBox(width: 4),
                           Text(
-                            hasCustom ? '点击更换封面' : '点击选择封面',
+                            hasCustom ? tr(context, '点击更换封面') : tr(context, '点击选择封面'),
                             style: const TextStyle(
                                 color: Colors.white, fontSize: 12),
                           ),
@@ -1766,12 +1767,12 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(colors, '动作名称', hint: '必填'),
+        _buildLabel(colors, tr(context, '动作名称'), hint: tr(context, '必填')),
         const SizedBox(height: 6),
         TextField(
           controller: _nameCtrl,
           style: TextStyle(color: colors.textPrimary, fontSize: 14),
-          decoration: _fieldDecoration(colors, hint: '如：杠铃卧推'),
+          decoration: _fieldDecoration(colors, hint: tr(context, '如：杠铃卧推')),
         ),
       ],
     );
@@ -1781,12 +1782,12 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(colors, '器械'),
+        _buildLabel(colors, tr(context, '器械')),
         const SizedBox(height: 6),
         TextField(
           controller: _equipCtrl,
           style: TextStyle(color: colors.textPrimary, fontSize: 14),
-          decoration: _fieldDecoration(colors, hint: '如：杠铃 / 哑铃 / 自重'),
+          decoration: _fieldDecoration(colors, hint: tr(context, '如：杠铃 / 哑铃 / 自重')),
         ),
       ],
     );
@@ -1796,13 +1797,13 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(colors, '动作描述', hint: '必填'),
+        _buildLabel(colors, tr(context, '动作描述'), hint: tr(context, '必填')),
         const SizedBox(height: 6),
         TextField(
           controller: _descCtrl,
           maxLines: 3,
           style: TextStyle(color: colors.textPrimary, fontSize: 14),
-          decoration: _fieldDecoration(colors, hint: '描述动作要点与目标'),
+          decoration: _fieldDecoration(colors, hint: tr(context, '描述动作要点与目标')),
         ),
       ],
     );
@@ -1812,7 +1813,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(colors, '分类'),
+        _buildLabel(colors, tr(context, '分类')),
         const SizedBox(height: 6),
         Wrap(
           spacing: 8,
@@ -1854,7 +1855,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(colors, '目标肌群', hint: '可多选'),
+        _buildLabel(colors, tr(context, '目标肌群'), hint: tr(context, '可多选')),
         const SizedBox(height: 6),
         Wrap(
           spacing: 8,
@@ -1896,13 +1897,13 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
       children: [
         Row(
           children: [
-            _buildLabel(colors, '训练步骤', hint: '最多 $_maxSteps 步'),
+            _buildLabel(colors, tr(context, '训练步骤'), hint: tr(context, '最多 $_maxSteps 步')),
             const Spacer(),
             if (_stepCtrls.length < _maxSteps)
               TextButton.icon(
                 onPressed: _addStep,
                 icon: Icon(Icons.add, size: 16, color: colors.accentGlow),
-                label: Text('添加步骤',
+                label: Text(tr(context, '添加步骤'),
                     style: TextStyle(color: colors.accentGlow, fontSize: 13)),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1962,7 +1963,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '步骤 ${idx + 1}',
+                  tr(context, '步骤 ${idx + 1}'),
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: 13,
@@ -1978,7 +1979,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                         Icon(Icons.delete_outline,
                             size: 14, color: colors.warningColor),
                         const SizedBox(width: 2),
-                        Text('删除步骤',
+                        Text(tr(context, '删除步骤'),
                             style: TextStyle(
                                 color: colors.warningColor, fontSize: 11)),
                       ],
@@ -1997,7 +1998,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                   controller: step.title,
                   style: TextStyle(color: colors.textPrimary, fontSize: 13),
                   decoration:
-                      _fieldDecoration(colors, hint: '步骤标题'),
+                      _fieldDecoration(colors, hint: tr(context, '步骤标题')),
                 ),
                 const SizedBox(height: 8),
                 TextField(
@@ -2005,7 +2006,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                   maxLines: 2,
                   style: TextStyle(color: colors.textPrimary, fontSize: 13),
                   decoration:
-                      _fieldDecoration(colors, hint: '步骤描述'),
+                      _fieldDecoration(colors, hint: tr(context, '步骤描述')),
                 ),
                 const SizedBox(height: 10),
                 // Key poses
@@ -2015,7 +2016,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                         size: 13, color: colors.accentGlow),
                     const SizedBox(width: 4),
                     Text(
-                      '关键姿势',
+                      tr(context, '关键姿势'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -2033,7 +2034,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                             children: [
                               Icon(Icons.add, size: 13, color: colors.accentGlow),
                               const SizedBox(width: 2),
-                              Text('添加',
+                              Text(tr(context, '添加'),
                                   style: TextStyle(
                                       color: colors.accentGlow,
                                       fontSize: 11)),
@@ -2068,7 +2069,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                             style: TextStyle(
                                 color: colors.textPrimary, fontSize: 12),
                             decoration: _fieldDecoration(colors,
-                                hint: '关键姿势 ${kpIdx + 1}'),
+                                hint: tr(context, '关键姿势 ${kpIdx + 1}')),
                           ),
                         ),
                         if (step.keyPoses.length > 1)

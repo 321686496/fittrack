@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -12,6 +12,7 @@ import '../widgets/tutorial_share_card.dart';
 import '../widgets/unlock_panel.dart';
 import '../utils/art_assets.dart';
 
+import '../l10n/i18n.dart';
 /// v1 教学详情页
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md §E2
@@ -39,13 +40,13 @@ class TutorialDetailPage extends StatelessWidget {
         body: Column(
           children: [
             PageHeader(
-              title: '未找到',
+              title: tr(context, '未找到'),
               onBack: () => Navigator.of(context).pop(),
             ),
             Expanded(
               child: Center(
                 child: Text(
-                  '教学内容不存在',
+                  tr(context, '教学内容不存在'),
                   style: TextStyle(color: colors.textMuted),
                 ),
               ),
@@ -80,7 +81,7 @@ class TutorialDetailPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      tutorial.unlockRequirement ?? '该教学需邀请好友激活后解锁，下方可查看简介',
+                      tutorial.unlockRequirement ?? tr(context, '该教学需邀请好友激活后解锁，下方可查看简介'),
                       style: TextStyle(color: colors.warningColor, fontSize: 12),
                     ),
                   ),
@@ -185,7 +186,7 @@ class TutorialDetailPage extends StatelessWidget {
               Icon(Icons.person_outline, size: 14, color: colors.textMuted),
               const SizedBox(width: 4),
               Text(
-                '署名：${t.coachName}',
+                trn( '署名：${t.coachName}'),
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 12,
@@ -263,7 +264,7 @@ class TutorialDetailPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      '${tutorial.chapterPointsCost} 积分',
+                      tr(context, '${tutorial.chapterPointsCost} 积分'),
                       style: TextStyle(
                         color: colors.accentGlow,
                         fontSize: 11,
@@ -280,7 +281,7 @@ class TutorialDetailPage extends StatelessWidget {
             ] else ...[
               // 未解锁：显示提示文案 + 解锁按钮
               Text(
-                '本章内容已锁定，观看广告或消耗积分即可解锁',
+                tr(context, '本章内容已锁定，观看广告或消耗积分即可解锁'),
                 style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.5),
               ),
               const SizedBox(height: 12),
@@ -290,8 +291,8 @@ class TutorialDetailPage extends StatelessWidget {
                   onPressed: () async {
                     final ok = await UnlockPanel.show(
                       context: context,
-                      title: '解锁《${chapter.title}》',
-                      description: '该章节属于「${tutorial.type.label}」教学',
+                      title: tr(context, '解锁《${chapter.title}》'),
+                      description: tr(context, '该章节属于「${tutorial.type.label}」教学'),
                       pointsCost: tutorial.chapterPointsCost,
                       featureId: tutorial.chapterFeatureId(chapter.id),
                     );
@@ -301,7 +302,7 @@ class TutorialDetailPage extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.lock_open, size: 16),
-                  label: const Text('解锁本章'),
+                  label: Text(tr(context, '解锁本章')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -422,7 +423,7 @@ class TutorialDetailPage extends StatelessWidget {
             children: [
               Icon(Icons.swap_horiz, size: 18, color: colors.accentGlow),
               const SizedBox(width: 8),
-              Text('替代动作', style: TextStyle(
+              Text(tr(context, '替代动作'), style: TextStyle(
                 color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600,
               )),
             ],
@@ -506,7 +507,7 @@ class TutorialDetailPage extends StatelessWidget {
             children: [
               Icon(Icons.fitness_center, size: 18, color: colors.accentGlow),
               const SizedBox(width: 8),
-              Text('推荐训练动作', style: TextStyle(
+              Text(tr(context, '推荐训练动作'), style: TextStyle(
                 color: colors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600,
               )),
             ],
@@ -580,7 +581,7 @@ class TutorialDetailPage extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => _showShareCard(context, t),
                 icon: const Icon(Icons.share_outlined, size: 18),
-                label: const Text('分享动作'),
+                label: Text(tr(context, '分享动作')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.accentGlow,
                   side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
@@ -598,7 +599,7 @@ class TutorialDetailPage extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => context.push('/invitation'),
                   icon: const Icon(Icons.card_giftcard, size: 18),
-                  label: const Text('邀请加速解锁'),
+                  label: Text(tr(context, '邀请加速解锁')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,

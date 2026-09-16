@@ -24,7 +24,7 @@ void main() {
     final now = DateTime.now();
     for (int i = 0; i < 7; i++) {
       final date = now.subtract(Duration(days: i));
-      await Storage.addRecord({
+      Storage.addRecord({
         'name': 'test',
         'date': date.millisecondsSinceEpoch,
         'duration': 1800,
@@ -39,7 +39,7 @@ void main() {
   });
 
   test('weight_1t unlocks after total weight >= 1000kg', () async {
-    await Storage.addRecord({
+    Storage.addRecord({
       'name': 'test',
       'date': DateTime.now().millisecondsSinceEpoch,
       'duration': 1800,

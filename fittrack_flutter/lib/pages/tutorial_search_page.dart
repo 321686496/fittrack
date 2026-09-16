@@ -5,6 +5,7 @@ import '../data/tutorial_content.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 教学库搜索页
 ///
 /// 设计依据：docs/superpowers/specs/2026-08-01-app-optimization-design.md §2.3
@@ -137,9 +138,9 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
               child: !_hasSearched
                   ? _buildLanding(colors)
                   : (_results.isEmpty
-                      ? const EmptyState(
+                      ? EmptyState(
                           icon: Icons.search_off,
-                          message: '未找到匹配的教学',
+                          message: tr(context, '未找到匹配的教学'),
                         )
                       : _buildResultList(colors)),
             ),
@@ -185,7 +186,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
                 },
                 style: TextStyle(color: colors.textPrimary, fontSize: 15),
                 decoration: InputDecoration(
-                  hintText: '搜索动作 / 肌群 / 器械 / 教练',
+                  hintText: tr(context, '搜索动作 / 肌群 / 器械 / 教练'),
                   hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
                   prefixIcon: Icon(Icons.search,
                       color: colors.textMuted, size: 20),
@@ -215,7 +216,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               child: Text(
-                '取消',
+                tr(context, '取消'),
                 style: TextStyle(
                   color: colors.accentGlow,
                   fontSize: 15,
@@ -239,7 +240,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('历史搜索',
+              Text(tr(context, '历史搜索'),
                   style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: 15,
@@ -251,7 +252,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
                     Icon(Icons.delete_outline,
                         size: 14, color: colors.textMuted),
                     const SizedBox(width: 2),
-                    Text('清空',
+                    Text(tr(context, '清空'),
                         style: TextStyle(
                             color: colors.textMuted, fontSize: 12)),
                   ],
@@ -274,7 +275,7 @@ class _TutorialSearchPageState extends State<TutorialSearchPage> {
           ),
           const SizedBox(height: 24),
         ],
-        Text('热门推荐',
+        Text(tr(context, '热门推荐'),
             style: TextStyle(
                 color: colors.textPrimary,
                 fontSize: 15,

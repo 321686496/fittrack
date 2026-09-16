@@ -6,6 +6,7 @@ import '../data/storage.dart';
 import '../themes/app_themes.dart';
 import '../widgets/privacy_consent_dialog.dart';
 
+import '../l10n/i18n.dart';
 class SplashPage extends StatefulWidget {
   final VoidCallback onReady;
   final VoidCallback onShowOnboarding;
@@ -204,7 +205,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 34),
                   Text(
-                    '你的智能健身伙伴',
+                    tr(context, '你的智能健身伙伴'),
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 14,

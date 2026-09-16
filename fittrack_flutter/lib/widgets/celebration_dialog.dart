@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 
+import '../l10n/i18n.dart';
 class CelebrationDialog {
   static Future<void> show(BuildContext context, {
     required int totalWeight,
@@ -39,7 +40,7 @@ class CelebrationDialog {
                 child: const Icon(Icons.celebration, color: Colors.white, size: 32),
               ),
               const SizedBox(height: 16),
-              Text('训练完成！', style: TextStyle(
+              Text(tr(context, '训练完成！'), style: TextStyle(
                 color: colors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold,
               )),
               const SizedBox(height: 8),
@@ -51,11 +52,11 @@ class CelebrationDialog {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _stat(colors, '${totalWeight}kg', '总重量'),
-                  _stat(colors, '$totalSets', '总组数'),
-                  _stat(colors, '${duration}min', '时长'),
+                  _stat(colors, '${totalWeight}kg', tr(context, '总重量')),
+                  _stat(colors, '$totalSets', tr(context, '总组数')),
+                  _stat(colors, '${duration}min', tr(context, '时长')),
                   if (earnedPoints > 0)
-                    _stat(colors, '+$earnedPoints', '本次积分',
+                    _stat(colors, '+$earnedPoints', tr(context, '本次积分'),
                           icon: Icons.stars, iconColor: colors.accentGlow),
                 ],
               ),
@@ -69,7 +70,7 @@ class CelebrationDialog {
                     context.push('/note/edit/record_$recordId');
                   },
                   icon: const Icon(Icons.edit_note, size: 18),
-                  label: const Text('记录今日心得', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  label: Text(tr(context, '记录今日心得'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.accentGlow,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -84,7 +85,7 @@ class CelebrationDialog {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text('关闭', style: TextStyle(color: colors.textMuted)),
+                  child: Text(tr(context, '关闭'), style: TextStyle(color: colors.textMuted)),
                 ),
               ),
             ],
@@ -142,22 +143,22 @@ class CelebrationDialog {
   static List<String> _getEmotionalMessages(int streak, int totalWeight) {
     if (streak >= 7) {
       return [
-        '连续训练第$streak天，你已经超越了90%的用户！',
-        '坚持就是力量！连续$streak天，你正在成为更好的自己。',
-        '$streak天不间断，这就是坚持的力量！',
+        trn( '连续训练第$streak天，你已经超越了90%的用户！'),
+        trn( '坚持就是力量！连续$streak天，你正在成为更好的自己。'),
+        trn( '$streak天不间断，这就是坚持的力量！'),
       ];
     }
     if (totalWeight > 1000) {
       return [
-        '今日总重量${totalWeight}kg，你的肌肉在欢呼！',
-        '每一次举起，都是对自我的超越。继续加油！',
-        '今天的你，比昨天更强了一点。',
+        trn( '今日总重量${totalWeight}kg，你的肌肉在欢呼！'),
+        trn( '每一次举起，都是对自我的超越。继续加油！'),
+        trn( '今天的你，比昨天更强了一点。'),
       ];
     }
     return [
-      '完成训练只是开始，坚持才是答案。',
-      '今天的汗水，是明天的收获。',
-      '每一次训练，都让你离目标更近一步。',
+      trn( '完成训练只是开始，坚持才是答案。'),
+      trn( '今天的汗水，是明天的收获。'),
+      trn( '每一次训练，都让你离目标更近一步。'),
     ];
   }
 }

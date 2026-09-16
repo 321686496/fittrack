@@ -3,6 +3,7 @@ import '../data/training_note.dart';
 import '../services/invitation_service.dart';
 import 'poster_theme.dart';
 
+import '../l10n/i18n.dart';
 /// 训练笔记海报（海报3，对应 HTML #3）
 ///
 /// 宽度 1080、高度 1920（9:16 手机全屏比例）。使用 [PosterBackground] 跟随
@@ -66,7 +67,7 @@ class NotePosterContent extends StatelessWidget {
               colors: colors,
               subtitle: 'TRAINING NOTE',
               trailing: note.isFeatured
-                  ? PostBadge(text: '精选', colors: colors)
+                  ? PostBadge(text: tr(context, '精选'), colors: colors)
                   : null,
             ),
             // ── 日期 + 感受 ──────────────────────
@@ -92,7 +93,7 @@ class NotePosterContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(px(8)),
                   ),
                   child: Text(
-                    '感受 · ${note.feelingLabel}',
+                    tr(context, '感受 · ${note.feelingLabel}'),
                     style: TextStyle(
                       color: colors.brand,
                       fontSize: px(9),
@@ -142,7 +143,7 @@ class NotePosterContent extends StatelessWidget {
                   SizedBox(width: px(10)),
                   Expanded(
                     child: Text(
-                      '最满意：${note.bestExercise}',
+                      tr(context, '最满意：${note.bestExercise}'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -172,8 +173,8 @@ class NotePosterContent extends StatelessWidget {
             PosterQrFooter(
               colors: colors,
               qrData: 'fittrack://invite?code=$inviteCode',
-              hint: '输入邀请码，双方得福利',
-              sub: 'LiftTrack · 训练笔记',
+              hint: tr(context, '输入邀请码，双方得福利'),
+              sub: tr(context, 'LiftTrack · 训练笔记'),
             ),
           ],
         ),
@@ -204,13 +205,13 @@ class NotePosterContent extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _noteCol(colors, '${mins}min', '时长'),
+          _noteCol(colors, '${mins}min', trn( '时长')),
           _vDivider(colors),
-          _noteCol(colors, '${totalWeight}kg', '总重量'),
+          _noteCol(colors, '${totalWeight}kg', trn( '总重量')),
           _vDivider(colors),
-          _noteCol(colors, '$totalSets', '组数'),
+          _noteCol(colors, '$totalSets', trn( '组数')),
           _vDivider(colors),
-          _noteCol(colors, part.isEmpty ? '—' : part, '部位'),
+          _noteCol(colors, part.isEmpty ? '—' : part, trn( '部位')),
         ],
       ),
     );

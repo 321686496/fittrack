@@ -3,6 +3,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import 'poster_theme.dart';
 
+import '../l10n/i18n.dart';
 /// 训练计划海报（海报4，对应 HTML #4）
 ///
 /// 宽度 1080 固定、高度随内容自适应（训练日最多 5 天，行数不固定，不使用
@@ -31,7 +32,7 @@ class PlanPosterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = PosterColors.fromThemeId(themeId);
-    final name = plan['name'] as String? ?? '未命名计划';
+    final name = plan['name'] as String? ?? tr(context, '未命名计划');
     final type = plan['type'] as String? ?? '';
     final difficulty = plan['difficulty'] as String? ?? '';
     final frequency = plan['frequency'] as String? ?? '';
@@ -69,7 +70,7 @@ class PlanPosterWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '训练计划 · PLAN',
+                    tr(context, '训练计划 · PLAN'),
                     style: TextStyle(
                       color: colors.textMuted,
                       fontSize: px(9),
@@ -124,7 +125,7 @@ class PlanPosterWidget extends StatelessWidget {
     return List.generate(days.length.clamp(0, 5), (i) {
       final day = days[i] as Map<String, dynamic>;
       final isRest = day['isRest'] == true;
-      final label = day['label'] as String? ?? '第${i + 1}天';
+      final label = day['label'] as String? ?? trn( '第${i + 1}天');
       final muscle = day['muscle'] as String? ?? '';
       final exercises = (day['exercises'] as List?) ?? [];
       final totalSets = exercises.fold<int>(
@@ -135,14 +136,14 @@ class PlanPosterWidget extends StatelessWidget {
       String title;
       String sub;
       if (isRest) {
-        title = '休息日 · 充分恢复';
-        sub = '拉伸 / 放松';
+        title = trn( '休息日 · 充分恢复');
+        sub = trn( '拉伸 / 放松');
       } else {
         title = label;
         final parts = <String>[
           if (muscle.isNotEmpty) muscle,
-          '${exercises.length}个动作',
-          '$totalSets组',
+          trn( '${exercises.length}个动作'),
+          trn( '$totalSets组'),
         ];
         sub = parts.join(' · ');
       }
@@ -257,13 +258,13 @@ class PlanPosterWidget extends StatelessWidget {
               gapless: true,
               backgroundColor: Colors.white,
               // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
-              eyeStyle: QrEyeStyle(
+              eyeStyle: const QrEyeStyle(
                 eyeShape: QrEyeShape.square,
-                color: const Color(0xFF1C1C1E),
+                color: Color(0xFF1C1C1E),
               ),
-              dataModuleStyle: QrDataModuleStyle(
+              dataModuleStyle: const QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.square,
-                color: const Color(0xFF1C1C1E),
+                color: Color(0xFF1C1C1E),
               ),
               errorStateBuilder: (context, error) => Center(
                 child: Icon(Icons.fitness_center,
@@ -278,7 +279,7 @@ class PlanPosterWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '扫码导入计划',
+                  trn( '扫码导入计划'),
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: px(12),
@@ -287,7 +288,7 @@ class PlanPosterWidget extends StatelessWidget {
                 ),
                 SizedBox(height: px(3)),
                 Text(
-                  '或输入分享码：$shareCode',
+                  trn( '或输入分享码：$shareCode'),
                   style: TextStyle(
                     color: colors.textMuted,
                     fontSize: px(9),

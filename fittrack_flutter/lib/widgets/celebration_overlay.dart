@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+import '../l10n/i18n.dart';
 class CelebrationOverlay {
   static Future<OverlayEntry?> show(
     BuildContext context, {
@@ -72,16 +73,16 @@ class _CelebrationWidgetState extends State<_CelebrationWidget>
 
   String _buildMessage() {
     if (widget.previousRecord == null) {
-      return '你的健身旅程开始了';
+      return tr(context, '你的健身旅程开始了');
     }
     final prev = widget.previousRecord!;
     final prevWeight = prev['totalWeight'] as int? ?? 0;
     final curWeight = widget.record['totalWeight'] as int? ?? 0;
-    if (prevWeight == 0 || curWeight == 0) return '训练完成';
+    if (prevWeight == 0 || curWeight == 0) return tr(context, '训练完成');
     final delta = (curWeight - prevWeight) / prevWeight;
-    if (delta > 0.02) return '总重量提升 ${(delta * 100).round()}%';
-    if (delta < -0.02) return '比上次更快完成';
-    return '保持稳定，继续努力';
+    if (delta > 0.02) return tr(context, '总重量提升 ${(delta * 100).round()}%');
+    if (delta < -0.02) return tr(context, '比上次更快完成');
+    return tr(context, '保持稳定，继续努力');
   }
 
   @override
@@ -109,7 +110,7 @@ class _CelebrationWidgetState extends State<_CelebrationWidget>
                   const Icon(Icons.celebration,
                       color: Colors.amber, size: 80),
                   const SizedBox(height: 16),
-                  Text(widget.record['name'] as String? ?? '训练完成',
+                  Text(widget.record['name'] as String? ?? tr(context, '训练完成'),
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 28,

@@ -6,6 +6,7 @@ import '../data/virtual_opponent.dart';
 import 'opponent/opponent_renderer.dart';
 import 'opponent/opponent_skin_config.dart';
 
+import '../l10n/i18n.dart';
 /// v1 首页 PK 卡片 — 虚拟对手本周对比
 ///
 /// 依据：docs/versions/v1-获客留存版/02_功能清单.md §E1 (V1-01-06)
@@ -252,7 +253,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '本周 PK',
+                      tr(context, '本周 PK'),
                       style: TextStyle(
                         color: colors.textPrimary,
                         fontSize: 15,
@@ -285,7 +286,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                     Expanded(
                       child: _buildSide(
                         colors,
-                        label: '你',
+                        label: tr(context, '你'),
                         count: _userWeeklyTrainings,
                         maxCount: maxCount,
                         isUser: true,
@@ -335,7 +336,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            '${_opponent!.nickname}：${_opponent!.currentStatus}',
+                            tr(context, '${_opponent!.nickname}：${_opponent!.currentStatus}'),
                             style: TextStyle(
                               color: colors.textMuted,
                               fontSize: 12,
@@ -436,7 +437,7 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
         ),
         const SizedBox(height: 6),
         Text(
-          '$count 次',
+          tr(context, '$count 次'),
           style: TextStyle(
             color: sideColor,
             fontSize: 20,
@@ -459,16 +460,16 @@ class _VirtualOpponentCardState extends State<VirtualOpponentCard>
 
   String _buildIncentiveText() {
     if (_userWeeklyTrainings == 0) {
-      return '本周还未训练，开始第一次吧！';
+      return tr(context, '本周还未训练，开始第一次吧！');
     }
 
     final opponentTrainings = _opponent!.weeklyTrainings;
     if (_userWeeklyTrainings > opponentTrainings) {
-      return '本周训练 $_userWeeklyTrainings 次，超越 $_percentile% 同水平用户';
+      return tr(context, '本周训练 $_userWeeklyTrainings 次，超越 $_percentile% 同水平用户');
     } else if (_userWeeklyTrainings == opponentTrainings) {
-      return '与对手打平！再来一次拉开差距';
+      return tr(context, '与对手打平！再来一次拉开差距');
     } else {
-      return '对手领先 ${opponentTrainings - _userWeeklyTrainings} 次，追上他！';
+      return tr(context, '对手领先 ${opponentTrainings - _userWeeklyTrainings} 次，追上他！');
     }
   }
 }

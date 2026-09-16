@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../utils/platform_utils.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 /// 权限管理服务 - 集中处理 HarmonyOS 权限申请与状态检查
 class PermissionService {
   PermissionService._();
@@ -70,10 +71,10 @@ class PermissionService {
   }) async {
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '$permissionName权限被拒绝',
+      title: trn('$permissionName权限被拒绝'),
       content: reason,
-      confirmText: '去设置',
-      cancelText: '取消',
+      confirmText: trn('去设置'),
+      cancelText: trn('取消'),
       icon: Icons.privacy_tip_outlined,
     );
     if (confirmed == true && _isPermissionPlatform) {

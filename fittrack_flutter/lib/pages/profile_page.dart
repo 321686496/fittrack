@@ -18,6 +18,7 @@ import '../widgets/max_weight_card.dart';
 import '../widgets/notification_list_sheet.dart';
 import '../widgets/tab_refresh_mixin.dart';
 
+import '../l10n/i18n.dart';
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -108,8 +109,8 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
     return Column(
       children: [
         PageHeader(
-          title: '我的',
-          subtitle: '个人中心',
+          title: tr(context, '我的'),
+          subtitle: tr(context, '个人中心'),
           isTabPage: true,
           onBellTap: () => _showNotifications(context),
           onCalendarTap: () => _showCalendar(context),
@@ -131,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   const SizedBox(height: 20),
                   _buildAchievements(colors),
                   const SizedBox(height: 20),
-                  const SectionHeader(title: '身体数据'),
+                  SectionHeader(title: tr(context, '身体数据')),
                   const SizedBox(height: 10),
                   if (_hasMeaningfulBodyData(body))
                     _buildBodyData(colors, body)
@@ -183,7 +184,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Text('${now.year}年${now.month}月', style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(tr(context, '${now.year}年${now.month}月'), style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => Navigator.of(ctx).pop(),
@@ -196,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
-                children: ['一', '二', '三', '四', '五', '六', '日'].map((d) =>
+                children: [tr(context, '一'), tr(context, '二'), tr(context, '三'), tr(context, '四'), tr(context, '五'), tr(context, '六'), tr(context, '日')].map((d) =>
                   Expanded(
                     child: Center(
                       child: Text(d, style: TextStyle(color: colors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
@@ -217,11 +218,11 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                 children: [
                   Container(width: 10, height: 10, decoration: BoxDecoration(color: colors.accentGlow, shape: BoxShape.circle)),
                   const SizedBox(width: 6),
-                  Text('已训练 ${trainedDays.length} 天', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '已训练 ${trainedDays.length} 天'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(width: 16),
                   Container(width: 10, height: 10, decoration: BoxDecoration(color: colors.accentGlow.withOpacity(0.3), shape: BoxShape.circle)),
                   const SizedBox(width: 6),
-                  Text('今天', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '今天'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                 ],
               ),
             ),
@@ -284,7 +285,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
 
   Widget _buildProfileHeader(LiftTrackColors colors) {
     final settings = _settingsCache;
-    final userName = settings['userName'] as String? ?? '用户';
+    final userName = settings['userName'] as String? ?? tr(context, '用户');
     final gender = settings['gender'] as String? ?? '';
     final goal = settings['fitnessGoal'] as String? ?? '';
     final level = settings['fitnessLevel'] as String? ?? '';
@@ -300,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
       if (level.isNotEmpty) level,
       if (goal.isNotEmpty) goal,
     ];
-    final subtitle = tags.isNotEmpty ? tags.join(' · ') : '开始你的健身之旅';
+    final subtitle = tags.isNotEmpty ? tags.join(' · ') : tr(context, '开始你的健身之旅');
 
     return GestureDetector(
       onTap: () => _showProfileEditor(colors),
@@ -359,11 +360,11 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
             // 三列数据带
             Row(
               children: [
-                _buildStatColumn(colors, '$earnedTotal', '累计获得'),
+                _buildStatColumn(colors, '$earnedTotal', tr(context, '累计获得')),
                 _buildVerticalDivider(colors),
-                _buildStatColumn(colors, '$spentTotal', '消耗'),
+                _buildStatColumn(colors, '$spentTotal', tr(context, '消耗')),
                 _buildVerticalDivider(colors),
-                _buildStatColumn(colors, '$streak', '连续打卡'),
+                _buildStatColumn(colors, '$streak', tr(context, '连续打卡')),
               ],
             ),
           ],
@@ -423,7 +424,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '我的积分',
+                    tr(context, '我的积分'),
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 12,
@@ -442,7 +443,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
               ),
             ),
             Text(
-              '查看详情 →',
+              tr(context, '查看详情 →'),
               style: TextStyle(color: colors.accentGlow, fontSize: 12),
             ),
           ],
@@ -498,7 +499,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
 
   void _showProfileEditor(LiftTrackColors colors) {
     final settings = Storage.getSettings();
-    final nameCtrl = TextEditingController(text: settings['userName'] as String? ?? '用户');
+    final nameCtrl = TextEditingController(text: settings['userName'] as String? ?? tr(context, '用户'));
     String selectedGender = settings['gender'] as String? ?? '';
     String selectedGoal = settings['fitnessGoal'] as String? ?? '';
     String selectedLevel = settings['fitnessLevel'] as String? ?? '';
@@ -544,7 +545,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                 setSheetState(() => selectedAvatarPath = target);
               } catch (_) {
                 if (ctx.mounted) {
-                  FitToast.error(ctx, '选择图片失败，请检查相册权限后重试');
+                  FitToast.error(ctx, tr(context, '选择图片失败，请检查相册权限后重试'));
                 }
               }
             }
@@ -559,7 +560,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                 children: [
                   Row(
                     children: [
-                      Text('编辑个人信息', style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(tr(context, '编辑个人信息'), style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                       const Spacer(),
                       GestureDetector(
                         onTap: () => Navigator.of(ctx).pop(),
@@ -570,7 +571,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   const SizedBox(height: 20),
 
                   // 头像选择
-                  Text('选择头像', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '选择头像'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 10,
@@ -671,7 +672,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   const SizedBox(height: 16),
 
                   // 用户名
-                  Text('用户名', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '用户名'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -709,17 +710,17 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                           setSheetState(() => nameCtrl.text = newName);
                         },
                         icon: Icon(Icons.casino, color: colors.accentGlow),
-                        tooltip: '随机生成',
+                        tooltip: tr(context, '随机生成'),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
                   // 性别
-                  Text('性别', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '性别'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 6),
                   Row(
-                    children: ['男', '女'].map((g) {
+                    children: [tr(context, '男'), tr(context, '女')].map((g) {
                       final isSelected = selectedGender == g;
                       return Expanded(
                         child: GestureDetector(
@@ -750,12 +751,12 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   const SizedBox(height: 16),
 
                   // 健身目标
-                  Text('健身目标', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '健身目标'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: ['增肌', '减脂', '塑形', '保持健康'].map((g) {
+                    children: [tr(context, '增肌'), tr(context, '减脂'), tr(context, '塑形'), tr(context, '保持健康')].map((g) {
                       final isSelected = selectedGoal == g;
                       return GestureDetector(
                         onTap: () => setSheetState(() => selectedGoal = g),
@@ -783,12 +784,12 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   const SizedBox(height: 16),
 
                   // 健身水平
-                  Text('健身水平', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '健身水平'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: ['新手', '初级', '中级', '高级'].map((l) {
+                    children: [tr(context, '新手'), tr(context, '初级'), tr(context, '中级'), tr(context, '高级')].map((l) {
                       final isSelected = selectedLevel == l;
                       return GestureDetector(
                         onTap: () => setSheetState(() => selectedLevel = l),
@@ -816,7 +817,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   const SizedBox(height: 24),
 
                   // 训练提醒时间
-                  Text('每日训练提醒时间', style: TextStyle(color: colors.textSecondary, fontSize: 13)),
+                  Text(tr(context, '每日训练提醒时间'), style: TextStyle(color: colors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: () async {
@@ -846,7 +847,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            trainingTime.isNotEmpty ? trainingTime : '点击设置提醒时间',
+                            trainingTime.isNotEmpty ? trainingTime : tr(context, '点击设置提醒时间'),
                             style: TextStyle(
                               color: trainingTime.isNotEmpty ? colors.accentGlow : colors.textMuted,
                               fontSize: 15,
@@ -866,7 +867,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                     child: ElevatedButton(
                       onPressed: () {
                         final s = Storage.getSettings();
-                        s['userName'] = nameCtrl.text.trim().isNotEmpty ? nameCtrl.text.trim() : '用户';
+                        s['userName'] = nameCtrl.text.trim().isNotEmpty ? nameCtrl.text.trim() : tr(context, '用户');
                         if (selectedGender.isNotEmpty) s['gender'] = selectedGender;
                         if (selectedGoal.isNotEmpty) s['fitnessGoal'] = selectedGoal;
                         if (selectedLevel.isNotEmpty) s['fitnessLevel'] = selectedLevel;
@@ -883,7 +884,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                         );
                         // 训练时间变更后重新调度每日提醒（开关开启时生效）
                         DailyReminderService.instance.reschedule();
-                        FitToast.success(context, '个人信息已更新');
+                        FitToast.success(context, tr(context, '个人信息已更新'));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.accentGlow,
@@ -891,7 +892,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('保存', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                      child: Text(tr(context, '保存'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     ),
                   ),
                 ],
@@ -928,7 +929,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                     children: [
                       Icon(Icons.emoji_events, size: 18, color: colors.accentGlow),
                       const SizedBox(width: 6),
-                      Text('荣誉墙',
+                      Text(tr(context, '荣誉墙'),
                           style: TextStyle(
                               color: colors.textPrimary,
                               fontSize: 14,
@@ -946,7 +947,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                   SizedBox(
                     height: 32,
                     child: unlocked.isEmpty
-                        ? Text('尚未解锁',
+                        ? Text(tr(context, '尚未解锁'),
                             style: TextStyle(
                                 color: colors.textMuted, fontSize: 11))
                         : ListView.separated(
@@ -993,7 +994,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                       Icon(Icons.assignment_turned_in,
                           size: 18, color: colors.accentGlow),
                       const SizedBox(width: 6),
-                      Text('成就墙',
+                      Text(tr(context, '成就墙'),
                           style: TextStyle(
                               color: colors.textPrimary,
                               fontSize: 14,
@@ -1023,7 +1024,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text('总进度',
+                  Text(tr(context, '总进度'),
                       style: TextStyle(
                           color: colors.textMuted, fontSize: 11)),
                 ],
@@ -1081,17 +1082,17 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
   Widget _buildBodyData(LiftTrackColors colors, Map<String, dynamic> body) {
     // 收集有值的字段（值为 0 或 null 的字段不显示）
     final fieldConfigs = <Map<String, dynamic>>[
-      {'key': 'height', 'unit': 'cm', 'label': '身高'},
-      {'key': 'weight', 'unit': 'kg', 'label': '体重'},
+      {'key': 'height', 'unit': 'cm', 'label': tr(context, '身高')},
+      {'key': 'weight', 'unit': 'kg', 'label': tr(context, '体重')},
       {'key': 'bmi', 'unit': '', 'label': 'BMI'},
-      {'key': 'bodyFat', 'unit': '%', 'label': '体脂率'},
-      {'key': 'chest', 'unit': 'cm', 'label': '胸围'},
-      {'key': 'waist', 'unit': 'cm', 'label': '腰围'},
-      {'key': 'hip', 'unit': 'cm', 'label': '臀围'},
-      {'key': 'armCircumference', 'unit': 'cm', 'label': '上臂围'},
-      {'key': 'thighCircumference', 'unit': 'cm', 'label': '大腿围'},
-      {'key': 'targetWeight', 'unit': 'kg', 'label': '目标体重'},
-      {'key': 'restingHeartRate', 'unit': 'bpm', 'label': '静息心率'},
+      {'key': 'bodyFat', 'unit': '%', 'label': tr(context, '体脂率')},
+      {'key': 'chest', 'unit': 'cm', 'label': tr(context, '胸围')},
+      {'key': 'waist', 'unit': 'cm', 'label': tr(context, '腰围')},
+      {'key': 'hip', 'unit': 'cm', 'label': tr(context, '臀围')},
+      {'key': 'armCircumference', 'unit': 'cm', 'label': tr(context, '上臂围')},
+      {'key': 'thighCircumference', 'unit': 'cm', 'label': tr(context, '大腿围')},
+      {'key': 'targetWeight', 'unit': 'kg', 'label': tr(context, '目标体重')},
+      {'key': 'restingHeartRate', 'unit': 'bpm', 'label': tr(context, '静息心率')},
     ];
 
     // 取上一次记录作为趋势对比基线
@@ -1137,7 +1138,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
       final rowItems = items.sublist(i, end);
       // 不足 3 个时补齐占位，保持等宽
       while (rowItems.length < 3) {
-        rowItems.add(const _BodyFieldItem(value: '', unit: '', label: '', trend: TrendDirection.none));
+        rowItems.add(_BodyFieldItem(value: '', unit: '', label: '', trend: TrendDirection.none));
       }
       rows.add(Row(
         children: rowItems
@@ -1163,14 +1164,14 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '身体数据',
+                tr(context, '身体数据'),
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 12,
                 ),
               ),
               Text(
-                '更新于 ${body['lastUpdate'] ?? '刚刚'}',
+                tr(context, '更新于 ${body['lastUpdate'] ?? '刚刚'}'),
                 style: TextStyle(
                   color: colors.textMuted,
                   fontSize: 11,
@@ -1194,7 +1195,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
   /// 判断是否存在有意义的身体数据（任一字段非 0 且非 null）
   bool _hasMeaningfulBodyData(Map<String, dynamic> body) {
     if (body.isEmpty) return false;
-    const keys = [
+    final keys = [
       'height', 'weight', 'bmi', 'bodyFat', 'chest', 'waist', 'hip',
       'armCircumference', 'thighCircumference', 'targetWeight', 'restingHeartRate',
     ];
@@ -1274,7 +1275,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
           Icon(Icons.accessibility_new, size: 48, color: colors.accentGlow),
           const SizedBox(height: 12),
           Text(
-            '完善身体数据',
+            tr(context, '完善身体数据'),
             style: TextStyle(
               color: colors.textPrimary,
               fontSize: 16,
@@ -1283,7 +1284,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
           ),
           const SizedBox(height: 6),
           Text(
-            '记录你的身体数据，获取更精准的训练推荐',
+            tr(context, '记录你的身体数据，获取更精准的训练推荐'),
             style: TextStyle(
               color: colors.textMuted,
               fontSize: 13,
@@ -1304,7 +1305,7 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('去填写', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              child: Text(tr(context, '去填写'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
             ),
           ),
         ],
@@ -1314,15 +1315,15 @@ class _ProfilePageState extends State<ProfilePage> with TabRefreshMixin<ProfileP
 
   Widget _buildMenuList(LiftTrackColors colors, BuildContext ctx) {
     final menus = [
-      {'icon': Icons.card_membership_outlined, 'label': '健身卡', 'page': 'gym-card'},
-      {'icon': Icons.history, 'label': '训练记录', 'page': 'records'},
-      {'icon': Icons.card_giftcard, 'label': '邀请有礼', 'page': 'invitation'},
-      {'icon': Icons.sports_gymnastics, 'label': '动作库', 'page': 'exercise'},
-      {'icon': Icons.edit_note, 'label': '训练笔记', 'page': 'note'},
-      {'icon': Icons.settings, 'label': '设置', 'page': 'settings'},
-      {'icon': Icons.notifications_active_outlined, 'label': '提醒设置', 'page': 'reminder-settings'},
-      {'icon': Icons.security_outlined, 'label': '隐私与安全', 'action': 'privacy'},
-      {'icon': Icons.help_outline, 'label': '帮助与反馈', 'action': 'help'},
+      {'icon': Icons.card_membership_outlined, 'label': tr(context, '健身卡'), 'page': 'gym-card'},
+      {'icon': Icons.history, 'label': tr(context, '训练记录'), 'page': 'records'},
+      {'icon': Icons.card_giftcard, 'label': tr(context, '邀请有礼'), 'page': 'invitation'},
+      {'icon': Icons.sports_gymnastics, 'label': tr(context, '动作库'), 'page': 'exercise'},
+      {'icon': Icons.edit_note, 'label': tr(context, '训练笔记'), 'page': 'note'},
+      {'icon': Icons.settings, 'label': tr(context, '设置'), 'page': 'settings'},
+      {'icon': Icons.notifications_active_outlined, 'label': tr(context, '提醒设置'), 'page': 'reminder-settings'},
+      {'icon': Icons.security_outlined, 'label': tr(context, '隐私与安全'), 'action': 'privacy'},
+      {'icon': Icons.help_outline, 'label': tr(context, '帮助与反馈'), 'action': 'help'},
     ];
 
     return Column(
@@ -1395,7 +1396,7 @@ class _BodyFieldItem {
   final String label;
   final TrendDirection trend;
 
-  const _BodyFieldItem({
+  _BodyFieldItem({
     required this.value,
     required this.unit,
     required this.label,

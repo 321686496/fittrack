@@ -3,6 +3,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import 'poster_theme.dart';
 
+import '../l10n/i18n.dart';
 /// 邀请码海报（海报2，对应 HTML #2，含底部下载引导）
 ///
 /// 宽度 1080 固定、高度随内容自适应（不限定固定高度，避免内容竖向溢出；
@@ -41,7 +42,7 @@ class InvitePoster extends StatelessWidget {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: '好友邀你 ',
+                    text: tr(context, '好友邀你 '),
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontSize: px(22),
@@ -51,7 +52,7 @@ class InvitePoster extends StatelessWidget {
                     ),
                   ),
                   TextSpan(
-                    text: '一起变强',
+                    text: tr(context, '一起变强'),
                     style: TextStyle(
                       fontSize: px(22),
                       fontWeight: FontWeight.w900,
@@ -69,7 +70,7 @@ class InvitePoster extends StatelessWidget {
             ),
             SizedBox(height: px(4)),
             Text(
-              '激活邀请 · 领新人礼包，马上开练',
+              tr(context, '激活邀请 · 领新人礼包，马上开练'),
               style: TextStyle(
                 color: colors.textSecondary,
                 fontSize: px(11),
@@ -80,49 +81,49 @@ class InvitePoster extends StatelessWidget {
             _buildGiftCard(colors),
             SizedBox(height: px(8)),
             // ── 它解决你训练的痛点 ─────────────────
-            _buildSectionTitle(colors, '它解决你训练的痛点'),
+            _buildSectionTitle(colors, tr(context, '它解决你训练的痛点')),
             SizedBox(height: px(7)),
             Row(
               children: [
                 _buildPainCard(
-                    colors, Icons.view_stream_rounded, '实时训练', '组数一目了然'),
+                    colors, Icons.view_stream_rounded, tr(context, '实时训练'), tr(context, '组数一目了然')),
                 SizedBox(width: px(6)),
                 _buildPainCard(
-                    colors, Icons.schedule_rounded, '休息提醒', '掌控休息节奏'),
+                    colors, Icons.schedule_rounded, tr(context, '休息提醒'), tr(context, '掌控休息节奏')),
                 SizedBox(width: px(6)),
                 _buildPainCard(
-                    colors, Icons.location_on_outlined, '练哪提醒', '今天该练哪'),
+                    colors, Icons.location_on_outlined, tr(context, '练哪提醒'), tr(context, '今天该练哪')),
               ],
             ),
             SizedBox(height: px(8)),
             // ── 带你体验完整训练 ───────────────────
-            _buildSectionTitle(colors, '带你体验完整训练'),
+            _buildSectionTitle(colors, tr(context, '带你体验完整训练')),
             SizedBox(height: px(7)),
             Row(
               children: [
                 _buildModCard(
-                    colors, Icons.format_list_bulleted, '训练计划', '分阶段照着练'),
+                    colors, Icons.format_list_bulleted, tr(context, '训练计划'), tr(context, '分阶段照着练')),
                 SizedBox(width: px(7)),
                 _buildModCard(
-                    colors, Icons.compare_arrows_rounded, '虚拟对手PK', '积分兑限定皮肤'),
+                    colors, Icons.compare_arrows_rounded, tr(context, '虚拟对手PK'), tr(context, '积分兑限定皮肤')),
               ],
             ),
             SizedBox(height: px(7)),
             Row(
               children: [
-                _buildModCard(colors, Icons.menu_book_outlined, '动作教学', '图文分步教学'),
+                _buildModCard(colors, Icons.menu_book_outlined, tr(context, '动作教学'), tr(context, '图文分步教学')),
                 SizedBox(width: px(7)),
                 _buildModCard(
-                    colors, Icons.confirmation_number_outlined, '健身卡', '到期次数提醒'),
+                    colors, Icons.confirmation_number_outlined, tr(context, '健身卡'), tr(context, '到期次数提醒')),
               ],
             ),
             SizedBox(height: px(7)),
             Row(
               children: [
-                _buildModCard(colors, Icons.trending_up_rounded, '数据统计', '进步曲线记录'),
+                _buildModCard(colors, Icons.trending_up_rounded, tr(context, '数据统计'), tr(context, '进步曲线记录')),
                 SizedBox(width: px(7)),
                 _buildModCard(
-                    colors, Icons.workspace_premium_outlined, '成就徽章', '积分兑徽章称号'),
+                    colors, Icons.workspace_premium_outlined, tr(context, '成就徽章'), tr(context, '积分兑徽章称号')),
               ],
             ),
             SizedBox(height: px(11)),
@@ -193,7 +194,7 @@ class InvitePoster extends StatelessWidget {
                   Icon(Icons.card_giftcard, size: px(15), color: Colors.white),
                   SizedBox(width: px(6)),
                   Text(
-                    '新人礼包 · 激活即得',
+                    trn( '新人礼包 · 激活即得'),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: px(12),
@@ -217,7 +218,7 @@ class InvitePoster extends StatelessWidget {
                       ],
                     ),
                     child: Text(
-                      '领新人礼',
+                      trn( '领新人礼'),
                       style: TextStyle(
                         color: colors.brand,
                         fontSize: px(11),
@@ -243,7 +244,7 @@ class InvitePoster extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.only(bottom: px(6)),
                     child: Text(
-                      '积分',
+                      trn( '积分'),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: px(15),
@@ -255,7 +256,7 @@ class InvitePoster extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.only(bottom: px(7)),
                     child: Text(
-                      '激活即到账 · 直接兑换',
+                      trn( '激活即到账 · 直接兑换'),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: px(9.5),
@@ -267,13 +268,13 @@ class InvitePoster extends StatelessWidget {
               SizedBox(height: px(7)),
               Row(
                 children: [
-                  _ptag('限定皮肤'),
+                  _ptag(trn( '限定皮肤')),
                   SizedBox(width: px(5)),
-                  _ptag('成就徽章'),
+                  _ptag(trn( '成就徽章')),
                   SizedBox(width: px(5)),
-                  _ptag('头像框'),
+                  _ptag(trn( '头像框')),
                   SizedBox(width: px(5)),
-                  _ptag('专属称号'),
+                  _ptag(trn( '专属称号')),
                 ],
               ),
             ],
@@ -458,13 +459,13 @@ class InvitePoster extends StatelessWidget {
               gapless: true,
               backgroundColor: Colors.white,
               // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
-              eyeStyle: QrEyeStyle(
+              eyeStyle: const QrEyeStyle(
                 eyeShape: QrEyeShape.square,
-                color: const Color(0xFF1C1C1E),
+                color: Color(0xFF1C1C1E),
               ),
-              dataModuleStyle: QrDataModuleStyle(
+              dataModuleStyle: const QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.square,
-                color: const Color(0xFF1C1C1E),
+                color: Color(0xFF1C1C1E),
               ),
               // 兜底：数据过长无法编码时，避免渲染成白底空容器
               errorStateBuilder: (context, error) => Center(
@@ -479,7 +480,7 @@ class InvitePoster extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '扫码 或 输入好友邀请码',
+                  trn( '扫码 或 输入好友邀请码'),
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: px(10),
@@ -498,7 +499,7 @@ class InvitePoster extends StatelessWidget {
                 ),
                 SizedBox(height: px(2)),
                 Text(
-                  '激活即领新人礼包 · 双方都有奖励',
+                  trn( '激活即领新人礼包 · 双方都有奖励'),
                   style: TextStyle(
                     color: colors.textMuted,
                     fontSize: px(8),
@@ -516,7 +517,7 @@ class InvitePoster extends StatelessWidget {
   Widget _buildDownloadFooter(PosterColors colors) {
     return PosterDownloadFooter(
       colors: colors,
-      headline: '别辜负每一次想练的冲动 · 扫码现在开始',
+      headline: trn( '别辜负每一次想练的冲动 · 扫码现在开始'),
     );
   }
 }

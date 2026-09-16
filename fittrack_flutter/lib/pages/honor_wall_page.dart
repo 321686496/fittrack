@@ -5,6 +5,7 @@ import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
+import '../l10n/i18n.dart';
 class HonorWallPage extends StatefulWidget {
   const HonorWallPage({super.key});
 
@@ -27,7 +28,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
   }
 
   String _formatDate(int? ts) {
-    if (ts == null) return '已解锁';
+    if (ts == null) return tr(context, '已解锁');
     final d = DateTime.fromMillisecondsSinceEpoch(ts);
     return '${d.year}/${d.month}/${d.day}';
   }
@@ -55,7 +56,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
       body: Column(
         children: [
           PageHeader(
-            title: '荣誉墙',
+            title: tr(context, '荣誉墙'),
             isTabPage: false,
             onBack: () => context.pop(),
           ),
@@ -83,7 +84,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
                         Expanded(
                           child: Column(
                             children: [
-                              Text('已解锁',
+                              Text(tr(context, '已解锁'),
                                   style: TextStyle(
                                       color: colors.textMuted, fontSize: 12)),
                               const SizedBox(height: 4),
@@ -99,7 +100,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
                         Expanded(
                           child: Column(
                             children: [
-                              Text('总徽章',
+                              Text(tr(context, '总徽章'),
                                   style: TextStyle(
                                       color: colors.textMuted, fontSize: 12)),
                               const SizedBox(height: 4),
@@ -117,13 +118,13 @@ class _HonorWallPageState extends State<HonorWallPage> {
                   const SizedBox(height: 24),
                   // 最近解锁大展示
                   if (_unlocked.isNotEmpty) ...[
-                    const SectionHeader(title: '最近解锁'),
+                    SectionHeader(title: tr(context, '最近解锁')),
                     const SizedBox(height: 12),
                     _buildRecentHonor(colors, _unlocked.first),
                     const SizedBox(height: 24),
                   ],
                   // 荣誉墙网格
-                  const SectionHeader(title: '荣誉墙'),
+                  SectionHeader(title: tr(context, '荣誉墙')),
                   const SizedBox(height: 12),
                   _buildHonorGrid(colors),
                   const SizedBox(height: 200),
@@ -177,7 +178,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
                     style: TextStyle(
                         color: colors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
-                Text('解锁于 ${_formatDate(ach.unlockedAt)}',
+                Text(tr(context, '解锁于 ${_formatDate(ach.unlockedAt)}'),
                     style: TextStyle(
                         color: colors.textMuted, fontSize: 12)),
               ],
@@ -198,7 +199,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
               Icon(Icons.emoji_events_outlined,
                   size: 64, color: colors.textMuted.withOpacity(0.5)),
               const SizedBox(height: 16),
-              Text('暂无徽章',
+              Text(tr(context, '暂无徽章'),
                   style: TextStyle(color: colors.textMuted, fontSize: 14)),
             ],
           ),
@@ -233,7 +234,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
         onTap: () => InfoDialog.show(
           context,
           title: ach.title,
-          content: '${ach.description}\n\n解锁于 ${_formatDate(ach.unlockedAt)}',
+          content: tr(context, '${ach.description}\n\n解锁于 ${_formatDate(ach.unlockedAt)}'),
           icon: _iconFor(ach.icon),
           iconColor: colors.accentGlow,
         ),
@@ -300,7 +301,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
       onTap: () => InfoDialog.show(
         context,
         title: ach.title,
-        content: '未解锁\n\n解锁条件：${ach.description}',
+        content: tr(context, '未解锁\n\n解锁条件：${ach.description}'),
         icon: Icons.lock_outline,
         iconColor: colors.textMuted,
       ),
@@ -351,7 +352,7 @@ class _HonorWallPageState extends State<HonorWallPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '未解锁',
+                  tr(context, '未解锁'),
                   style: TextStyle(color: colors.textMuted, fontSize: 11),
                 ),
               ],
@@ -390,13 +391,13 @@ class _HonorWallPageState extends State<HonorWallPage> {
   Widget? _buildPointsBadge(Achievement ach) {
     if (ach.canEarnPoints && ach.pointsReward > 0) {
       return BadgeWidget(
-        text: '+${ach.pointsReward}积分',
+        text: tr(context, '+${ach.pointsReward}积分'),
         variant: BadgeVariant.purple,
       );
     }
     if (!ach.canEarnPoints) {
-      return const BadgeWidget(
-        text: '纯荣誉',
+      return BadgeWidget(
+        text: tr(context, '纯荣誉'),
         variant: BadgeVariant.info,
       );
     }

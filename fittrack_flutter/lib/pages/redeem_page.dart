@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../services/redeem_service.dart';
 import '../widgets/common_widgets.dart';
 
+import '../l10n/i18n.dart';
 class RedeemPage extends StatefulWidget {
   const RedeemPage({super.key});
   @override
@@ -22,16 +23,16 @@ class _RedeemPageState extends State<RedeemPage> {
     String msg;
     switch (result) {
       case RedeemResult.success:
-        msg = '兑换成功！已永久解锁 Pro';
+        msg = tr(context, '兑换成功！已永久解锁 Pro');
         break;
       case RedeemResult.invalidFormat:
-        msg = '格式错误：应为 FITT-XXXX-XXXX-XXXX';
+        msg = tr(context, '格式错误：应为 FITT-XXXX-XXXX-XXXX');
         break;
       case RedeemResult.invalidSignature:
-        msg = '兑换码无效';
+        msg = tr(context, '兑换码无效');
         break;
       case RedeemResult.alreadyRedeemed:
-        msg = '此兑换码已被使用';
+        msg = tr(context, '此兑换码已被使用');
         break;
     }
     if (!mounted) return;
@@ -54,7 +55,7 @@ class _RedeemPageState extends State<RedeemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('兑换 Pro')),
+      appBar: AppBar(title: Text(tr(context, '兑换 Pro'))),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -62,8 +63,8 @@ class _RedeemPageState extends State<RedeemPage> {
           children: [
             const Icon(Icons.card_giftcard, size: 64),
             const SizedBox(height: 16),
-            const Text('输入兑换码以永久解锁 Pro 权益',
-                style: TextStyle(fontSize: 16),
+            Text(tr(context, '输入兑换码以永久解锁 Pro 权益'),
+                style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center),
             const SizedBox(height: 24),
             TextField(
@@ -80,7 +81,7 @@ class _RedeemPageState extends State<RedeemPage> {
               child: _processing
                   ? const SizedBox(height: 20, width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('立即兑换'),
+                  : Text(tr(context, '立即兑换')),
             ),
           ],
         ),
