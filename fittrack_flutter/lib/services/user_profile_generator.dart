@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
@@ -164,6 +165,8 @@ class UserProfileGenerator {
   }
 
   /// 构建头像 Widget
+  /// 若配置包含非空 `avatarPath`（本地图片路径），优先显示自定义头像图片；
+  /// 否则按默认逻辑渲染 emoji + 背景色。
   static Widget buildAvatarWidget(
     Map<String, dynamic> avatarConfig, {
     double size = 60,
@@ -172,6 +175,33 @@ class UserProfileGenerator {
   }) {
     final bgColor = Color(avatarConfig['bgColor'] as int);
     final emoji = avatarConfig['emoji'] as String;
+    final avatarPath = avatarConfig['avatarPath'] as String?;
+
+    final avatar = avatarPath != null && avatarPath.isNotEmpty
+        ? ClipOval(
+            child: Image.file(
+              File(avatarPath),
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: size,
+                height: size,
+                color: bgColor.withOpacity(0.15),
+                alignment: Alignment.center,
+                child: Text(
+                  emoji,
+                  style: TextStyle(fontSize: size * 0.5),
+                ),
+              ),
+            ),
+          )
+        : Center(
+            child: Text(
+              emoji,
+              style: TextStyle(fontSize: size * 0.5),
+            ),
+          );
 
     return Container(
       width: size,
@@ -184,12 +214,8 @@ class UserProfileGenerator {
           width: borderWidth,
         ),
       ),
-      child: Center(
-        child: Text(
-          emoji,
-          style: TextStyle(fontSize: size * 0.5),
-        ),
-      ),
+      padding: EdgeInsets.all(borderWidth),
+      child: avatar,
     );
   }
 }

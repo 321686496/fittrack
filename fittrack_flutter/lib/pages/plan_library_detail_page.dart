@@ -101,7 +101,7 @@ class _PlanLibraryDetailPageState extends State<PlanLibraryDetailPage> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.asset(
-                goalArtAsset(plan.goal) ?? '',
+                plan.coverImage ?? goalArtAsset(plan.goal) ?? '',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),

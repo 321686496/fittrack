@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import '../data/storage.dart';
+import '../themes/app_themes.dart';
 
 class OnboardingCoach extends StatefulWidget {
-  final VoidCallback onComplete;
+  /// 选择部位并确认时回调，参数为所选部位
+  final ValueChanged<String> onComplete;
   final VoidCallback onSkip;
-  /// 用户在选定身体部位后触发的跳转（如进入系统训练计划库）。
-  final VoidCallback onChoosePlan;
   const OnboardingCoach({
     required this.onComplete,
     required this.onSkip,
-    required this.onChoosePlan,
     super.key,
   });
   @override
@@ -17,101 +16,96 @@ class OnboardingCoach extends StatefulWidget {
 }
 
 class _OnboardingCoachState extends State<OnboardingCoach> {
-  int _step = 0;
   String? _selectedPart;
 
   static const _parts = ['胸', '背', '腿', '肩', '手臂', '核心'];
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black54,
-      child: SafeArea(
-        child: Center(
-          child: Container(
-            margin: const EdgeInsets.all(24),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: _buildStep(),
+    final theme = Theme.of(context);
+    final colors = theme.extension<LiftTrackColors>();
+    // 使用主题可读文本色，避免浅色背景下出现白色文字看不清
+    final textPrimary = colors?.textPrimary ?? theme.colorScheme.onSurface;
+    final textSecondary = colors?.textSecondary ?? theme.colorScheme.onSurfaceVariant;
+    final cardColor = colors?.bgCard ?? theme.colorScheme.surface;
+
+    return Center(
+      child: Material(
+        color: cardColor,
+        elevation: 8,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 420),
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '今天练什么部位？',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '选择想练的部位，为你自动搜索合适的训练计划',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(color: textSecondary),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 10,
+                children: _parts.map((p) {
+                  final selected = _selectedPart == p;
+                  return ChoiceChip(
+                    label: Text(p),
+                    selected: selected,
+                    // 显式指定两种状态颜色，避免浅色背景下文字看不清
+                    backgroundColor:
+                        colors?.bgCard ?? theme.colorScheme.surface,
+                    labelStyle: TextStyle(
+                      color: selected ? theme.colorScheme.onPrimary : textPrimary,
+                    ),
+                    selectedColor: theme.colorScheme.primary,
+                    side: BorderSide(
+                      color: selected
+                          ? theme.colorScheme.primary
+                          : (colors?.borderColor ?? Colors.black12),
+                    ),
+                    onSelected: (_) => setState(() => _selectedPart = p),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: widget.onSkip,
+                    child: Text('跳过', style: TextStyle(color: textSecondary)),
+                  ),
+                  FilledButton(
+                    onPressed: _selectedPart == null ? null : _confirm,
+                    child: const Text('搜索训练计划'),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStep() {
-    switch (_step) {
-      case 0:
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('今天练什么部位？',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _parts.map((p) {
-                return ChoiceChip(
-                  label: Text(p),
-                  selected: _selectedPart == p,
-                  onSelected: (_) => setState(() => _selectedPart = p),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(onPressed: widget.onSkip, child: const Text('跳过')),
-                FilledButton(
-                  onPressed: _selectedPart == null
-                      ? null
-                      : () => setState(() => _step = 1),
-                  child: const Text('下一步'),
-                ),
-              ],
-            ),
-          ],
-        );
-      case 1:
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('选择适合你的训练计划',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            Text(
-              '已记录你想练『$_selectedPart』，可前往系统训练计划库，'
-              '按你的目标（增肌/减脂/塑形等）选择针对所需部位的综合训练计划。',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                fontSize: 14,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                    onPressed: () => setState(() => _step = 0),
-                    child: const Text('上一步')),
-                FilledButton(
-                  onPressed: widget.onChoosePlan,
-                  child: const Text('去选择训练计划'),
-                ),
-              ],
-            ),
-          ],
-        );
-      default:
-        return const SizedBox();
-    }
+  void _confirm() {
+    final part = _selectedPart;
+    if (part == null) return;
+    final settings = Storage.getSettings();
+    settings['onboardingV2Done'] = true;
+    Storage.saveSettings(settings);
+    widget.onComplete(part);
   }
 }

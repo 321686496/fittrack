@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/mock_data.dart';
@@ -57,6 +58,33 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     return rem > 0 ? '${h}小时${rem}分钟' : '${h}小时';
   }
 
+  /// 三级反查动作名：自定义动作库 → 计划内嵌动作 → 内置动作
+  Map<String, String> _buildExerciseNameLookup() {
+    final lookup = <String, String>{};
+    for (final ex in Storage.getCustomExercises()) {
+      final id = ex['id']?.toString() ?? '';
+      final name = ex['name']?.toString() ?? '';
+      if (id.isNotEmpty && name.isNotEmpty) lookup[id] = name;
+    }
+    for (final plan in Storage.getPlans()) {
+      final days = plan['days'] as List? ?? [];
+      for (final day in days) {
+        final exercises = (day as Map)['exercises'] as List? ?? [];
+        for (final ex in exercises) {
+          final id = ex['id']?.toString() ?? '';
+          final name = ex['name']?.toString() ?? '';
+          if (id.isNotEmpty && name.isNotEmpty) lookup[id] = name;
+        }
+      }
+    }
+    for (final ex in MockData.exercises) {
+      final id = ex['id']?.toString() ?? '';
+      final name = ex['name']?.toString() ?? '';
+      if (id.isNotEmpty && name.isNotEmpty) lookup[id] = name;
+    }
+    return lookup;
+  }
+
   void _deleteRecord(String recordId) async {
     final confirmed = await ConfirmDialog.show(
       context,
@@ -68,7 +96,8 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
     if (confirmed == true) {
       Storage.deleteRecord(recordId);
-      if (mounted) context.go('/records');
+      // 返回来源页（列表页会自动刷新，首页也会刷新）
+      if (mounted) context.pop();
     }
   }
 
@@ -84,7 +113,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
           backgroundColor: colors.bgSecondary,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/records'),
+            onPressed: () => context.pop(),
           ),
         ),
         body: Center(
@@ -97,8 +126,8 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                   style: TextStyle(color: colors.textSecondary, fontSize: 16)),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => context.go('/records'),
-                child: const Text('返回记录页'),
+                onPressed: () => context.pop(),
+                child: const Text('返回'),
               ),
             ],
           ),
@@ -114,13 +143,29 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     final restLog = record['restLog'] as List? ?? [];
     final pureDuration = record['pureDuration'] as num?;
     // setRecords 的 key 是动作 id，需要解析成动作名展示
-    final exLookup = <String, String>{};
-    for (final ex in MockData.exercises) {
-      exLookup[ex['id'] as String] = ex['name'] as String;
-    }
+    final exLookup = _buildExerciseNameLookup();
     final exerciseNames = setRecords.keys
-        .map((k) => exLookup[k.toString()] ?? k.toString())
+        .map((k) => exLookup[k.toString()] ?? '未知动作')
         .toList();
+
+    // 容量分析数据（仅含有实际组数的动作）
+    final volumeData = <Map<String, dynamic>>[];
+    for (final entry in setRecords.entries) {
+      // 值可能非 List（历史/导入的畸形数据），类型不匹配时按无组数据处理
+      final setsList = entry.value is List ? entry.value as List : const [];
+      if (setsList.isEmpty) continue;
+      double vol = 0;
+      for (final s in setsList) {
+        if (s is Map) {
+          vol += ((s['weight'] as num?) ?? 0).toDouble() *
+              ((s['reps'] as num?) ?? 0).toDouble();
+        }
+      }
+      volumeData.add({
+        'name': exLookup[entry.key.toString()] ?? '未知动作',
+        'volume': vol,
+      });
+    }
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -132,7 +177,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.go('/records'),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SingleChildScrollView(
@@ -205,6 +250,12 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               ),
             ),
 
+            // 容量分析图表
+            if (volumeData.length > 1) ...[
+              const SizedBox(height: 20),
+              _buildVolumeChartCard(colors, volumeData),
+            ],
+
             // 动作详情列表
             if (exerciseNames.isNotEmpty) ...[
               const SizedBox(height: 20),
@@ -212,7 +263,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               const SizedBox(height: 12),
               ...setRecords.entries.map((entry) {
                 final exId = entry.key.toString();
-                final exName = exLookup[exId] ?? exId;
+                final exName = exLookup[exId] ?? '未知动作';
                 return _buildExerciseDetailCard(colors, exName, entry.value);
               }),
             ],
@@ -292,6 +343,22 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
       }
     }
 
+    // 汇总统计：总容量 / 最重组 / 总次数
+    double totalVolume = 0;
+    int totalReps = 0;
+    double bestWeight = 0;
+    int bestReps = 0;
+    for (final s in sets) {
+      final w = (s['weight'] as num?)?.toDouble() ?? 0;
+      final r = (s['reps'] as num?)?.toInt() ?? 0;
+      totalVolume += w * r;
+      totalReps += r;
+      if (w > bestWeight || (w == bestWeight && r > bestReps)) {
+        bestWeight = w;
+        bestReps = r;
+      }
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -307,7 +374,6 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             decoration: BoxDecoration(
               color: colors.accentGlow.withOpacity(0.06),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              border: Border(bottom: BorderSide(color: colors.borderColor)),
             ),
             child: Row(
               children: [
@@ -341,6 +407,29 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               ],
             ),
           ),
+          Container(height: 1, color: colors.borderColor),
+          if (sets.isNotEmpty)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                      color: colors.borderColor.withOpacity(0.5)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  _buildSummaryStat(
+                      colors, '总容量', '${_fmtKg(totalVolume)}kg'),
+                  _buildSummaryDivider(colors),
+                  _buildSummaryStat(
+                      colors, '最重组', '${_fmtKg(bestWeight)}kg×$bestReps'),
+                  _buildSummaryDivider(colors),
+                  _buildSummaryStat(colors, '总次数', '$totalReps次'),
+                ],
+              ),
+            ),
           if (sets.isNotEmpty)
             ...sets.asMap().entries.map((entry) {
               final idx = entry.key;
@@ -438,6 +527,167 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                 style: TextStyle(color: colors.textMuted, fontSize: 13),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  /// 数值格式化：整数不带小数点，小数保留 1 位
+  String _fmtKg(double v) =>
+      v == v.truncateToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+
+  Widget _buildSummaryStat(
+      LiftTrackColors colors, String label, String value) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(label,
+              style: TextStyle(color: colors.textMuted, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryDivider(LiftTrackColors colors) {
+    return Container(
+      width: 1,
+      height: 26,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      color: colors.borderColor.withOpacity(0.6),
+    );
+  }
+
+  Widget _buildVolumeChartCard(
+      LiftTrackColors colors, List<Map<String, dynamic>> data) {
+    final totalVolume = data.fold<double>(
+        0, (sum, e) => sum + ((e['volume'] as num?) ?? 0).toDouble());
+    final maxVol = data
+        .map((e) => ((e['volume'] as num?) ?? 0).toDouble())
+        .reduce((a, b) => a > b ? a : b);
+
+    final barGroups = <BarChartGroupData>[];
+    for (var i = 0; i < data.length; i++) {
+      barGroups.add(BarChartGroupData(
+        x: i,
+        barRods: [
+          BarChartRodData(
+            toY: ((data[i]['volume'] as num?) ?? 0).toDouble(),
+            color: colors.accentGlow,
+            width: 18,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(4)),
+          ),
+        ],
+      ));
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(child: SectionHeader(title: '容量分析')),
+              Text(
+                '合计 ${_fmtKg(totalVolume)}kg',
+                style: TextStyle(
+                  color: colors.accentGlow,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: BarChart(BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: maxVol <= 0 ? 1 : maxVol * 1.15,
+              minY: 0,
+              barGroups: barGroups,
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                getDrawingHorizontalLine: (v) =>
+                    FlLine(color: colors.borderColor, strokeWidth: 1),
+              ),
+              borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipItem: (group, groupIdx, rod, rodIdx) =>
+                      BarTooltipItem(
+                    '${data[groupIdx]['name']}\n${_fmtKg(rod.toY)}kg',
+                    TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              titlesData: FlTitlesData(
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 36,
+                    interval: maxVol > 0 ? maxVol / 3 : 1,
+                    getTitlesWidget: (v, meta) => SideTitleWidget(
+                      axisSide: meta.axisSide,
+                      child: Text(
+                        _fmtKg(v),
+                        style: TextStyle(
+                            color: colors.textSecondary, fontSize: 10),
+                      ),
+                    ),
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28,
+                    getTitlesWidget: (v, meta) {
+                      final idx = v.toInt();
+                      if (idx < 0 || idx >= data.length) {
+                        return const SizedBox.shrink();
+                      }
+                      final name = data[idx]['name'].toString();
+                      final label =
+                          name.length > 4 ? '${name.substring(0, 4)}…' : name;
+                      return SideTitleWidget(
+                        axisSide: meta.axisSide,
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          style: TextStyle(
+                              color: colors.textSecondary, fontSize: 10),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            )),
+          ),
         ],
       ),
     );

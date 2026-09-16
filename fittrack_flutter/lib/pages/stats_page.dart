@@ -208,8 +208,35 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
 
   // ── Compute personal records ─────────────────────────────────
 
+  /// 构建 动作id → 动作名称 的映射，将动作代码转换为友好名称
+  Map<String, String> _buildExerciseNameLookup() {
+    final lookup = <String, String>{};
+    for (final ex in MockData.exercises) {
+      final id = ex['id']?.toString() ?? '';
+      final name = ex['name']?.toString() ?? '';
+      if (id.isNotEmpty && name.isNotEmpty) lookup[id] = name;
+    }
+    for (final plan in Storage.getPlans()) {
+      final days = plan['days'] as List? ?? [];
+      for (final day in days) {
+        final dayMap = day as Map;
+        final exercises = dayMap['exercises'] as List? ?? [];
+        for (final ex in exercises) {
+          final exMap = ex as Map;
+          final id = exMap['id']?.toString() ?? '';
+          final name = exMap['name']?.toString() ?? '';
+          if (id.isNotEmpty && name.isNotEmpty && !lookup.containsKey(id)) {
+            lookup[id] = name;
+          }
+        }
+      }
+    }
+    return lookup;
+  }
+
   void _computePersonalRecords() {
     final allSets = <Map<String, dynamic>>[];
+    final exLookup = _buildExerciseNameLookup();
 
     for (final r in _records) {
       final sr = r['setRecords'];
@@ -229,8 +256,8 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
           final weight = (sm['weight'] as num?) ?? 0;
           if (weight.toDouble() > 0) {
             allSets.add({
-              // 个人记录显示动作代码（关键字/id），而非动作名称
-              'name': exId,
+              // 个人记录显示动作名称，找不到时回退到动作代码
+              'name': exLookup[exId] ?? exId,
               'weight': weight.toDouble(),
               'reps': (sm['reps'] as num?) ?? 0,
               'date': dateStr,
@@ -301,25 +328,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
         counts[exId] = (counts[exId] ?? 0) + 1;
       }
     }
-    final exLookup = <String, String>{};
-    for (final ex in MockData.exercises) {
-      exLookup[ex['id'] as String] = ex['name'] as String;
-    }
-    for (final plan in Storage.getPlans()) {
-      final days = plan['days'] as List? ?? [];
-      for (final day in days) {
-        final dayMap = day as Map;
-        final exercises = dayMap['exercises'] as List? ?? [];
-        for (final ex in exercises) {
-          final exMap = ex as Map;
-          final id = exMap['id']?.toString() ?? '';
-          final name = exMap['name']?.toString() ?? '';
-          if (id.isNotEmpty && name.isNotEmpty && !exLookup.containsKey(id)) {
-            exLookup[id] = name;
-          }
-        }
-      }
-    }
+    final exLookup = _buildExerciseNameLookup();
     final list = counts.entries.map((e) {
       return {
         'name': exLookup[e.key] ?? e.key,

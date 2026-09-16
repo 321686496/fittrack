@@ -30,8 +30,34 @@ class PosterGenerator {
     double pixelRatio = 2.0,
     String fileNamePrefix = 'fittrack_poster',
   }) async {
+    // 等待 RepaintBoundary 真正挂载，避免 OverlayEntry 刚插入、首帧尚未
+    // build 时 currentContext 为 null，导致下面第 33 行的 `!` 直接抛
+    // "Null check operator used on a null value"。
+    // 参照可工作的 share_card_service.dart：insert 后 endOfFrame 再截图。
+    // 此处把等待收敛进 capture 内，统一保护所有调用方（动作分享、海报等）。
+    for (int i = 0; i < 30; i++) {
+      if (boundaryKey.currentContext != null) break;
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 30));
+    }
     final boundary = boundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
+    // 预解码品牌 logo，避免离屏截图时 Image.asset 仍未解码完成，
+    // 导致海报顶部 logo 处显示为空白/白色圆角矩形。
+    try {
+      final ctx = boundaryKey.currentContext;
+      if (ctx != null) {
+        await precacheImage(
+          const AssetImage('assets/images/logo.png'),
+          ctx,
+        );
+        // precacheImage 只把图放入缓存，不会触发已挂载的 Image.asset
+        // 重新布局/绘制。等两帧，让 logo 的 RenderImage 用新图重绘，
+        // 确保 toImage 截图时 logo 已真实渲染出来。
+        await WidgetsBinding.instance.endOfFrame;
+        await WidgetsBinding.instance.endOfFrame;
+      }
+    } catch (_) {}
     // 等待 paint 完成：
     // - showDialog 触发的新帧会让 debugNeedsPaint 重新变为 true
     // - QrImageView 等异步组件需要额外帧才能完成渲染

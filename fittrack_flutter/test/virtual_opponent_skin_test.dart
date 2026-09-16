@@ -14,7 +14,7 @@ void main() {
   });
 
   group('VirtualOpponent.appliedSkinId', () {
-    test('无解锁时返回空串', () {
+    test('无解锁时返回默认男性角色', () {
       final opp = VirtualOpponent(
         id: 'test1',
         nickname: '测试',
@@ -22,7 +22,7 @@ void main() {
         avatarSeed: 'avatar_1',
         persona: '测试人设',
       );
-      expect(opp.appliedSkinId, '');
+      expect(opp.appliedSkinId, 'default_male');
     });
 
     test('unlockedOpponentSkin=true 时返回 skin_ambassador', () {

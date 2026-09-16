@@ -67,6 +67,13 @@ class MainActivity : FlutterActivity() {
         )
         romAdaptationChannel?.setMethodCallHandler(RomAdaptationHandler(this))
 
+        // Device Identity 通道（持久设备 ID，邀请码防刷身份）
+        val deviceIdentityChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            DeviceIdentityHandler.CHANNEL_NAME
+        )
+        deviceIdentityChannel.setMethodCallHandler(DeviceIdentityHandler(this))
+
         // LiveView Channel（休息倒计时前台服务）
         val liveViewChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,

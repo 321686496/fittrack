@@ -1,7 +1,8 @@
 // lib/services/max_weight_service.dart
-// MaxWeightService：扫描训练记录中的所有 exercises[].sets[].weight，
+// MaxWeightService：扫描训练记录中的 setRecords（{动作id: [{weight, reps, ...}]}），
 // 提供全局最大重量 + 按部位分组的 Top N 动作。
 import '../data/storage.dart';
+import '../data/mock_data.dart';
 
 class MaxWeightRecord {
   final String exerciseName;
@@ -19,31 +20,35 @@ class MaxWeightRecord {
   });
 }
 
+/// 单条记录内单个动作的最大重量条目（内部解析用）
+class _ExerciseMax {
+  final String name;
+  final String group;
+  final double weight;
+  _ExerciseMax(this.name, this.group, this.weight);
+}
+
 class MaxWeightService {
   static final MaxWeightService instance = MaxWeightService._();
   MaxWeightService._();
 
-  /// 获取全局最大重量（扫描所有训练记录的所有 sets）
+  /// 获取全局最大重量（扫描所有训练记录的所有动作）
   MaxWeightRecord? getGlobalMax() {
     final records = Storage.getRecords();
+    final lookup = _buildExerciseLookup();
     MaxWeightRecord? best;
     for (final r in records) {
-      final exercises = r['exercises'] as List? ?? [];
-      for (final e in exercises) {
-        if (e is! Map) continue;
-        final sets = e['sets'] as List? ?? [];
-        for (final s in sets) {
-          if (s is! Map) continue;
-          final weight = (s['weight'] as num?)?.toDouble() ?? 0;
-          if (weight > 0 && (best == null || weight > best.weight)) {
-            best = MaxWeightRecord(
-              exerciseName: (e['name'] as String?) ?? '',
-              weight: weight,
-              muscleGroup: _inferMuscleGroup((e['name'] as String?) ?? ''),
-              date: DateTime.fromMillisecondsSinceEpoch(_readTimestamp(r)),
-              recordId: r['id'] as String?,
-            );
-          }
+      final date = DateTime.fromMillisecondsSinceEpoch(_readTimestamp(r));
+      final recordId = r['id'] as String?;
+      for (final m in _extractRecordMaxWeights(r, lookup)) {
+        if (best == null || m.weight > best.weight) {
+          best = MaxWeightRecord(
+            exerciseName: m.name,
+            weight: m.weight,
+            muscleGroup: m.group,
+            date: date,
+            recordId: recordId,
+          );
         }
       }
     }
@@ -66,29 +71,19 @@ class MaxWeightService {
   Map<String, List<MaxWeightRecord>> getTopByMuscleGroup({int limit = 5}) {
     final Map<String, List<MaxWeightRecord>> grouped = {};
     final records = Storage.getRecords();
+    final lookup = _buildExerciseLookup();
     for (final r in records) {
-      final exercises = r['exercises'] as List? ?? [];
-      for (final e in exercises) {
-        if (e is! Map) continue;
-        final name = (e['name'] as String?) ?? '';
-        final group = _inferMuscleGroup(name);
-        final sets = e['sets'] as List? ?? [];
-        double maxW = 0;
-        for (final s in sets) {
-          if (s is! Map) continue;
-          final w = (s['weight'] as num?)?.toDouble() ?? 0;
-          if (w > maxW) maxW = w;
-        }
-        if (maxW > 0) {
-          grouped.putIfAbsent(group, () => []);
-          grouped[group]!.add(MaxWeightRecord(
-            exerciseName: name,
-            weight: maxW,
-            muscleGroup: group,
-            date: DateTime.fromMillisecondsSinceEpoch(_readTimestamp(r)),
-            recordId: r['id'] as String?,
-          ));
-        }
+      final date = DateTime.fromMillisecondsSinceEpoch(_readTimestamp(r));
+      final recordId = r['id'] as String?;
+      for (final m in _extractRecordMaxWeights(r, lookup)) {
+        grouped.putIfAbsent(m.group, () => []);
+        grouped[m.group]!.add(MaxWeightRecord(
+          exerciseName: m.name,
+          weight: m.weight,
+          muscleGroup: m.group,
+          date: date,
+          recordId: recordId,
+        ));
       }
     }
     // 每组按重量倒序取 Top N
@@ -97,6 +92,70 @@ class MaxWeightService {
       list.sort((a, b) => b.weight.compareTo(a.weight));
       result[key] = list.take(limit).toList();
     });
+    return result;
+  }
+
+  /// 构建动作 id → {name, category} 查找表。
+  /// MockData 提供基础动作的分类，用户计划中的动作（含自定义动作）名称优先。
+  static Map<String, Map<String, String>> _buildExerciseLookup() {
+    final lookup = <String, Map<String, String>>{};
+    for (final ex in MockData.exercises) {
+      final id = ex['id']?.toString();
+      if (id == null) continue;
+      lookup[id] = {
+        'name': ex['name']?.toString() ?? id,
+        'category': ex['category']?.toString() ?? '',
+      };
+    }
+    for (final p in Storage.getPlans()) {
+      final days = p['days'] as List?;
+      if (days == null) continue;
+      for (final d in days) {
+        if (d is! Map) continue;
+        for (final ex in (d['exercises'] as List? ?? [])) {
+          if (ex is! Map) continue;
+          final id = ex['id']?.toString();
+          if (id == null) continue;
+          final name = ex['name']?.toString();
+          final category = ex['category']?.toString();
+          final prev = lookup[id];
+          lookup[id] = {
+            'name': (name != null && name.isNotEmpty) ? name : (prev?['name'] ?? id),
+            'category':
+                (category != null && category.isNotEmpty) ? category : (prev?['category'] ?? ''),
+          };
+        }
+      }
+    }
+    return lookup;
+  }
+
+  /// 解析单条记录中每个动作的最大重量。
+  /// setRecords = {动作id: [{weight, reps, ...}]}（训练页保存格式）
+  static List<_ExerciseMax> _extractRecordMaxWeights(
+    Map<String, dynamic> r,
+    Map<String, Map<String, String>> lookup,
+  ) {
+    final result = <_ExerciseMax>[];
+    final setRecords = r['setRecords'];
+    if (setRecords is! Map) return result;
+
+    for (final entry in setRecords.entries) {
+      final exId = entry.key.toString();
+      final info = lookup[exId];
+      final name = info?['name'] ?? exId;
+      var group = info?['category'] ?? '';
+      if (group.isEmpty || !kMuscleGroups.contains(group)) {
+        group = _inferMuscleGroup(name);
+      }
+      double maxW = 0;
+      for (final s in (entry.value as List? ?? [])) {
+        if (s is! Map) continue;
+        final w = (s['weight'] as num?)?.toDouble() ?? 0;
+        if (w > maxW) maxW = w;
+      }
+      if (maxW > 0) result.add(_ExerciseMax(name, group, maxW));
+    }
     return result;
   }
 

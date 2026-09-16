@@ -1,0 +1,13 @@
+﻿[生成] course_beginner_bulk (attempt 1)
+  [失败] HTTP 451: {'error': {'code': 'image_safety', 'message': 'The generated image was filtered by the safety policy. Please adjust your prompt and try again.', 'type': 'invalid_request_error'}}
+[生成] course_beginner_bulk (attempt 2)
+  [失败] HTTP 451: {'error': {'code': 'image_safety', 'message': 'The generated image was filtered by the safety policy. Please adjust your prompt and try again.', 'type': 'invalid_request_error'}}
+[生成] course_beginner_bulk (attempt 3)
+  [失败] HTTP 451: {'error': {'code': 'image_safety', 'message': 'The generated image was filtered by the safety policy. Please adjust your prompt and try again.', 'type': 'invalid_request_error'}}
+[生成] course_cut_diet (attempt 1)
+  [失败] 文件校验未通过 110611B
+[生成] course_intermediate_shape (attempt 1)
+  [失败] 文件校验未通过 86045B
+[生成] course_strength_basic (attempt 1)
+[完成] course_strength_basic
+[生成] course_keep_health (attempt 1)

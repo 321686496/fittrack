@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../themes/app_themes.dart';
 import '../services/invitation_service.dart';
+import '../services/device_identity_service.dart';
 import '../services/clipboard_invite_service.dart';
 import 'common_widgets.dart';
 
@@ -116,6 +117,10 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
   Future<void> _activate() async {
     setState(() => _activating = true);
 
+    // OHOS：激活前先确保持久设备标识就绪（OAID 授权），确保防刷身份跨重装稳定；
+    // 用户拒绝授权时静默回退，不阻塞激活
+    await DeviceIdentityService.instance.ensurePersistentDeviceId();
+
     final result = await InvitationService.instance
         .activateInvitationCode(widget.inviteCode);
 
@@ -141,6 +146,9 @@ class _InviteActivationBannerState extends State<InviteActivationBanner> {
         break;
       case InvitationResult.alreadyActivated:
         msg = '已激活过邀请码';
+        break;
+      case InvitationResult.mutualInvite:
+        msg = '你们已互相邀请过，不能重复绑定';
         break;
     }
 

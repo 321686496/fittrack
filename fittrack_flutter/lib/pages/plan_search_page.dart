@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/system_plan_library.dart';
@@ -12,7 +12,10 @@ import '../widgets/common_widgets.dart';
 /// 搜索维度：name / goal / difficulty / trainingType / tags / suitableFor
 /// 数据源：5 个目标 getByGoal 合并全量
 class PlanSearchPage extends StatefulWidget {
-  const PlanSearchPage({super.key});
+  /// 首次进入时自动搜索的关键词（如训练部位"胸"），为空则显示默认落地页。
+  const PlanSearchPage({super.key, this.initialKeyword});
+
+  final String? initialKeyword;
 
   @override
   State<PlanSearchPage> createState() => _PlanSearchPageState();
@@ -40,7 +43,14 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
     super.initState();
     _loadHistory();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
+      final keyword = widget.initialKeyword?.trim() ?? '';
+      if (keyword.isNotEmpty) {
+        // 带初始关键词：自动搜索，不弹键盘
+        _controller.text = keyword;
+        _doSearch(keyword);
+      } else {
+        _focusNode.requestFocus();
+      }
     });
   }
 
@@ -119,6 +129,10 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
           final trainingTypeRaw = p.trainingType.toLowerCase();
           final tags = p.tags.map((t) => t.toLowerCase()).join(' ');
           final suitableFor = p.suitableFor.toLowerCase();
+          // 计划各训练日覆盖的部位（如"胸部/胸部塑形"），支持按部位搜索
+          final coveredMuscles = p.days
+              .expand((d) => [d.muscle.toLowerCase(), d.label.toLowerCase()])
+              .join(' ');
           final hit = name.contains(q) ||
               goal.contains(q) ||
               goalRaw.contains(q) ||
@@ -127,7 +141,8 @@ class _PlanSearchPageState extends State<PlanSearchPage> {
               trainingType.contains(q) ||
               trainingTypeRaw.contains(q) ||
               tags.contains(q) ||
-              suitableFor.contains(q);
+              suitableFor.contains(q) ||
+              coveredMuscles.contains(q);
           if (!hit) return false;
         }
         // 筛选条件

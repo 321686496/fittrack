@@ -14,6 +14,8 @@ import { notificationManager } from '@kit.NotificationKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { systemShare } from '@kit.ShareKit';
 import { fileUri } from '@kit.CoreFileKit';
+import { scanBarcode, scanCore } from '@kit.ScanKit';
+import { identifier } from '@kit.AdsKit';
 import fs from '@ohos.file.fs';
 
 const PREFERENCES_NAME: string = 'fittrack_form_data';
@@ -21,6 +23,8 @@ const KEY_FORM_DATA: string = 'form_data';
 const FORM_CHANNEL_NAME: string = 'com.lt.lifttrack/form';
 const REMINDER_CHANNEL_NAME: string = 'com.lt.lifttrack/reminder';
 const POSTER_CHANNEL_NAME: string = 'com.lt.lifttrack/poster';
+const SCAN_CHANNEL_NAME: string = 'com.lt.lifttrack/scan';
+const DEVICE_IDENTITY_CHANNEL_NAME: string = 'com.lt.lifttrack/device_identity';
 const REST_LIVE_VIEW_ID: number = 30001;
 
 const CAPSULE_ICON: string = 'liveview_icon.png';
@@ -278,6 +282,8 @@ export default class EntryAbility extends FlutterAbility {
   private formChannel: MethodChannel | null = null;
   private reminderChannel: MethodChannel | null = null;
   private posterChannel: MethodChannel | null = null;
+  private scanChannel: MethodChannel | null = null;
+  private deviceIdentityChannel: MethodChannel | null = null;
 
   private restEndTime: number = 0;
   private totalRestSeconds: number = 0;
@@ -325,6 +331,23 @@ export default class EntryAbility extends FlutterAbility {
       StandardMethodCodec.INSTANCE
     );
     this.posterChannel.setMethodCallHandler(new PosterShareHandler(this));
+
+    this.scanChannel = new MethodChannel(
+      flutterEngine.getDartExecutor().getBinaryMessenger(),
+      SCAN_CHANNEL_NAME,
+      StandardMethodCodec.INSTANCE
+    );
+    this.scanChannel.setMethodCallHandler(new ScanCallHandler(this));
+
+    // 持久设备标识（邀请有礼防刷身份）：OHOS 使用 OAID（开放匿名设备标识符）
+    // - getPersistentDeviceId: 直接调 getOAID()，未授权时返回全 0（由 Dart 侧过滤）
+    // - requestTrackingPermission: 请求 APP_TRACKING_CONSENT（user_grant，弹窗授权）
+    this.deviceIdentityChannel = new MethodChannel(
+      flutterEngine.getDartExecutor().getBinaryMessenger(),
+      DEVICE_IDENTITY_CHANNEL_NAME,
+      StandardMethodCodec.INSTANCE
+    );
+    this.deviceIdentityChannel.setMethodCallHandler(new DeviceIdentityCallHandler(this));
 
     // 应用启动时主动请求通知权限 + 预创建 SOCIAL_COMMUNICATION 渠道
     // 横幅通知开关由用户在系统设置中控制，应用无法通过 API 强制开启，
@@ -1092,7 +1115,10 @@ export default class EntryAbility extends FlutterAbility {
       title: opts.title,
       content: opts.content,
       notificationId: opts.notificationId,
-      groupId: opts.groupId,
+      // 注意：ReminderRequestTimer 在真机上不支持 groupId 字段。加上会导致
+      // publishReminder 被系统拒绝（返回错误），出现"调度成功返回 true、
+      // 提醒却永不触发"的情况。取消/清理统一走持久化的 reminderId，
+      // 与已验证可用的休息提醒保持完全一致的结构。
       slotType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
       wantAgent: {
         pkgName: bundleInfo.name,
@@ -1414,6 +1440,130 @@ class ReminderCallHandler implements MethodCallHandler {
         // 仍由原生侧主动调用，无需 Flutter → 原生
         result.notImplemented();
         break;
+    }
+  }
+}
+
+/// 处理 Flutter → 原生的扫码调用（scanChannel）
+///
+/// OHOS 上 mobile_scanner 无原生实现，相机扫码改为调用 HarmonyOS 系统
+/// Scan Kit 的默认界面扫码（scanBarcode.startScanForResult）：
+/// - 相机权限由系统扫码界面预授权，调用期间处于安全访问状态，无需应用申请
+/// - 扫码界面自带相册识码入口（enableAlbum: true）
+///
+/// 方法：startScan
+/// - 成功：result.success(originalValue)
+/// - 用户取消：result.error('USER_CANCELED', ...)
+/// - 启动/识别失败：result.error('SCAN_FAILED', ...)
+class ScanCallHandler implements MethodCallHandler {
+  private ability: EntryAbility;
+
+  constructor(ability: EntryAbility) {
+    this.ability = ability;
+  }
+
+  onMethodCall(call: MethodCall, result: MethodResult): void {
+    if (call.method === 'startScan') {
+      this.startScan(result);
+    } else {
+      result.notImplemented();
+    }
+  }
+
+  /// 启动系统扫码界面
+  private startScan(result: MethodResult): void {
+    try {
+      const options: scanBarcode.ScanOptions = {
+        scanTypes: [scanCore.ScanType.ALL],
+        enableMultiMode: true,
+        enableAlbum: true,
+      };
+      scanBarcode.startScanForResult(this.ability.context, options,
+        (err: BusinessError, data: scanBarcode.ScanResult) => {
+          if (err) {
+            console.error(`[FitTrack] ScanKit 扫码失败: code=${err.code}, msg=${err.message}`);
+            // 1000500002：用户取消扫码
+            if (err.code === 1000500002) {
+              result.error('USER_CANCELED', '用户取消扫码', null);
+            } else {
+              result.error('SCAN_FAILED', `code=${err.code}, msg=${err.message}`, null);
+            }
+            return;
+          }
+          const raw: string = data.originalValue;
+          console.info(`[FitTrack] ScanKit 扫码成功, len=${raw.length}`);
+          result.success(raw);
+        });
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] ScanKit 启动扫码异常: code=${err.code}, msg=${err.message}`);
+      result.error('SCAN_FAILED', `code=${err.code}, msg=${err.message}`, null);
+    }
+  }
+}
+
+/// 处理 Flutter → 原生的持久设备标识调用（deviceIdentityChannel）
+///
+/// OHOS 使用 OAID（开放匿名设备标识符，@kit.AdsKit 的 identifier.getOAID）：
+/// - OAID 是设备级匿名标识，卸载重装后不变（仅恢复出厂/用户重置才变），
+///   用于邀请有礼模块的防刷身份，替代 Android 的 ANDROID_ID / iOS 的 identifierForVendor
+/// - getPersistentDeviceId：直接返回 getOAID() 结果；未授权/跨应用关联关闭时
+///   系统返回全 0（00000000-0000-0000-0000-000000000000），由 Dart 侧过滤后回退随机 deviceId
+/// - requestTrackingPermission：请求 ohos.permission.APP_TRACKING_CONSENT（user_grant）
+///   已授权时直接返回 true 不再弹窗；未授权时弹窗由用户决定
+class DeviceIdentityCallHandler implements MethodCallHandler {
+  private ability: EntryAbility;
+
+  constructor(ability: EntryAbility) {
+    this.ability = ability;
+  }
+
+  onMethodCall(call: MethodCall, result: MethodResult): void {
+    if (call.method === 'getPersistentDeviceId') {
+      this.getPersistentDeviceId(result);
+    } else if (call.method === 'requestTrackingPermission') {
+      this.requestTrackingPermission(result);
+    } else {
+      result.notImplemented();
+    }
+  }
+
+  /// 获取开放匿名设备标识符（OAID）
+  private getPersistentDeviceId(result: MethodResult): void {
+    identifier.getOAID().then((oaid: string) => {
+      console.info(`[FitTrack] getOAID=${oaid}`);
+      result.success(oaid);
+    }).catch((err: BusinessError) => {
+      console.error(`[FitTrack] getOAID 失败: code=${err.code}, msg=${err.message}`);
+      // 获取失败返回空串，Dart 侧回退随机 deviceId
+      result.success('');
+    });
+  }
+
+  /// 请求 APP_TRACKING_CONSENT 授权（已授权直接返回，未授权弹窗）
+  private async requestTrackingPermission(result: MethodResult): Promise<void> {
+    try {
+      const atManager = abilityAccessCtrl.createAtManager();
+      const tokenId: number = this.ability.context.applicationInfo.accessTokenId;
+      const status = await atManager.checkAccessToken(tokenId, 'ohos.permission.APP_TRACKING_CONSENT');
+      console.info(`[FitTrack] APP_TRACKING_CONSENT status=${status}`);
+
+      if (status === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+        result.success(true);
+        return;
+      }
+
+      const context = this.ability.context as common.UIAbilityContext;
+      const grantStatus = await atManager.requestPermissionsFromUser(
+        context, ['ohos.permission.APP_TRACKING_CONSENT']);
+      const granted = grantStatus.authResults.length > 0 &&
+        grantStatus.authResults[0] === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
+      console.info(`[FitTrack] requestTrackingPermission result=${granted}`);
+      result.success(granted);
+    } catch (e) {
+      const err: BusinessError = e as BusinessError;
+      console.error(`[FitTrack] requestTrackingPermission 异常: code=${err.code}, msg=${err.message}`);
+      result.success(false);
     }
   }
 }

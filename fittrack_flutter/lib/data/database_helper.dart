@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const String _dbName = 'fittrack.db';
-  static const int _dbVersion = 10;
+  static const int _dbVersion = 11;
 
   Database? _database;
 
@@ -85,6 +85,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         gymName TEXT NOT NULL DEFAULT '',
+        address TEXT NOT NULL DEFAULT '',
         cardType TEXT NOT NULL DEFAULT '',
         price REAL NOT NULL DEFAULT 0,
         startDate INTEGER NOT NULL DEFAULT 0,
@@ -163,6 +164,7 @@ class DatabaseHelper {
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
           gymName TEXT NOT NULL DEFAULT '',
+          address TEXT NOT NULL DEFAULT '',
           cardType TEXT NOT NULL DEFAULT '',
           price REAL NOT NULL DEFAULT 0,
           startDate INTEGER NOT NULL DEFAULT 0,
@@ -278,6 +280,14 @@ class DatabaseHelper {
       // INSERT/UPDATE 抛 no such column 异常，表单保存静默失败。
       await db.execute(
           "ALTER TABLE plans ADD COLUMN gender TEXT NOT NULL DEFAULT 'all'");
+    }
+    if (oldVersion < 11) {
+      // gym_cards 表新增 address 列（健身房详细地址）
+      // 修复：gym_card_page 一直写入 address，但 schema 缺失导致
+      // INSERT/UPDATE 抛 no such column 异常，健身卡仅存在于内存缓存、
+      // 未持久化到 SQLite，重启后数据丢失。
+      await db.execute(
+          "ALTER TABLE gym_cards ADD COLUMN address TEXT NOT NULL DEFAULT ''");
     }
   }
 
@@ -538,6 +548,11 @@ class DatabaseHelper {
   Future<int> deleteNote(String id) async {
     final db = await database;
     return db.delete('notes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteAllNotes() async {
+    final db = await database;
+    return db.delete('notes');
   }
 
   Map<String, dynamic> _noteRowToMap(Map<String, Object?> row) {

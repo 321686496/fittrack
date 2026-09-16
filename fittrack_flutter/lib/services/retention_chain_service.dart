@@ -18,7 +18,10 @@ class RetentionChainService {
   static final RetentionChainService instance = RetentionChainService._();
   RetentionChainService._();
 
-  static const int _notificationId = 3001;
+  // 必须与 DailyReminderService(_notificationId=3001) 区分，避免 Android 上
+  // AlarmManager 按通知 ID 后写覆盖先写，导致留存态即时推送把每日训练提醒的
+  // 定时闹钟覆盖掉（每日训练提醒从此不触发）。
+  static const int _notificationId = 5001;
   static const String _channelId = 'retention_chain_channel';
   static const String _channelName = '新手留存提醒';
   static const String _channelDesc = '新手7天留存链定时提醒';

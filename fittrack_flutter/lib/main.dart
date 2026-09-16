@@ -57,8 +57,9 @@ void main() {
         Storage.getGymCardsAsync(),
         Storage.getNotesAsync(),
       ]);
-      // v1 积分体系：预加载积分日志
+      // v1 积分体系：预加载积分日志 + 新用户首用赠送 100 积分
       PointsService.instance.getPointsLog();
+      PointsService.instance.grantWelcomeBonusOnce();
     } catch (e, stack) {
       debugPrint('Storage.init() failed: $e');
       debugPrint('Stack: $stack');
@@ -103,9 +104,23 @@ void main() {
         if (targetPage == 'training') {
           final handler = OhosReminderService.instance.onTrainingCardAction;
           if (handler != null) {
+            // 训练页在栈中：原地处理（skipRest / 不导航）
             handler(args);
           } else {
-            _globalRouter?.go('/home');
+            // 训练页不在栈中：有今天的草稿则恢复训练页，否则回首页
+            final inProgress = Storage.getInProgressTraining();
+            final now = DateTime.now();
+            final today = '${now.year}-${now.month}-${now.day}';
+            final planId = inProgress?['planId'] as String?;
+            final dayIndex = inProgress?['dayIndex'] as int? ?? 0;
+            if (inProgress != null &&
+                inProgress['startedAtDate'] == today &&
+                planId != null &&
+                planId.isNotEmpty) {
+              _globalRouter?.go('/training?planId=$planId&dayIndex=$dayIndex');
+            } else {
+              _globalRouter?.go('/home');
+            }
           }
         } else if (targetPage == 'home') {
           _globalRouter?.go('/home');
@@ -138,7 +153,6 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
   late String _darkThemeId;
   late final GoRouter _router;
   bool _romGuidanceShown = false;
-  bool _nightPromptVisible = false;
 
   @override
   void initState() {
@@ -150,9 +164,7 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     _timedDarkTime = settings['timedDarkTime'] as String? ?? '18:00';
     _lightThemeId = settings['lightThemeId'] ?? 'vitality-sport';
     _darkThemeId = settings['darkThemeId'] ?? 'iron-forge';
-    _router = app_router.createRouter(
-      onBeforeSplashReady: checkNightPromptOnSplash,
-    );
+    _router = app_router.createRouter();
     _globalRouter = _router;
     // 设置全局主题变更回调
     app_router.onThemeChanged = _onThemeChanged;
@@ -226,80 +238,6 @@ class _LiftTrackAppState extends State<LiftTrackApp> with WidgetsBindingObserver
     PlatformServices.widgetCard.pushCardData(
       const WidgetCardData(mode: WidgetCardMode.idle),
     );
-  }
-
-  /// 在 Splash 页进入首页前调用：若当前处于深色窗口、用户从未被询问过，且
-  /// 已完成隐私同意与引导，则弹出夜间模式开关引导。阻塞流程直至用户作答，
-  /// 完成后才允许进入首页。
-  Future<void> checkNightPromptOnSplash(BuildContext context) async {
-    if (_nightPromptVisible || !mounted) return;
-    final settings = Storage.getSettings();
-    // 仅在用户已同意隐私、且自动深色尚未开启、且从未询问过时弹出
-    if (settings['privacyAgreed'] != true) return;
-    if ((settings['autoDarkMode'] as String? ?? 'off') != 'off') return;
-    if (settings['nightModePrompted'] as bool? ?? false) return;
-    final t = settings['timedDarkTime'] as String? ?? '18:00';
-    if (!LiftTrackTheme.isTimedDarkNow(t)) return;
-
-    // 无其他弹窗兜底守卫：在 Splash 上且无更上层路由/弹窗时才弹出。
-    // 若已存在其他弹层（如评分、想练部位等），则不打断，本次跳过。
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) return;
-
-    _nightPromptVisible = true;
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        final colors = Theme.of(dialogContext).extension<LiftTrackColors>()!;
-        return AlertDialog(
-          backgroundColor: colors.bgCard,
-          title: Text('已到夜间，是否开启夜间模式？', style: TextStyle(color: colors.textPrimary)),
-          content: Text('开启后将于每天 $t 自动进入深色模式（可随时在设置中调整）',
-              style: TextStyle(color: colors.textSecondary)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text('暂不', style: TextStyle(color: colors.textMuted)),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              style: ElevatedButton.styleFrom(backgroundColor: colors.accentGlow),
-              child: const Text('开启'),
-            ),
-          ],
-        );
-      },
-    );
-    _nightPromptVisible = false;
-    _handleNightPromptResult(result);
-  }
-
-  void _handleNightPromptResult(bool? result) {
-    if (!mounted) return;
-    final settings = Storage.getSettings();
-    if (result == true) {
-      settings['nightModePrompted'] = true;
-      settings['autoDarkMode'] = 'timed';
-      settings['timedDarkTime'] = settings['timedDarkTime'] as String? ?? '18:00';
-      Storage.saveSettings(settings);
-      // 复用现有处理器更新内存状态、持久化并重启计时器。
-      _onThemeChanged(_currentThemeId,
-          autoDarkMode: 'timed', timedDarkTime: settings['timedDarkTime'] as String);
-    } else {
-      settings['nightModePrompted'] = true;
-      Storage.saveSettings(settings);
-      final nav = app_router.rootNavigatorKey.currentState;
-      if (nav == null) return;
-      final overlayContext = nav.overlay?.context;
-      if (overlayContext == null) return;
-      ScaffoldMessenger.of(overlayContext).showSnackBar(
-        const SnackBar(
-          content: Text('你可在 设置→风格主题 中开启『跟随系统』或『定点自动深色模式』'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-    }
   }
 
   /// timed 模式下：每分钟重算一次深浅主题，实现"到点自动切换"。

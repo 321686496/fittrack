@@ -10,12 +10,16 @@ class PointsService {
   static final PointsService instance = PointsService._();
   PointsService._();
 
-  static const int checkInPoints = 1;
-  static const int adPoints = 5;
+  // 每日产出统一上浮：活跃用户约 80 分/天，约 7 天即可攒够 300~600 分的中高档内容。
+  // 原值：签到 1、训练 2、广告 5×3=15，总计约 18/天，高阶内容需数周，已明显失衡。
+  static const int checkInPoints = 10;
+  static const int adPoints = 10;
   static const int invitePoints = 50;
-  static const int trainingPoints = 2;
+  static const int trainingPoints = 20;
   static const int notePoints = 1;
-  static const int maxAdsPerDay = 3;
+  static const int maxAdsPerDay = 5;
+  // 新用户首次使用赠送的积分
+  static const int welcomePoints = 100;
 
   int get points => Storage.getSettings()['points'] ?? 0;
 
@@ -77,6 +81,18 @@ class PointsService {
     if (lastDate != today) return true;
     final watched = settings['adsWatchedToday'] as int? ?? 0;
     return watched < maxAdsPerDay;
+  }
+
+  /// 新用户首次使用赠送积分（一次性，仅对无任何积分历史的账户生效）。
+  Future<void> grantWelcomeBonusOnce() async {
+    final settings = Storage.getSettings();
+    if (settings['welcomeBonusGranted'] == true) return;
+    // 仅对全新账户发放：已有积分 / 消耗记录的老用户不重复发放
+    if ((settings['points'] as int? ?? 0) != 0) return;
+    if ((settings['pointsEarnedTotal'] as int? ?? 0) != 0) return;
+    if ((settings['pointsSpentTotal'] as int? ?? 0) != 0) return;
+    settings['welcomeBonusGranted'] = true;
+    await addPoints(welcomePoints, 'welcome');
   }
 
   Future<void> recordAdWatched() async {

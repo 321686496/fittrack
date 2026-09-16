@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
 import '../data/storage.dart';
 import '../widgets/page_header.dart';
+import '../widgets/common_widgets.dart';
 
 /// 风格主题设置页面
 /// 支持"跟随系统"模式，可分别选择日间/夜间主题
@@ -36,6 +37,9 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
   late String _timedDarkTime;
   late String _lightThemeId;
   late String _darkThemeId;
+  /// 夜间模式建议引导是否可见：仅当关闭自动深色、当前处于夜间且用户未回应过时展示，
+  /// 由用户主动关闭，绝不自动消失（避免启动页断崖式弹窗的困惑体验）。
+  late bool _nightSuggestionVisible;
 
   @override
   void initState() {
@@ -45,6 +49,10 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
     _timedDarkTime = widget.timedDarkTime;
     _lightThemeId = widget.lightThemeId;
     _darkThemeId = widget.darkThemeId;
+    final settings = Storage.getSettings();
+    _nightSuggestionVisible = (widget.autoDarkMode == 'off') &&
+        !(settings['nightModePrompted'] as bool? ?? false) &&
+        LiftTrackTheme.isTimedDarkNow(widget.timedDarkTime);
     _pageController = PageController(viewportFraction: 0.92);
     final initialPage = AppTheme.themes.indexWhere((t) => t['id'] == widget.currentThemeId);
     _currentPage = initialPage >= 0 ? initialPage : 0;
@@ -118,6 +126,8 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
             onBack: () => context.pop(),
             title: '风格主题',
           ),
+          // ---- 夜间模式建议引导（非阻塞，用户主动关闭）----
+          if (_nightSuggestionVisible) _buildNightSuggestion(colors),
           // ---- 自动深色模式选择器 ----
           _buildAutoDarkModeSelector(colors),
           // ---- 内容区 ----
@@ -127,6 +137,108 @@ class _ThemeSettingsPageState extends State<ThemeSettingsPage> {
         ],
       ),
     );
+  }
+
+  // ============ 夜间模式建议引导 ============
+
+  Widget _buildNightSuggestion(LiftTrackColors colors) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.accentGlow.withOpacity(0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.nightlight_round, size: 20, color: colors.accentGlow),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('已到夜间，是否开启夜间模式？',
+                        style: TextStyle(
+                            color: colors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text('开启后将于每天 $_timedDarkTime 自动进入深色模式',
+                        style: TextStyle(color: colors.textMuted, fontSize: 12)),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: _dismissNightSuggestion,
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Icon(Icons.close, size: 18, color: colors.textMuted),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
+            children: [
+              TextButton(
+                onPressed: _dismissNightSuggestion,
+                child: Text('暂不', style: TextStyle(color: colors.textMuted)),
+              ),
+              ElevatedButton(
+                onPressed: () => _enableNightFromSuggestion('system'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.accentGlow,
+                  foregroundColor: colors.textPrimary,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('跟随系统'),
+              ),
+              ElevatedButton(
+                onPressed: () => _enableNightFromSuggestion('timed'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.accentGlow.withOpacity(0.85),
+                  foregroundColor: colors.textPrimary,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('定点自动'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _markNightPrompted() {
+    final settings = Storage.getSettings();
+    if (settings['nightModePrompted'] as bool? ?? false) return;
+    settings['nightModePrompted'] = true;
+    Storage.saveSettings(settings);
+  }
+
+  void _dismissNightSuggestion() {
+    _markNightPrompted();
+    setState(() => _nightSuggestionVisible = false);
+    FitToast.info(context, '已关闭引导，可随时在下方的『自动深色模式』中开启夜间模式');
+  }
+
+  void _enableNightFromSuggestion(String mode) {
+    _markNightPrompted();
+    setState(() {
+      _autoDarkMode = mode;
+      _nightSuggestionVisible = false;
+    });
+    _saveAndNotify();
   }
 
   // ============ 自动深色模式选择器 ============

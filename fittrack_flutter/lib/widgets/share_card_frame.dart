@@ -1,11 +1,16 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
+import '../services/invitation_service.dart';
 import 'poster_theme.dart';
 
-/// 训练记录分享海报（宽度固定 1080，高度随内容自适应）
+/// 训练成果分享卡（海报1，对应 HTML #1）
 ///
-/// 使用 [PosterBackground] 跟随用户当前 App 主题。
+/// 宽度 1080、高度 1920 固定（9:16）。使用 [PosterBackground] 跟随主题。
 /// record 支持字段：
-/// - name/dayLabel：训练名称（计划名）+ 训练日标签（副标题）
+/// - name/dayLabel：训练名称（计划名）+ 训练日标签
 /// - totalWeight/totalSets/duration/exerciseCount：今日核心数据
 /// - completionRate：训练完成率（0-1，计划训练才有效）
 /// - pk：（可选）本周虚拟对手 PK 结果，决定是否展示 PK 横幅
@@ -16,15 +21,20 @@ class ShareCardFrame extends StatelessWidget {
   /// 海报主题 ID；为 null 时从全局 Settings 读取当前主题
   final String? themeId;
 
+  /// 邀请码：不提供则自动由 InvitationService 生成当前用户邀请码
+  final String? inviteCode;
+
   const ShareCardFrame({
     required this.record,
     this.size = const Size(1080, 1920),
     this.themeId,
+    this.inviteCode,
     super.key,
   });
 
-  /// 海报宽度常量（高度随内容自适应）
+  /// 海报宽度 / 高度常量
   static const double posterWidth = 1080.0;
+  static const double posterHeight = 1920.0;
 
   @override
   Widget build(BuildContext context) {
@@ -43,271 +53,305 @@ class ShareCardFrame extends StatelessWidget {
         : DateTime.now();
     final dateStr =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    final durationStr = '${(duration / 60).floor()}分钟';
+    final durationStr = '${(duration / 60).floor()}';
     final ratePct = (completionRate * 100).round();
+    final avgWeight = _avgWeight(totalWeight, totalSets);
 
-    return PosterBackground(
-      colors: colors,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 72, vertical: 72),
+    return SizedBox(
+      width: posterWidth,
+      height: posterHeight,
+      child: PosterBackground(
+        colors: colors,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
-            // ── 顶部品牌区 ────────────────────────────
             PosterBrandHeader(
               colors: colors,
-              subtitle: '今日训练成就',
+              subtitle: "TODAY'S ACHIEVEMENT",
             ),
-            const SizedBox(height: 56),
-            // ── 训练名称（核心标题）──────────────────────
+            // ── 标题 ──────────────────────────────
+            SizedBox(height: px(16)),
             Text(
               name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: colors.textPrimary,
-                fontSize: 54,
-                fontWeight: FontWeight.bold,
+                fontSize: px(22),
+                fontWeight: FontWeight.w800,
                 height: 1.2,
               ),
             ),
-            const SizedBox(height: 14),
-            // 日期 + 训练日标签（副标题行）
+            SizedBox(height: px(6)),
+            // 日期 + 训练日标签
             Row(
               children: [
                 Icon(Icons.calendar_today,
-                    size: 22, color: colors.textMuted),
-                const SizedBox(width: 8),
+                    size: px(11), color: colors.textMuted),
+                SizedBox(width: px(8)),
                 Text(
                   dateStr,
-                  style: TextStyle(color: colors.textMuted, fontSize: 24),
+                  style: TextStyle(
+                    color: colors.textMuted,
+                    fontSize: px(10),
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 if (dayLabel != null && dayLabel.isNotEmpty) ...[
-                  const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colors.cardBg,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: colors.cardBorder),
-                    ),
-                    child: Text(
-                      dayLabel,
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
+                  SizedBox(width: px(8)),
+                  PostBadge(text: dayLabel, colors: colors),
                 ],
               ],
             ),
-            const SizedBox(height: 48),
-            // ── Hero 卡片：完成率环 + 总重量基因数字 ──────
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 40, vertical: 36),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [colors.brand, colors.brandSecondary],
-                ),
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.brand.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // 完成率环形进度
-                  SizedBox(
-                    width: 148,
-                    height: 148,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          width: 148,
-                          height: 148,
-                          child: CircularProgressIndicator(
-                            value: completionRate.clamp(0.0, 1.0),
-                            strokeWidth: 13,
-                            backgroundColor: Colors.white.withOpacity(0.22),
-                            valueColor: const AlwaysStoppedAnimation(
-                                Colors.white),
-                          ),
-                        ),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '$ratePct%',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 44,
-                                fontWeight: FontWeight.w800,
-                                height: 1.0,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              '完成率',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 44),
-                  // 总重量大数字
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '$totalWeight',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 120,
-                            fontWeight: FontWeight.w900,
-                            height: 1.0,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '总重量 (KG)',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 24,
-                            letterSpacing: 3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            // ── 数据卡网格：时长 + 平均重量 ───────────────
+            // ── Hero：完成率环 + 总重量 ────────────
+            SizedBox(height: px(16)),
+            _buildHero(colors, ratePct.toDouble(), totalWeight),
+            // ── 四数据卡 ──────────────────────────
+            SizedBox(height: px(12)),
             Row(
               children: [
-                _buildStatCard(
-                  Icons.timer_outlined,
-                  durationStr,
-                  '训练时长',
-                  colors,
-                ),
-                const SizedBox(width: 16),
-                _buildStatCard(
-                  Icons.insights_rounded,
-                  _avgWeight(totalWeight, totalSets),
-                  '平均重量',
-                  colors,
-                ),
+                _buildStat('$durationStr 分钟', colors),
+                SizedBox(width: px(9)),
+                _buildStat('$avgWeight kg', colors),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: px(9)),
             Row(
               children: [
-                _buildStatCard(
-                  Icons.repeat_rounded,
-                  '$totalSets',
-                  '总组数',
-                  colors,
-                ),
-                const SizedBox(width: 16),
-                _buildStatCard(
-                  Icons.sports_gymnastics,
-                  '$exerciseCount',
-                  '动作数',
-                  colors,
-                ),
+                _buildStat('$totalSets 组', colors),
+                SizedBox(width: px(9)),
+                _buildStat('$exerciseCount 个', colors),
               ],
             ),
-            // ── PK 横幅（有对手数据时展示） ───────────────
+            // ── PK 横幅 ───────────────────────────
             if (pk != null) ...[
-              const SizedBox(height: 36),
+              SizedBox(height: px(12)),
               _buildPkBanner(colors, pk),
             ],
-            const SizedBox(height: 48),
-            // ── slogan ──────────────────────────────
-            Center(
-              child: Text(
-                'LiftTrack · 记录每一组',
-                style: TextStyle(
-                  color: colors.textMuted,
-                  fontSize: 22,
-                  letterSpacing: 2,
+            // ── 底部邀请码 ─────────────────────────
+            const Spacer(),
+            Row(
+              children: [
+                Icon(Icons.card_giftcard, size: px(16), color: colors.brand),
+                SizedBox(width: px(10)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '输入邀请码，双方得福利',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textMuted,
+                          fontSize: px(9),
+                        ),
+                      ),
+                      SizedBox(height: px(2)),
+                      Text(
+                        _inviteCode,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.brand,
+                          fontSize: px(14),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: px(2),
+                          height: 1,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 48),
-            // ── 底部二维码 ───────────────────────────
-            PosterQrFooter(
-              colors: colors,
-              qrData: 'fittrack://share',
-              hint: '扫码开始训练',
+                SizedBox(width: px(10)),
+                // 邀请码二维码
+                Container(
+                  width: px(44),
+                  height: px(44),
+                  padding: EdgeInsets.all(px(4)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(px(11)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: px(10),
+                        offset: Offset(0, px(4)),
+                      ),
+                    ],
+                  ),
+                  child: QrImageView(
+                    data: 'fittrack://invite?code=$_inviteCode',
+                    version: QrVersions.auto,
+                    gapless: true,
+                    backgroundColor: Colors.white,
+                    // 近黑色高对比，保证缩小后仍清晰可扫（不用主题 textPrimary）
+                    eyeStyle: QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: const Color(0xFF1C1C1E),
+                    ),
+                    dataModuleStyle: QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: const Color(0xFF1C1C1E),
+                    ),
+                    // 兜底：数据过长无法编码时，避免渲染成白底空容器
+                    errorStateBuilder: (context, error) => Center(
+                      child: Icon(Icons.qr_code,
+                          size: px(9), color: colors.textMuted),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  /// 邀请码：优先用外部传入值，否则自动生成当前用户邀请码（确定性）
+  String get _inviteCode =>
+      inviteCode ?? InvitationService.instance.generateInvitationCode();
 
   String _avgWeight(int totalWeight, int totalSets) {
     if (totalSets <= 0) return '-';
     final avg = totalWeight / totalSets;
-    return avg < 10
-        ? avg.toStringAsFixed(1)
-        : avg.round().toString();
+    return avg < 10 ? avg.toStringAsFixed(1) : avg.round().toString();
   }
 
-  Widget _buildStatCard(
-      IconData icon, String value, String label, PosterColors colors) {
+  /// Hero 卡片：左侧完成率环 + 右侧总重量大数字
+  Widget _buildHero(PosterColors colors, double rate, int totalWeight) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: px(18), vertical: px(16)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [colors.brand, colors.brandSecondary],
+        ),
+        borderRadius: BorderRadius.circular(px(18)),
+        boxShadow: [
+          BoxShadow(
+            color: colors.brand.withOpacity(0.28),
+            blurRadius: px(22),
+            offset: Offset(0, px(8)),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // 完成率环
+          SizedBox(
+            width: px(70),
+            height: px(70),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: px(70),
+                  height: px(70),
+                  child: Transform.rotate(
+                    angle: -math.pi / 2,
+                    child: CircularProgressIndicator(
+                      value: (rate / 100).clamp(0.0, 1.0),
+                      strokeWidth: px(6),
+                      backgroundColor: Colors.white.withOpacity(0.3),
+                      valueColor: const AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  ),
+                ),
+                Text(
+                  '${rate.round()}%',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: px(18),
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: px(16)),
+          // 总重量
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$totalWeight',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: px(52),
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+                SizedBox(height: px(4)),
+                Text(
+                  '总重量 (KG)',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontSize: px(10),
+                    letterSpacing: px(3),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 单个数据卡（分钟/平均重量/组数/动作数）
+  Widget _buildStat(String value, PosterColors colors) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+        padding: EdgeInsets.symmetric(horizontal: px(12), vertical: px(11)),
         decoration: BoxDecoration(
           color: colors.cardBg,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(px(16)),
           border: Border.all(color: colors.cardBorder),
+          boxShadow: [
+            BoxShadow(color: colors.brand.withOpacity(0.10), blurRadius: px(9)),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: colors.brand, size: 32),
-            const SizedBox(height: 16),
             Text(
               value,
               style: TextStyle(
                 color: colors.textPrimary,
-                fontSize: 40,
+                fontSize: px(18),
                 fontWeight: FontWeight.w800,
-                height: 1.0,
+                height: 1,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: px(8)),
             Text(
-              label,
+              _labelFor(value),
               style: TextStyle(
                 color: colors.textMuted,
-                fontSize: 22,
+                fontSize: px(9),
+                letterSpacing: 1,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _labelFor(String value) {
+    if (value.contains('分钟')) return '训练时长';
+    if (value.contains('kg')) return '平均重量';
+    if (value.contains('组')) return '总组数';
+    return '动作数';
   }
 
   /// 本周对阵虚拟对手的横幅
@@ -316,136 +360,88 @@ class ShareCardFrame extends StatelessWidget {
     final userWon = pk['userWon'] as bool? ?? false;
     final userTimes = pk['userWeeklyTrainings'] as int? ?? 0;
     final oppoTimes = pk['opponentWeeklyTrainings'] as int? ?? 0;
-    final percentile = pk['percentile'] as int? ?? 0;
     final statusColor = userWon ? colors.success : colors.warning;
+
+    // 进度条占比（避免全 0）
+    final total = userTimes + oppoTimes;
+    final myFactor = (total > 0 ? userTimes / total : 0.5).clamp(0.0, 1.0);
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+      padding: EdgeInsets.symmetric(horizontal: px(14), vertical: px(11)),
       decoration: BoxDecoration(
         color: colors.cardBg,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(px(16)),
         border: Border.all(color: colors.cardBorder),
+        boxShadow: [
+          BoxShadow(color: colors.brand.withOpacity(0.10), blurRadius: px(9)),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.emoji_events, size: 26, color: colors.brand),
-              const SizedBox(width: 10),
+              Icon(Icons.star, size: px(13), color: colors.brand),
+              SizedBox(width: px(6)),
               Text(
-                '本周PK · vs $nickname',
+                '本周PK',
                 style: TextStyle(
                   color: colors.textPrimary,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
+                  fontSize: px(12),
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const Spacer(),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    EdgeInsets.symmetric(horizontal: px(8), vertical: px(2)),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.15),
+                  color: statusColor.withOpacity(0.18),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   userWon ? '领先' : '追赶中',
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: px(9),
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
+              ),
+              SizedBox(width: px(8)),
+              Text(
+                '我 $userTimes次 | $nickname $oppoTimes次',
+                style: TextStyle(
+                  color: colors.textSecondary,
+                  fontSize: px(10),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 18),
-          // 双方次数对比
-          _buildPkBar(
-            colors,
-            '我',
-            userTimes,
-            _scoreFor(userTimes, oppoTimes),
-            colors.brand,
-          ),
-          const SizedBox(height: 10),
-          _buildPkBar(
-            colors,
-            nickname,
-            oppoTimes,
-            1 - _scoreFor(userTimes, oppoTimes),
-            colors.textMuted,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Icon(Icons.trending_up, size: 22, color: colors.brand),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  '超越同水平 $percentile% 用户',
-                  style: TextStyle(
-                    color: colors.textSecondary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+          SizedBox(height: px(8)),
+          // 合并进度条：我(brand) + 对手(textMuted)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: SizedBox(
+              height: px(6),
+              child: Stack(
+                children: [
+                  FractionallySizedBox(
+                    widthFactor: myFactor,
+                    alignment: Alignment.centerLeft,
+                    child: Container(color: colors.brand),
                   ),
-                ),
+                  FractionallySizedBox(
+                    widthFactor: (1 - myFactor),
+                    alignment: Alignment.centerRight,
+                    child: Container(color: colors.textMuted),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  /// 双方训练次数 → 进度条占比（合理避免全 0）
-  double _scoreFor(int mine, int oppo) {
-    final total = mine + oppo;
-    if (total <= 0) return 0.5;
-    return mine / total;
-  }
-
-  Widget _buildPkBar(PosterColors colors, String label, int times,
-      double score, Color color) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: colors.textSecondary,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: score.clamp(0.0, 1.0),
-              backgroundColor: color.withOpacity(0.15),
-              color: color,
-              minHeight: 12,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 72,
-          child: Text(
-            '$times次',
-            style: TextStyle(color: colors.textSecondary, fontSize: 18),
-            textAlign: TextAlign.end,
-          ),
-        ),
-      ],
     );
   }
 }

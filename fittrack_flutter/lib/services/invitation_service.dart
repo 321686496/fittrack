@@ -25,6 +25,7 @@ enum InvitationResult {
   invalidSignature,
   selfInvite, // 邀请人=被邀请人（防自邀）
   alreadyActivated, // 一码一绑：已激活过
+  mutualInvite, // 互绑拦截：对方已与自己建立过邀请关系（我邀过TA / TA邀过我）
 }
 
 /// 裂变里程碑
@@ -57,6 +58,21 @@ class ReceiptValidationResult {
     this.trainingCount = 0,
     this.totalDurationMin = 0,
     this.daysSinceActivation = 0,
+  });
+}
+
+/// recordReferralActivation 结构化结果
+class ReferralRecordOutcome {
+  final bool success; // 是否成功入账（新识别码/邀请码）
+  final int totalReferrals; // 入账后累计人数（失败时为当前累计值）
+  final int pointsEarned; // 本次发放积分（非里程碑档位为 0）
+  final ReferralMilestone? milestone; // 命中的里程碑（非档位为 null）
+
+  const ReferralRecordOutcome({
+    required this.success,
+    required this.totalReferrals,
+    this.pointsEarned = 0,
+    this.milestone,
   });
 }
 
@@ -160,8 +176,16 @@ class InvitationService {
       return InvitationResult.selfInvite;
     }
 
-    // 一码一绑：检查是否已激活过任何邀请码
     final settings = Storage.getSettings();
+
+    // 互绑拦截（守卫1）：该邀请人身份已在我的绑定列表（我邀请过TA）→ 拒绝反向绑定
+    final myDevices =
+        (settings['myReferralDeviceIds'] as List?)?.cast<String>() ?? [];
+    if (myDevices.contains(inviterIdentity)) {
+      return InvitationResult.mutualInvite;
+    }
+
+    // 一码一绑：检查是否已激活过任何邀请码
     final activatedCode = settings['activatedInvitationCode'] as String?;
     if (activatedCode != null && activatedCode.isNotEmpty) {
       return InvitationResult.alreadyActivated;
@@ -323,8 +347,12 @@ class InvitationService {
     return chars.join();
   }
 
+  /// 邀请身份种子：优先持久设备 ID（卸载重装稳定），回退随机 deviceId。
+  /// 反刷核心：身份跨重装不变，从而同一设备无法被重复邀请入账。
   String _getDeviceId() {
     final settings = Storage.getSettings();
+    final persistent = settings['persistentDeviceId'] as String?;
+    if (persistent != null && persistent.isNotEmpty) return persistent;
     return settings['deviceId'] as String? ?? '';
   }
 
@@ -346,35 +374,90 @@ class InvitationService {
   /// - `FIT-ACT-` 激活识别码：解密使用数据 → 达标判定（有效训练 ≥ 1）
   ///   → 防自邀（身份哈希 ≠ 当前用户）→ 去重 → 入账
   ///
-  /// 返回是否触发新的里程碑。
-  Future<ReferralMilestone?> recordReferralActivation(String inviteeCode) async {
+  /// 返回结构化结果：入账是否成功、累计人数、本次积分、命中里程碑。
+  Future<ReferralRecordOutcome> recordReferralActivation(String inviteeCode) async {
     final code = inviteeCode.trim().toUpperCase();
     if (code.startsWith('FIT-ACT-')) {
       return _recordByReceipt(code);
     }
-    if (!_verifySignature(code)) return null;
+    if (!_verifySignature(code)) return _currentOutcome();
     return _grantMilestone(code);
   }
 
-  /// 识别码分支：达标 + 防自邀 + 去重后才入账
-  Future<ReferralMilestone?> _recordByReceipt(String code) async {
+  /// 识别码分支：达标 + 防自邀 + 互绑拦截 + 去重后才入账
+  Future<ReferralRecordOutcome> _recordByReceipt(String code) async {
     final validation = validateActivationReceipt(code);
-    if (validation.result != ReceiptResult.validReached) return null;
+    if (validation.result != ReceiptResult.validReached) {
+      return _currentOutcome();
+    }
     // 防自邀：识别码身份 = 当前用户身份
     if (validation.identity.isNotEmpty &&
         validation.identity == _computeMyIdentity()) {
-      return null;
+      return _currentOutcome();
     }
-    return _grantMilestone(code);
+    // 互绑拦截（守卫2）：识别码身份 == 我激活过的那张邀请码的邀请人（对方已邀请过我）
+    // 与守卫1互补：守卫1拦"我邀过TA后TA再邀我"，守卫2拦"TA邀过我后我再录TA"
+    final settings = Storage.getSettings();
+    final activatedCode = settings['activatedInvitationCode'] as String?;
+    if (validation.identity.isNotEmpty &&
+        activatedCode != null &&
+        activatedCode.isNotEmpty) {
+      // activatedInvitationCode 存完整邀请码（FIT-INV-XXXXXX），8-12 位为邀请人身份
+      if (validation.identity == activatedCode.substring(8, 12)) {
+        return _currentOutcome();
+      }
+    }
+    // 设备维度去重：同一被邀请设备（卸载重装后身份不变）只能入账一次
+    return _grantMilestone(code, inviteeIdentity: validation.identity);
   }
 
-  /// 公共入账：写入 myReferralCodes（去重）+ 里程碑积分/徽章/皮肤发放
-  Future<ReferralMilestone?> _grantMilestone(String code) async {
+  /// 失败分支：返回当前累计状态（success=false）
+  ReferralRecordOutcome _currentOutcome() {
     final settings = Storage.getSettings();
     final myList = (settings['myReferralCodes'] as List?)?.cast<String>() ?? [];
-    if (myList.contains(code)) return null;
+    return ReferralRecordOutcome(
+      success: false,
+      totalReferrals: myList.length,
+    );
+  }
+
+  /// 公共入账：写入 myReferralCodes（按码去重）+ 设备维度去重（myReferralDeviceIds）
+  /// + 里程碑积分/徽章/皮肤发放
+  ///
+  /// [inviteeIdentity] 被邀请设备的身份哈希（FIT-ACT 分支传入）；同一被邀请设备
+  /// 只能计入一次，防止卸载重装/换码刷量。FIT-INV 旧路径不足此信息时不参与设备去重。
+  Future<ReferralRecordOutcome> _grantMilestone(String code,
+      {String? inviteeIdentity}) async {
+    final settings = Storage.getSettings();
+    final myList = (settings['myReferralCodes'] as List?)?.cast<String>() ?? [];
+    // 设备维度去重：同一被邀请设备只能入账一次
+    if (inviteeIdentity != null &&
+        inviteeIdentity.isNotEmpty) {
+      final myDevices =
+          (settings['myReferralDeviceIds'] as List?)?.cast<String>() ?? [];
+      if (myDevices.contains(inviteeIdentity)) {
+        return ReferralRecordOutcome(
+          success: false,
+          totalReferrals: myList.length,
+        );
+      }
+    }
+    if (myList.contains(code)) {
+      return ReferralRecordOutcome(
+        success: false,
+        totalReferrals: myList.length,
+      );
+    }
     myList.add(code);
     settings['myReferralCodes'] = myList;
+    if (inviteeIdentity != null && inviteeIdentity.isNotEmpty) {
+      final myDevices =
+          (settings['myReferralDeviceIds'] as List?)?.cast<String>() ?? [];
+      if (!myDevices.contains(inviteeIdentity)) {
+        myDevices.add(inviteeIdentity);
+        settings['myReferralDeviceIds'] = myDevices;
+      }
+    }
     Storage.saveSettings(settings);
     // 通知数据变更：邀请进度已变化（非里程碑档位无积分入账，
     // 不会走 PointsService.addPoints 的通知路径，必须在此显式通知）
@@ -405,7 +488,13 @@ class InvitationService {
     }
     if (count >= 10) _unlockBadge('referral_ten');
 
-    return _currentMilestone(count);
+    return ReferralRecordOutcome(
+      success: true,
+      totalReferrals: count,
+      pointsEarned: reward,
+      // 仅命中档位（1/3/5/10）时返回里程碑，非档位次数为 null
+      milestone: reward > 0 ? _currentMilestone(count) : null,
+    );
   }
 
   /// 累计邀请 5 人时解锁限定对手皮肤 skin_ambassador

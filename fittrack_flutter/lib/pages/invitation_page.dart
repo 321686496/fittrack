@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../data/storage.dart';
 import '../services/invitation_service.dart';
+import '../services/device_identity_service.dart';
 import '../themes/app_themes.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/invite_poster.dart';
@@ -42,12 +44,22 @@ class _InvitationPageState extends State<InvitationPage> {
   void initState() {
     super.initState();
     _loadData();
+    _ensureDeviceIdentity();
   }
 
   void _loadData() {
     _myCode = InvitationService.instance.generateInvitationCode();
     _progress = InvitationService.instance.getReferralProgress();
     setState(() {});
+  }
+
+  /// OHOS：确保持久设备标识就绪（OAID 授权 + 缓存），防刷身份跨重装稳定。
+  /// 授权成功后身份可能变化（随机 deviceId → OAID），需重新生成邀请码展示。
+  /// 用户拒绝授权/不可用时静默回退随机 deviceId，不阻塞页面。
+  Future<void> _ensureDeviceIdentity() async {
+    await DeviceIdentityService.instance.ensurePersistentDeviceId();
+    if (!mounted) return;
+    _loadData();
   }
 
   @override
@@ -652,6 +664,7 @@ class _InvitationPageState extends State<InvitationPage> {
     ];
 
     return CardWidget(
+      onTap: () => context.push('/invitation/flow'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -667,6 +680,12 @@ class _InvitationPageState extends State<InvitationPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              const Spacer(),
+              Text(
+                '查看详情',
+                style: TextStyle(color: colors.textMuted, fontSize: 12),
+              ),
+              Icon(Icons.chevron_right, color: colors.textMuted, size: 16),
             ],
           ),
           const SizedBox(height: 16),
@@ -944,13 +963,18 @@ class _InvitationPageState extends State<InvitationPage> {
   Future<void> _recordReceipt() async {
     final code = _receiptController.text.trim().toUpperCase();
     setState(() => _recording = true);
-    final milestone =
+    final outcome =
         await InvitationService.instance.recordReferralActivation(code);
     if (!mounted) return;
     setState(() => _recording = false);
 
-    if (milestone != null) {
-      FitToast.success(context, '记录成功！积分奖励已到账');
+    if (outcome.success) {
+      if (outcome.pointsEarned > 0) {
+        FitToast.success(context, '记录成功！+${outcome.pointsEarned} 积分已到账');
+      } else {
+        FitToast.success(
+            context, '记录成功！已累计邀请 ${outcome.totalReferrals} 人');
+      }
       _receiptController.clear();
       setState(() => _receiptValidation = null);
       _loadData();
@@ -1301,6 +1325,9 @@ class _InvitationPageState extends State<InvitationPage> {
         break;
       case InvitationResult.alreadyActivated:
         msg = '你已激活过邀请码（一码一绑）';
+        break;
+      case InvitationResult.mutualInvite:
+        msg = '你们已互相邀请过，不能重复绑定';
         break;
     }
 

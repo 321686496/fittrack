@@ -18,6 +18,7 @@ class RomAdaptationService {
 
   bool? _cachedIsOemRom;
   bool? _cachedIgnoringBatteryOptimizations;
+  bool? _cachedIsHarmonyOS;
 
   /// 是否需要为该设备弹出 ROM 引导（仅国产 ROM 且未优化时返回 true）
   Future<bool> needsRomGuidance() async {
@@ -26,6 +27,24 @@ class RomAdaptationService {
     if (!isOem) return false;
     final isIgnoring = await isIgnoringBatteryOptimizations();
     return !isIgnoring;
+  }
+
+  /// 是否为鸿蒙(HarmonyOS)设备。
+  ///
+  /// 处理 Android 包(兼容层)跑在鸿蒙机上的场景：真 OHOS 构建恒为 true；
+  /// Android 构建下通过原生侧按系统 Build 标记识别鸿蒙机型。用于扫码等
+  /// mobile_scanner 无鸿蒙原生实现的能力，直接走相册兜底。
+  Future<bool> isHarmonyOSDevice() async {
+    if (isOhos) return true;
+    if (_cachedIsHarmonyOS != null) return _cachedIsHarmonyOS!;
+    try {
+      final result = await _channel?.invokeMethod<bool>('isHarmonyOS');
+      _cachedIsHarmonyOS = result ?? false;
+    } catch (e) {
+      debugPrint('RomAdaptation: isHarmonyOS error: $e');
+      _cachedIsHarmonyOS = false;
+    }
+    return _cachedIsHarmonyOS!;
   }
 
   /// 是否为国产 ROM

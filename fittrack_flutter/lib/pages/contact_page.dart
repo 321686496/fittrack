@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../data/contact_info.dart';
 import '../themes/app_themes.dart';
+import '../utils/platform_utils.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
+import '../widgets/poster_preview_dialog.dart';
 
 /// 联系我们页面（独立详情页，展示群二维码与群号等联系方式）
 class ContactPage extends StatelessWidget {
@@ -40,22 +46,39 @@ class ContactPage extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.forum_outlined, size: 22, color: colors.accentGlow),
+                        Icon(Icons.headset_mic_outlined, size: 22, color: colors.accentGlow),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Text(
-                            '欢迎加入 LiftTrack 官方社群，第一时间获取更新动态与训练干货；有任何问题或建议，也欢迎通过以下方式联系我们。',
-                            style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '有问题？欢迎随时联系我们',
+                                style: TextStyle(
+                                  color: colors.textPrimary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '如果你在使用过程中遇到任何问题、觉得有不好用或存在漏洞的地方，可以通过以下方式联系开发者，也可以直接发送邮件到邮箱反馈问题，我们会积极听取并采纳你的意见，把产品做得更好。',
+                                style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '如果你觉得用得还不错，也欢迎加入官方社群，与爱训练的朋友们一起讨论交流、自律打卡～',
+                                style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.6),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // ── 群聊（含二维码与群号） ──
-                  ...kContactChannels
-                      .where((c) => c.type == 'qq_group' || c.type == 'wechat_group')
-                      .map((c) => _buildGroupCard(context, colors, c)),
+                  // ── 官方社群（双二维码并排展示） ──
+                  _buildGroupCard(context, colors),
                   const SizedBox(height: 16),
                   // ── 一对一联系方式 ──
                   CardWidget(
@@ -83,28 +106,27 @@ class ContactPage extends StatelessWidget {
     );
   }
 
-  /// 群卡片：二维码 + 群号 + 复制按钮
+  /// 官方社群卡片：两个二维码并排展示
   Widget _buildGroupCard(
     BuildContext context,
     LiftTrackColors colors,
-    ContactChannel c,
   ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: CardWidget(
+    final groups = kContactChannels
+        .where((c) => c.type == 'qq_group' || c.type == 'wechat_group')
+        .toList();
+
+    return CardWidget(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  c.type == 'qq_group' ? Icons.groups_outlined : Icons.chat_outlined,
-                  size: 20,
-                  color: colors.accentGlow,
-                ),
+                Icon(Icons.groups_rounded, size: 20, color: colors.accentGlow),
                 const SizedBox(width: 8),
                 Text(
-                  c.label,
+                  '官方社群',
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: 16,
@@ -113,66 +135,25 @@ class ContactPage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
+            Text(
+              '扫码加入社群，与爱训练的朋友一起交流打卡',
+              style: TextStyle(color: colors.textMuted, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // 二维码（本地二维码图片优先，缺失时按群号/链接生成）
-                Container(
-                  width: 128,
-                  height: 128,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colors.borderColor),
-                  ),
-                  child: Image.asset(
-                    'assets/images/contact/${c.type}_qr.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => QrImageView(
-                      data: c.qrData ?? c.value,
-                      version: QrVersions.auto,
-                      size: 112,
-                      gapless: true,
+              children: groups.map((c) {
+                final isFirst = c == groups.first;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: isFirst ? 0 : 6,
+                      right: isFirst ? 6 : 0,
                     ),
+                    child: _buildQrCodeSection(context, colors, c),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '群号：${c.value}',
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        c.hint,
-                        style: TextStyle(color: colors.textMuted, fontSize: 12, height: 1.4),
-                      ),
-                      const SizedBox(height: 10),
-                      OutlinedButton.icon(
-                        onPressed: () => _copyValue(context, c),
-                        icon: const Icon(Icons.copy_rounded, size: 16),
-                        label: const Text('复制群号'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.accentGlow,
-                          side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
           ],
         ),
@@ -180,15 +161,172 @@ class ContactPage extends StatelessWidget {
     );
   }
 
+  /// 单个二维码区块：图标 + 标签 + 二维码（点击放大）+ 描述 + 群号复制
+  Widget _buildQrCodeSection(
+    BuildContext context,
+    LiftTrackColors colors,
+    ContactChannel c,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.borderColor),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            c.type == 'qq_group' ? Icons.groups_outlined : Icons.chat_outlined,
+            size: 18,
+            color: colors.accentGlow,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            c.label,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => _previewQrCode(context, c),
+            child: Container(
+              width: 120,
+              height: 120,
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colors.borderColor),
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.asset(
+                      'assets/images/contact/${c.type}_qr.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => QrImageView(
+                        data: c.qrData ?? c.value,
+                        version: QrVersions.auto,
+                        size: 108,
+                        gapless: true,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 2,
+                    bottom: 2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.45),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.zoom_in, size: 10, color: Colors.white),
+                          SizedBox(width: 2),
+                          Text('点击放大',
+                              style: TextStyle(
+                                  fontSize: 9, color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            c.hint,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: colors.textMuted, fontSize: 11, height: 1.3),
+          ),
+          if (c.copyable) ...[
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '群号：${c.value}',
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            OutlinedButton.icon(
+              onPressed: () => _copyValue(context, c),
+              icon: const Icon(Icons.copy_rounded, size: 14),
+              label: const Text('复制群号', style: TextStyle(fontSize: 12)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.accentGlow,
+                side: BorderSide(color: colors.accentGlow.withOpacity(0.3)),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 点击二维码：复制到临时目录后弹出全屏预览（支持保存到相册 / 系统分享）
+  Future<void> _previewQrCode(
+    BuildContext context,
+    ContactChannel c,
+  ) async {
+    try {
+      // OHOS: getTemporaryDirectory() throws MissingPluginException.
+      // Fall back to system temp dir (same pattern as poster_generator.dart).
+      Directory dir;
+      if (isOhos) {
+        try {
+          dir = await getTemporaryDirectory();
+        } catch (_) {
+          dir = Directory(Directory.systemTemp.path);
+        }
+      } else {
+        dir = await getTemporaryDirectory();
+      }
+      final data = await rootBundle
+          .load('assets/images/contact/${c.type}_qr.png');
+      final file = File(
+          '${dir.path}/${c.type}_qr_${DateTime.now().millisecondsSinceEpoch}.png');
+      await file.writeAsBytes(data.buffer.asUint8List());
+      if (context.mounted) {
+        await PosterPreviewDialog.show(
+          context,
+          imagePath: file.path,
+          title: '${c.label}二维码',
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        FitToast.info(context, '二维码预览失败，请稍后重试');
+      }
+    }
+  }
+
   Widget _buildContactTile(
     BuildContext context,
     LiftTrackColors colors,
     ContactChannel c,
   ) {
+    final isEmail = c.type == 'email';
     final IconData icon =
-        c.type == 'email' ? Icons.email_outlined : Icons.chat_bubble_outline;
+        isEmail ? Icons.email_outlined : Icons.chat_bubble_outline;
     return InkWell(
-      onTap: () => _copyValue(context, c),
+      onTap: () => isEmail ? _sendEmail(context, c) : _copyValue(context, c),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -223,11 +361,36 @@ class ContactPage extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.copy_rounded, size: 16, color: Colors.grey),
+            Icon(
+              isEmail ? Icons.send_outlined : Icons.copy_rounded,
+              size: 16,
+              color: Colors.grey,
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _sendEmail(BuildContext context, ContactChannel c) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: c.value,
+      queryParameters: {'subject': 'LiftTrack 反馈'},
+    );
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        FitToast.info(context, '未找到邮件应用，请复制邮箱：${c.value}');
+      }
+    } catch (_) {
+      if (context.mounted) {
+        FitToast.info(context, '未找到邮件应用，请复制邮箱：${c.value}');
+      }
+    }
   }
 
   Future<void> _copyValue(BuildContext context, ContactChannel c) async {
