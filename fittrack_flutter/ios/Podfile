@@ -42,7 +42,37 @@ end
 # 正确做法：不在 Podfile 声明该 target，并让 pbxproj 中其 baseConfigurationReference
 # 指向 Flutter/Generated.xcconfig（只含 FLUTTER_BUILD_NAME/NUMBER，无任何 pod 链接标志）。
 
+require 'fileutils'
+
+# ITMS-91061 fix: 在 CocoaPods 编译阶段就把 PrivacyInfo.xcprivacy 作为资源注入到
+# 各第三方 SDK 的 pod target，从编译进 framework 时就带上被签名的 manifest。
+# 相比"归档末尾往已嵌入 framework 里塞 manifest + 事后重签"的方式，本方案不依赖
+# 构建 phase 顺序，产物必然包含各 SDK 的隐私清单。
+PRIVACY_PODS = %w[GTMSessionFetcher GoogleToolboxForMac image_picker_ios share_plus sqflite url_launcher_ios].freeze
+
 post_install do |installer|
+  # --- ITMS-91061: 注入各 SDK 的隐私 manifest（每个 pod 只需处理一次）---
+  begin
+    manifest_src = File.expand_path('PrivacyManifests/PrivacyInfo.xcprivacy', __dir__)
+    installer.pods_project.targets.each do |target|
+      next unless PRIVACY_PODS.include?(target.name)
+
+      pod_dir = installer.sandbox.pod_dir(target.name)
+      dest = File.join(pod_dir, 'PrivacyInfo.xcprivacy')
+      FileUtils.copy(manifest_src, dest) unless File.exist?(dest)
+
+      phase = target.resources_build_phase || target.new_resources_build_phase
+      rel = File.join(target.name, 'PrivacyInfo.xcprivacy')
+      unless phase.files_references.any? { |f| f.path.to_s.end_with?('PrivacyInfo.xcprivacy') }
+        ref = installer.pods_project.new_file(rel)
+        phase.add_file_reference(ref)
+      end
+    end
+  rescue => e
+    Pod::UI.warn("Privacy manifest injection skipped: #{e.class} - #{e.message}")
+  end
+
+  # --- 其它 Pod 构建设置 ---
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
