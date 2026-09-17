@@ -34,12 +34,14 @@ end
 
 target 'RestLiveActivity' do
   # Widget extension 为纯 SwiftUI/WidgetKit/ActivityKit，不使用任何 Flutter 插件。
-  # 必须与 Runner 保持 use_frameworks! 一致，否则 CocoaPods 会因
-  # "Runner (true) and RestLiveActivity (false) do not both set use_frameworks!" 报错。
-  # 独立空 target：让 CocoaPods 生成隔离的 Pods-RestLiveActivity，
-  # 使其不再继承 Runner 的插件框架（mobile_scanner/permission_handler_apple/MLKit），
-  # 从而消除对 Flutter 符号的无效链接（如 "_FlutterMethodNotImplemented" 未定义符号链接失败）。
+  # 1. use_frameworks! 必须与 Runner 保持一致，否则 CocoaPods 报
+  #    "Runner (true) and RestLiveActivity (false) do not both set use_frameworks!"。
+  # 2. inherit! :search_paths 只继承头文件/框架搜索路径，不继承 Runner 的链接标志，
+  #    从而切断 CocoaPods 自动传播的插件框架（mobile_scanner/permission_handler_apple/MLKit）。
+  #    否则扩展会被强制链接这些插件，而插件引用 Flutter 符号、扩展又不链接
+  #    Flutter.framework，导致 Undefined symbols 链接失败。
   use_frameworks!
+  inherit! :search_paths
 end
 
 post_install do |installer|
