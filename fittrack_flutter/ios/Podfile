@@ -32,17 +32,15 @@ target 'Runner' do
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
-target 'RestLiveActivity' do
-  # Widget extension 为纯 SwiftUI/WidgetKit/ActivityKit，不使用任何 Flutter 插件。
-  # 1. use_frameworks! 必须与 Runner 保持一致，否则 CocoaPods 报
-  #    "Runner (true) and RestLiveActivity (false) do not both set use_frameworks!"。
-  # 2. inherit! :search_paths 只继承头文件/框架搜索路径，不继承 Runner 的链接标志，
-  #    从而切断 CocoaPods 自动传播的插件框架（mobile_scanner/permission_handler_apple/MLKit）。
-  #    否则扩展会被强制链接这些插件，而插件引用 Flutter 符号、扩展又不链接
-  #    Flutter.framework，导致 Undefined symbols 链接失败。
-  use_frameworks!
-  inherit! :search_paths
-end
+# RestLiveActivity 为纯 SwiftUI/WidgetKit/ActivityKit 扩展，不使用任何 Flutter 插件，
+# 因此**不**在 Podfile 中声明为目标。如果把它作为 pod 目标，CocoaPods 会：
+#  1. 给它生成 Pods-RestLiveActivity 配置；
+#  2. 并且 RestLiveActivity 若共享 Runner 的 Debug/Release.xcconfig，会继承 pod install
+#     追加进这些 xcconfig 的 "Pods-Runner" 配置，从而被强制链接所有插件框架
+#     （mobile_scanner/permission_handler_apple/MLKit）与 Flutter.framework。
+# 但扩展不 import Flutter，导致 "Undefined symbols ... _FlutterMethodNotImplemented" 链接失败。
+# 正确做法：不在 Podfile 声明该 target，并让 pbxproj 中其 baseConfigurationReference
+# 指向 Flutter/Generated.xcconfig（只含 FLUTTER_BUILD_NAME/NUMBER，无任何 pod 链接标志）。
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
