@@ -42,7 +42,54 @@ end
 # 正确做法：不在 Podfile 声明该 target，并让 pbxproj 中其 baseConfigurationReference
 # 指向 Flutter/Generated.xcconfig（只含 FLUTTER_BUILD_NAME/NUMBER，无任何 pod 链接标志）。
 
+require 'fileutils'
+
+# ---------------------------------------------------------------------------
+# ITMS-91061 fix: 让每个第三方 SDK 的 framework 在**编译时**就带上
+# PrivacyInfo.xcprivacy（而非归档末尾事后注入）。
+#
+# 原理：App Store 会逐一检查嵌入 app 的第三方 framework 是否含隐私清单。
+# 之前的实现（在 Runner 的归档 build phase 里往产物 framework 拷贝 manifest）
+# 经实测：最终 ipa 中这些 framework 里根本没有 PrivacyInfo.xcprivacy。
+# 因此改为在 CocoaPods post_install 阶段，把清单作为资源加入每个 pod target：
+#   - 用**绝对路径**引用清单文件，彻底避免相对路径解析失败；
+#   - framework 构建时资源就会被拷贝进去并随框架一起签名嵌入。
+# ---------------------------------------------------------------------------
+PRIVACY_MANIFEST_SRC = File.expand_path('PrivacyManifests/PrivacyInfo.xcprivacy', __dir__)
+# 需要补隐私清单的第三方 SDK framework（App Store ITMS-91061 报错清单）
+PRIVACY_PODS = %w[GTMSessionFetcher GoogleToolboxForMac image_picker_ios share_plus sqflite url_launcher_ios].freeze
+
 post_install do |installer|
+  # --- ITMS-91061: 给指定 pod 注入 PrivacyInfo.xcprivacy 资源 ---
+  installer.pods_project.targets.each do |target|
+    next unless PRIVACY_PODS.include?(target.name)
+    next if target.resources_build_phase.files_references.any? do |f|
+      f.display_name == 'PrivacyInfo.xcprivacy' ||
+        (f.real_path.to_s.include?('PrivacyInfo.xcprivacy') rescue false)
+    end
+
+    dest = File.join(installer.sandbox.root, target.name, 'PrivacyInfo.xcprivacy')
+    FileUtils.mkdir_p(File.dirname(dest))
+    FileUtils.copy(PRIVACY_MANIFEST_SRC, dest) unless File.exist?(dest)
+
+    # 用绝对路径引用，保证 Pods 工程能正确定位到该文件
+    ref = installer.pods_project.new_file(dest)
+    ref.source_tree = '<absolute>'
+    ref.path = dest
+    # 缓存到组，避免给同一 manifest 建多个引用
+    target.resources_build_phase.add_file_reference(ref)
+  end
+
+  # --- GC: 移除 Pods 工程里旧的、错误的 PrivacyInfo 引用（若有） ---
+  installer.pods_project.targets.each do |target|
+    next unless PRIVACY_PODS.include?(target.name)
+    target.resources_build_phase.files_references.each do |f|
+      next unless f.path.to_s.end_with?('PrivacyInfo.xcprivacy') && !File.exist?(f.real_path.to_s)
+      target.resources_build_phase.remove_file_reference(f)
+    end
+  end
+
+  # --- 其它 Pod 构建设置 ---
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
