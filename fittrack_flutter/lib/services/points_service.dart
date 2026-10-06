@@ -111,12 +111,15 @@ class PointsService {
   }
 
   bool isFeatureUnlocked(String featureId) {
+    // App 审核演示模式：全部内容视为已解锁
+    if (Storage.isDemoMode) return true;
     final settings = Storage.getSettings();
     final list = _getUnlockedList(settings);
     return list.contains(featureId);
   }
 
   Future<bool> unlockFeature(String featureId, int cost) async {
+    if (Storage.isDemoMode) return true;
     if (isFeatureUnlocked(featureId)) return true;
     final success = await spendPoints(cost, 'unlock_$featureId');
     if (!success) return false;

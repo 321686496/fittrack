@@ -53,6 +53,8 @@ class PlanUnlockService {
 
   /// 检查计划是否已解锁且在有效期内
   bool isPlanUnlocked(String planId) {
+    // App 审核演示模式：全部精品计划视为已解锁
+    if (Storage.isDemoMode) return true;
     final info = getUnlockInfo(planId);
     return info != null && !info.isExpired;
   }

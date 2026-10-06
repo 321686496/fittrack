@@ -133,6 +133,8 @@ class VirtualGoodsStore {
   /// 查询物品是否已解锁
   /// key 约定：`good_<id>`（如 `good_skin_iron_warrior`）
   static bool isUnlocked(String goodId) {
+    // App 审核演示模式：全部虚拟商品视为已解锁
+    if (Storage.isDemoMode) return true;
     final settings = Storage.getSettings();
     final raw = settings['unlockedFeatures'] as String? ?? '[]';
     try {
@@ -146,6 +148,8 @@ class VirtualGoodsStore {
   /// 解锁物品（积分购买）—— 仅可购买 isPurchasableWithPoints=true 的物品
   /// 返回是否解锁成功（积分不足或不可购买时返回 false）
   static Future<bool> unlock(String goodId) async {
+    // App 审核演示模式：无需消耗积分直接解锁
+    if (Storage.isDemoMode) return true;
     final good = byId(goodId);
     if (good == null || !good.isPurchasableWithPoints) return false;
     if (isUnlocked(goodId)) return true;

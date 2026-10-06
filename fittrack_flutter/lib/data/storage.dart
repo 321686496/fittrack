@@ -540,9 +540,11 @@ class Storage {
       'trainingTime': '',
       // 自定义头像本地路径（空串表示使用默认 emoji 头像）
       'avatarPath': '',
-      // Phase 2 �?新增默认 settings
+      // Phase 2 ?新增默认 settings
       'isPremium': false,
       'premiumSource': '',
+      // App 审核演示模式：开启后解锁全部内容（仅供审核员验证功能）
+      'demoMode': false,
       'redeemedCodes': <String>[],
       'channelSource': '',
       'anonStatsOptIn': false,
@@ -1166,6 +1168,26 @@ class Storage {
   }
 
   // ============================================================
+  // App 审核演示模式
+  // ============================================================
+
+  /// 是否处于 App 审核演示模式。
+  /// 开启后全部课程 / 教学章节 / 精品计划 / 虚拟商品视为已解锁，
+  /// 供 App Store 审核员在无需注册账号的前提下验证完整功能。
+  static bool get isDemoMode => getSettings()['demoMode'] == true;
+
+  /// 切换演示模式。开启时若本地无数据，写入示例计划与训练记录。
+  static Future<void> setDemoMode(bool value) async {
+    final settings = getSettings();
+    settings['demoMode'] = value;
+    saveSettings(settings);
+    if (value) {
+      await seedDemoDataIfEmpty();
+    }
+    dataChanged.value = !dataChanged.value;
+  }
+
+  // ============================================================
   // Custom Exercises (SharedPreferences)
   // ============================================================
 
@@ -1485,6 +1507,188 @@ class Storage {
     });
 
     return demoPlan;
+  }
+
+  /// 演示模式预置数据：本地无任何计划/记录时，写入示例计划与训练记录，
+  /// 便于审核员验证趋势、历史、统计等页面。已有数据的用户不受影响。
+  static Future<void> seedDemoDataIfEmpty() async {
+    // 先确保缓存已从磁盘加载，避免把示例数据叠加到已有数据上
+    await getPlansAsync();
+    await getRecordsAsync();
+    if (hasData()) return;
+    initDemoData();
+    _seedDemoRecords();
+  }
+
+  /// 写入近 10 天的示例训练记录。
+  /// setRecords 的动作 id 复用演示计划中的 e1~e16，使训练详情页能解析出动作名称。
+  static void _seedDemoRecords() {
+    final now = DateTime.now();
+    final samples = <Map<String, dynamic>>[
+      {
+        'name': trn('胸部 + 三头肌'),
+        'daysAgo': 1,
+        'duration': 55,
+        'muscles': <String>[trn('胸')],
+        'setRecords': <String, List<Map<String, dynamic>>>{
+          'e1': [
+            {'weight': 60, 'reps': 10},
+            {'weight': 60, 'reps': 9},
+            {'weight': 65, 'reps': 8},
+            {'weight': 65, 'reps': 8},
+          ],
+          'e2': [
+            {'weight': 15, 'reps': 12},
+            {'weight': 15, 'reps': 12},
+            {'weight': 17.5, 'reps': 10},
+          ],
+          'e3': [
+            {'weight': 50, 'reps': 10},
+            {'weight': 50, 'reps': 9},
+            {'weight': 55, 'reps': 8},
+          ],
+          'e4': [
+            {'weight': 20, 'reps': 15},
+            {'weight': 20, 'reps': 14},
+            {'weight': 22.5, 'reps': 12},
+            {'weight': 22.5, 'reps': 12},
+          ],
+        },
+      },
+      {
+        'name': trn('背部 + 二头肌'),
+        'daysAgo': 3,
+        'duration': 62,
+        'muscles': <String>[trn('背')],
+        'setRecords': <String, List<Map<String, dynamic>>>{
+          'e5': [
+            {'weight': 0, 'reps': 10},
+            {'weight': 0, 'reps': 9},
+            {'weight': 0, 'reps': 8},
+          ],
+          'e6': [
+            {'weight': 50, 'reps': 10},
+            {'weight': 50, 'reps': 10},
+            {'weight': 55, 'reps': 8},
+            {'weight': 55, 'reps': 8},
+          ],
+          'e7': [
+            {'weight': 45, 'reps': 12},
+            {'weight': 45, 'reps': 12},
+            {'weight': 50, 'reps': 10},
+          ],
+          'e8': [
+            {'weight': 40, 'reps': 12},
+            {'weight': 40, 'reps': 12},
+            {'weight': 45, 'reps': 10},
+            {'weight': 45, 'reps': 10},
+          ],
+        },
+      },
+      {
+        'name': trn('腿部'),
+        'daysAgo': 5,
+        'duration': 48,
+        'muscles': <String>[trn('腿')],
+        'setRecords': <String, List<Map<String, dynamic>>>{
+          'e9': [
+            {'weight': 80, 'reps': 8},
+            {'weight': 80, 'reps': 8},
+            {'weight': 85, 'reps': 6},
+            {'weight': 85, 'reps': 6},
+            {'weight': 85, 'reps': 5},
+          ],
+          'e10': [
+            {'weight': 120, 'reps': 12},
+            {'weight': 120, 'reps': 12},
+            {'weight': 130, 'reps': 10},
+            {'weight': 130, 'reps': 10},
+          ],
+        },
+      },
+      {
+        'name': trn('肩部 + 核心'),
+        'daysAgo': 7,
+        'duration': 45,
+        'muscles': <String>[trn('肩')],
+        'setRecords': <String, List<Map<String, dynamic>>>{
+          'e11': [
+            {'weight': 20, 'reps': 10},
+            {'weight': 20, 'reps': 10},
+            {'weight': 22.5, 'reps': 8},
+          ],
+          'e12': [
+            {'weight': 10, 'reps': 15},
+            {'weight': 10, 'reps': 15},
+            {'weight': 12.5, 'reps': 12},
+            {'weight': 12.5, 'reps': 12},
+          ],
+          'e15': [
+            {'weight': 0, 'reps': 60},
+            {'weight': 0, 'reps': 60},
+            {'weight': 0, 'reps': 60},
+          ],
+          'e16': [
+            {'weight': 0, 'reps': 20},
+            {'weight': 0, 'reps': 20},
+            {'weight': 0, 'reps': 18},
+          ],
+        },
+      },
+      {
+        'name': trn('全身训练A'),
+        'daysAgo': 9,
+        'duration': 52,
+        'muscles': <String>[trn('全身')],
+        'setRecords': <String, List<Map<String, dynamic>>>{
+          'e9': [
+            {'weight': 70, 'reps': 10},
+            {'weight': 70, 'reps': 10},
+            {'weight': 75, 'reps': 8},
+          ],
+          'e1': [
+            {'weight': 55, 'reps': 10},
+            {'weight': 55, 'reps': 10},
+            {'weight': 60, 'reps': 8},
+          ],
+          'e5': [
+            {'weight': 0, 'reps': 8},
+            {'weight': 0, 'reps': 7},
+            {'weight': 0, 'reps': 6},
+          ],
+        },
+      },
+    ];
+
+    for (final s in samples) {
+      final setRecords =
+          s['setRecords'] as Map<String, List<Map<String, dynamic>>>;
+      int totalWeight = 0;
+      int completedSets = 0;
+      for (final sets in setRecords.values) {
+        for (final r in sets) {
+          totalWeight += ((r['weight'] as num).toInt()) *
+              ((r['reps'] as num).toInt());
+        }
+        completedSets += sets.length;
+      }
+      addRecord({
+        'name': s['name'],
+        'date': now
+            .subtract(Duration(days: s['daysAgo'] as int))
+            .millisecondsSinceEpoch,
+        'duration': s['duration'],
+        'pureDuration': (s['duration'] as int) * 60,
+        'totalWeight': totalWeight,
+        'totalSets': completedSets,
+        'exerciseCount': setRecords.length,
+        'muscles': s['muscles'],
+        'setRecords': setRecords,
+        'restLog': <Map<String, dynamic>>[],
+        'planId': null,
+        'planName': null,
+      });
+    }
   }
 
   // ============================================================

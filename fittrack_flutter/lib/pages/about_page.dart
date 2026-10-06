@@ -1,17 +1,73 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../themes/app_themes.dart';
+import '../data/storage.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/page_header.dart';
 
 import '../l10n/i18n.dart';
 /// 关于页面（独立页面，替代原"关于"弹窗）
-class AboutPage extends StatelessWidget {
+class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
+
+  @override
+  State<AboutPage> createState() => _AboutPageState();
+}
+
+class _AboutPageState extends State<AboutPage> {
+  /// 连续点击版本号的次数（用于触发 App 审核演示模式）
+  int _versionTapCount = 0;
+  Timer? _versionTapTimer;
+
+  @override
+  void dispose() {
+    _versionTapTimer?.cancel();
+    super.dispose();
+  }
+
+  /// 连点版本号 7 次触发演示模式开关（隐藏入口，供 App Store 审核使用）
+  void _onVersionTap() {
+    _versionTapTimer?.cancel();
+    _versionTapCount++;
+    if (_versionTapCount >= 7) {
+      _versionTapCount = 0;
+      _toggleDemoMode();
+      return;
+    }
+    _versionTapTimer = Timer(const Duration(seconds: 3), () {
+      _versionTapCount = 0;
+    });
+  }
+
+  Future<void> _toggleDemoMode() async {
+    final enabled = Storage.isDemoMode;
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: tr(context, enabled ? '关闭演示模式' : '开启演示模式'),
+      content: enabled
+          ? tr(context, '关闭后，课程、精品计划与虚拟商品将恢复为需要积分解锁的状态。')
+          : tr(context, '演示模式用于 App 审核验证完整功能：开启后全部课程、教学章节、精品计划与虚拟商品均视为已解锁。若设备上暂无训练数据，还会写入示例计划与训练记录。'),
+      confirmText: tr(context, enabled ? '关闭' : '开启'),
+      icon: Icons.science_outlined,
+    );
+    if (confirmed != true || !mounted) return;
+
+    await Storage.setDemoMode(!enabled);
+    if (!mounted) return;
+    setState(() {});
+    FitToast.success(
+      context,
+      enabled
+          ? tr(context, '演示模式已关闭')
+          : tr(context, '演示模式已开启，全部内容已解锁'),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<LiftTrackColors>()!;
+    final demoMode = Storage.isDemoMode;
 
     return Scaffold(
       backgroundColor: colors.bgSecondary,
@@ -56,10 +112,29 @@ class AboutPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            tr(context, '版本 1.0.0'),
-                            style: TextStyle(color: colors.textMuted, fontSize: 13),
+                          // 连点 7 次可切换 App 审核演示模式（隐藏入口）
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _onVersionTap,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                              child: Text(
+                                tr(context, '版本 1.0.0'),
+                                style: TextStyle(color: colors.textMuted, fontSize: 13),
+                              ),
+                            ),
                           ),
+                          if (demoMode) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              tr(context, '演示模式已开启'),
+                              style: TextStyle(
+                                color: colors.accentGlow,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 16),
                           Text(
                             tr(context, '一款简洁高效的健身训练助手，帮助你制定个性化训练计划、记录每次训练数据、追踪身体数据变化、统计训练成就。'),
