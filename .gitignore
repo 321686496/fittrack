@@ -19,3 +19,15 @@ scripts/*.png
 
 # 素材临时备份
 .image_backup/
+
+# AI 本地工作目录与临时文件
+.workbuddy-ai/
+debug.txt
+
+# 公众号登录态（含 token，勿提交）
+docs/_wechat/
+
+# Flutter 工具链产物
+fittrack_flutter/.dart/
+fittrack_flutter/.flutter
+fittrack_flutter/.flutter_tool_state
