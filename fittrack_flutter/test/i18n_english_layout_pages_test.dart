@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common/src/utils.dart' as sqflite_utils;
 import 'package:fittrack_flutter/data/storage.dart';
 import 'package:fittrack_flutter/l10n/i18n.dart';
+import 'package:fittrack_flutter/router.dart';
 import 'package:fittrack_flutter/themes/app_themes.dart';
 
 import 'package:fittrack_flutter/pages/about_page.dart';
@@ -137,5 +138,26 @@ void main() {
         timeout: const Timeout(Duration(seconds: 30)),
       );
     }
+  }
+
+  // 回归：AppShell 用 IndexedStack 一次性挂载 5 个 tab（首页/计划/教学/统计/我的），
+  // 任一 tab 在 initState 阶段访问 InheritedWidget（如误用 tr(context)）都会让启动首帧红屏。
+  for (final code in ['zh', 'en']) {
+    testWidgets(
+      'AppShell 五个 tab 启动首帧（$code）无异常',
+      (tester) async {
+        await pumpPage(
+          tester,
+          AppShell(currentIndex: 0, child: const SizedBox.shrink()),
+          languageCode: code,
+        );
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '$code AppShell 启动首帧抛出异常（通常是 tab 页 initState 误用 tr(context)）',
+        );
+      },
+      timeout: const Timeout(Duration(seconds: 30)),
+    );
   }
 }

@@ -30,6 +30,10 @@ class FormKitService {
   /// 当前训练态数据（非 null 表示正在训练中）
   Map<String, dynamic>? _trainingState;
 
+  /// 仅供测试：读取当前训练态数据，用于校验 restSkipped 等标记是否透传
+  @visibleForTesting
+  Map<String, dynamic>? get trainingStateForTest => _trainingState;
+
   /// 初始化（应用启动时调用一次）
   void init() {
     if (_initialized) return;

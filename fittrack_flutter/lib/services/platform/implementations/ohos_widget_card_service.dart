@@ -28,6 +28,7 @@ class OhosWidgetCardService implements WidgetCardService {
         totalExercises: data.totalExercises ?? 0,
         completedSets: data.completedSets ?? 0,
         totalPlanSets: data.totalPlanSets ?? 0,
+        restSkipped: data.restSkipped,
       );
       return;
     }

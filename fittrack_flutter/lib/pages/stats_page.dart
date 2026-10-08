@@ -72,6 +72,22 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
   void initState() {
     super.initState();
     _loadAndCompute();
+    // 记录当前语言代次，避免首次 didChangeDependencies 重复加载
+    _localeGeneration = LocaleController.instance.generation;
+  }
+
+  /// 语言代次：用于在切换语言后刷新 [_weekChartData] / [_monthChartData] 里缓存的文案
+  int _localeGeneration = -1;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // initState 阶段不能访问 InheritedWidget，所以依赖文案的缓存改在这里补刷
+    final generation = LocaleController.instance.generation;
+    if (_localeGeneration != generation) {
+      _localeGeneration = generation;
+      _loadAndCompute();
+    }
   }
 
   void _loadAndCompute() {
@@ -134,7 +150,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
       dailyCounts[i] = 0;
     }
 
-    final dayLabels = [tr(context, '周一'), tr(context, '周二'), tr(context, '周三'), tr(context, '周四'), tr(context, '周五'), tr(context, '周六'), tr(context, '周日')];
+    final dayLabels = [trn('周一'), trn('周二'), trn('周三'), trn('周四'), trn('周五'), trn('周六'), trn('周日')];
 
     for (final r in _records) {
       final ts = r['date'] as int?;
@@ -174,7 +190,7 @@ class _StatsPageState extends State<StatsPage> with TabRefreshMixin<StatsPage> {
     // Ensure at least 1 entry so chart is not empty
     if (_monthChartData.isEmpty) {
       _monthChartData = [
-        {'label': tr(context, '本周'), 'value': 0}
+        {'label': trn('本周'), 'value': 0}
       ];
     }
   }

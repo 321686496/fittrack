@@ -910,9 +910,9 @@ class _PlanEditorSheetState extends State<_PlanEditorSheet> {
   }
 
   void _applyQuickSetup(String type) {
-    if (type == tr(context, '自定义')) {
+    if (type == trn('自定义')) {
       _days = [
-        {'day': 1, 'label': tr(context, '训练日1'), 'muscle': '', 'exercises': <Map<String, dynamic>>[]},
+        {'day': 1, 'label': trn('训练日1'), 'muscle': '', 'exercises': <Map<String, dynamic>>[]},
       ];
     } else {
       final template = _quickSetup[type];

@@ -117,8 +117,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
     if (plan.isNotEmpty) {
       _editingPlan = plan;
       _nameController.text = plan['name'] as String? ?? '';
-      _selectedType = plan['type'] as String? ?? tr(context, '三分化');
-      _selectedDifficulty = plan['difficulty'] as String? ?? tr(context, '初级');
+      _selectedType = plan['type'] as String? ?? trn('三分化');
+      _selectedDifficulty = plan['difficulty'] as String? ?? trn('初级');
       _selectedGender = plan['gender'] as String? ?? 'all';
       _totalWeeksController.text = '${plan['totalWeeks'] ?? 8}';
       _restTimeController.text = '${plan['defaultRestTime'] ?? 90}';

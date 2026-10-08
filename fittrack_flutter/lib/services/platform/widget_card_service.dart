@@ -28,6 +28,11 @@ class WidgetCardData {
   final int? totalPlanSets;
   final DateTime? restEndTime;
   final int? restTotalSeconds;
+
+  /// 用户主动结束休息时为 true。
+  /// OHOS 原生侧据此取消尚未触发的"休息结束"代理提醒，
+  /// 避免用户已结束休息后仍收到通知。
+  final bool restSkipped;
   final int todayTrainingCount;
   final int todayTrainingMinutes;
   final int todayTotalWeight;
@@ -51,6 +56,7 @@ class WidgetCardData {
     this.totalPlanSets,
     this.restEndTime,
     this.restTotalSeconds,
+    this.restSkipped = false,
     this.todayTrainingCount = 0,
     this.todayTrainingMinutes = 0,
     this.todayTotalWeight = 0,

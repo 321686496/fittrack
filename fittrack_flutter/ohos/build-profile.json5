@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "storeFile": "D:/app/projects/health_training/packagefile/packagefile/ohos/public.p12",
+          "storeFile": "E:/Project/health_project/health_training/packagefile/packagefile/ohos/public.p12",
           "storePassword": "0000001981AF816668D37BEA254A838464D62558907855EC8047ECD9BA44344F149D1F7F593CDA2A8F",
           "keyAlias": "public",
           "keyPassword": "000000197791216870613E67B321D617C61B120DF0A1FB2C63DEA91A98552E297ABF4DBA85988C3C00",
           "signAlg": "SHA256withECDSA",
-          "profile": "D:/app/projects/health_training/packagefile/packagefile/ohos/lifttrackpublicRelease.p7b",
-          "certpath": "D:/app/projects/health_training/packagefile/packagefile/ohos/public.cer"
+          "profile": "E:/Project/health_project/health_training/packagefile/packagefile/ohos/public.p7b",
+          "certpath": "E:/Project/health_project/health_training/packagefile/packagefile/ohos/public.cer"
         }
       }
     ],

@@ -391,7 +391,7 @@ class _TrainingPageState extends State<TrainingPage>
       if (lib['id'] == exId) {
         final category = lib['category'] as String? ?? '';
         final equip = lib['equip'] as String? ?? '';
-        return category == tr(context, '跑步') || equip == tr(context, '自重') || equip == tr(context, '无');
+        return category == trn('跑步') || equip == trn('自重') || equip == trn('无');
       }
     }
     return false;
@@ -665,6 +665,8 @@ class _TrainingPageState extends State<TrainingPage>
       totalExercises: _exercises.length,
       completedSets: _completedSets,
       totalPlanSets: _totalSets,
+      // 用户主动结束休息时透传标记，OHOS 原生侧据此取消尚未触发的"休息结束"代理提醒
+      restSkipped: restSkipped,
     ));
   }
 

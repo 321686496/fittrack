@@ -30,7 +30,7 @@ class _PlanQrCodePageState extends State<PlanQrCodePage> {
   void _generate() {
     final plan = Storage.getPlanById(widget.planId);
     if (plan == null) {
-      setState(() => _errorMessage = tr(context, '计划不存在'));
+      setState(() => _errorMessage = trn('计划不存在'));
       return;
     }
 
